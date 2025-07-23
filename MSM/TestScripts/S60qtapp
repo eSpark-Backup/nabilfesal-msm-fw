@@ -1,0 +1,64 @@
+#!/bin/sh
+
+
+case "$1" in
+  start)
+    # Wait for modem device to appear
+    echo "[INFO] Waiting for modem device /dev/cdc-wdm0..."
+    MAX_WAIT=30
+    WAIT=0
+    while [ ! -e /dev/cdc-wdm0 ] && [ $WAIT -lt $MAX_WAIT ]; do
+        sleep 1
+        WAIT=$((WAIT + 1))
+    done
+
+    if [ ! -e /dev/cdc-wdm0 ]; then
+        echo "[ERROR] Modem device not found after $MAX_WAIT seconds."
+        exit 1
+    fi
+
+    sleep 4
+
+    echo "[INFO] Enabling modem..."
+    mmcli -m 0 --enable
+
+
+    #pgrep ModemManager >/dev/null && mmcli -m 0 --enable
+
+    echo "[INFO] Starting QMI network..."
+    qmicli -d /dev/cdc-wdm0 --device-open-proxy --wds-start-network="apn='internet',ip-type=4" --client-no-release-cid
+
+    sleep 1
+    echo "Starting Qt App..."
+    echo "[INFO] Starting DHCP client on wwan0..."
+    udhcpc -i wwan0 -q &
+    export TZ="PKT-5"
+    export QT_QPA_PLATFORM=linuxfb
+    export QT_QPA_FONTDIR=/usr/share/fonts/dejavu
+    cd  /usr/lib/qt/examples/gui/analogclock
+    TZ="PKT-5" ./analogclock &
+    ;;
+  stop)
+    echo "Stopping Qt App..."
+    killall qtclockapp
+    ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac
+
+#exit 0
+
+
+#echo "[INFO] Starting DHCP client on wwan0..."
+#udhcpc -i wwan0 -q &
+
+#echo "[INFO] Setting QT font directory..."
+#export QT_QPA_FONTDIR=/usr/share/fonts/dejavu
+
+#echo "[INFO] Launching Qt application..."
+#cd /usr/lib/qt/examples/gui/analogclock
+#TZ="PKT-5" ./analogclock &
+
+exit 0
