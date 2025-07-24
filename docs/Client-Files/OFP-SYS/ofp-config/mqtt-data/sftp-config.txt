@@ -1,0 +1,18 @@
+{
+  "sftp_ip1": "ap-southeast-1.sftpcloud.io",
+  "sftp_port1": "22",
+  "sftp_user1": "ofp-msm",
+  "sftp_pass1": "root123456",
+  "sftp_topath1": "/ToOFP/d301014",
+  "sftp_frompath1": "/FromOFP/d301014",
+  "sftp_sub-interval1": "0000",
+  "sftp_data-interval1": "5",
+  "sftp_ip2": "NULL",
+  "sftp_port2": "NULL",
+  "sftp_user2": "NULL",
+  "sftp_pass2": "NULL",
+  "sftp_topath2": "NULL",
+  "sftp_frompath2": "NULL",
+  "sftp_sub-interval2": "NULL",
+  "sftp_data-interval2": "NULL"
+}

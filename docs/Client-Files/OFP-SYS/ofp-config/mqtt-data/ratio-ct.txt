@@ -1,0 +1,14 @@
+{
+  "scm_ratio1": "80",
+  "scm_ratio2": "80",
+  "scm_ratio3": "80",
+  "scm_ratio4": "80",
+  "scm_ratio5": "80",
+  "scm_ratio6": "80",
+  "scm_ratio7": "80",
+  "scm_ratio8": "80",
+  "scm_ratio9": "80",
+  "scm_ratio10": "80",
+  "scm_ratio11": "80",
+  "scm_ratio12": "80"
+}

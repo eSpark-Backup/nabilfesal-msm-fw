@@ -1,0 +1,14 @@
+{
+  "scm_offset1": "100",
+  "scm_offset2": "100",
+  "scm_offset3": "100",
+  "scm_offset4": "100",
+  "scm_offset5": "100",
+  "scm_offset6": "100",
+  "scm_offset7": "100",
+  "scm_offset8": "100",
+  "scm_offset9": "100",
+  "scm_offset10": "100",
+  "scm_offset11": "100",
+  "scm_offset12": "100"
+}

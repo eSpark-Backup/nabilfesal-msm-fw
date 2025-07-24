@@ -1,0 +1,2 @@
+ip1,port1,user1,pass1,clientid1,sub-interval1,topic1,ip2,port2,user2,pass2,clientid2,sub-interval2,topic2
+NULL,NULL,NULL,NULL,NULL,NULL,NULL,thingsboard.cloud,1883,OFP-INDKOM,NULL,NULL,5,v1/devices/me/telemetry

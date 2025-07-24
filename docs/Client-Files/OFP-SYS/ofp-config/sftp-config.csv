@@ -1,0 +1,2 @@
+ip1,port1,user1,pass1,topath1,frompath1,sub-interval1,data-interval1,ip2,port2,user2,pass2,topath2,frompath2,sub-interval2,data-interval2
+ap-southeast-1.sftpcloud.io,22,x,x,NULL,NULL,0100,60,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL

@@ -1,0 +1,5 @@
+{
+  "ntp_ip1": "time.google.com",
+  "ntp_ip2": "pool.ntp.org",
+  "ntp_ip3": "asia.pool.ntp.org"
+}
