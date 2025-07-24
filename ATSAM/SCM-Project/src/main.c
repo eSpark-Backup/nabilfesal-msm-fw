@@ -29,7 +29,6 @@
  */
 #include <asf.h>
 #include <port.h>
-#include "ade9000regs.h"
 
 #define LED_1	PIN_PA25
 #define LED_2	PIN_PA28
