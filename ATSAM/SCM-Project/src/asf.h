@@ -74,6 +74,21 @@
 // From module: Part identification macros
 #include <parts.h>
 
+// From module: SERCOM Callback API
+#include <sercom.h>
+#include <sercom_interrupt.h>
+
+// From module: SERCOM SPI - Serial Peripheral Interface (Callback APIs)
+#include <spi.h>
+#include <spi_interrupt.h>
+
+// From module: SERCOM SPI - Serial Peripheral Interface (Master Mode, Vectored I/O)
+#include <spi_master_vec.h>
+
+// From module: SERCOM USART - Serial Communications (Callback APIs)
+#include <usart.h>
+#include <usart_interrupt.h>
+
 // From module: SYSTEM - Clock Management for SAMD20
 #include <clock.h>
 #include <gclk.h>
@@ -92,5 +107,11 @@
 
 // From module: SYSTEM - Reset Management for SAM D20/D21/R21/D09/D10/D11/DA/HA
 #include <reset.h>
+
+// From module: Standard serial I/O (stdio)
+#include <stdio_serial.h>
+
+// From module: USART - Serial interface- SAM implementation for devices with only USART
+#include <serial.h>
 
 #endif // ASF_H
