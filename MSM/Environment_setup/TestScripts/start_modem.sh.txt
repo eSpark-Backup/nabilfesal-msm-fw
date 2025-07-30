@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# Enable modem
+echo "[INFO] Enabling modem with mmcli..."
+mmcli -m 0 --enable
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to enable modem"
+    exit 1
+fi
+
+sleep 4
+
+# Start network via qmicli
+echo "[INFO] Starting network with qmicli..."
+qmicli -d /dev/cdc-wdm0 --device-open-proxy \
+  --wds-start-network="apn='internet',ip-type=4" --client-no-release-cid
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to start network"
+    exit 1
+fi
+
+sleep 4
+
+# Request IP address via udhcpc
+echo "[INFO] Requesting IP address for wwan0..."
+udhcpc -i wwan0
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to obtain IP address via DHCP"
+    exit 1
+fi
+
+# Set Qt environment variables
+export QT_QPA_FONTDIR=/usr/share/fonts/dejavu
+export QT_LOGGING_RULES="*.debug=true"
+
+echo "[INFO] Qt environment variables set"
+
+# Change directory to /etc
+cd /etc/
+if [ $? -ne 0 ]; then
+    echo "[ERROR] Failed to change directory to /etc"
+    exit 1
+fi
+
+echo "[INFO] Script completed successfully"
+
+./simplemqttclient
