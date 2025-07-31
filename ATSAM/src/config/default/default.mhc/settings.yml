@@ -1,0 +1,13 @@
+configName: default
+folderName: FW_OFP_V2.0
+format_version: v1.0
+frameworkPath: C:\harmony
+processor: ATSAMD20G17
+projectName: FW_OFP_V2.0
+settings:
+  PackageFilter: ''
+  FORCE_OPTIMIZATION: 'false'
+  GENERATE_BACKUP: 'true'
+  TRUSTZONE: 'false'
+  MERGE_STRATEGY: USER_ALL
+  DFPPath: SAMD20_DFP\3.6.112
