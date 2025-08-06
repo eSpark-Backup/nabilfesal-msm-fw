@@ -1,0 +1,87 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          gsm
+# Required-Start:    $network
+# Default-Start:     S
+# Short-Description: Start GSM modem and get IP address
+### END INIT INFO
+
+INTERFACE="wwan0"
+DEVICE="/dev/cdc-wdm0"
+
+start() {
+(
+    echo "[INFO] Waiting for D-Bus to become available..."
+    for i in $(seq 1 10); do
+        dbus-send --system --dest=org.freedesktop.DBus \
+            --type=method_call --print-reply \
+            /org/freedesktop/DBus org.freedesktop.DBus.ListNames >/dev/null 2>&1 && break
+        sleep 1
+    done
+
+    echo "[INFO] Waiting for ModemManager to appear on D-Bus..."
+    for i in $(seq 1 10); do
+        mmcli -L >/dev/null 2>&1 && break
+        sleep 1
+    done
+
+    echo "[INFO] Waiting for modem to be detected by ModemManager..."
+    for i in $(seq 1 15); do
+        MODEM_PATH=$(mmcli -L | grep -o '/org/freedesktop/ModemManager1/Modem/[0-9]\+' | head -n1)
+        if [ -n "$MODEM_PATH" ]; then
+            echo "[INFO] Modem detected at $MODEM_PATH"
+            break
+        fi
+        sleep 2
+    done
+
+    if [ -z "$MODEM_PATH" ]; then
+        echo "[ERROR] Modem was not detected by ModemManager"
+        exit 1
+    fi
+
+    echo "[INFO] Enabling modem..."
+    mmcli -m "$MODEM_PATH" --enable
+    if [ $? -ne 0 ]; then
+        echo "[ERROR] Failed to enable modem"
+        exit 1
+    fi
+
+    echo "[INFO] Starting data connection via qmicli..."
+    qmicli -d /dev/cdc-wdm0 --device-open-proxy --wds-start-network="apn='internet',ip-type=4" --client-no-release-cid
+    if [ $? -ne 0 ]; then
+        echo "[ERROR] qmicli failed to start network"
+        exit 1
+    fi
+
+    echo "[INFO] Launching udhcpc to acquire IP address on $INTERFACE..."
+    udhcpc -i "$INTERFACE" -q -b &
+
+    echo "[INFO] Restarting SNTP Deamon"
+    ntpd restart
+)&
+}
+
+stop() {
+    echo "[INFO] Stop not implemented. You can add modem disable and disconnect logic here."
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0

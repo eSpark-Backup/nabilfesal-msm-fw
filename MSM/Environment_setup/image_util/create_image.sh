@@ -73,7 +73,14 @@ tar -xf "$ROOTFS_TAR" -C "$ROOT_DIR"
 if [ -d "$MODULES_DIR" ]; then
     echo "Copying kernel modules to rootfs..."
     mkdir -p "$ROOT_DIR/lib/modules"
+    mkdir -p "$ROOT_DIR/etc/MSM_APPS"
     cp -r "$MODULES_DIR" "$ROOT_DIR/lib/modules/"
+    cp -r "QTTESTPRJ" "$ROOT_DIR/etc/"
+    cp -r "aws-iot-device-client" "$ROOT_DIR/etc/"
+    cp -r "simplemqttclient" "$ROOT_DIR/etc/"
+    cp -r "certs" "$ROOT_DIR/etc/"
+    cp -r "MSM_APPS" "$ROOT_DIR/etc/"
+    cp -r scripts/* "$ROOT_DIR/etc/init.d/"
 else
     echo "Warning: MODULES_DIR not found: $MODULES_DIR"
 fi
