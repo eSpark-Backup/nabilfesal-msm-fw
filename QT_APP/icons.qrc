@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/gilroy-semibold.ttf</file>
+        <file>icons/flash.jpg</file>
+        <file>icons/logo.jpg</file>
+        <file>icons/I.jpg</file>
+        <file>icons/P.jpg</file>
+        <file>icons/V.jpg</file>
+        <file>icons/ch.jpg</file>
+        <file>icons/active.jpg</file>
+        <file>icons/lightning_unfill.png</file>
+        <file>icons/lightning_fill.png</file>
+        <file>icons/active.png</file>
+        <file>icons/V.png</file>
+        <file>icons/deactivate.png</file>
+    </qresource>
+</RCC>
