@@ -210,12 +210,140 @@ void ADE9000_Initialize(SPI_CSS_Pin css_pin) {
 // *****************************************************************************
 // *****************************************************************************
 
+/***************************GENERAL VALUES*****************************/
+void ReadVoltageRMSRegs(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin)
+{
+    uint32_t rawValue;
+    Data->VoltageRMSReg_A = int32_t(SPI_Read(ADDR_AVRMS, true, css_pin));
+    Data->VoltageRMSReg_B = int32_t(SPI_Read(ADDR_BVRMS, true, css_pin));
+    Data->VoltageRMSReg_C = int32_t(SPI_Read(ADDR_CVRMS, true, css_pin));
+    
+    if(css_pin)
+    {
+        Data->VoltageRMSValue_A = (float) Data->VoltageRMSReg_A * IC_CAL_VRMS_CC / 1000000;
+        Data->VoltageRMSValue_B = (float) Data->VoltageRMSReg_B * IC_CAL_VRMS_CC / 1000000;
+        Data->VoltageRMSValue_C = (float) Data->VoltageRMSReg_C * IC_CAL_VRMS_CC / 1000000;
+        if (Data->VoltageRMSValue_A < NOMINAL_INPUT_VOLTAGE)
+        {
+            Data->VoltageRMSValue_A = 0.00f;
+        }
+        if (Data->VoltageRMSValue_B < NOMINAL_INPUT_VOLTAGE)
+        {
+            Data->VoltageRMSValue_B = 0.00f;
+        }
+        if (Data->VoltageRMSValue_C < NOMINAL_INPUT_VOLTAGE)
+        {
+            Data->VoltageRMSValue_C = 0.00f;
+        }
+    }
+    // else
+    // {
+    //     Data->VoltageRMSValue_A = (float) Data->VoltageRMSReg_A * OG_CAL_VRMS_CC / 1000000;
+    //     Data->VoltageRMSValue_B = (float) Data->VoltageRMSReg_B * OG_CAL_VRMS_CC / 1000000;
+    //     Data->VoltageRMSValue_C = (float) Data->VoltageRMSReg_C * OG_CAL_VRMS_CC / 1000000;
+    // }
+    
+    if(DEBUG){
+        printf("Reading Voltage RMS Registers...\n");
+        printf("VoltageRMSReg_A: %d\n", Data->VoltageRMSReg_A);
+        printf("VoltageRMSReg_B: %d\n", Data->VoltageRMSReg_B);
+        printf("VoltageRMSReg_C: %d\n", Data->VoltageRMSReg_C);
+        printf("VoltageRMSValue_A: %.6f V, VoltageRMSValue_B: %.6f V, VoltageRMSValue_C: %.6f V\n",
+        Data->VoltageRMSValue_A, Data->VoltageRMSValue_B, Data->VoltageRMSValue_C);
+    }
+}
+
+void ReadLineVoltages(VoltageRMSRegs *rmsData, LineVoltageRegs *lineData) {
+    const float sqrt3 = sqrtf(3.0f);
+
+    lineData->VoltageRMS_A = rmsData->VoltageRMSValue_A;
+    lineData->VoltageRMS_B = rmsData->VoltageRMSValue_B;
+    lineData->VoltageRMS_C = rmsData->VoltageRMSValue_C;
+    
+    lineData->LineVoltage_AB = lineData->VoltageRMS_A * sqrt3;
+    lineData->LineVoltage_BC = lineData->VoltageRMS_B * sqrt3;
+    lineData->LineVoltage_CA = lineData->VoltageRMS_C * sqrt3;
+    
+    if(DEBUG){
+        printf("Calculating Line Voltages...\n");
+        printf("LineVoltage_AB: %.6f V, LineVoltage_BC: %.6f V, LineVoltage_CA: %.6f V\n",
+        lineData->LineVoltage_AB, lineData->LineVoltage_BC, lineData->LineVoltage_CA);
+    }    
+}
+
+void ReadCurrentRMSRegs(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin) {
+    uint32_t rawValue;
+    Data->CurrentRMSReg_A = int32_t(SPI_Read(ADDR_AIRMS, true, css_pin));
+    Data->CurrentRMSReg_B = int32_t(SPI_Read(ADDR_BIRMS, true, css_pin));
+    Data->CurrentRMSReg_C = int32_t(SPI_Read(ADDR_CIRMS, true, css_pin));
+    
+    if(css_pin)
+    {
+        Data->CurrentRMSValue_A = (float) Data->CurrentRMSReg_A * IC_CAL_IRMS_CC / 1000000;
+        Data->CurrentRMSValue_B = (float) Data->CurrentRMSReg_B * IC_CAL_IRMS_CC / 1000000;
+        Data->CurrentRMSValue_C = (float) Data->CurrentRMSReg_C * IC_CAL_IRMS_CC / 1000000;
+    }
+    else
+    {
+        Data->CurrentRMSValue_A = (float) Data->CurrentRMSReg_A * OG_CAL_IRMS_CC / 1000000;
+        Data->CurrentRMSValue_B = (float) Data->CurrentRMSReg_B * OG_CAL_IRMS_CC / 1000000;
+        Data->CurrentRMSValue_C = (float) Data->CurrentRMSReg_C * OG_CAL_IRMS_CC / 1000000;
+    }
+    
+    if(DEBUG){
+        printf("Reading Current RMS Registers...\n");
+        printf("CurrentRMSReg_A: %d\n", Data->CurrentRMSReg_A);
+        printf("CurrentRMSReg_B: %d\n", Data->CurrentRMSReg_B); 
+        printf("CurrentRMSReg_C: %d\n", Data->CurrentRMSReg_C); 
+        printf("CurrentRMSValue_A: %.6f A, CurrentRMSValue_B: %.6f A, CurrentRMSValue_C: %.6f A\n",
+           Data->CurrentRMSValue_A, Data->CurrentRMSValue_B, Data->CurrentRMSValue_C);
+    }
+}
+
+void ReadPeriodRegsnValues(PeriodRegs *Data, VoltageRMSRegs *RMSData, SPI_CSS_Pin css_pin) {
+    if(DEBUG){
+        printf("Reading Period Registers and Calculating Frequencies...\n");
+    }
+    uint32_t tempReg;
+
+    if(RMSData->VoltageRMSValue_A)
+    {
+        tempReg = SPI_Read(ADDR_APERIOD, true, css_pin);
+        Data->PeriodReg_A = tempReg;
+        Data->FrequencyValue_A = (float)(8000 * 65536) / (tempReg + 1);
+        if(DEBUG){
+            printf("PeriodReg_A: %u, FrequencyValue_A: %.2f Hz\n", tempReg, Data->FrequencyValue_A);
+        }
+    }
+
+    if (RMSData->VoltageRMSValue_B)
+    {
+        tempReg = SPI_Read(ADDR_BPERIOD, true, css_pin);
+        Data->PeriodReg_B = tempReg;
+        Data->FrequencyValue_B = (float)(8000 * 65536) / (tempReg + 1);
+        if(DEBUG){
+            printf("PeriodReg_B: %u, FrequencyValue_B: %.2f Hz\n", tempReg, Data->FrequencyValue_B);
+        }
+    }
+    
+    if (RMSData->VoltageRMSValue_C)
+    {
+        tempReg = SPI_Read(ADDR_CPERIOD, true, css_pin);
+        Data->PeriodReg_C = tempReg;
+        Data->FrequencyValue_C = (float)(8000 * 65536) / (tempReg + 1);
+        if(DEBUG){
+            printf("PeriodReg_C: %u, FrequencyValue_C: %.2f Hz\n", tempReg, Data->FrequencyValue_C);
+        }
+    }
+}
+
+/***************************POWER VALUES*****************************/
 void ReadActivePowerRegs(ActivePowerRegs *Data, SPI_CSS_Pin css_pin) {
     uint32_t rawValue;
     Data->ActivePowerReg_A = int32_t(SPI_Read(ADDR_AWATT, true, css_pin));
     Data->ActivePowerReg_B = int32_t(SPI_Read(ADDR_BWATT, true, css_pin));
     Data->ActivePowerReg_C = int32_t(SPI_Read(ADDR_CWATT, true, css_pin)); 
-    if(css_pin == SPI_CSS1)
+    if(css_pin)
     {
         Data->ActivePowerValue_A = (float) Data->ActivePowerReg_A * IC_CAL_POWER_CC / 1000 / 1000;
         Data->ActivePowerValue_B = (float) Data->ActivePowerReg_B * IC_CAL_POWER_CC / 1000 / 1000;
@@ -238,8 +366,8 @@ void ReadActivePowerRegs(ActivePowerRegs *Data, SPI_CSS_Pin css_pin) {
     }
 }
 
-void ReadReactivePowerRegs(ReactivePowerRegs *Data1, ApparentPowerRegs *Data2, PowerFactorRegs *Data3, SPI_CSS_Pin css_pin) {
-
+void ReadReactivePowerRegs(ReactivePowerRegs *Data1, ApparentPowerRegs *Data2, PowerFactorRegs *Data3, SPI_CSS_Pin css_pin)
+{
     Data1->ReactivePowerReg_A = int32_t(SPI_Read(ADDR_AVAR, true, css_pin));
     Data1->ReactivePowerReg_B = int32_t(SPI_Read(ADDR_BVAR, true, css_pin));
     Data1->ReactivePowerReg_C = int32_t(SPI_Read(ADDR_CVAR, true, css_pin));
@@ -259,6 +387,102 @@ void ReadReactivePowerRegs(ReactivePowerRegs *Data1, ApparentPowerRegs *Data2, P
     printf("Reactive Power Values: A: %f, B: %f, C: %f\n", Data1->ReactivePowerValue_A, Data1->ReactivePowerValue_B, Data1->ReactivePowerValue_C);
 }
 
+void ReadApparentPowerRegs(ApparentPowerRegs *Data, SPI_CSS_Pin css_pin) {
+    uint32_t rawValue;
+    Data->ApparentPowerReg_A = int32_t(SPI_Read(ADDR_AVA, true, css_pin));
+    Data->ApparentPowerReg_B = int32_t(SPI_Read(ADDR_BVA, true, css_pin));
+    Data->ApparentPowerReg_C = int32_t(SPI_Read(ADDR_CVA, true, css_pin));
+    if(css_pin)
+    {
+        Data->ApparentPowerValue_A = (float) Data->ApparentPowerReg_A * IC_CAL_POWER_CC / 1000 / 1000;
+        Data->ApparentPowerValue_B = (float) Data->ApparentPowerReg_B * IC_CAL_POWER_CC / 1000 / 1000;
+        Data->ApparentPowerValue_C = (float) Data->ApparentPowerReg_C * IC_CAL_POWER_CC / 1000 / 1000;
+    }
+    else
+    {
+        Data->ApparentPowerValue_A = (float) Data->ApparentPowerReg_A * OG_CAL_POWER_CC / 1000 / 1000;
+        Data->ApparentPowerValue_B = (float) Data->ApparentPowerReg_B * OG_CAL_POWER_CC / 1000 / 1000;
+        Data->ApparentPowerValue_C = (float) Data->ApparentPowerReg_C * OG_CAL_POWER_CC / 1000 / 1000;
+    }
+    
+    if(DEBUG){
+        printf("Reading Apparent Power Registers...\n");
+        printf("ApparentPowerReg_A: 0x%X, ", Data->ApparentPowerReg_A);
+        printf("ApparentPowerReg_B: 0x%X, ", Data->ApparentPowerReg_B);
+        printf("ApparentPowerReg_C: 0x%X\n", Data->ApparentPowerReg_C);
+        printf("ApparentPowerValue_A: %.3f kVA, ApparentPowerValue_B: %.3f kVA, ApparentPowerValue_C: %.3f kVA\n",
+        Data->ApparentPowerValue_A, Data->ApparentPowerValue_B, Data->ApparentPowerValue_C);
+    }
+}
+
+void ReadPowerFactorRegsnValues(PowerFactorRegs *Data, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin) {
+    if(DEBUG){
+    printf("Reading Power Factor Registers and Values...\n");
+    }
+
+    uint32_t rawValue;
+    int32_t tempReg;
+
+    // // Read status registers
+    // uint32_t status0 = SPI_Read(ADDR_STATUS0, true, css_pin);
+    // uint32_t status1 = SPI_Read(ADDR_STATUS1, true, css_pin);
+
+    // // Define bit masks (based on ADE9000 datasheet)
+    // const uint32_t VOLTAGE_A_PRESENT = (1 << 0);  // Example bit positions
+    // const uint32_t CURRENT_A_PRESENT = (1 << 8);
+    // const uint32_t VOLTAGE_B_PRESENT = (1 << 1);
+    // const uint32_t CURRENT_B_PRESENT = (1 << 9);
+    // const uint32_t VOLTAGE_C_PRESENT = (1 << 2);
+    // const uint32_t CURRENT_C_PRESENT = (1 << 10);
+
+    if(rmsData->VoltageRMSValue_A > NOMINAL_INPUT_VOLTAGE && currentData->CurrentRMSValue_A > 0.1)
+    {
+        rawValue = SPI_Read(ADDR_APF, true, css_pin);
+        tempReg = *(int32_t *)&rawValue;
+        Data->PowerFactorReg_A = tempReg;
+        Data->PowerFactorValue_A = (float)tempReg / 134217728.0f;
+        if(DEBUG){
+            printf("PowerFactorReg_A: %u, PowerFactorValue_A: %.2f\n", tempReg, Data->PowerFactorValue_A);
+        }
+    }
+    else
+    {
+        Data->PowerFactorValue_A = 1.0f;
+    }
+    
+    if (rmsData->VoltageRMSValue_B > NOMINAL_INPUT_VOLTAGE && currentData->CurrentRMSValue_B > 0.1)
+    {
+        rawValue = SPI_Read(ADDR_BPF, true, css_pin);
+        tempReg = *(int32_t *)&rawValue;
+        Data->PowerFactorReg_B = tempReg;
+        Data->PowerFactorValue_B = (float)tempReg / 134217728.0f;
+        if(DEBUG){
+            printf("PowerFactorReg_B: %u, PowerFactorValue_B: %.2f\n", tempReg, Data->PowerFactorValue_B);
+        }
+    }
+    else
+    {
+        Data->PowerFactorValue_B = 1.0f;
+    }
+    
+    
+    if (rmsData->VoltageRMSValue_C > NOMINAL_INPUT_VOLTAGE && currentData->CurrentRMSValue_C > 0.1)
+    {
+        rawValue = SPI_Read(ADDR_CPF, true, css_pin);
+        tempReg = *(int32_t *)&rawValue;
+        Data->PowerFactorReg_C = tempReg;
+        Data->PowerFactorValue_C = (float)tempReg / 134217728.0f;
+        if(DEBUG){
+            printf("PowerFactorReg_C: %u, PowerFactorValue_C: %.2f\n", tempReg, Data->PowerFactorValue_C);
+        }
+    }
+    else
+    {
+        Data->PowerFactorValue_C = 1.0f;
+    }
+}
+
+/***************************ENERGY VALUES*****************************/
 void ReadEnergyRegs(EnergyRegs *Data1,ActivePowerRegs *Data2, SPI_CSS_Pin css_pin) {
     static uint8_t discardInitialReadingsCount = 0;
     const uint8_t INITIAL_READINGS_TO_DISCARD = 10;
@@ -347,113 +571,7 @@ void ReadEnergyRegs(EnergyRegs *Data1,ActivePowerRegs *Data2, SPI_CSS_Pin css_pi
     }
 }
 
-void ReadApparentPowerRegs(ApparentPowerRegs *Data, SPI_CSS_Pin css_pin) {
-    uint32_t rawValue;
-    Data->ApparentPowerReg_A = int32_t(SPI_Read(ADDR_AVA, true, css_pin));
-    Data->ApparentPowerReg_B = int32_t(SPI_Read(ADDR_BVA, true, css_pin));
-    Data->ApparentPowerReg_C = int32_t(SPI_Read(ADDR_CVA, true, css_pin));
-    if(css_pin == SPI_CSS1)
-    {
-        Data->ApparentPowerValue_A = (float) Data->ApparentPowerReg_A * IC_CAL_POWER_CC / 1000 / 1000;
-        Data->ApparentPowerValue_B = (float) Data->ApparentPowerReg_B * IC_CAL_POWER_CC / 1000 / 1000;
-        Data->ApparentPowerValue_C = (float) Data->ApparentPowerReg_C * IC_CAL_POWER_CC / 1000 / 1000;
-    }
-    else
-    {
-        Data->ApparentPowerValue_A = (float) Data->ApparentPowerReg_A * OG_CAL_POWER_CC / 1000 / 1000;
-        Data->ApparentPowerValue_B = (float) Data->ApparentPowerReg_B * OG_CAL_POWER_CC / 1000 / 1000;
-        Data->ApparentPowerValue_C = (float) Data->ApparentPowerReg_C * OG_CAL_POWER_CC / 1000 / 1000;
-    }
-    
-    if(DEBUG){
-        printf("Reading Apparent Power Registers...\n");
-        printf("ApparentPowerReg_A: 0x%X, ", Data->ApparentPowerReg_A);
-        printf("ApparentPowerReg_B: 0x%X, ", Data->ApparentPowerReg_B);
-        printf("ApparentPowerReg_C: 0x%X\n", Data->ApparentPowerReg_C);
-        printf("ApparentPowerValue_A: %.3f kVA, ApparentPowerValue_B: %.3f kVA, ApparentPowerValue_C: %.3f kVA\n",
-        Data->ApparentPowerValue_A, Data->ApparentPowerValue_B, Data->ApparentPowerValue_C);
-    }
-}
-
-void ReadVoltageRMSRegs(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin) {
-    uint32_t rawValue;
-    Data->VoltageRMSReg_A = int32_t(SPI_Read(ADDR_AVRMS, true, css_pin));
-    Data->VoltageRMSReg_B = int32_t(SPI_Read(ADDR_BVRMS, true, css_pin));
-    Data->VoltageRMSReg_C = int32_t(SPI_Read(ADDR_CVRMS, true, css_pin));
-    
-    if(css_pin == SPI_CSS1)
-    {
-        Data->VoltageRMSValue_A = (float) Data->VoltageRMSReg_A * IC_CAL_VRMS_CC / 1000000;
-        Data->VoltageRMSValue_B = (float) Data->VoltageRMSReg_B * IC_CAL_VRMS_CC / 1000000;
-        Data->VoltageRMSValue_C = (float) Data->VoltageRMSReg_C * IC_CAL_VRMS_CC / 1000000;
-    }
-    else
-    {
-        Data->VoltageRMSValue_A = (float) Data->VoltageRMSReg_A * OG_CAL_VRMS_CC / 1000000;
-        Data->VoltageRMSValue_B = (float) Data->VoltageRMSReg_B * OG_CAL_VRMS_CC / 1000000;
-        Data->VoltageRMSValue_C = (float) Data->VoltageRMSReg_C * OG_CAL_VRMS_CC / 1000000;
-    }
-    if(DEBUG){
-        printf("Reading Voltage RMS Registers...\n");
-        printf("VoltageRMSReg_A: %d\n", Data->VoltageRMSReg_A);
-        printf("VoltageRMSReg_B: %d\n", Data->VoltageRMSReg_B);
-        printf("VoltageRMSReg_C: %d\n", Data->VoltageRMSReg_C);
-        printf("VoltageRMSValue_A: %.6f V, VoltageRMSValue_B: %.6f V, VoltageRMSValue_C: %.6f V\n",
-        Data->VoltageRMSValue_A, Data->VoltageRMSValue_B, Data->VoltageRMSValue_C);
-    }
-}
-
-
-void ReadLineVoltages(VoltageRMSRegs *rmsData, LineVoltageRegs *lineData) {
- 
-    const float sqrt3 = sqrtf(3.0f);
-
-    lineData->VoltageRMS_A = rmsData->VoltageRMSValue_A;
-    lineData->VoltageRMS_B = rmsData->VoltageRMSValue_B;
-    lineData->VoltageRMS_C = rmsData->VoltageRMSValue_C;
-    
-    lineData->LineVoltage_AB = lineData->VoltageRMS_A * sqrt3;
-    lineData->LineVoltage_BC = lineData->VoltageRMS_B * sqrt3;
-    lineData->LineVoltage_CA = lineData->VoltageRMS_C * sqrt3;
-    
-    if(DEBUG){
-        printf("Calculating Line Voltages...\n");
-        printf("LineVoltage_AB: %.6f V, LineVoltage_BC: %.6f V, LineVoltage_CA: %.6f V\n",
-        lineData->LineVoltage_AB, lineData->LineVoltage_BC, lineData->LineVoltage_CA);
-    }    
-}
-
-
-void ReadCurrentRMSRegs(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin) {
-    uint32_t rawValue;
-    Data->CurrentRMSReg_A = int32_t(SPI_Read(ADDR_AIRMS, true, css_pin));
-    Data->CurrentRMSReg_B = int32_t(SPI_Read(ADDR_BIRMS, true, css_pin));
-    Data->CurrentRMSReg_C = int32_t(SPI_Read(ADDR_CIRMS, true, css_pin));
-    
-    if(css_pin == SPI_CSS1)
-    {
-        Data->CurrentRMSValue_A = (float) Data->CurrentRMSReg_A * IC_CAL_IRMS_CC / 1000000;
-        Data->CurrentRMSValue_B = (float) Data->CurrentRMSReg_B * IC_CAL_IRMS_CC / 1000000;
-        Data->CurrentRMSValue_C = (float) Data->CurrentRMSReg_C * IC_CAL_IRMS_CC / 1000000;
-    }
-    else
-    {
-        Data->CurrentRMSValue_A = (float) Data->CurrentRMSReg_A * OG_CAL_IRMS_CC / 1000000;
-        Data->CurrentRMSValue_B = (float) Data->CurrentRMSReg_B * OG_CAL_IRMS_CC / 1000000;
-        Data->CurrentRMSValue_C = (float) Data->CurrentRMSReg_C * OG_CAL_IRMS_CC / 1000000;
-    }
-    
-    if(DEBUG){
-        printf("Reading Current RMS Registers...\n");
-        printf("CurrentRMSReg_A: %d\n", Data->CurrentRMSReg_A);
-        printf("CurrentRMSReg_B: %d\n", Data->CurrentRMSReg_B); 
-        printf("CurrentRMSReg_C: %d\n", Data->CurrentRMSReg_C); 
-        printf("CurrentRMSValue_A: %.6f A, CurrentRMSValue_B: %.6f A, CurrentRMSValue_C: %.6f A\n",
-           Data->CurrentRMSValue_A, Data->CurrentRMSValue_B, Data->CurrentRMSValue_C);
-    }
-}
-
-
+/***************************THRESHOLD VALUES*****************************/
 void ReadVoltageTHDRegsnValues(VoltageTHDRegs *Data, SPI_CSS_Pin css_pin) {
     if(DEBUG){
     printf("Reading Voltage THD Registers and Values...\n");
@@ -485,7 +603,6 @@ void ReadVoltageTHDRegsnValues(VoltageTHDRegs *Data, SPI_CSS_Pin css_pin) {
         printf("VoltageTHDReg_C: %u, VoltageTHDValue_C: %.2f%%\n", tempReg, Data->VoltageTHDValue_C);
     }
 }
-
 
 void ReadCurrentTHDRegsnValues(CurrentTHDRegs *Data, SPI_CSS_Pin css_pin) {
     if(DEBUG){
@@ -519,70 +636,6 @@ void ReadCurrentTHDRegsnValues(CurrentTHDRegs *Data, SPI_CSS_Pin css_pin) {
         printf("CurrentTHDReg_C: %u, CurrentTHDValue_C: %.2f%%\n", tempReg, Data->CurrentTHDValue_C);
     }
 }
-
-
-void ReadPowerFactorRegsnValues(PowerFactorRegs *Data, SPI_CSS_Pin css_pin) {
-    if(DEBUG){
-    printf("Reading Power Factor Registers and Values...\n");
-    }
-
-    uint32_t rawValue;
-    int32_t tempReg;
-
-    rawValue = SPI_Read(ADDR_APF, true, css_pin);
-    tempReg = *(int32_t *)&rawValue;
-    Data->PowerFactorReg_A = tempReg;
-    Data->PowerFactorValue_A = (float)tempReg / 134217728.0f;
-    if(DEBUG){
-        printf("PowerFactorReg_A: %u, PowerFactorValue_A: %.2f\n", tempReg, Data->PowerFactorValue_A);
-    }
-
-    rawValue = SPI_Read(ADDR_BPF, true, css_pin);
-    tempReg = *(int32_t *)&rawValue;
-    Data->PowerFactorReg_B = tempReg;
-    Data->PowerFactorValue_B = (float)tempReg / 134217728.0f;
-    if(DEBUG){
-        printf("PowerFactorReg_B: %u, PowerFactorValue_B: %.2f\n", tempReg, Data->PowerFactorValue_B);
-    }
-
-    rawValue = SPI_Read(ADDR_CPF, true, css_pin);
-    tempReg = *(int32_t *)&rawValue;
-    Data->PowerFactorReg_C = tempReg;
-    Data->PowerFactorValue_C = (float)tempReg / 134217728.0f;
-    if(DEBUG){
-        printf("PowerFactorReg_C: %u, PowerFactorValue_C: %.2f\n", tempReg, Data->PowerFactorValue_C);
-    }
-}
-
-
-void ReadPeriodRegsnValues(PeriodRegs *Data, SPI_CSS_Pin css_pin) {
-    if(DEBUG){
-        printf("Reading Period Registers and Calculating Frequencies...\n");
-    }
-    uint32_t tempReg;
-
-    tempReg = SPI_Read(ADDR_APERIOD, true, css_pin);
-    Data->PeriodReg_A = tempReg;
-    Data->FrequencyValue_A = (float)(8000 * 65536) / (tempReg + 1);
-    if(DEBUG){
-        printf("PeriodReg_A: %u, FrequencyValue_A: %.2f Hz\n", tempReg, Data->FrequencyValue_A);
-    }
-
-    tempReg = SPI_Read(ADDR_BPERIOD, true, css_pin);
-    Data->PeriodReg_B = tempReg;
-    Data->FrequencyValue_B = (float)(8000 * 65536) / (tempReg + 1);
-    if(DEBUG){
-        printf("PeriodReg_B: %u, FrequencyValue_B: %.2f Hz\n", tempReg, Data->FrequencyValue_B);
-    }
-
-    tempReg = SPI_Read(ADDR_CPERIOD, true, css_pin);
-    Data->PeriodReg_C = tempReg;
-    Data->FrequencyValue_C = (float)(8000 * 65536) / (tempReg + 1);
-    if(DEBUG){
-        printf("PeriodReg_C: %u, FrequencyValue_C: %.2f Hz\n", tempReg, Data->FrequencyValue_C);
-    }
-}
-
 
 void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin) {
     printf("Reading Angle Registers and Values...\n");
@@ -658,6 +711,7 @@ void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin) {
     printf("AngleValue_IA_IC: %u, AngleValue_IA_IC: %f\n", tempReg, tempValue);
 }
 
+/***************************TEMPERATURE VALUES*****************************/
 void ReadTempRegnValue(TemperatureRegs *Data, SPI_CSS_Pin css_pin) {
     uint32_t TEMP_CFG;
     uint32_t trim;
@@ -696,7 +750,3 @@ void getPGA_gain(SPI_CSS_Pin css_pin, uint8_t *currentGain, uint8_t *voltageGain
     temp = (pgaGainRegister >> 8) & 0x0003;
     *voltageGain = (temp == 0) ? 1 : (temp == 1) ? 2 : 4;
 }
-
-
-
-

@@ -1,9 +1,9 @@
 #ifndef ADE9000CALIBRATION_H
 #define ADE9000CALIBRATION_H
 
-#define NOMINAL_INPUT_VOLTAGE 240       //Nominal Calibrating RMS Voltage on all phases (Vrms)
+#define NOMINAL_INPUT_VOLTAGE 200       //Nominal Calibrating RMS Voltage on all phases (Vrms)
 #define NOMINAL_INPUT_CURRENT 5         //Nominal Calibrating RMS Current on all phases (Irms)
-#define INPUT_FREQUENCY 50              //Nominal Calibrating frequency. Used to calculate Omega for phase calibration.Ensure ACCMODE register is set to correct frequency
+#define INPUT_FREQUENCY 	  50              //Nominal Calibrating frequency. Used to calculate Omega for phase calibration.Ensure ACCMODE register is set to correct frequency
 #define CALIBRATION_ANGLE_DEGREES 60	//Calibration Angle in Degrees.Used for phase calibration
 /*Transfer function*/
 
@@ -19,11 +19,12 @@ It is the voltage at the ADC input pins per input current(A) (Volts/Amp)
 E.g: For a current output current transformer with Turns Ratio of 400:5. Burden resistor on board = .656*2=11.312 Ohm.
 Current transfer function= 1/2500*Total Burden = 5/400*11.312= 0.1414
 ****************************************************************************************************************/
-#define R_BURDEN (0.3535f * 2.0f)              //double the pcb value 
+#define R_BURDEN (0.3535f * 2.0f)             //double the pcb value 
 #define CT_PRI 400.0f                         //primary current
 #define CT_SEC 5.00f                          //secondary current
 //#define CURRENT_TRANSFER_FUNCTION ((R_BURDEN * CT_SEC) / CT_PRI)   //The RMS voltage at the ADC input pins per input RMS current (V/A).)
-#define CURRENT_TRANSFER_FUNCTION 0.00088375f
+// #define CURRENT_TRANSFER_FUNCTION 0.00088375f
+#define CURRENT_TRANSFER_FUNCTION 0.00707f
 /****************************************************************************************************************
 									Voltage Transfer Function
 *****************************************************************************************************************
@@ -88,6 +89,12 @@ e.g Channel A Vrms = (AVRMS(register)*CAL_VRMS_CC/10^6)
 #define IC_CAL_VRMS_CC		10.74705975f						
 #define IC_CAL_POWER_CC 	43.79830055f			
 #define IC_CAL_ENERGY_CC	12.45818327f
+
+//500:5 Incoming Channel One
+// #define IC_CAL_IRMS_CC		1.8977444f
+// #define IC_CAL_VRMS_CC		10.74705975f						
+// #define IC_CAL_POWER_CC 	43.79830055f			
+// #define IC_CAL_ENERGY_CC	12.45818327f
 
 
 //400:5 Outgoing Channel One unit2
