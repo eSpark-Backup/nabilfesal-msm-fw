@@ -139,7 +139,7 @@
     ]
 }
 ```
-## MQTT Info (Existing but needs to be changed)
+## MQTT Info (Existing but needs to be changed as per MQTTs)
 ### Method
 - Publish
 - Subscribe

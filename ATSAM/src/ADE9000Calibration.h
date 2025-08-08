@@ -1,7 +1,7 @@
 #ifndef ADE9000CALIBRATION_H
 #define ADE9000CALIBRATION_H
 
-#define NOMINAL_INPUT_VOLTAGE 200       //Nominal Calibrating RMS Voltage on all phases (Vrms)
+#define NOMINAL_INPUT_VOLTAGE 50       //Nominal Calibrating RMS Voltage on all phases (Vrms)
 #define NOMINAL_INPUT_CURRENT 5         //Nominal Calibrating RMS Current on all phases (Irms)
 #define INPUT_FREQUENCY 	  50              //Nominal Calibrating frequency. Used to calculate Omega for phase calibration.Ensure ACCMODE register is set to correct frequency
 #define CALIBRATION_ANGLE_DEGREES 60	//Calibration Angle in Degrees.Used for phase calibration
@@ -19,9 +19,11 @@ It is the voltage at the ADC input pins per input current(A) (Volts/Amp)
 E.g: For a current output current transformer with Turns Ratio of 400:5. Burden resistor on board = .656*2=11.312 Ohm.
 Current transfer function= 1/2500*Total Burden = 5/400*11.312= 0.1414
 ****************************************************************************************************************/
-#define R_BURDEN (0.3535f * 2.0f)             //double the pcb value 
-#define CT_PRI 400.0f                         //primary current
-#define CT_SEC 5.00f                          //secondary current
+// #define R_BURDEN (0.3535f * 2.0f)             //double the pcb value 
+#define R_BURDEN 			0.004
+#define FULL_SCALE_VOLTAGE	1000.0
+#define CT_PRI 400.0f      						 //primary current
+#define CT_SEC 5.00f       						 //secondary current
 //#define CURRENT_TRANSFER_FUNCTION ((R_BURDEN * CT_SEC) / CT_PRI)   //The RMS voltage at the ADC input pins per input RMS current (V/A).)
 // #define CURRENT_TRANSFER_FUNCTION 0.00088375f
 #define CURRENT_TRANSFER_FUNCTION 0.00707f
@@ -32,10 +34,10 @@ It is the voltage at the ADC input pins per input Voltage(V)(Volts/Volts)
 E.g. The defaul atteunation factor on board is 801. 
 Voltage transfer function = 1/801= 0.001248 ~=0.00125
 ****************************************************************************************************************/ 
-#define R_HIGH 800000.0f
+#define R_HIGH 801500.0f
 #define R_LOW 1000.0f
-//#define VOLTAGE_TRANSFER_FUNCTION  ((1.0f / (R_HIGH + R_LOW)) * R_LOW) //The RMS voltage at the ADC input pins per input RMS voltage (V/V) 
-#define VOLTAGE_TRANSFER_FUNCTION  0.001248439f
+#define VOLTAGE_TRANSFER_FUNCTION  ((1.0f / (R_HIGH + R_LOW)) * R_LOW) //The RMS voltage at the ADC input pins per input RMS voltage (V/V) 
+// #define VOLTAGE_TRANSFER_FUNCTION  0.001248439f
 /****************************************************************************************************************
 									Constants: Do not change 
 *****************************************************************************************************************/
@@ -69,10 +71,8 @@ e.g Channel A Vrms = (AVRMS(register)*CAL_VRMS_CC/10^6)
 #define CAL_POWER_CC 	4.73755					// (mW/code) Applicable for Active, reactive and apparent power
 #define CAL_ENERGY_CC	1.34757					// (uWhr/xTHR_HI code)Applicable for Active, reactive and apparent energy
 */
-
-
-//#define CAL_IRMS_CC		(1000000.0 / (CURRENT_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES * SQRT_2))				
-//#define CAL_VRMS_CC		(1000000.0 / (VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES * SQRT_2))						
+//#define CAL_IRMS_CC	(1000000.0 / (CURRENT_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES * SQRT_2))				
+//#define CAL_VRMS_CC	(1000000.0 / (VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES * SQRT_2))						
 /*
 #define CAL_POWER_CC 	(1000.0 / (VOLTAGE_TRANSFER_FUNCTION * CURRENT_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES * 2.0f))			
 #define CAL_ENERGY_CC	(1000000.0 / (VOLTAGE_TRANSFER_FUNCTION * CURRENT_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES * 2.0f * 8000.0f * 3600.0f *0.0001220703125f))	
@@ -81,13 +81,14 @@ e.g Channel A Vrms = (AVRMS(register)*CAL_VRMS_CC/10^6)
 //400:5 Outgoing Channel One
 //#define OG_CAL_IRMS_CC		15.18195573f
 //#define OG_CAL_VRMS_CC		10.74705975f						
-//#define OG_CAL_POWER_CC 	21.89915027f			
-//#define OG_CAL_ENERGY_CC	6.229091633f
+//#define OG_CAL_POWER_CC 		21.89915027f			
+//#define OG_CAL_ENERGY_CC		6.229091633f
 
 //800:5 Incoming Channel One
 #define IC_CAL_IRMS_CC		30.36391145f
-#define IC_CAL_VRMS_CC		10.74705975f						
-#define IC_CAL_POWER_CC 	43.79830055f			
+// #define IC_CAL_VRMS_CC		10.74705975f	
+#define IC_CAL_VRMS_CC ((VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES * SQRT_2)) //V
+// #define IC_CAL_POWER_CC 	43.79830055f			
 #define IC_CAL_ENERGY_CC	12.45818327f
 
 //500:5 Incoming Channel One
@@ -102,5 +103,4 @@ e.g Channel A Vrms = (AVRMS(register)*CAL_VRMS_CC/10^6)
 #define OG_CAL_VRMS_CC		10.74705975f						
 #define OG_CAL_POWER_CC 	55.29535444f			
 #define OG_CAL_ENERGY_CC	15.72845637f
-
 #endif

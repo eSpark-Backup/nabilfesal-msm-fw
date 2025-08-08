@@ -77,6 +77,13 @@ typedef enum {
 } SPI_CSS_Pin;
 
 typedef struct {
+    float cal_irms_cc;
+    float cal_vrms_cc;
+    float cal_power_cc;
+    float cal_energy_cc;
+} Calibration_regs;
+
+typedef struct {
     int32_t ActivePowerReg_A;
     int32_t ActivePowerReg_B;
     int32_t ActivePowerReg_C;
@@ -249,6 +256,8 @@ uint32_t SPI_Read(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin);
 bool IsADE9000(SPI_CSS_Pin css_pin);
 void ADE9000_Initialize(SPI_CSS_Pin css_pin);
 
+void ct_ratio_calibration(uint16_t ratio);
+
 void ReadVoltageRMSRegs(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin);
 void ReadLineVoltages(VoltageRMSRegs *rmsData, LineVoltageRegs *lineData);
 void ReadCurrentRMSRegs(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin);
@@ -268,8 +277,6 @@ void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin);
 void ReadTempRegnValue(TemperatureRegs *Data, SPI_CSS_Pin css_pin);
 
 void getPGA_gain(SPI_CSS_Pin css_pin, uint8_t *currentGain, uint8_t *voltageGain);
-
-
 #endif
 
 /* *************************************************************************** */

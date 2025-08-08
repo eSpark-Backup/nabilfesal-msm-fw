@@ -233,111 +233,24 @@ void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
     uint16_t baseIndex = (unitIndex - 1) * ARRAYSIZE_PER_UNIT;
     ADE9000_arrayBuffer[baseIndex] = 0xAA + (unitIndex - 1);
 
-    // Settle
     ReadVoltageRMSRegs(&unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
     ReadLineVoltages(&unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[cssPin - 1].lineVoltage);
     ReadCurrentRMSRegs(&unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     ReadPeriodRegsnValues(&unitMeasurements[unitIndex - 1].periodFrequency, &unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
+    
     ReadActivePowerRegs(&unitMeasurements[unitIndex - 1].activePower, cssPin);
     ReadReactivePowerRegs(&unitMeasurements[unitIndex - 1].reactivePower,&unitMeasurements[unitIndex - 1].apparentPower,&unitMeasurements[unitIndex - 1].powerFactor, cssPin);
     ReadApparentPowerRegs(&unitMeasurements[unitIndex - 1].apparentPower, cssPin);
     ReadPowerFactorRegsnValues(&unitMeasurements[unitIndex - 1].powerFactor, &unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
+    
     ReadEnergyRegs(&unitMeasurements[unitIndex - 1].activeEnergy,&unitMeasurements[unitIndex - 1].activePower, cssPin);
-    // if (unitMeasurements[unitIndex - 1].voltageRMS.VoltageRMSValue_A && unitMeasurements[unitIndex - 1].voltageRMS.VoltageRMSValue_B && unitMeasurements[unitIndex - 1].voltageRMS.VoltageRMSValue_C &&
-    //     unitMeasurements[unitIndex - 1].currentRMS.CurrentRMSValue_A && unitMeasurements[unitIndex - 1].currentRMS.CurrentRMSValue_B && unitMeasurements[unitIndex - 1].currentRMS.CurrentRMSValue_C)
-    // {
-    //     // ReadEnergyRegs(&unitMeasurements[unitIndex - 1].activeEnergy,&unitMeasurements[unitIndex - 1].activePower, cssPin);
-    // }
     
     ReadVoltageTHDRegsnValues(&unitMeasurements[unitIndex - 1].voltageTHD, cssPin);
     ReadCurrentTHDRegsnValues(&unitMeasurements[unitIndex - 1].currentTHD, cssPin);
-    ReadTempRegnValue(&unitMeasurements[unitIndex - 1].temperature, cssPin);
     ReadAngleRegsnValues(&unitMeasurements[unitIndex - 1].angleDegree, cssPin);
     
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].voltageRMS.VoltageRMSValue_A, ADE9000_arrayBuffer, baseIndex + RMS_Voltage_A);
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].voltageRMS.VoltageRMSValue_B, ADE9000_arrayBuffer, baseIndex + RMS_Voltage_B);
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].voltageRMS.VoltageRMSValue_C, ADE9000_arrayBuffer, baseIndex + RMS_Voltage_C);
-
-//     //Settle
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].lineVoltage.LineVoltage_AB, ADE9000_arrayBuffer, baseIndex + Line_Voltage_A);
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].lineVoltage.LineVoltage_BC, ADE9000_arrayBuffer, baseIndex + Line_Voltage_B);
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].lineVoltage.LineVoltage_CA, ADE9000_arrayBuffer, baseIndex + Line_Voltage_C);
+    ReadTempRegnValue(&unitMeasurements[unitIndex - 1].temperature, cssPin);
     
-//     //Settle
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].currentRMS.CurrentRMSValue_A, ADE9000_arrayBuffer, baseIndex + RMS_Current_A);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].currentRMS.CurrentRMSValue_B, ADE9000_arrayBuffer, baseIndex + RMS_Current_B);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].currentRMS.CurrentRMSValue_C, ADE9000_arrayBuffer, baseIndex + RMS_Current_C);
-
-//     //Settle
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].periodFrequency.FrequencyValue_A, ADE9000_arrayBuffer, baseIndex + Freq_A);
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].periodFrequency.FrequencyValue_B, ADE9000_arrayBuffer, baseIndex + Freq_B);
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].periodFrequency.FrequencyValue_C, ADE9000_arrayBuffer, baseIndex + Freq_C);
-
-//     //Settle
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activePower.ActivePowerValue_A, ADE9000_arrayBuffer, baseIndex + Active_Power_A);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activePower.ActivePowerValue_B, ADE9000_arrayBuffer, baseIndex + Active_Power_B);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activePower.ActivePowerValue_C, ADE9000_arrayBuffer, baseIndex + Active_Power_C);
-
-//     //Settle (Not yet Test)
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].reactivePower.ReactivePowerValue_A, ADE9000_arrayBuffer, baseIndex + Reactive_Power_A);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].reactivePower.ReactivePowerValue_B, ADE9000_arrayBuffer, baseIndex + Reactive_Power_B);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].reactivePower.ReactivePowerValue_C, ADE9000_arrayBuffer, baseIndex + Reactive_Power_C);
-    
-//     //Settle
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].apparentPower.ApparentPowerValue_A, ADE9000_arrayBuffer, baseIndex + Apparent_Power_A);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].apparentPower.ApparentPowerValue_B, ADE9000_arrayBuffer, baseIndex + Apparent_Power_B);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].apparentPower.ApparentPowerValue_C, ADE9000_arrayBuffer, baseIndex + Apparent_Power_C);
-    
-//     //Settle
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].powerFactor.PowerFactorValue_A, ADE9000_arrayBuffer, baseIndex + Power_Factor_A);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].powerFactor.PowerFactorValue_B, ADE9000_arrayBuffer, baseIndex + Power_Factor_B);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].powerFactor.PowerFactorValue_C, ADE9000_arrayBuffer, baseIndex + Power_Factor_C);
-
-//     //Settle (Not yet Test)
-//     // unitMeasurements[unitIndex - 1].activeEnergy.ACC_PActiveEnergyValue_kWh_A += unitMeasurements[unitIndex - 1].activeEnergy.PActiveEnergyValue_kWh_A;
-//     // unitMeasurements[unitIndex - 1].activeEnergy.ACC_PActiveEnergyValue_kWh_B += unitMeasurements[unitIndex - 1].activeEnergy.PActiveEnergyValue_kWh_B;
-//     // unitMeasurements[unitIndex - 1].activeEnergy.ACC_PActiveEnergyValue_kWh_C += unitMeasurements[unitIndex - 1].activeEnergy.PActiveEnergyValue_kWh_C;
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.ACC_PActiveEnergyValue_kWh_A, ADE9000_arrayBuffer, baseIndex + Pos_Active_Energy_A);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.ACC_PActiveEnergyValue_kWh_B, ADE9000_arrayBuffer, baseIndex + Pos_Active_Energy_B);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.ACC_PActiveEnergyValue_kWh_C, ADE9000_arrayBuffer, baseIndex + Pos_Active_Energy_C);
-
-//     //Settle (Not yet Test)
-//     // unitMeasurements[unitIndex - 1].activeEnergy.ACC_NActiveEnergyValue_kWh_A += unitMeasurements[unitIndex - 1].activeEnergy.NActiveEnergyValue_kWh_A;
-//     // unitMeasurements[unitIndex - 1].activeEnergy.ACC_NActiveEnergyValue_kWh_B += unitMeasurements[unitIndex - 1].activeEnergy.NActiveEnergyValue_kWh_B;
-//     // unitMeasurements[unitIndex - 1].activeEnergy.ACC_NActiveEnergyValue_kWh_C += unitMeasurements[unitIndex - 1].activeEnergy.NActiveEnergyValue_kWh_C;
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.ACC_NActiveEnergyValue_kWh_A, ADE9000_arrayBuffer, baseIndex + Neg_Active_Energy_A);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.ACC_NActiveEnergyValue_kWh_B, ADE9000_arrayBuffer, baseIndex + Neg_Active_Energy_B);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.ACC_NActiveEnergyValue_kWh_C, ADE9000_arrayBuffer, baseIndex + Neg_Active_Energy_C);
-
-//     /*
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.PActiveEnergyValue_kWh_A, ADE9000_arrayBuffer, baseIndex + Pos_Active_Energy_A);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.PActiveEnergyValue_kWh_B, ADE9000_arrayBuffer, baseIndex + Pos_Active_Energy_B);
-//     // storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.PActiveEnergyValue_kWh_C, ADE9000_arrayBuffer, baseIndex + Pos_Active_Energy_C);
-
-//     //Settle (Not yet Test)
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.NActiveEnergyValue_kWh_A, ADE9000_arrayBuffer, baseIndex + Neg_Active_Energy_A);
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.NActiveEnergyValue_kWh_B, ADE9000_arrayBuffer, baseIndex + Neg_Active_Energy_B);
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].activeEnergy.NActiveEnergyValue_kWh_C, ADE9000_arrayBuffer, baseIndex + Neg_Active_Energy_C);
-//     */
-   
-//     //Settle
-//    storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].voltageTHD.VoltageTHDValue_A, ADE9000_arrayBuffer, baseIndex + Voltage_THD_A);
-//    storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].voltageTHD.VoltageTHDValue_B, ADE9000_arrayBuffer, baseIndex + Voltage_THD_B);
-//    storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].voltageTHD.VoltageTHDValue_C, ADE9000_arrayBuffer, baseIndex + Voltage_THD_C);
-
-//    //Settle (Verifying Value)
-//    storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].currentTHD.CurrentTHDValue_A, ADE9000_arrayBuffer, baseIndex + Current_THD_A);
-//    storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].currentTHD.CurrentTHDValue_B, ADE9000_arrayBuffer, baseIndex + Current_THD_B);
-//    storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].currentTHD.CurrentTHDValue_C, ADE9000_arrayBuffer, baseIndex + Current_THD_C);
-
-//    // Settle
-//     storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].temperature.Temperature, ADE9000_arrayBuffer, baseIndex + Temperature);
-
-    // Settle (Unused Data)
-    //  storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].angleDegree.AngleValue_VA_IA, ADE9000_arrayBuffer, baseIndex + Angle_A);
-    //  storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].angleDegree.AngleValue_VB_IB, ADE9000_arrayBuffer, baseIndex + Angle_B);
-    //  storeIEEE754InBuffer(unitMeasurements[unitIndex - 1].angleDegree.AngleValue_VC_IC, ADE9000_arrayBuffer, baseIndex + Angle_C);
-
     uint16_t crcIndex = ((unitIndex - 1) * ARRAYSIZE_PER_UNIT) + ARRAYSIZE_PER_UNIT - 1;
     uint8_t crc = calculateCRC8(&ADE9000_arrayBuffer[(unitIndex - 1) * ARRAYSIZE_PER_UNIT], ARRAYSIZE_PER_UNIT - 1);
     ADE9000_arrayBuffer[crcIndex] = crc;
@@ -487,7 +400,7 @@ void ADE9000SetupForUnit(SPI_CSS_Pin cssPin)
         // printf("ADE9000 Setup Successful\n");
         ADE9000_status[cssPin - 1] = 1;
         ADE9000_hotplug[cssPin - 1] = 1;
-        ADE9000_Initialize(cssPin);
+        ADE9000_Initialize(cssPin); 
     }
     else
     {
@@ -636,8 +549,10 @@ void ProcessCommand(void)
 
     if (strcmp(rxBuffer, "channel") == 0)
     {
-        ConvertDataToHexAndSend(ADE9000_arrayBuffer, TOTAL_ARRAYSIZE);
-        resetEnergyValues();
+        for (size_t i = 1; i <= 12; i++)
+        {
+            sendChannelJsonData(i);
+        }
     }
     else if (strcmp(rxBuffer, "channel-1") == 0)
     {
@@ -691,9 +606,10 @@ void ProcessCommand(void)
     {
         ConvertStatusToHexAndSend();
     }
-    else if (strcmp(rxBuffer, "cal-1") == 0)
+    else if (strcmp(rxBuffer, "ct-ratio") == 0)
     {
         strcpy(txBuffer, "Calibration 1: Step 1 settings");
+        ct_ratio_calibration(100);
     }
     else if (strcmp(rxBuffer, "cal-2") == 0)
     {
