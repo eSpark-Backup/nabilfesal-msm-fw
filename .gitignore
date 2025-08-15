@@ -10,4 +10,5 @@ build/
 debug/
 .generated_files/
 queuelogs/
+flow_2_factory.mp4
 MSM/Environment_setup/Toolchain/gcc-linaro-7.3.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz
