@@ -2108,7 +2108,7 @@ border-image: url(:/icons/V.png);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2326,7 +2326,7 @@ image: url(:/icons/V.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2544,7 +2544,7 @@ image: url(:/icons/V.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2769,7 +2769,7 @@ image: url(:/icons/V.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2987,7 +2987,7 @@ image: url(:/icons/V.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3205,7 +3205,7 @@ image: url(:/icons/V.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3430,7 +3430,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3648,7 +3648,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3866,7 +3866,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -4097,7 +4097,7 @@ image: url(:/icons/V.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -4315,7 +4315,7 @@ image: url(:/icons/V.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -4542,7 +4542,7 @@ image: url(:/icons/V.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -4796,7 +4796,7 @@ border-image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -4981,7 +4981,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -5169,7 +5169,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -5358,7 +5358,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -5540,7 +5540,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -5722,7 +5722,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -5911,7 +5911,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -6093,7 +6093,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -6275,7 +6275,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -6470,7 +6470,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>90.9</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -6652,7 +6652,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>90.9</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -6837,7 +6837,7 @@ image: url(:/icons/P.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>90.9</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -7076,7 +7076,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -7270,7 +7270,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -7464,7 +7464,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -7665,7 +7665,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -7859,7 +7859,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -8053,7 +8053,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -8254,7 +8254,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -8448,7 +8448,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -8642,7 +8642,7 @@ image: url(:/icons/I.jpg);</string>
 border-color: rgb(255, 255, 255);</string>
                     </property>
                     <property name="text">
-                     <string>250.38</string>
+                     <string>0.0</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
