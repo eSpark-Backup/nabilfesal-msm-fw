@@ -22,6 +22,9 @@
     <height>480</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::NoFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Login</string>
   </property>
@@ -30,13 +33,13 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
    <property name="spacing">
-    <number>0</number>
+    <number>5</number>
    </property>
    <property name="leftMargin">
     <number>20</number>
    </property>
    <property name="topMargin">
-    <number>50</number>
+    <number>30</number>
    </property>
    <property name="rightMargin">
     <number>20</number>
@@ -57,6 +60,9 @@
        <width>800</width>
        <height>200</height>
       </size>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <property name="spacing">
@@ -97,8 +103,8 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>200</width>
-          <height>200</height>
+          <width>250</width>
+          <height>250</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -108,7 +114,7 @@
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">image: url(:/icons/logo.jpg);</string>
+         <string notr="true">image: url(:/icons/logo.png);</string>
         </property>
         <property name="text">
          <string/>
@@ -185,8 +191,18 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="font">
+         <font>
+          <family>Gilroy</family>
+          <pointsize>-1</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::ClickFocus</enum>
+        </property>
         <property name="styleSheet">
-         <string notr="true">font-size: 20px; font-weight: bold; color: #0078D7;</string>
+         <string notr="true">font-size: 22px; font-weight: bold; color: #0078D7;</string>
         </property>
         <property name="text">
          <string>Password Authentication</string>
@@ -213,7 +229,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="horizontalFrame">
+    <widget class="QFrame" name="pass_frame">
      <property name="minimumSize">
       <size>
        <width>700</width>
@@ -265,15 +281,21 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>250</width>
-          <height>0</height>
+          <width>300</width>
+          <height>60</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>250</width>
-          <height>16777215</height>
+          <width>300</width>
+          <height>60</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Gilroy</family>
+          <pointsize>-1</pointsize>
+         </font>
         </property>
         <property name="focusPolicy">
          <enum>Qt::ClickFocus</enum>
@@ -289,6 +311,9 @@
         </property>
         <property name="placeholderText">
          <string>Login To Configuration Page</string>
+        </property>
+        <property name="clearButtonEnabled">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -367,15 +392,18 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>100</width>
+          <width>150</width>
           <height>50</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>100</width>
+          <width>150</width>
           <height>50</height>
          </size>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
         </property>
         <property name="styleSheet">
          <string notr="true">background-color: #0078D7; color: white; font-weight: bold; font-size: 14px; padding: 8px; border-radius: 10px;</string>

@@ -13,5 +13,9 @@
         <file>icons/active.png</file>
         <file>icons/V.png</file>
         <file>icons/deactivate.png</file>
+        <file>icons/hide.png</file>
+        <file>icons/logo.png</file>
+        <file>icons/hidden.png</file>
+        <file>icons/eye.png</file>
     </qresource>
 </RCC>

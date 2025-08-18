@@ -2,33 +2,17 @@
 #include "ui_channels.h"
 #include <QTimer>
 #include <QJsonDocument>
+#include <QThread>
+#include <QDebug>
 
 ChannelsHome::ChannelsHome(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ChannelsHome)
+    ,m_channel(1)
 {
     ui->setupUi(this);
-    handler = new SerialHandler;
-    handler->open("/dev/pts/2", 115200);
 
-    QList<QPushButton*> buttons = {
-        ui->ch_home_bt,
-        ui->ch_home_bt_2,
-        ui->ch_home_bt_3,
-        ui->ch_home_bt_4,
-        ui->ch_home_bt_5,
-        ui->ch_home_bt_6,
-        ui->ch_home_bt_7,
-        ui->ch_home_bt_8,
-        ui->ch_home_bt_9,
-        ui->ch_home_bt_10,
-        ui->ch_home_bt_11,
-        ui->ch_home_bt_12
-    };
-
-    for (QPushButton *btn : buttons) {
-        connect(btn, &QPushButton::clicked, this, &ChannelsHome::onAnyHomeButtonClicked);
-    }
+    connect(ui->ch_home_bt, &QPushButton::clicked, this, &ChannelsHome::onAnyHomeButtonClicked);
 
     for (int i = 1; i <= 12; ++i) {
         QString suffix = QString::number(i);
@@ -39,30 +23,48 @@ ChannelsHome::ChannelsHome(QWidget *parent)
                 handleChannelClick(i);
             });
         }
-
-        // Sub-buttons (gn, en, pw)
-        if (QPushButton* gnBtn = findChild<QPushButton*>("gn_bt_" + suffix)) {
-            connect(gnBtn, &QPushButton::clicked, this, [=]() {
-                handleSubButtonClick(i, "gn");
-            });
-        }
-
-        if (QPushButton* enBtn = findChild<QPushButton*>("en_bt_" + suffix)) {
-            connect(enBtn, &QPushButton::clicked, this, [=]() {
-                handleSubButtonClick(i, "en");
-            });
-        }
-
-        if (QPushButton* pwBtn = findChild<QPushButton*>("pw_bt_" + suffix)) {
-            connect(pwBtn, &QPushButton::clicked, this, [=]() {
-                handleSubButtonClick(i, "pw");
-            });
-        }
     }
 
-    QTimer *channelPollTimer = new QTimer(this);
-    connect(channelPollTimer, &QTimer::timeout, this, &ChannelsHome::pollAllChannels);
-    channelPollTimer->start(15000);
+    connect(ui->gn_bt_1, &QPushButton::clicked, this, [=]() {
+        handleSubButtonClick(1, "gn");
+    });
+
+
+    connect(ui->en_bt_1, &QPushButton::clicked, this, [=]() {
+        handleSubButtonClick(1, "en");
+    });
+
+
+
+    connect(ui->pw_bt_1, &QPushButton::clicked, this, [=]() {
+        handleSubButtonClick(1, "pw");
+    });
+
+    SerialWorker *worker = nullptr;
+    QThread *serialThread = new QThread(this);
+
+    connect(serialThread, &QThread::started, [=]() mutable {
+        worker = new SerialWorker("/dev/ttyS1", 115200);
+        worker->moveToThread(serialThread);
+
+        connect(this, &ChannelsHome::requestChannelPoll, worker, &SerialWorker::requestChannel);
+        connect(worker, &SerialWorker::channelDataReady, this, &ChannelsHome::handleChannelData);
+        connect(worker, &SerialWorker::channelError, this, &ChannelsHome::handleChannelError);
+    });
+
+    serialThread->start();
+
+    // Poll channels in order
+    QTimer *pollTimer = new QTimer(this);
+    connect(pollTimer, &QTimer::timeout, this, [this] {
+        static int ch = 1;
+        emit requestChannelPoll(ch);
+        ch = (ch % 12) + 1;
+    });
+    pollTimer->start(200);
+
+    // Cache label pointers once for speed
+    cacheChannelLabels();
 
     ui->stackedWidget->setCurrentIndex(0);
 }
@@ -74,8 +76,9 @@ ChannelsHome::~ChannelsHome()
 
 void ChannelsHome::handleChannelClick(int channelIndex)
 {
-    ui->stackedWidget->setCurrentIndex(channelIndex);
-    handleSubButtonClick(channelIndex, "gn");  // default to General tab
+    m_channel = channelIndex;
+    ui->stackedWidget->setCurrentIndex(1);
+    handleSubButtonClick(1, "gn");
 }
 
 void ChannelsHome::handleSubButtonClick(int channelIndex, const QString &buttonType)
@@ -111,101 +114,79 @@ void ChannelsHome::onAnyHomeButtonClicked()
     ui->stackedWidget->setCurrentIndex(0);
 }
 
-void ChannelsHome::pollAllChannels()
-{
+void ChannelsHome::pollAllChannels() {
     for (int i = 1; i <= 12; ++i) {
-        QString command = QString("channel-%1").arg(i);
-        QJsonObject data = handler->sendCommandAndWait(command);
-
-        if (!data.isEmpty()) {
-            updateChannelUI(i, data);
-        } else {
-            QString suffix = QString::number(i);
-            QPushButton* chBtn = findChild<QPushButton*>("channel_bt_" + suffix);
-            chBtn->setDisabled(true);
-        }
+        emit requestChannelPoll(i);
     }
 }
 
-void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json)
-{
-    bool status = json.value("status").toBool();
+void ChannelsHome::handleChannelData(int channel, const QJsonObject &json) {
+    updateChannelUI(channel, json);
+}
+
+void ChannelsHome::handleChannelError(int channel) {
     QString suffix = QString::number(channel);
     QPushButton* chBtn = findChild<QPushButton*>("channel_bt_" + suffix);
-    chBtn->setDisabled(!status);
+    // if (chBtn) chBtn->setDisabled(true);
+}
 
-    double temperature = json.value("temperature").toDouble();
+void ChannelsHome::cacheChannelLabels() {
+    QStringList prefixes = {"a_", "b_", "c_"};
+    QStringList fields = {"rms_v_", "line_v_", "rms_i_", "f_", "ap_", "acp_", "rp_", "pf_", "pe_", "ne_", "be_"};
 
-    QJsonObject data = json.value("data").toObject();
-
-    QStringList phases = {"phase_a", "phase_b", "phase_c"};
-    for (const QString &phase : phases) {
-        QJsonObject phaseObj = data.value(phase).toObject();
-
-        QJsonObject general = phaseObj.value("general").toObject();
-        double lineVoltage = general.value("line_voltage").toDouble();
-        double rmsVoltage = general.value("rms_voltage").toDouble();
-        double frequency = general.value("frequency").toDouble();
-        double current = general.value("current").toDouble();
-
-        QJsonObject power = phaseObj.value("power").toObject();
-        double factor = power.value("factor").toDouble();
-        double active = power.value("active").toDouble();
-        double reactive = power.value("reactive").toDouble();
-        double apparent = power.value("apparent").toDouble();
-
-        QJsonObject threshold = phaseObj.value("threshold").toObject();
-        double thCurrent = threshold.value("current").toDouble();
-        double thVoltage = threshold.value("voltage").toDouble();
-        double thAngle = threshold.value("angle").toDouble();
-
-        QJsonObject energy = phaseObj.value("energy").toObject();
-        QJsonObject activeEnergy = energy.value("active").toObject();
-        QJsonObject reactiveEnergy = energy.value("reactive").toObject();
-        double positiveEnergy = activeEnergy.value("positive").toDouble();
-        double negativeEnergy = activeEnergy.value("negative").toDouble();
-        double biEnergy = reactiveEnergy.value("positive").toDouble();
-
-        QString prefix;
-        if (phase == "phase_a") prefix = "a_";
-        else if (phase == "phase_b") prefix = "b_";
-        else if (phase == "phase_c") prefix = "c_";
-
-        QLabel* lbl = nullptr;
-
-        lbl = findChild<QLabel*>("rms_v_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(rmsVoltage, 'f', 2));
-
-        lbl = findChild<QLabel*>("line_v_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(lineVoltage, 'f', 2));
-
-        lbl = findChild<QLabel*>("rms_i_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(current, 'f', 2));
-
-        lbl = findChild<QLabel*>("f_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(frequency, 'f', 2));
-
-        lbl = findChild<QLabel*>("ap_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(apparent, 'f', 2));
-
-        lbl = findChild<QLabel*>("acp_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(active, 'f', 2));
-
-        lbl = findChild<QLabel*>("rp_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(reactive, 'f', 2));
-
-        lbl = findChild<QLabel*>("pf_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(factor, 'f', 2));
-
-        lbl = findChild<QLabel*>("pe_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(positiveEnergy, 'f', 2));
-
-        lbl = findChild<QLabel*>("ne_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(negativeEnergy, 'f', 2));
-
-        lbl = findChild<QLabel*>("be_" + prefix + suffix);
-        if (lbl) lbl->setText(QString::number(biEnergy, 'f', 2));
-
+    QMap<QString, QLabel*> map;
+    QString suffix = QString::number(1);
+    for (const QString &p : prefixes) {
+        for (const QString &f : fields) {
+            QString objName = f + p + suffix;
+            QLabel *lbl = findChild<QLabel*>(objName);
+            if (lbl) {
+                map[objName] = lbl;
+            }
+        }
     }
+    channelLabelMap[1] = map;
+}
 
+void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
+    QString suffix = QString::number(channel);
+    QPushButton* chBtn = findChild<QPushButton*>("channel_bt_" + suffix);
+    if (chBtn) chBtn->setDisabled(!json.value("status").toBool());
+
+    if (channel == m_channel)
+    {
+        QString suffix = QString::number(1);
+        QJsonObject data = json.value("data").toObject();
+        for (const QString &phase : {"phase_a", "phase_b", "phase_c"}) {
+            QJsonObject phaseObj = data.value(phase).toObject();
+            QString prefix = (phase == "phase_a") ? "a_" :
+                                 (phase == "phase_b") ? "b_" : "c_";
+
+            QJsonObject general = phaseObj.value("general").toObject();
+            QJsonObject power = phaseObj.value("power").toObject();
+            QJsonObject energy = phaseObj.value("energy").toObject();
+
+            QJsonObject activeEnergy = energy.value("active").toObject();
+            QJsonObject reactiveEnergy = energy.value("reactive").toObject();
+
+            auto setValue = [&](const QString &key, double val) {
+                QString name = key + prefix + suffix;
+                if (channelLabelMap[1].contains(name)) {
+                    channelLabelMap[1][name]->setText(QString::number(val, 'f', 2));
+                }
+            };
+
+            setValue("rms_v_", general.value("rms_voltage").toDouble());
+            setValue("line_v_", general.value("line_voltage").toDouble());
+            setValue("rms_i_", general.value("current").toDouble());
+            setValue("f_", general.value("frequency").toDouble());
+            setValue("ap_", power.value("apparent").toDouble());
+            setValue("acp_", power.value("active").toDouble());
+            setValue("rp_", power.value("reactive").toDouble());
+            setValue("pf_", power.value("factor").toDouble());
+            setValue("pe_", activeEnergy.value("positive").toDouble());
+            setValue("ne_", activeEnergy.value("negative").toDouble());
+            setValue("be_", reactiveEnergy.value("positive").toDouble());
+        }
+    }
 }

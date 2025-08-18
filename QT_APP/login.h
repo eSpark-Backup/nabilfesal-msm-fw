@@ -2,6 +2,7 @@
 #define LOGINWIDGET_H
 
 #include <QWidget>
+#include "msmkeyboard.h"
 
 namespace Ui {
 class LoginWidget;
@@ -20,8 +21,12 @@ signals:
 private slots:
     void on_loginButton_clicked();
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     Ui::LoginWidget *ui;
+    MSMKeyboard *keyboard;
 };
 
 #endif // LOGINWIDGET_H

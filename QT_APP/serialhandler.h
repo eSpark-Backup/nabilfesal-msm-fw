@@ -5,18 +5,15 @@
 #include <QSerialPort>
 #include <QJsonObject>
 
-class SerialHandler : public QObject
-{
+class SerialHandler : public QObject {
     Q_OBJECT
-
 public:
     explicit SerialHandler(QObject *parent = nullptr);
-
     bool open(const QString &portName, qint32 baudRate);
-    QJsonObject sendCommandAndWait(const QString &command, int timeout = 3000);
+    void sendCommand(const QString &command, int channel);
 
 signals:
-    void jsonResponseReady(const QJsonObject &json);
+    void jsonResponseReady(int channel, QJsonObject);
 
 private slots:
     void handleReadyRead();
@@ -24,8 +21,7 @@ private slots:
 private:
     QSerialPort serial;
     QByteArray buffer;
-    QJsonObject receivedJson;
-    bool jsonReceived = false;
+    int currentChannel = -1;
 };
 
 #endif // SERIALHANDLER_H

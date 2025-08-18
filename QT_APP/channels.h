@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include "serialhandler.h"
+#include "serialworker.h"
+#include <QLabel>
 
 namespace Ui {
 class ChannelsHome;
@@ -16,6 +18,8 @@ public:
     explicit ChannelsHome(QWidget *parent = nullptr);
     ~ChannelsHome();
 
+signals:
+    void requestChannelPoll(int channel);
 private slots:
 
 private:
@@ -24,6 +28,9 @@ private:
     void onAnyHomeButtonClicked();
     void pollAllChannels();
     void updateChannelUI(int channel, const QJsonObject &data);
+    void cacheChannelLabels();
+    void handleChannelData(int channel, const QJsonObject &json);
+    void handleChannelError(int channel);
 
 private:
     Ui::ChannelsHome *ui;
@@ -38,6 +45,13 @@ private:
         "color: #0C89E2;"
         "border-radius: 15px;"
         "background-color: #D9D9D9;";
+
+    QMap<int, QMap<QString, QLabel*>> channelLabelMap;
+
+    QThread *serialThread;
+    SerialWorker *worker;
+    QTimer *pollTimer;
+    int m_channel;
 
 };
 

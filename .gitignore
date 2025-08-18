@@ -11,3 +11,4 @@ debug/
 .generated_files/
 queuelogs/
 MSM/Environment_setup/Toolchain/gcc-linaro-7.3.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz
+QT_APP/CMakeLists.txt.user*

@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include <QTimer>
-#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "login.h"
 #include "channels.h"
@@ -18,14 +17,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(timer, &QTimer::timeout, this, &MainWindow::updateProgress);
     timer->start(500);
     login = new LoginWidget;
-    channels = new ChannelsHome;
     QObject::connect(login, &LoginWidget::loginSuccess, [&]() {
+        channels = new ChannelsHome;
         channels->showFullScreen();
         login->deleteLater();
     });
     this->showFullScreen();
-
-
 }
 
 MainWindow::~MainWindow()

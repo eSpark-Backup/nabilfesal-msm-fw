@@ -2,11 +2,10 @@
 #include <QApplication>
 #include <QFontDatabase>
 #include <QInputMethod>
-#include <QByteArray>
+#include "buttonSound.h"
 
 int main(int argc, char *argv[])
 {
-    qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));
 
     QApplication a(argc, argv);
 
@@ -14,6 +13,9 @@ int main(int argc, char *argv[])
     QString family = QFontDatabase::applicationFontFamilies(fontId).at(0);
     QFont gilroy(family);
     QApplication::setFont(gilroy);
+
+    ButtonSound *sound = new ButtonSound(&a);
+    a.installEventFilter(sound);
 
     MainWindow w;
     w.show();
