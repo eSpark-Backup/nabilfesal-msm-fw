@@ -26,7 +26,9 @@ start() {
     echo $! > "$PIDFILE"
     echo "Service started with PID $(cat "$PIDFILE")"
     cd /etc/MSM_APPS
-    ./MSN_v1.0
+    export QT_FONT_DPI=96
+    export QT_QPA_FONTDIR=/usr/share/fonts/dejavu
+    ./MSM_run
 )&
 }
 

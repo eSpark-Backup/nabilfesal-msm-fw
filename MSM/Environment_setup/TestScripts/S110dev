@@ -1,0 +1,48 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          dev
+# Required-Start:    $network
+# Default-Start:     S
+# Short-Description: Start GSM modem and get IP address
+### END INIT INFO
+
+start() {
+(
+    echo "[INFO] Starting Wifi connection"
+    wpa_passphrase "StormFiber-E290" "D23Uh34e" > /etc/wpa_supplicant.conf
+    wpa_supplicant -B -iwlan0 -c /etc/wpa_supplicant.conf -Dwext
+
+    # Ensure root login is allowed in SSH config
+        SSH_CONF="/etc/ssh/sshd_config"
+        if grep -q "^#*PermitRootLogin" "$SSH_CONF"; then
+            sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' "$SSH_CONF"
+        else
+            echo "PermitRootLogin yes" >> "$SSH_CONF"
+        fi
+    dhclient wlan0
+)&
+}
+
+stop() {
+    echo "[INFO] Stop not implemented. You can add modem disable and disconnect logic here."
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0
