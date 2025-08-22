@@ -1,0 +1,9 @@
+{
+  "endpoint": "a3pqy28ttt7g1o-ats.iot.us-east-1.amazonaws.com",
+  "port": 8883,
+  "root_ca": "/etc/certs/AmazonRootCA1.pem",
+  "claim_cert": "/etc/certs/claim-certificate.pem.crt",
+  "claim_key": "/etc/certs/claim-private.pem.key",
+  "template": "kelectric_meter",
+  "serial": "1234567"
+}
