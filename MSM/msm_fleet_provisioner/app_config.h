@@ -13,7 +13,9 @@ typedef struct
     char claim_key[256];
     char template_name[64];
     char serial[64];
-    int serial_len
+    int serial_len;
+    char prov_cert_path[256];
+    char prov_key_path[256];
 }app_config_t;
 
 // Declare gConfig as extern so other files can use it

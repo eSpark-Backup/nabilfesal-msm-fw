@@ -8,12 +8,13 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define DOWNLOADED_CERT_WRITE_PATH "/home/esparkdev/Downloads/device-crts/downloadcert.pem"
-#define DOWNLOADED_PRIVATE_KEY_WRITE_PATH "/home/esparkdev/Downloads/device-crts/downloadpkey.pem"
+// #define DOWNLOADED_CERT_WRITE_PATH "/home/esparkdev/Downloads/device-crts/downloadcert.pem"
+// #define DOWNLOADED_PRIVATE_KEY_WRITE_PATH "/home/esparkdev/Downloads/device-crts/downloadpkey.pem"
+#include <fcntl.h>
 
-#if defined( DOWNLOADED_CERT_WRITE_PATH ) || defined( DOWNLOADED_PRIVATE_KEY_WRITE_PATH )
-    #include <fcntl.h>
-#endif
+// #if defined( DOWNLOADED_CERT_WRITE_PATH ) || defined( DOWNLOADED_PRIVATE_KEY_WRITE_PATH )
+//     #include <fcntl.h>
+// #endif
 
 /* Demo config. */
 #include "demo_config.h"
@@ -798,9 +799,10 @@ int main( int argc,
     {
         LogInfo( ( "Demo completed successfully." ) );
 
-        #if defined( DOWNLOADED_CERT_WRITE_PATH )
+        // #if defined( DOWNLOADED_CERT_WRITE_PATH )
+        if((strlen(gConfig.prov_cert_path) != 0))
             {
-                int fd = open( DOWNLOADED_CERT_WRITE_PATH, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR );
+                int fd = open( gConfig.prov_cert_path, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR );
 
                 if( -1 != fd )
                 {
@@ -808,27 +810,32 @@ int main( int argc,
 
                     if( writtenBytes == certificateLength )
                     {
-                        LogInfo( ( "Written %s successfully.", DOWNLOADED_CERT_WRITE_PATH ) );
+                        LogInfo( ( "Written %s successfully.", gConfig.prov_cert_path ) );
                     }
                     else
                     {
-                        LogError( ( "Could not write to %s. Error: %s.", DOWNLOADED_CERT_WRITE_PATH, strerror( errno ) ) );
+                        LogError( ( "Could not write to %s. Error: %s.", gConfig.prov_cert_path, strerror( errno ) ) );
                     }
 
                     close( fd );
                 }
                 else
                 {
-                    LogError( ( "Could not open %s. Error: %s.", DOWNLOADED_CERT_WRITE_PATH, strerror( errno ) ) );
+                    LogError( ( "Could not open %s. Error: %s.", gConfig.prov_cert_path, strerror( errno ) ) );
                 }
             }
-        #else /* if defined( DOWNLOADED_CERT_WRITE_PATH ) */
-            LogInfo( ( "NOTE: define DOWNLOADED_CERT_WRITE_PATH in order to have the certificate written to disk." ) );
-        #endif // DOWNLOADED_CERT_WRITE_PATH
-
-        #if defined( DOWNLOADED_PRIVATE_KEY_WRITE_PATH )
+        else 
             {
-                int fd = open( DOWNLOADED_PRIVATE_KEY_WRITE_PATH, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR );
+                LogError( ( "File Path for prov_cert_path not provided - %s", gConfig.prov_cert_path ) );
+            }
+        // #else /* if defined( DOWNLOADED_CERT_WRITE_PATH ) */
+        //     LogInfo( ( "NOTE: define DOWNLOADED_CERT_WRITE_PATH in order to have the certificate written to disk." ) );
+        // #endif // DOWNLOADED_CERT_WRITE_PATH
+
+        // #if defined( DOWNLOADED_PRIVATE_KEY_WRITE_PATH )
+        if((strlen(gConfig.prov_key_path) != 0))
+            {
+                int fd = open( gConfig.prov_key_path, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR );
 
                 if( -1 != fd )
                 {
@@ -836,23 +843,27 @@ int main( int argc,
 
                     if( writtenBytes == privatekeyLength )
                     {
-                        LogInfo( ( "Written %s successfully.", DOWNLOADED_PRIVATE_KEY_WRITE_PATH ) );
+                        LogInfo( ( "Written %s successfully.", gConfig.prov_key_path ) );
                     }
                     else
                     {
-                        LogError( ( "Could not write to %s. Error: %s.", DOWNLOADED_PRIVATE_KEY_WRITE_PATH, strerror( errno ) ) );
+                        LogError( ( "Could not write to %s. Error: %s.", gConfig.prov_key_path, strerror( errno ) ) );
                     }
 
                     close( fd );
                 }
                 else
                 {
-                    LogError( ( "Could not open %s. Error: %s.", DOWNLOADED_PRIVATE_KEY_WRITE_PATH, strerror( errno ) ) );
+                    LogError( ( "Could not open %s. Error: %s.", gConfig.prov_key_path, strerror( errno ) ) );
                 }
             }
-        #else /* if defined( DOWNLOADED_PRIVATE_KEY_WRITE_PATH ) */
-            LogInfo( ( "NOTE: define DOWNLOADED_PRIVATE_KEY_WRITE_PATH in order to have the private key written to disk." ) );
-        #endif // DOWNLOADED_PRIVATE_KEY_WRITE_PATH
+        else
+            {
+                LogError( ( "File Path for prov_key_path not provided - %s", gConfig.prov_key_path ) );
+            }
+        // #else /* if defined( DOWNLOADED_PRIVATE_KEY_WRITE_PATH ) */
+        //     LogInfo( ( "NOTE: define DOWNLOADED_PRIVATE_KEY_WRITE_PATH in order to have the private key written to disk." ) );
+        // #endif // DOWNLOADED_PRIVATE_KEY_WRITE_PATH
     }
 
     return ( status == true ) ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -950,6 +961,20 @@ bool loadConfig(const char *path)
 
     gConfig.serial_len = strlen(gConfig.serial);
 
+    result = JSON_SearchT(buffer, len, "prov_cert_path", strlen("prov_cert_path"), &value, &valueLen, NULL);
+    if (result == JSONSuccess)
+    {
+        strncpy(gConfig.prov_cert_path, value, valueLen);
+        gConfig.prov_cert_path[valueLen] = '\0';
+    }
+
+    result = JSON_SearchT(buffer, len, "prov_key_path", strlen("prov_key_path"), &value, &valueLen, NULL);
+    if (result == JSONSuccess)
+    {
+        strncpy(gConfig.prov_key_path, value, valueLen);
+        gConfig.prov_key_path[valueLen] = '\0';
+    }
+
     // ✅ Print the loaded config
     printf("=== Config Loaded ===\n");
     printf("Endpoint            : %s\n", gConfig.endpoint);
@@ -961,6 +986,8 @@ bool loadConfig(const char *path)
     printf("Template            : %s\n", gConfig.template_name);
     printf("Serial              : %s\n", gConfig.serial);
     printf("Serial Length       : %d\n", gConfig.serial_len);
+    printf("Prov Cert           : %s\n", gConfig.prov_cert_path);
+    printf("Prov Key            : %s\n", gConfig.prov_key_path);
     printf("=====================\n");
 
     return true;
