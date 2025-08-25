@@ -102,3 +102,78 @@ channel-N\n
   }
 }
 ```
+## CT Ratio
+### Transmitting
+```
+{
+  "command": "set-ct-ratio",
+  "ct_ratio": {
+    "channel-1": 200,
+    "channel-2": 200,
+    "channel-3": 200,
+    "channel-4": 70,
+    "channel-5": 200,
+    "channel-6": 80,
+    "channel-7": 200,
+    "channel-8": 200,
+    "channel-9": 500,
+    "channel-10": 200,
+    "channel-11": 200,
+    "channel-12": 300
+  }
+}
+```
+### Receiving
+```
+"CT Ratio updated successfully!"
+```
+## Current Offset
+### Transmitting
+```
+{
+  "command": "set-i-offset",
+  "i_offset": {
+    "channel-1": 200,
+    "channel-2": 200,
+    "channel-3": 200,
+    "channel-4": 70,
+    "channel-5": 200,
+    "channel-6": 80,
+    "channel-7": 200,
+    "channel-8": 200,
+    "channel-9": 500,
+    "channel-10": 200,
+    "channel-11": 200,
+    "channel-12": 300
+  }
+}
+```
+### Receiving
+```
+"Current Offset updated successfully!"
+```
+## Voltage Offset
+### Transmitting
+```
+{
+  "command": "set-v-offset",
+  "v_offset": {
+    "channel-1": 200,
+    "channel-2": 200,
+    "channel-3": 200,
+    "channel-4": 70,
+    "channel-5": 200,
+    "channel-6": 80,
+    "channel-7": 200,
+    "channel-8": 200,
+    "channel-9": 500,
+    "channel-10": 200,
+    "channel-11": 200,
+    "channel-12": 300
+  }
+}
+```
+### Receiving
+```
+"Voltage Offset updated successfully!"
+```
