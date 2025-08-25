@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "./login.h"
 #include "./channels.h"
+#include "devicesettings.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,6 +26,7 @@ private:
     Ui::MainWindow *ui;
     LoginWidget *login;
     ChannelsHome *channels;
+    DeviceSettings *settings;
     int progressValue;
 };
 #endif // MAINWINDOW_H

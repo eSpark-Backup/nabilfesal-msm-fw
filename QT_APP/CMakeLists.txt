@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # FIX: Use correct casing and combine components
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets SerialPort )
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets SerialPort Network)
 find_package(Qt5 REQUIRED COMPONENTS Core)
 
 qt5_add_resources(RESOURCES icons.qrc)
@@ -28,5 +28,5 @@ add_executable(MSM
 )
 
 # FIX: Correct target names
-target_link_libraries(MSM PRIVATE Qt5::Core Qt5::Widgets Qt5::SerialPort )
+target_link_libraries(MSM PRIVATE Qt5::Core Qt5::Widgets Qt5::SerialPort Qt5::Network)
 target_link_libraries(MSM PRIVATE Qt5::Core)

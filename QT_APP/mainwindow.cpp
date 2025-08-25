@@ -18,8 +18,13 @@ MainWindow::MainWindow(QWidget *parent)
     timer->start(500);
     login = new LoginWidget;
     QObject::connect(login, &LoginWidget::loginSuccess, [&]() {
-        channels = new ChannelsHome;
-        channels->showFullScreen();
+        settings = new DeviceSettings;
+        QObject::connect(settings, &DeviceSettings::channels_view, [&]() {
+            channels = new ChannelsHome;
+            channels->showFullScreen();
+            settings->deleteLater();
+        });
+        settings->showFullScreen();
         login->deleteLater();
     });
     this->showFullScreen();

@@ -1,0 +1,1755 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DeviceSettings</class>
+ <widget class="QWidget" name="DeviceSettings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>800</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(255, 255, 255);</string>
+  </property>
+  <widget class="QFrame" name="horizontalFrame">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>10</y>
+     <width>531</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="font">
+       <font>
+        <family>Gilroy</family>
+        <pointsize>25</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>DEVICE SETTINGS</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QPushButton" name="export_btn">
+   <property name="geometry">
+    <rect>
+     <x>670</x>
+     <y>60</y>
+     <width>111</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Gilroy</family>
+     <pointsize>-1</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+   </property>
+   <property name="text">
+    <string>Export</string>
+   </property>
+  </widget>
+  <widget class="QStackedWidget" name="stackedWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>110</y>
+     <width>781</width>
+     <height>371</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="page">
+    <widget class="QFrame" name="DeviceInfoFrame">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>10</y>
+       <width>331</width>
+       <height>301</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: white;                /* White background */
+    border: 1px solid #dcdcdc;        /* Light grey border */
+    border-radius: 6px;</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: #1E88E5;        /* Blue strip at the top */
+    color: white;                     /* White text */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 6px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="verticalFrame">
+        <property name="styleSheet">
+         <string notr="true">background: white;                /* White background */
+    border: 1px solid #ffffff;        /* Light grey border */
+    border-radius: 6px; </string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <property name="leftMargin">
+          <number>20</number>
+         </property>
+         <property name="topMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>20</number>
+         </property>
+         <property name="bottomMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-color: rgb(255, 255, 255);</string>
+           </property>
+           <property name="text">
+            <string>DEVICE INFO</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="horizontalFrame">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_8">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string>DEVICE UUID</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="uuid">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="horizontalFrame_2">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_10">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string>DEVICE IMEI</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="imei">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="horizontalFrame_3">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_12">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string>DEVICE IP</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="ip">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="horizontalFrame_4">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_14">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string>MQTT STATUS</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="mqtt">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="horizontalFrame_5">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_16">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string>SFTP STATUS</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="sftp">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="horizontalFrame_6">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_13">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_17">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string>NTP STATUS</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="ntp">
+              <property name="styleSheet">
+               <string notr="true">border-color: rgb(230, 230, 230);</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QFrame" name="DeviceInfoFrame_2">
+     <property name="geometry">
+      <rect>
+       <x>410</x>
+       <y>10</y>
+       <width>331</width>
+       <height>301</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: white;                /* White background */
+    border: 1px solid #dcdcdc;        /* Light grey border */
+    border-radius: 6px;</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: #1E88E5;        /* Blue strip at the top */
+    color: white;                     /* White text */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 6px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="verticalFrame_2">
+        <property name="styleSheet">
+         <string notr="true">background: white;                /* White background */
+    border: 1px solid #ffffff;        /* Light grey border */
+    border-radius: 6px; </string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <property name="spacing">
+          <number>20</number>
+         </property>
+         <property name="leftMargin">
+          <number>20</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>20</number>
+         </property>
+         <property name="bottomMargin">
+          <number>20</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-color: rgb(255, 255, 255);</string>
+           </property>
+           <property name="text">
+            <string>NETWORK TIME PROTOCOL</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="server1">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>server 1</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="server2">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>server 2</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="server3">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>server 3</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="horizontalFrame">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>35</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background: #ffffff;              /* Light grey box for info rows */
+    border: 1px solid #ffffff;        /* Blue thin border */
+</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <property name="spacing">
+             <number>6</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QFrame" name="horizontalFrame_8">
+              <property name="styleSheet">
+               <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #e6e6e6;        /* Blue thin border */
+    border-radius: 6px;
+    font-size: 13px;
+    color: black;</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_9">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_6">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Gilroy</family>
+                   <pointsize>-1</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Date</string>
+                 </property>
+                 <property name="indent">
+                  <number>0</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="date_input">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="horizontalFrame_9">
+              <property name="styleSheet">
+               <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #e6e6e6;        /* Blue thin border */
+    border-radius: 6px;
+    font-size: 13px;
+    color: black;</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_10">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_7">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Gilroy</family>
+                   <pointsize>-1</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Time</string>
+                 </property>
+                 <property name="indent">
+                  <number>0</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="time_input">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="horizontalFrame">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>35</height>
+         </size>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="ntp_load_btn">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>-1</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+           </property>
+           <property name="text">
+            <string>Load</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="ntp_save_btn">
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>-1</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+           </property>
+           <property name="text">
+            <string>Save</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QPushButton" name="continue_btn">
+     <property name="geometry">
+      <rect>
+       <x>660</x>
+       <y>320</y>
+       <width>111</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Gilroy</family>
+       <pointsize>-1</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+     </property>
+     <property name="text">
+      <string>Continue</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="page_2">
+    <widget class="QFrame" name="DeviceInfoFrame_3">
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>10</y>
+       <width>331</width>
+       <height>301</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: white;                /* White background */
+    border: 1px solid #dcdcdc;        /* Light grey border */
+    border-radius: 6px;</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_9">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: #1E88E5;        /* Blue strip at the top */
+    color: white;                     /* White text */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 6px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="verticalFrame_3">
+        <property name="styleSheet">
+         <string notr="true">background: white;                /* White background */
+    border: 1px solid #ffffff;        /* Light grey border */
+    border-radius: 6px; </string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <property name="leftMargin">
+          <number>20</number>
+         </property>
+         <property name="topMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>20</number>
+         </property>
+         <property name="bottomMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_11">
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-color: rgb(255, 255, 255);</string>
+           </property>
+           <property name="text">
+            <string>SFTP</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="sftp_ip">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>SERVER IP</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="sftp_port">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>SERVER PORT</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="sftp_username">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>USERNAME</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="sftp_pass">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>PASSWORD</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="sftp_int">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>DATA_INTERVAL</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="horizontalFrame_12">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>35</height>
+         </size>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_15">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="sftp_load_btn">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>-1</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+           </property>
+           <property name="text">
+            <string>Load</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="sftp_save_btn">
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>-1</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+           </property>
+           <property name="text">
+            <string>Save</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QFrame" name="DeviceInfoFrame_4">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>10</y>
+       <width>331</width>
+       <height>301</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: white;                /* White background */
+    border: 1px solid #dcdcdc;        /* Light grey border */
+    border-radius: 6px;</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_7">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_18">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: #1E88E5;        /* Blue strip at the top */
+    color: white;                     /* White text */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 6px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="verticalFrame_4">
+        <property name="styleSheet">
+         <string notr="true">background: white;                /* White background */
+    border: 1px solid #ffffff;        /* Light grey border */
+    border-radius: 6px; </string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <property name="leftMargin">
+          <number>20</number>
+         </property>
+         <property name="topMargin">
+          <number>10</number>
+         </property>
+         <property name="rightMargin">
+          <number>20</number>
+         </property>
+         <property name="bottomMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_19">
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">border-color: rgb(255, 255, 255);</string>
+           </property>
+           <property name="text">
+            <string>MQTT PROTOCOL</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mqtt_ip">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>BROKER_IP</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mqtt_user">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>BROKER_USER</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mqtt_pass">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>BROKER_PASS</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mqtt_topic">
+           <property name="styleSheet">
+            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+           </property>
+           <property name="inputMask">
+            <string/>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>MQTT TOPIC</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_17">
+           <item>
+            <widget class="QLineEdit" name="mqtt_port">
+             <property name="styleSheet">
+              <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+             </property>
+             <property name="inputMask">
+              <string/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="placeholderText">
+              <string>BROKER_PORT</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="mqtt_int">
+             <property name="styleSheet">
+              <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+             </property>
+             <property name="inputMask">
+              <string/>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="placeholderText">
+              <string>DATA_INTERVAL</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="horizontalFrame_13">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>35</height>
+         </size>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_16">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="mqtt_load_btn">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>-1</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+           </property>
+           <property name="text">
+            <string>Load</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="mqtt_save_btn">
+           <property name="font">
+            <font>
+             <family>Gilroy</family>
+             <pointsize>-1</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+           </property>
+           <property name="text">
+            <string>Save</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QPushButton" name="save_btn">
+     <property name="geometry">
+      <rect>
+       <x>660</x>
+       <y>320</y>
+       <width>111</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Gilroy</family>
+       <pointsize>-1</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+     </property>
+     <property name="text">
+      <string>Save</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="back_btn">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>320</y>
+       <width>111</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Gilroy</family>
+       <pointsize>-1</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+     </property>
+     <property name="text">
+      <string>Back</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="channels_btn">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>95</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/ch.jpg</normaloff>:/icons/ch.jpg</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>80</width>
+     <height>80</height>
+    </size>
+   </property>
+   <property name="flat">
+    <bool>true</bool>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
