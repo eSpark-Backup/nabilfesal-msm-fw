@@ -244,6 +244,12 @@ typedef struct {
     TemperatureRegs temperature;
 } ADE9000UnitMeasurements;
 
+typedef struct{
+    uint16_t ctRatio;
+    uint16_t setIOffset;
+    uint16_t setVOffset;
+} ChannelConfig;
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: System Functions

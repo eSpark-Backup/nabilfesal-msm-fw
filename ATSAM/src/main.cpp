@@ -62,6 +62,7 @@ enum MyEnum {
 };
 
 ADE9000UnitMeasurements unitMeasurements[TOTAL_ADE9000_UNITS];
+ChannelConfig channelConfig[TOTAL_ADE9000_UNITS];
 uint8_t ADE9000_hotplug[TOTAL_ADE9000_UNITS];
 uint8_t ADE9000_status[TOTAL_ADE9000_UNITS];
 uint8_t ADE9000_currentGain[TOTAL_ADE9000_UNITS];
@@ -476,6 +477,25 @@ void SendDataAsASCII(const uint8_t *data, size_t size, uint8_t index)
     }
 }
 
+void send_response_ct_ratio()
+{
+    char buffer_2[600]; // Buffer for sending response of command ct_ratio
+    for (int i = 0; i < 600; i++){
+        buffer_2[i] = '\0';
+    }
+    int count = snprintf(buffer_2, sizeof(buffer_2), 
+            "{"
+            "\"status\":true,"
+            "\"message\":\"Response\""
+            "}\n");
+    
+     if (count > 0 && count < sizeof(buffer_2)) {
+        SERCOM2_USART_Write((uint16_t *)buffer_2, count);
+    }
+//}
+//    SERCOM2_USART_Write((uint8_t *)buffer, count);
+}
+
 void ConvertDataToHexAndSend(const uint8_t *data, size_t size)
 {
     char *ptr = txBuffer;
@@ -542,12 +562,133 @@ void resetEnergyValues(void)
         unitMeasurements[i].activeEnergy.ACC_PActiveEnergyValue_kWh_C = 0;
     }
 }
+//{
+//  "command": "set-ct-ratio",
+//  "ct_ratio": {
+//    "channel-1": 200,
+//    "channel-2": 200,
+//    "channel-3": 200,
+//    "channel-4": 70,
+//    "channel-5": 200,
+//    "channel-6": 80,
+//    "channel-7": 200,
+//    "channel-8": 200,
+//    "channel-9": 500,
+//    "channel-10": 200,
+//    "channel-11": 200,
+//    "channel-12": 300
+//  }
+//}
+
+void extract_channel_values(const char* channel, uint16_t set_value){
+    char *ch;
+    if(strstr(rxBuffer, channel) != NULL){
+        ch = strstr(rxBuffer, channel);
+        ch = strchr(ch,':');
+        if(ch){
+            ch++;
+            while(*ch == ' ' || *ch == '\"') ch++;
+            char value[16];
+            int i = 0;
+            while(*ch && *ch != '\"' && *ch != ',' && *ch != ' '){
+                value[i++] = *ch++;
+            }
+            value[i] = '\0';
+            strcat(txBuffer, "\n");
+            strcat(txBuffer, channel);
+            strcat(txBuffer, " Value received: ");
+            strcat(txBuffer, value);
+            set_value = atoi(value); // atoi(ASCII TO Int) function is used to convert value from character to integer
+        }
+    }
+}
+
+void parse_ct_ratio_json(){
+    char *ch;
+    ch = strstr(rxBuffer, "ct-ratio");
+    if(ch != NULL){
+        strcpy(txBuffer,"");
+        char key[20];
+        for (int8_t j = 1; j < 13; j++){
+            sprintf(key, "channel-%d",j);
+            extract_channel_values(key,channelConfig[j].ctRatio);
+            ct_ratio_calibration(channelConfig[j].ctRatio);
+        }
+        strcat(txBuffer, "\nCT Ratio updated successfully!");
+    }
+}
+
+
+void parse_i_offset_json(){
+    char *ch;
+    ch = strstr(rxBuffer, "i_offset");
+    if(ch != NULL){
+        strcpy(txBuffer,"");
+        char key[20];
+        for (int8_t j = 1; j < 13; j++){
+            sprintf(key, "channel-%d",j);
+            extract_channel_values(key,channelConfig[j].setIOffset);
+            // use formula here for offset calibration
+        }
+        strcat(txBuffer, "\nCurrent Offset updated successfully!");
+    }
+}
+
+
+void parse_v_offset_json(){
+    char *ch;
+    ch = strstr(rxBuffer, "v_offset");
+    if(ch != NULL){
+        strcpy(txBuffer,"");
+        char key[20];
+        for (int8_t j = 1; j < 13; j++){
+            sprintf(key, "channel-%d",j);
+            extract_channel_values(key,channelConfig[j].setVOffset);
+            // use formula here for offset calibration
+        }
+        strcat(txBuffer, "\nVoltage Offset updated successfully!");
+    }
+}
+
 
 void ProcessCommand(void)
 {
     rxBuffer[rxSize] = '\0';
-
-    if (strcmp(rxBuffer, "channel") == 0)
+    char *ch;
+    
+    
+    if(rxBuffer[0] == '{' && rxBuffer[rxSize - 1] == '}'){ // check for JSON of calibration
+        ch = strstr(rxBuffer, "command");
+        if(ch != NULL){
+            ch = strchr(ch,':');
+            if(ch){
+                ch++;
+                while(*ch == ' ' || *ch == '\"') ch++;
+                char value[32];
+                int i = 0;
+                while(*ch && *ch != '\"'){
+                    value[i++] = *ch++;
+                }
+                value[i] = '\0';
+                if(strcmp(value,"set-ct-ratio") == 0){
+                    parse_ct_ratio_json();
+                }
+                else if(strcmp(value,"set-i-offset") == 0){
+                    parse_i_offset_json();
+                }
+                else if(strcmp(value,"set-v-offset") == 0){
+                    parse_v_offset_json();
+                }
+                else{
+                    strcpy(txBuffer, "None Of The Three Calibration Parameter Values Found In JSON!");
+                }
+            }
+        }
+        else{
+            strcpy(txBuffer, "JSON does not contain command key!");
+        }
+    }
+    else if (strcmp(rxBuffer, "channel") == 0)
     {
         for (size_t i = 1; i <= 12; i++)
         {
@@ -606,19 +747,24 @@ void ProcessCommand(void)
     {
         ConvertStatusToHexAndSend();
     }
-    else if (strcmp(rxBuffer, "ct-ratio") == 0)
-    {
-        strcpy(txBuffer, "Calibration 1: Step 1 settings");
-        ct_ratio_calibration(100);
-    }
-    else if (strcmp(rxBuffer, "cal-2") == 0)
-    {
-        strcpy(txBuffer, "Calibration 2: Step 2 settings");
-    }
-    else if (strcmp(rxBuffer, "cal-3") == 0)
-    {
-        strcpy(txBuffer, "Calibration 3: Step 3 settings");
-    }
+    /* These calibration have been received in first if condition */
+    
+//    else if (strcmp(rxBuffer, "ct-ratio") == 0)
+//    {
+////        strcpy(txBuffer, "Calibration 1: Step 1 settings");
+//        strcpy(txBuffer, "CT Ratio updated successfully!");
+//        
+////        ct_ratio_calibration(100);
+////        send_response_ct_ratio();
+//    }
+//    else if (strcmp(rxBuffer, "cal-2") == 0)
+//    {
+//        strcpy(txBuffer, "Calibration 2: Step 2 settings");
+//    }
+//    else if (strcmp(rxBuffer, "cal-3") == 0)
+//    {d
+//        strcpy(txBuffer, "Calibration 3: Step 3 settings");
+//    }
     else if (strcmp(rxBuffer, "cal-4") == 0)
     {
         strcpy(txBuffer, "Calibration 4: Step 4 settings");
