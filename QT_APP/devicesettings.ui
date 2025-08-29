@@ -22,88 +22,29 @@
     <height>480</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::NoFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <property name="styleSheet">
    <string notr="true">background-color: rgb(255, 255, 255);</string>
   </property>
-  <widget class="QFrame" name="horizontalFrame">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>10</y>
-     <width>531</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QLabel" name="label">
-      <property name="font">
-       <font>
-        <family>Gilroy</family>
-        <pointsize>25</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>DEVICE SETTINGS</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QPushButton" name="export_btn">
-   <property name="geometry">
-    <rect>
-     <x>670</x>
-     <y>60</y>
-     <width>111</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>Gilroy</family>
-     <pointsize>-1</pointsize>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QPushButton {
-    background-color: #1E88E5;   /* Blue */
-    color: white;               /* White text */
-    border: none;               /* No border line */
-    border-radius: 10px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-}</string>
-   </property>
-   <property name="text">
-    <string>Export</string>
-   </property>
-  </widget>
   <widget class="QStackedWidget" name="stackedWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>110</y>
+     <y>90</y>
      <width>781</width>
-     <height>371</height>
+     <height>381</height>
     </rect>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="page">
     <widget class="QFrame" name="DeviceInfoFrame">
@@ -607,6 +548,9 @@ QPushButton:pressed {
          </item>
          <item>
           <widget class="QLineEdit" name="server1">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -622,12 +566,15 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>server 1</string>
+            <string notr="true"/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="server2">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -643,12 +590,15 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>server 2</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="server3">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -661,7 +611,7 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>server 3</string>
+            <string/>
            </property>
           </widget>
          </item>
@@ -864,6 +814,9 @@ QPushButton:pressed {
              <pointsize>-1</pointsize>
             </font>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
     background-color: #1E88E5;   /* Blue */
@@ -908,6 +861,9 @@ QPushButton:pressed {
              <pointsize>-1</pointsize>
             </font>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
     background-color: #1E88E5;   /* Blue */
@@ -950,6 +906,9 @@ QPushButton:pressed {
        <family>Gilroy</family>
        <pointsize>-1</pointsize>
       </font>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
      </property>
      <property name="styleSheet">
       <string notr="true">QPushButton {
@@ -1080,6 +1039,9 @@ QPushButton:pressed {
          </item>
          <item>
           <widget class="QLineEdit" name="sftp_ip">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1095,12 +1057,15 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>SERVER IP</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="sftp_port">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1116,12 +1081,15 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>SERVER PORT</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="sftp_username">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1134,12 +1102,15 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>USERNAME</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="sftp_pass">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1152,12 +1123,15 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>PASSWORD</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="sftp_int">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1170,7 +1144,7 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>DATA_INTERVAL</string>
+            <string/>
            </property>
           </widget>
          </item>
@@ -1221,6 +1195,9 @@ QPushButton:pressed {
              <pointsize>-1</pointsize>
             </font>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
     background-color: #1E88E5;   /* Blue */
@@ -1264,6 +1241,9 @@ QPushButton:pressed {
              <family>Gilroy</family>
              <pointsize>-1</pointsize>
             </font>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
            </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
@@ -1398,6 +1378,12 @@ QPushButton:pressed {
          </item>
          <item>
           <widget class="QLineEdit" name="mqtt_ip">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1413,12 +1399,15 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>BROKER_IP</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="mqtt_user">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1434,12 +1423,15 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>BROKER_USER</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="mqtt_pass">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1455,12 +1447,15 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>BROKER_PASS</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLineEdit" name="mqtt_topic">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1476,7 +1471,7 @@ QPushButton:pressed {
             <string/>
            </property>
            <property name="placeholderText">
-            <string>MQTT TOPIC</string>
+            <string/>
            </property>
           </widget>
          </item>
@@ -1484,6 +1479,9 @@ QPushButton:pressed {
           <layout class="QHBoxLayout" name="horizontalLayout_17">
            <item>
             <widget class="QLineEdit" name="mqtt_port">
+             <property name="focusPolicy">
+              <enum>Qt::ClickFocus</enum>
+             </property>
              <property name="styleSheet">
               <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1499,12 +1497,15 @@ QPushButton:pressed {
               <string/>
              </property>
              <property name="placeholderText">
-              <string>BROKER_PORT</string>
+              <string/>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLineEdit" name="mqtt_int">
+             <property name="focusPolicy">
+              <enum>Qt::ClickFocus</enum>
+             </property>
              <property name="styleSheet">
               <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1520,7 +1521,7 @@ QPushButton:pressed {
               <string/>
              </property>
              <property name="placeholderText">
-              <string>DATA_INTERVAL</string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -1573,6 +1574,9 @@ QPushButton:pressed {
              <pointsize>-1</pointsize>
             </font>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
     background-color: #1E88E5;   /* Blue */
@@ -1617,6 +1621,9 @@ QPushButton:pressed {
              <pointsize>-1</pointsize>
             </font>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
     background-color: #1E88E5;   /* Blue */
@@ -1648,7 +1655,7 @@ QPushButton:pressed {
     <widget class="QPushButton" name="save_btn">
      <property name="geometry">
       <rect>
-       <x>660</x>
+       <x>650</x>
        <y>320</y>
        <width>111</width>
        <height>41</height>
@@ -1659,6 +1666,9 @@ QPushButton:pressed {
        <family>Gilroy</family>
        <pointsize>-1</pointsize>
       </font>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
      </property>
      <property name="styleSheet">
       <string notr="true">QPushButton {
@@ -1685,7 +1695,7 @@ QPushButton:pressed {
     <widget class="QPushButton" name="back_btn">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>320</y>
        <width>111</width>
        <height>41</height>
@@ -1696,6 +1706,9 @@ QPushButton:pressed {
        <family>Gilroy</family>
        <pointsize>-1</pointsize>
       </font>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
      </property>
      <property name="styleSheet">
       <string notr="true">QPushButton {
@@ -1721,31 +1734,123 @@ QPushButton:pressed {
     </widget>
    </widget>
   </widget>
-  <widget class="QPushButton" name="channels_btn">
+  <widget class="QFrame" name="horizontalFrame">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>20</x>
      <y>10</y>
-     <width>95</width>
-     <height>61</height>
+     <width>771</width>
+     <height>71</height>
     </rect>
    </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/ch.jpg</normaloff>:/icons/ch.jpg</iconset>
-   </property>
-   <property name="iconSize">
-    <size>
-     <width>80</width>
-     <height>80</height>
-    </size>
-   </property>
-   <property name="flat">
-    <bool>true</bool>
-   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="spacing">
+     <number>150</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QPushButton" name="channels_btn">
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="icons.qrc">
+        <normaloff>:/icons/ch.jpg</normaloff>:/icons/ch.jpg</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>80</width>
+        <height>80</height>
+       </size>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <family>Gilroy</family>
+        <pointsize>25</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>DEVICE SETTINGS</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="export_btn">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>100</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Gilroy</family>
+        <pointsize>-1</pointsize>
+       </font>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}</string>
+      </property>
+      <property name="text">
+       <string>Export</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources>

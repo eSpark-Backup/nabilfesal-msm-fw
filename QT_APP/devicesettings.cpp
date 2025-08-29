@@ -21,6 +21,123 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     auto ntpData = Utils::getNtpStatus();
     parseNtpJson(ntpData);
     ui->stackedWidget->setCurrentIndex(0);
+    QLabel* label = new QLabel("server 1", ui->server1);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(230, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("server 2", ui->server2);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(230, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("server 3", ui->server3);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();;
+    label->move(230, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTT_IP", ui->mqtt_ip);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(225, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTT_PASSWORD", ui->mqtt_pass);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(165, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTT_USER", ui->mqtt_user);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(200, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTT_TOPIC", ui->mqtt_topic);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(195, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("PORT", ui->mqtt_port);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(90, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("INTERVAL", ui->mqtt_int);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(70, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SFTP_IP", ui->sftp_ip);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(225, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SFTP_PORT", ui->sftp_port);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(210, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SFTP_USER", ui->sftp_username);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(210, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SFTP_PASSWORD", ui->sftp_pass);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(170, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SFTP_INTERVAL", ui->sftp_int);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(185, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    keyboard = new MSMKeyboard(this);
+    keyboard->move(20, 180);
+    keyboard->hide();
+
+    QList<QLineEdit*> edits = {
+        ui->server1, ui->server2, ui->server3,
+        ui->mqtt_ip, ui->mqtt_port, ui->mqtt_user,
+        ui->mqtt_pass, ui->mqtt_topic, ui->mqtt_int,
+        ui->sftp_ip, ui->sftp_port, ui->sftp_username,
+        ui->sftp_pass, ui->sftp_int
+    };
+
+    for (QLineEdit *edit : edits) {
+        edit->installEventFilter(this);
+
+        connect(edit, &QLineEdit::editingFinished, this, [this]() {
+            keyboard->hide();
+        });
+    }
 
 }
 
@@ -28,6 +145,26 @@ DeviceSettings::~DeviceSettings()
 {
     delete ui;
 }
+
+bool DeviceSettings::eventFilter(QObject *obj, QEvent *event)
+{
+    QLineEdit *lineEdit = qobject_cast<QLineEdit*>(obj);
+    if (lineEdit) {
+        if (event->type() == QEvent::FocusIn) {
+            keyboard->setTarget(lineEdit);
+            Utils::keySound();
+            keyboard->show();
+            lineEdit->setFocus();
+        }
+        else if (event->type() == QEvent::FocusOut) {
+            if (!keyboard->isAncestorOf(QApplication::focusWidget())) {
+                keyboard->hide();
+            }
+        }
+    }
+    return QWidget::eventFilter(obj, event);
+}
+
 
 void DeviceSettings::on_channels_btn_clicked()
 {

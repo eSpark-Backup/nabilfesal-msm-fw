@@ -2,6 +2,7 @@
 #define DEVICESETTINGS_H
 
 #include <QWidget>
+#include "msmkeyboard.h"
 
 namespace Ui {
 class DeviceSettings;
@@ -36,9 +37,13 @@ private slots:
 
     void on_sftp_save_btn_clicked();
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     void parseNtpJson(const QJsonObject& data);
     Ui::DeviceSettings *ui;
+    MSMKeyboard *keyboard;
 };
 
 #endif // DEVICESETTINGS_H

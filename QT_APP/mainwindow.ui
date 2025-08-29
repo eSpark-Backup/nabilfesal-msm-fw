@@ -141,7 +141,7 @@
            </size>
           </property>
           <property name="styleSheet">
-           <string notr="true">image: url(:/icons/logo.jpg);</string>
+           <string notr="true">image: url(:/icons/logo.png);</string>
           </property>
           <property name="text">
            <string/>

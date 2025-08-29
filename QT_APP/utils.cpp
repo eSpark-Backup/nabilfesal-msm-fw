@@ -7,77 +7,94 @@
 #include <QNetworkInterface>
 #include <QHostAddress>
 #include <QFile>
+#include <QTimer>
 
 namespace Utils {
 void keySound() {
-    QProcess::execute("sh", {"-c", "echo 0 > /sys/class/backlight/backlight/bl_power"});
-    QThread::usleep(50000); // 50ms
-    QProcess::execute("sh", {"-c", "echo 1 > /sys/class/backlight/backlight/bl_power"});
+    QProcess::startDetached("sh", {"-c", "echo 0 > /sys/class/backlight/backlight/bl_power"});
+
+    QTimer::singleShot(50, [] {
+        QProcess::startDetached("sh", {"-c", "echo 1 > /sys/class/backlight/backlight/bl_power"});
+    });
 }
 
 QJsonObject getNtpStatus()
 {
     QJsonObject result;
 
-    // 1. Get NTP status using timedatectl
-    QProcess process;
-    process.start("timedatectl", {"timesync-status"});
-    process.waitForFinished();
-    QString output = process.readAllStandardOutput();
-
-    bool synced = output.contains("synchronized: yes", Qt::CaseInsensitive) ||
-                  output.contains("System clock synchronized: yes", Qt::CaseInsensitive);
-
-    result["ntp_status"] = synced ? "synchronized" : "not synchronized";
-
-    // 2. Extract servers (if any)
-    QStringList servers;
-    for (const QString& line : output.split("\n")) {
-        if (line.contains("Server:", Qt::CaseInsensitive) ||
-            line.contains("Server address:", Qt::CaseInsensitive)) {
-            QString server = line.section(":", 1).trimmed();
-            if (!server.isEmpty())
-                servers << server;
-        }
-    }
-
-    // Limit to 3 servers
+    // 1. Parse /etc/ntp.conf for servers
     QJsonArray serverArray;
-    for (int i = 0; i < qMin(3, servers.size()); i++) {
-        serverArray.append(servers[i]);
+    QFile file("/etc/ntp.conf");
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+        while (!in.atEnd()) {
+            QString line = in.readLine().trimmed();
+            if (line.startsWith("server ")) {
+                QString server = line.section(" ", 1, 1).trimmed();
+                if (!server.isEmpty())
+                    serverArray.append(server);
+            }
+        }
+        file.close();
     }
     result["ntp_servers"] = serverArray;
 
-    // 3. Current system date and time (separate keys)
+    // 2. Current system date and time
     QDateTime now = QDateTime::currentDateTime();
     result["date"] = now.date().toString("yyyy-MM-dd");
     result["time"] = now.time().toString("hh:mm:ss");
+
+    // 3. Basic service status (optional)
+    QProcess process;
+    process.start("/etc/init.d/S48sntp", {"status"});
+    process.waitForFinished();
+    QString output = process.readAllStandardOutput();
+    result["ntp_status"] = output.contains("SUCCESS", Qt::CaseInsensitive)
+                               ? "running"
+                               : "stopped";
 
     return result;
 }
 
 bool setNtpServers(const QStringList &servers)
 {
-    if (servers.size() < 1)
+    if (servers.isEmpty())
         return false;
 
-    // 1. Prepare config text
-    QString config = "[Time]\n";
-    config += "NTP=" + servers.join(" ") + "\n";
-    config += "FallbackNTP=ntp.ubuntu.com\n";
+    // Read the existing config
+    QFile file("/etc/ntp.conf");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+    QStringList lines;
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        // Skip existing "server ..." lines
+        if (!line.trimmed().startsWith("server "))
+            lines << line;
+    }
+    file.close();
 
-    // 2. Write to /etc/systemd/timesyncd.conf
-    QFile file("/etc/systemd/timesyncd.conf");
+    // Insert new servers at the top
+    QStringList newServerLines;
+    for (const QString &server : servers) {
+        newServerLines << QString("server %1 iburst").arg(server);
+    }
+    lines.prepend(newServerLines.join("\n"));
+
+    // Write back to /etc/ntp.conf
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
         return false;
 
     QTextStream out(&file);
-    out << config;
+    for (const QString &line : lines)
+        out << line << "\n";
     file.close();
 
-    // 3. Restart systemd-timesyncd service
+    // Restart NTP service
     QProcess process;
-    process.start("systemctl", {"restart", "systemd-timesyncd"});
+    process.start("/etc/init.d/S48sntp", {"restart"});
     process.waitForFinished();
 
     return process.exitStatus() == QProcess::NormalExit;
