@@ -1,0 +1,8 @@
+{
+    "thingName": "MyTestThing",
+    "parameters": {
+      "serialNumber": "SN-001",
+      "deviceType": "esp32"
+    }
+  }
+  

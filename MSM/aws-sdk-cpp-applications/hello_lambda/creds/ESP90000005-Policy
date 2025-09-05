@@ -1,0 +1,24 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iot:Publish",
+        "iot:Receive",
+        "iot:PublishRetain"
+      ],
+      "Resource": "arn:aws:iot:eu-north-1:117371013245:topic/msm/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "iot:Subscribe",
+      "Resource": "arn:aws:iot:eu-north-1:117371013245:topicfilter/msm/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "iot:Connect",
+      "Resource": "arn:aws:iot:eu-north-1:117371013245:client/msm-backend*"
+    }
+  ]
+}

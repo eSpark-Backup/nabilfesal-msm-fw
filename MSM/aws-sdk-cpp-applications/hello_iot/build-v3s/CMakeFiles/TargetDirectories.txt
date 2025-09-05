@@ -1,0 +1,3 @@
+/home/esparkdev/hello_iot/build-v3s/CMakeFiles/edit_cache.dir
+/home/esparkdev/hello_iot/build-v3s/CMakeFiles/rebuild_cache.dir
+/home/esparkdev/hello_iot/build-v3s/CMakeFiles/hello_iot.dir
