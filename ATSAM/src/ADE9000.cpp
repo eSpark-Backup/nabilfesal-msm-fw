@@ -10,6 +10,9 @@ bool DEBUG = false;
 bool SECONDHEX = false;
 
 Calibration_regs calibration_data;
+VoltageRMSOSRegs voltage_RMS_OS;
+CurrentRMSOSRegs current_RMS_OS;
+
 
 // *****************************************************************************
 // *****************************************************************************
@@ -265,6 +268,38 @@ void ReadVoltageRMSRegs(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin)
         printf("VoltageRMSValue_A: %.6f V, VoltageRMSValue_B: %.6f V, VoltageRMSValue_C: %.6f V\n",
                Data->VoltageRMSValue_A, Data->VoltageRMSValue_B, Data->VoltageRMSValue_C);
     }
+    
+    
+}
+
+void ReadVoltageRMSOSRegs(VoltageRMSOSRegs* VRMS_OS, SPI_CSS_Pin css_pin)
+{
+    int32_t VoltageRMSOSReg_A = int32_t(SPI_Read(ADDR_AVRMSOS, true, css_pin));
+    int32_t VoltageRMSOSReg_B = int32_t(SPI_Read(ADDR_BVRMSOS, true, css_pin));
+    int32_t VoltageRMSOSReg_C = int32_t(SPI_Read(ADDR_CVRMSOS, true, css_pin));
+
+    if (css_pin)
+    {
+         VRMS_OS->VoltageRMSOSValue_A = (float)VoltageRMSOSReg_A/1000;
+         VRMS_OS->VoltageRMSOSValue_B = (float)VoltageRMSOSReg_B/1000;
+         VRMS_OS->VoltageRMSOSValue_C = (float)VoltageRMSOSReg_C/1000;
+    }
+
+}
+
+void ReadCurrentRMSOSRegs(CurrentRMSOSRegs* IRMS_OS, SPI_CSS_Pin css_pin)
+{
+    int32_t CurrentRMSOSReg_A = int32_t(SPI_Read(ADDR_AIRMSOS, true, css_pin));
+    int32_t CurrentRMSOSReg_B = int32_t(SPI_Read(ADDR_BIRMSOS, true, css_pin));
+    int32_t CurrentRMSOSReg_C = int32_t(SPI_Read(ADDR_CIRMSOS, true, css_pin));
+
+    if (css_pin)
+    {
+         IRMS_OS->CurrentRMSOSValue_A = (float)CurrentRMSOSReg_A/1000;
+         IRMS_OS->CurrentRMSOSValue_B = (float)CurrentRMSOSReg_B/1000;
+         IRMS_OS->CurrentRMSOSValue_C = (float)CurrentRMSOSReg_C/1000;
+    }
+
 }
 
 void ReadLineVoltages(VoltageRMSRegs *rmsData, LineVoltageRegs *lineData)
@@ -784,15 +819,110 @@ void getPGA_gain(SPI_CSS_Pin css_pin, uint8_t *currentGain, uint8_t *voltageGain
                                                  : 4;
 }
 
-void ct_ratio_calibration(uint16_t ratio)
+void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data)
 {
+    /****************************************************************************************************/
+    /* Calculation of xIGAIN */
+    /****************************************************************************************************/
+    
     float current_transfer_func  = (float) R_BURDEN/ratio;
     
-    calibration_data.cal_irms_cc = (SQRT_2 * current_transfer_func * ADE9000_RMS_FULL_SCALE_CODES);
+    calibration_data.cal_irms_cc = (SQRT_2 * current_transfer_func * 10 * ADE9000_RMS_FULL_SCALE_CODES);
     calibration_data.cal_power_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES);
     calibration_data.cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES);
+    
+    float AIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_A;
+    AIGAIN_value = (AIGAIN_value - 1) * pow(2,27);
+    
+    float BIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_B;
+    BIGAIN_value = (BIGAIN_value - 1) * pow(2,27);
+    
+    float CIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_C;
+    CIGAIN_value = (CIGAIN_value - 1) * pow(2,27);
+    
+    SPI_Write(ADDR_AIGAIN, AIGAIN_value, true, get_css_pin(channel));
+    SPI_Write(ADDR_BIGAIN, BIGAIN_value, true, get_css_pin(channel));
+    SPI_Write(ADDR_CIGAIN, CIGAIN_value, true, get_css_pin(channel));
+    
+    /****************************************************************************************************/
+    /* Calculation of xPGAIN */
+    /****************************************************************************************************/
+    
+    uint32_t A_Active_Energy = SPI_Read(ADDR_AWATTHR_HI, true, get_css_pin(channel));
+    uint32_t B_Active_Energy = SPI_Read(ADDR_BWATTHR_HI, true, get_css_pin(channel));
+    uint32_t C_Active_Energy = SPI_Read(ADDR_CWATTHR_HI, true, get_css_pin(channel));
+    
+    float A_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
+    float B_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
+    float C_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
+            
+    float AP_GAIN = (float)((A_Active_Energy_Expected - A_Active_Energy)/ (A_Active_Energy)) * pow(2,27);
+    float BP_GAIN = (float)((B_Active_Energy_Expected - B_Active_Energy)/ (B_Active_Energy)) * pow(2,27);
+    float CP_GAIN = (float)((C_Active_Energy_Expected - C_Active_Energy)/ (C_Active_Energy)) * pow(2,27);
+    
+    SPI_Write(ADDR_APGAIN, AP_GAIN, true, get_css_pin(channel));
+    SPI_Write(ADDR_BPGAIN, BP_GAIN, true, get_css_pin(channel));
+    SPI_Write(ADDR_CPGAIN, CP_GAIN, true, get_css_pin(channel));    
+    
+    /****************************************************************************************************/
+           
 }
 
+void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin){
+    /*
+     * Formula for Calibration of IRMS
+     * xRMS = sqrt(xRMS0^2 + 2^15 × xRMOSOS)
+     */
+    
+    ReadCurrentRMSOSRegs(&current_RMS_OS,css_pin);
+    
+    float tmp;
+    tmp = pow(Data->CurrentRMSValue_A,2) + (pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_A));
+    Data->CurrentRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
+    
+    tmp = pow(Data->CurrentRMSValue_B,2) + pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_B);
+    Data->CurrentRMSValue_B = tmp > 0 ? sqrt(tmp) : 0;
+    
+    tmp = pow(Data->CurrentRMSValue_C,2) + pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_C);
+    Data->CurrentRMSValue_C = tmp > 0 ? sqrt(tmp) : 0;
+}
+
+void current_offset_write(int8_t channel, uint32_t offset){
+    
+    SPI_Write(ADDR_AIRMSOS, offset, true, get_css_pin(channel));
+    SPI_Write(ADDR_BIRMSOS, offset, true, get_css_pin(channel));
+    SPI_Write(ADDR_CIRMSOS, offset, true, get_css_pin(channel));
+    
+}
+
+void voltage_offset_calibration(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin){
+    /*
+     * Formula for Calibration of VRMS
+     * xRMS = sqrt(xRMS0^2 + 2^15 × xRMOSOS)
+     */
+    
+    ReadVoltageRMSOSRegs(&voltage_RMS_OS,css_pin);
+    
+    float tmp;
+    tmp = pow(Data->VoltageRMSValue_A,2) + (pow(2,15)*(voltage_RMS_OS.VoltageRMSOSValue_A));
+    Data->VoltageRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
+    
+    tmp = pow(Data->VoltageRMSValue_B,2) + pow(2,15)*(voltage_RMS_OS.VoltageRMSOSValue_B);
+    Data->VoltageRMSValue_B = tmp > 0 ? sqrt(tmp) : 0;
+    
+    tmp = pow(Data->VoltageRMSValue_C,2) + pow(2,15)*(voltage_RMS_OS.VoltageRMSOSValue_C);
+    Data->VoltageRMSValue_C = tmp > 0 ? sqrt(tmp) : 0;
+}
+void voltage_offset_write(int8_t channel, uint32_t offset){
+    
+    SPI_Write(ADDR_AVRMSOS, offset, true, get_css_pin(channel));
+    SPI_Write(ADDR_BVRMSOS, offset, true, get_css_pin(channel));
+    SPI_Write(ADDR_CVRMSOS, offset, true, get_css_pin(channel));
+    
+}
+
+
+
 // float ct_ratio_calibration(uint16_t ratio)
 // {
 //     float current_transfer_func  = (float) R_BURDEN/ratio;
@@ -808,3 +938,21 @@ void ct_ratio_calibration(uint16_t ratio)
 //     float cal_irms_cc = FULL_SCALE_VOLTAGE / (SQRT_2 * current_transfer_func * ADE9000_RMS_FULL_SCALE_CODES);
 //     return cal_irms_cc;
 // }
+
+SPI_CSS_Pin get_css_pin(uint8_t channel){
+    switch(channel){
+            case 1: return SPI_CSS1;
+            case 2: return SPI_CSS2;
+            case 3: return SPI_CSS3;
+            case 4: return SPI_CSS4;
+            case 5: return SPI_CSS5;
+            case 6: return SPI_CSS6;
+            case 7: return SPI_CSS7;
+            case 8: return SPI_CSS8;
+            case 9: return SPI_CSS9;
+            case 10: return SPI_CSS10;
+            case 11: return SPI_CSS11;
+            case 12: return SPI_CSS12;
+            default: return SPI_CSS1;
+    }
+}

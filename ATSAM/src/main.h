@@ -28,7 +28,7 @@
 #define UART_TX_BUFFER_SIZE (TOTAL_ARRAYSIZE * 2 + 1)
 
 void delay_ms(uint32_t milliseconds);
-void extract_channel_values(const char* channel, uint16_t set_value);
+uint32_t extract_channel_values(const char* channel);
 void parse_ct_ratio_json();
 void parse_i_offset_json();
 void parse_v_offset_json();

@@ -27,6 +27,8 @@ Current transfer function= 1/2500*Total Burden = 5/400*11.312= 0.1414
 //#define CURRENT_TRANSFER_FUNCTION ((R_BURDEN * CT_SEC) / CT_PRI)   //The RMS voltage at the ADC input pins per input RMS current (V/A).)
 // #define CURRENT_TRANSFER_FUNCTION 0.00088375f
 #define CURRENT_TRANSFER_FUNCTION 0.00707f
+#define NOMINAL_VOLTAGE 0.220
+#define ACCUMULATION_TIME 1 // EP_CFG = 0x0011 and EGY_TIME = 7999 (1 sec accumulation)
 /****************************************************************************************************************
 									Voltage Transfer Function
 *****************************************************************************************************************

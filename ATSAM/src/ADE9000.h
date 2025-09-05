@@ -148,6 +148,25 @@ typedef struct {
 } VoltageRMSRegs;
 
 typedef struct {
+    int32_t VoltageRMSOSReg_A;
+    int32_t VoltageRMSOSReg_B;
+    int32_t VoltageRMSOSReg_C;
+    float VoltageRMSOSValue_A;
+    float VoltageRMSOSValue_B;
+    float VoltageRMSOSValue_C;
+} VoltageRMSOSRegs;
+
+typedef struct {
+    int32_t CurrentRMSOSReg_A;
+    int32_t CurrentRMSOSReg_B;
+    int32_t CurrentRMSOSReg_C;
+    float CurrentRMSOSValue_A;
+    float CurrentRMSOSValue_B;
+    float CurrentRMSOSValue_C;
+} CurrentRMSOSRegs;
+
+
+typedef struct {
     float VoltageRMS_A;
     float VoltageRMS_B;
     float VoltageRMS_C;
@@ -246,8 +265,8 @@ typedef struct {
 
 typedef struct{
     uint16_t ctRatio;
-    uint16_t setIOffset;
-    uint16_t setVOffset;
+    uint32_t setIOffset;
+    uint32_t setVOffset;
 } ChannelConfig;
 
 // *****************************************************************************
@@ -262,9 +281,17 @@ uint32_t SPI_Read(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin);
 bool IsADE9000(SPI_CSS_Pin css_pin);
 void ADE9000_Initialize(SPI_CSS_Pin css_pin);
 
-void ct_ratio_calibration(uint16_t ratio);
+//void ct_ratio_calibration(uint16_t ratio);
+void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data);
+
+void current_offset_write(int8_t channel, uint32_t offset);
+
+void voltage_offset_calibration(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin);
+void voltage_offset_write(int8_t channel, uint32_t offset);
+
 
 void ReadVoltageRMSRegs(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin);
+void ReadVoltageRMSOSRegs(VoltageRMSOSRegs *VRMS_OS, SPI_CSS_Pin css_pin);
 void ReadLineVoltages(VoltageRMSRegs *rmsData, LineVoltageRegs *lineData);
 void ReadCurrentRMSRegs(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin);
 void ReadPeriodRegsnValues(PeriodRegs *Data, VoltageRMSRegs *RMSData, SPI_CSS_Pin css_pin);
@@ -283,6 +310,7 @@ void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin);
 void ReadTempRegnValue(TemperatureRegs *Data, SPI_CSS_Pin css_pin);
 
 void getPGA_gain(SPI_CSS_Pin css_pin, uint8_t *currentGain, uint8_t *voltageGain);
+SPI_CSS_Pin get_css_pin(uint8_t channel);
 #endif
 
 /* *************************************************************************** */

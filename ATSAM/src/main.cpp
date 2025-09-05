@@ -158,9 +158,12 @@ void sendChannelJsonData(uint8_t channel)
         m.temperature.Temperature
     );
     ptr += written;
+    
     remaining -= written;
-
+        
     const char* phases[3] = { "phase_a", "phase_b", "phase_c" };
+    
+
     float rmsVoltage[3]   = { m.voltageRMS.VoltageRMSValue_A, m.voltageRMS.VoltageRMSValue_B, m.voltageRMS.VoltageRMSValue_C };
     float lineVoltage[3]  = { m.lineVoltage.LineVoltage_AB, m.lineVoltage.LineVoltage_BC, m.lineVoltage.LineVoltage_CA };
     float frequency[3]    = { m.periodFrequency.FrequencyValue_A, m.periodFrequency.FrequencyValue_B, m.periodFrequency.FrequencyValue_C };
@@ -235,6 +238,9 @@ void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
     ADE9000_arrayBuffer[baseIndex] = 0xAA + (unitIndex - 1);
 
     ReadVoltageRMSRegs(&unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
+    voltage_offset_calibration(&unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
+//    ReadVoltageRMSOSRegs(&voltageRMSOS[unitIndex - 1], cssPin);
+    
     ReadLineVoltages(&unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[cssPin - 1].lineVoltage);
     ReadCurrentRMSRegs(&unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     ReadPeriodRegsnValues(&unitMeasurements[unitIndex - 1].periodFrequency, &unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
@@ -256,6 +262,8 @@ void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
     uint8_t crc = calculateCRC8(&ADE9000_arrayBuffer[(unitIndex - 1) * ARRAYSIZE_PER_UNIT], ARRAYSIZE_PER_UNIT - 1);
     ADE9000_arrayBuffer[crcIndex] = crc;
 }
+
+
 
 void ADE9000MeasurementsForUnit_NON(SPI_CSS_Pin cssPin, uint8_t unitIndex)
 {
@@ -580,7 +588,7 @@ void resetEnergyValues(void)
 //  }
 //}
 
-void extract_channel_values(const char* channel, uint16_t set_value){
+uint32_t extract_channel_values(const char* channel){
     char *ch;
     if(strstr(rxBuffer, channel) != NULL){
         ch = strstr(rxBuffer, channel);
@@ -594,11 +602,12 @@ void extract_channel_values(const char* channel, uint16_t set_value){
                 value[i++] = *ch++;
             }
             value[i] = '\0';
-            strcat(txBuffer, "\n");
-            strcat(txBuffer, channel);
-            strcat(txBuffer, " Value received: ");
-            strcat(txBuffer, value);
-            set_value = atoi(value); // atoi(ASCII TO Int) function is used to convert value from character to integer
+            /* For Debugging*/
+//            strcat(txBuffer, "\n");
+//            strcat(txBuffer, channel);
+//            strcat(txBuffer, " Value received: ");
+//            strcat(txBuffer, value);
+            return atoi(value); // atoi(ASCII TO Int) function is used to convert value from character to integer
         }
     }
 }
@@ -607,14 +616,14 @@ void parse_ct_ratio_json(){
     char *ch;
     ch = strstr(rxBuffer, "ct-ratio");
     if(ch != NULL){
-        strcpy(txBuffer,"");
+//        strcpy(txBuffer,"");
         char key[20];
         for (int8_t j = 1; j < 13; j++){
             sprintf(key, "channel-%d",j);
-            extract_channel_values(key,channelConfig[j].ctRatio);
-            ct_ratio_calibration(channelConfig[j].ctRatio);
+            channelConfig[j].ctRatio = extract_channel_values(key);
+            ct_ratio_calibration(channelConfig[j].ctRatio, j, unitMeasurements[j-1].currentRMS);
         }
-        strcat(txBuffer, "\nCT Ratio updated successfully!");
+        strcpy(txBuffer, "\nCT Ratio updated successfully!");
     }
 }
 
@@ -623,14 +632,16 @@ void parse_i_offset_json(){
     char *ch;
     ch = strstr(rxBuffer, "i_offset");
     if(ch != NULL){
-        strcpy(txBuffer,"");
+//        strcpy(txBuffer,"");
         char key[20];
         for (int8_t j = 1; j < 13; j++){
             sprintf(key, "channel-%d",j);
-            extract_channel_values(key,channelConfig[j].setIOffset);
-            // use formula here for offset calibration
+            channelConfig[j].setIOffset = extract_channel_values(key);
+            //  Write offset Values to ADE9000 registers
+            
+            current_offset_write(j, channelConfig[j].setIOffset);
         }
-        strcat(txBuffer, "\nCurrent Offset updated successfully!");
+        strcpy(txBuffer, "\nCurrent Offset updated successfully!");
     }
 }
 
@@ -639,14 +650,18 @@ void parse_v_offset_json(){
     char *ch;
     ch = strstr(rxBuffer, "v_offset");
     if(ch != NULL){
-        strcpy(txBuffer,"");
+//        strcpy(txBuffer,"");
         char key[20];
         for (int8_t j = 1; j < 13; j++){
             sprintf(key, "channel-%d",j);
-            extract_channel_values(key,channelConfig[j].setVOffset);
-            // use formula here for offset calibration
+            channelConfig[j].setVOffset = extract_channel_values(key);
+            
+            // Write offset values to ADE9000 registers
+            
+            voltage_offset_write(j, channelConfig[j].setVOffset);
+            
         }
-        strcat(txBuffer, "\nVoltage Offset updated successfully!");
+        strcpy(txBuffer, "\nVoltage Offset updated successfully!");
     }
 }
 
