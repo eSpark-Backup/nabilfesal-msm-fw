@@ -425,3 +425,9 @@ void DeviceSettings::refreshInfo()
     ui->ntp->setText(status);
 }
 
+
+void DeviceSettings::on_export_btn_clicked()
+{
+    emit usbExport();
+}
+

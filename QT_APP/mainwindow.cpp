@@ -25,10 +25,27 @@ MainWindow::MainWindow(QWidget *parent)
 
     // create login once
     login = new LoginWidget;
+    usbExporter = new UsbExporter(this);
     connectLoginSignals();
 
     ui->progressBar->setValue(progressValue);
     ui->process_info->setText("Initializing...");
+
+    watcher = new UsbWatcher(this);
+
+    connect(watcher, &UsbWatcher::usbMounted, this, [=](const QString &dev, const QString &path){
+        usbExporter->setDeviceName(dev, path);
+        if (isLogin)
+        {
+            usbExporter->show();
+        }
+
+    });
+
+    connect(watcher, &UsbWatcher::usbUnmounted, this, [=](){
+        usbExporter->removeDeviceName();
+
+    });
 
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::updateProgress);
@@ -131,12 +148,14 @@ void MainWindow::handlePostProgress()
 void MainWindow::connectLoginSignals()
 {
     connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
+        isLogin = true;
         if (!settings) {
             settings = new DeviceSettings;
             connect(settings, &DeviceSettings::channels_view, this, [this]() {
                 if (!channels) {
                     channels = new ChannelsHome;
                     connect(channels, &ChannelsHome::channelsExit, this, [this]() {
+                        isLogin = false;
                         login->showFullScreen();
                         channels->hide();
                         settings->hide();
@@ -149,15 +168,20 @@ void MainWindow::connectLoginSignals()
                 channels->showFullScreen();
                 settings->hide();
             });
+            connect(settings, &DeviceSettings::usbExport, this, [this](){
+                usbExporter->show();
+            });
         }
         settings->showFullScreen();
         login->hide();
     });
 
     connect(login, &LoginWidget::factoryLoginSuccess, this, [this]() {
+        isLogin = true;
         if (!factorySettings) {
             factorySettings = new FactorySettings;
             connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
+                isLogin = false;
                 login->showFullScreen();
                 factorySettings->hide();
             });

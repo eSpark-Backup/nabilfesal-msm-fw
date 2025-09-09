@@ -7,6 +7,9 @@
 #include "devicesettings.h"
 #include "registration.h"
 #include "factorysettings.h"
+#include "usbexporter.h"
+#include "usbwatcher.h"
+#include <atomic>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -37,12 +40,15 @@ private:
     DeviceSettings *settings = nullptr;
     Registration *registration = nullptr;
     FactorySettings *factorySettings = nullptr;
+    UsbExporter *usbExporter = nullptr;
+    UsbWatcher *watcher = nullptr;
 
     // state
     int progressValue = 0;
     QString m_uid;
     QString m_adminPass;
     QString m_factoryPass;
+    std::atomic<bool> isLogin{false};
 };
 
 #endif // MAINWINDOW_H

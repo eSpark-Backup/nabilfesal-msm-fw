@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>UsbExporter</class>
+ <widget class="QDialog" name="UsbExporter">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(255, 255, 255);</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>5</number>
+   </property>
+   <item>
+    <spacer name="verticalSpacer_3">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <family>Gilroy</family>
+       <pointsize>18</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(20, 127, 204);</string>
+     </property>
+     <property name="text">
+      <string>USB DATA EXPORT</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_4">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="font">
+      <font>
+       <family>Gilroy</family>
+       <pointsize>15</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>INTERVAL DAYS</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>20</number>
+     </property>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QRadioButton" name="r_7">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0C89E2;   /* Outer border */
+    border-radius: 8px;
+    background: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #0C89E2;
+    border-radius: 8px;
+    background-color: qradialgradient(
+        cx:0.5, cy:0.5, radius:0.6,
+        fx:0.5, fy:0.5,
+        stop:0 #0C89E2,
+        stop:0.5 #0C89E2,   /* inner filled dot */
+        stop:0.51 transparent,
+        stop:1 transparent
+    );
+}</string>
+         </property>
+         <property name="text">
+          <string>07 Days</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="r_30">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0C89E2;   /* Outer border */
+    border-radius: 8px;
+    background: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #0C89E2;
+    border-radius: 8px;
+    background-color: qradialgradient(
+        cx:0.5, cy:0.5, radius:0.6,
+        fx:0.5, fy:0.5,
+        stop:0 #0C89E2,
+        stop:0.5 #0C89E2,   /* inner filled dot */
+        stop:0.51 transparent,
+        stop:1 transparent
+    );
+}</string>
+         </property>
+         <property name="text">
+          <string>30 Days</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="r_120">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0C89E2;   /* Outer border */
+    border-radius: 8px;
+    background: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #0C89E2;
+    border-radius: 8px;
+    background-color: qradialgradient(
+        cx:0.5, cy:0.5, radius:0.6,
+        fx:0.5, fy:0.5,
+        stop:0 #0C89E2,
+        stop:0.5 #0C89E2,   /* inner filled dot */
+        stop:0.51 transparent,
+        stop:1 transparent
+    );
+}</string>
+         </property>
+         <property name="text">
+          <string>120 Days</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QRadioButton" name="r_14">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0C89E2;   /* Outer border */
+    border-radius: 8px;
+    background: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #0C89E2;
+    border-radius: 8px;
+    background-color: qradialgradient(
+        cx:0.5, cy:0.5, radius:0.6,
+        fx:0.5, fy:0.5,
+        stop:0 #0C89E2,
+        stop:0.5 #0C89E2,   /* inner filled dot */
+        stop:0.51 transparent,
+        stop:1 transparent
+    );
+}</string>
+         </property>
+         <property name="text">
+          <string>14 Days</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="r_60">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0C89E2;   /* Outer border */
+    border-radius: 8px;
+    background: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #0C89E2;
+    border-radius: 8px;
+    background-color: qradialgradient(
+        cx:0.5, cy:0.5, radius:0.6,
+        fx:0.5, fy:0.5,
+        stop:0 #0C89E2,
+        stop:0.5 #0C89E2,   /* inner filled dot */
+        stop:0.51 transparent,
+        stop:1 transparent
+    );
+}</string>
+         </property>
+         <property name="text">
+          <string>60 Days</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="r_180">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0C89E2;   /* Outer border */
+    border-radius: 8px;
+    background: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #0C89E2;
+    border-radius: 8px;
+    background-color: qradialgradient(
+        cx:0.5, cy:0.5, radius:0.6,
+        fx:0.5, fy:0.5,
+        stop:0 #0C89E2,
+        stop:0.5 #0C89E2,   /* inner filled dot */
+        stop:0.51 transparent,
+        stop:1 transparent
+    );
+}</string>
+         </property>
+         <property name="text">
+          <string>180 Days</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <property name="spacing">
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QRadioButton" name="r_28">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0C89E2;   /* Outer border */
+    border-radius: 8px;
+    background: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #0C89E2;
+    border-radius: 8px;
+    background-color: qradialgradient(
+        cx:0.5, cy:0.5, radius:0.6,
+        fx:0.5, fy:0.5,
+        stop:0 #0C89E2,
+        stop:0.5 #0C89E2,   /* inner filled dot */
+        stop:0.51 transparent,
+        stop:1 transparent
+    );
+}</string>
+         </property>
+         <property name="text">
+          <string>28 Days</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="r_90">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0C89E2;   /* Outer border */
+    border-radius: 8px;
+    background: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #0C89E2;
+    border-radius: 8px;
+    background-color: qradialgradient(
+        cx:0.5, cy:0.5, radius:0.6,
+        fx:0.5, fy:0.5,
+        stop:0 #0C89E2,
+        stop:0.5 #0C89E2,   /* inner filled dot */
+        stop:0.51 transparent,
+        stop:1 transparent
+    );
+}</string>
+         </property>
+         <property name="text">
+          <string>90 Days</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="r_240">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0C89E2;   /* Outer border */
+    border-radius: 8px;
+    background: transparent;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #0C89E2;
+    border-radius: 8px;
+    background-color: qradialgradient(
+        cx:0.5, cy:0.5, radius:0.6,
+        fx:0.5, fy:0.5,
+        stop:0 #0C89E2,
+        stop:0.5 #0C89E2,   /* inner filled dot */
+        stop:0.51 transparent,
+        stop:1 transparent
+    );
+}</string>
+         </property>
+         <property name="text">
+          <string>240 Days</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Ignored</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_3">
+     <property name="font">
+      <font>
+       <family>Gilroy</family>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Status checking USB Port</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="usb_status">
+     <property name="font">
+      <font>
+       <family>Gilroy</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>No Mass Storage Found</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="lineWidth">
+      <number>5</number>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="font">
+      <font>
+       <family>Gilroy</family>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 20px;            /* Font size */
+	width: 120;
+	height: 40;
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}
+
+QPushButton:focus {
+    outline: none;                 /* Remove dotted border */
+    background-color: #074475;     /* Brighter blue highlight */
+    border: 2px solid black;       /* White glow/border */
+}</string>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

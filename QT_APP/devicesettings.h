@@ -18,6 +18,7 @@ public:
 
 signals:
     void channels_view();
+    void usbExport();
 private slots:
     void on_channels_btn_clicked();
 
@@ -36,6 +37,8 @@ private slots:
     void on_sftp_load_btn_clicked();
 
     void on_sftp_save_btn_clicked();
+
+    void on_export_btn_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
