@@ -7,6 +7,13 @@
 #include <QToolButton>
 #include <QStyle>
 #include "utils.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDebug>
+#include <QMessageBox>
+#include <QDir>
+#include <QFile>
 
 LoginWidget::LoginWidget(QWidget *parent)
     : QWidget(parent)
@@ -19,6 +26,7 @@ LoginWidget::LoginWidget(QWidget *parent)
     toggleButton->setIcon(QIcon(":/icons/eye.png"));
     toggleButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
     toggleButton->setIconSize(QSize(50, 50));
+    toggleButton->setFocusPolicy(Qt::StrongFocus);
 
     // Set button size and position inside the line edit
     int frameWidth = ui->passwordLineEdit->style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
@@ -32,7 +40,6 @@ LoginWidget::LoginWidget(QWidget *parent)
     ui->passwordLineEdit->setTextMargins(margins.left(), margins.top(), buttonSize.width() + frameWidth, margins.bottom());
 
     connect(toggleButton, &QToolButton::clicked, [=]() mutable {
-        Utils::keySound();
         bool isPasswordHidden = (ui->passwordLineEdit->echoMode() == QLineEdit::Password);
         ui->passwordLineEdit->setEchoMode(isPasswordHidden ? QLineEdit::Normal : QLineEdit::Password);
         toggleButton->setIcon(QIcon(isPasswordHidden ? ":/icons/hidden.png" : ":/icons/eye.png"));
@@ -48,7 +55,7 @@ LoginWidget::LoginWidget(QWidget *parent)
     });
 
     connect(ui->passwordLineEdit, &QLineEdit::editingFinished, this, [=]() {
-        ui->pass_frame->move(20, 302);
+        ui->passwordLineEdit->clearFocus();
         keyboard->hide();
     });
 
@@ -64,7 +71,6 @@ bool LoginWidget::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == ui->passwordLineEdit) {
         if (event->type() == QEvent::FocusIn) {
-            ui->pass_frame->move(20, 145);
             keyboard->setTarget(ui->passwordLineEdit);
             Utils::keySound();
             keyboard->show();
@@ -82,10 +88,32 @@ bool LoginWidget::eventFilter(QObject *obj, QEvent *event)
 
 void LoginWidget::on_loginButton_clicked()
 {
-    auto password = ui->passwordLineEdit->text();
-    if (password == "espark") {
-        emit loginSuccess();
+    QFile file("config/project.json");
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+        if (doc.isObject()) {
+            QJsonObject obj = doc.object();
+            QString adminPass = obj.value("admin").toString();
+            QString factoryPass = obj.value("factory").toString();
+            auto password = ui->passwordLineEdit->text();
+            if (password == adminPass) {
+                QMessageBox::information(this, "Login Successful", "You are logged in successfully with Admin Settings!");
+                ui->passwordLineEdit->clear();
+                ui->pass_frame->move(20, 302);
+                emit adminLoginSuccess();
+            } else if (password == factoryPass) {
+                QMessageBox::information(this, "Login Successful", "You are logged in successfully with Factory Settings!");
+                ui->passwordLineEdit->clear();
+                ui->pass_frame->move(20, 302);
+                emit factoryLoginSuccess();
+            }
+            else {
+                QMessageBox::warning(this, "Login Failed", "Incorrect password. Please try again.");
+            }
+        }
+        file.close();
     } else {
-        QMessageBox::warning(this, "Login Failed", "Incorrect password. Please try again.");
+        QMessageBox::critical(this, "Error", "Could not open configuration file.");
     }
 }

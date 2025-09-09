@@ -8,6 +8,8 @@
 #include <QHostAddress>
 #include <QFile>
 #include <QTimer>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 namespace Utils {
 void keySound() {
@@ -22,13 +24,13 @@ QJsonObject getNtpStatus()
 {
     QJsonObject result;
 
-    // 1. Parse /etc/ntp.conf for servers
+    // servers
     QJsonArray serverArray;
     QFile file("/etc/ntp.conf");
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&file);
         while (!in.atEnd()) {
-            QString line = in.readLine().trimmed();
+            const QString line = in.readLine().trimmed();
             if (line.startsWith("server ")) {
                 QString server = line.section(" ", 1, 1).trimmed();
                 if (!server.isEmpty())
@@ -39,19 +41,22 @@ QJsonObject getNtpStatus()
     }
     result["ntp_servers"] = serverArray;
 
-    // 2. Current system date and time
+    // date & time
     QDateTime now = QDateTime::currentDateTime();
-    result["date"] = now.date().toString("yyyy-MM-dd");
-    result["time"] = now.time().toString("hh:mm:ss");
+    result["date"] = now.toString("yyyy-MM-dd");
+    result["time"] = now.toString("hh:mm:ss");
 
-    // 3. Basic service status (optional)
+    // service check (non-blocking better done in background thread)
     QProcess process;
     process.start("/etc/init.d/S48sntp", {"status"});
-    process.waitForFinished();
-    QString output = process.readAllStandardOutput();
-    result["ntp_status"] = output.contains("SUCCESS", Qt::CaseInsensitive)
-                               ? "running"
-                               : "stopped";
+    if (process.waitForFinished(500)) { // timeout 500ms
+        QString output = process.readAllStandardOutput();
+        result["ntp_status"] = output.contains("SUCCESS", Qt::CaseInsensitive)
+                                   ? "running"
+                                   : "stopped";
+    } else {
+        result["ntp_status"] = "unknown";
+    }
 
     return result;
 }
@@ -104,24 +109,17 @@ bool setNtpServers(const QStringList &servers)
 QString getDeviceImei()
 {
     QProcess process;
-    // Example: modem manager (mmcli)
     process.start("mmcli", {"-m", "0"});
-    process.waitForFinished();
-    QString output = process.readAllStandardOutput();
+    if (!process.waitForFinished(1000))  // 1s max
+        return "UNKNOWN";
 
-    // Try to extract IMEI
-    QString imei;
+    QString output = process.readAllStandardOutput();
     for (const QString &line : output.split("\n")) {
         if (line.contains("imei", Qt::CaseInsensitive)) {
-            imei = line.section(":", 1).trimmed();
-            break;
+            return line.section(":", 1).trimmed();
         }
     }
-
-    if (imei.isEmpty())
-        imei = "UNKNOWN";
-
-    return imei;
+    return "UNKNOWN";
 }
 
 QString getDeviceIp()
@@ -138,6 +136,22 @@ QString getDeviceIp()
         }
     }
     return "0.0.0.0"; // fallback if not found
+}
+
+QString getUid()
+{
+    QFile file("config/project.json");
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+        if (doc.isObject()) {
+            QJsonObject obj = doc.object();
+            auto uid = obj.value("uid").toString();
+            return uid;
+        }
+        file.close();
+    }
+    return QString();
 }
 
 }

@@ -17,7 +17,8 @@ public:
     ~LoginWidget();
 
 signals:
-    void loginSuccess();
+    void adminLoginSuccess();
+    void factoryLoginSuccess();
 private slots:
     void on_loginButton_clicked();
 

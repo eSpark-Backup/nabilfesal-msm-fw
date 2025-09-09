@@ -113,6 +113,9 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
         <property name="styleSheet">
          <string notr="true">image: url(:/icons/logo.png);</string>
         </property>
@@ -403,10 +406,31 @@
          </size>
         </property>
         <property name="focusPolicy">
-         <enum>Qt::NoFocus</enum>
+         <enum>Qt::TabFocus</enum>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: #0078D7; color: white; font-weight: bold; font-size: 14px; padding: 8px; border-radius: 10px;</string>
+         <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}
+
+QPushButton:focus {
+    outline: none;                 /* Remove dotted border */
+    background-color: #074475;     /* Brighter blue highlight */
+    border: 2px solid black;       /* White glow/border */
+}</string>
         </property>
         <property name="text">
          <string>LOGIN</string>

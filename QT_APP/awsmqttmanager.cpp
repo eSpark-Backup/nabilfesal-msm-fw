@@ -6,9 +6,9 @@
 #include <QtMqtt/QMqttClient>
 #include <QtMqtt/QMqttSubscription>
 #include <QSslSocket>
-#include <QSslConfiguration>
 #include <QSslCertificate>
-#include <QSslKey>
+#include <QtNetwork/QSslConfiguration>
+#include <QtNetwork/QSslKey>
 
 AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 {

@@ -3,36 +3,88 @@
 #include "ui_mainwindow.h"
 #include "login.h"
 #include "channels.h"
-
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QDir>
+#include <QFile>
+#include "utils.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-    , progressValue(0)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow),
+      progressValue(0),
+      login(nullptr),
+      settings(nullptr),
+      factorySettings(nullptr),
+      channels(nullptr),
+      registration(nullptr)
 {
     ui->setupUi(this);
 
-    // Start progress on app launch
+    initConfig();
+
+    // create login once
+    login = new LoginWidget;
+    connectLoginSignals();
+
+    ui->progressBar->setValue(progressValue);
+    ui->process_info->setText("Initializing...");
+
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::updateProgress);
     timer->start(500);
-    login = new LoginWidget;
-    QObject::connect(login, &LoginWidget::loginSuccess, [&]() {
-        settings = new DeviceSettings;
-        QObject::connect(settings, &DeviceSettings::channels_view, [&]() {
-            channels = new ChannelsHome;
-            channels->showFullScreen();
-            settings->deleteLater();
-        });
-        settings->showFullScreen();
-        login->deleteLater();
-    });
-    this->showFullScreen();
+
+    Utils::keySound();
+    showFullScreen();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    // no need to delete children separately, Qt parent-child takes care
+}
+
+void MainWindow::initConfig()
+{
+    QDir dir("config");
+    if (!dir.exists())
+        dir.mkpath(".");
+
+    QFile file("config/project.json");
+    if (!file.exists()) {
+        QJsonObject defaultSettings {
+            {"uid", ""},
+            {"admin", ""},
+            {"factory", "msm123"}
+        };
+
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(QJsonDocument(defaultSettings).toJson(QJsonDocument::Indented));
+            file.close();
+        }
+    }
+
+    if (file.open(QIODevice::ReadOnly)) {
+        const auto data = file.readAll();
+        const auto doc = QJsonDocument::fromJson(data);
+        if (doc.isObject()) {
+            const auto obj = doc.object();
+            m_uid = obj.value("uid").toString();
+            m_adminPass = obj.value("admin").toString();
+            m_factoryPass = obj.value("factory").toString();
+        }
+        file.close();
+    }
+}
+
+void MainWindow::startProgress()
+{
+    ui->progressBar->setValue(progressValue);
+    ui->process_info->setText("Initializing...");
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindow::updateProgress);
+    timer->start(500);
 }
 
 void MainWindow::updateProgress()
@@ -52,12 +104,65 @@ void MainWindow::updateProgress()
         ui->process_info->setText("Registration...");
 
     if (progressValue == 100) {
-        QTimer::singleShot(500, this, [=]() {
-            login->showFullScreen();
-            this->hide();
-
-        });
+        QTimer::singleShot(500, this, &MainWindow::handlePostProgress);
     }
 
-    progressValue = progressValue + 5;
+    progressValue += 10;
+}
+
+void MainWindow::handlePostProgress()
+{
+    if (m_uid.isEmpty() || m_adminPass.isEmpty()) {
+        if (!registration) {
+            registration = new Registration;
+            connect(registration, &Registration::registrationComplete, this, [this]() {
+                login->showFullScreen();
+                registration->hide();
+            });
+        }
+        registration->showFullScreen();
+        hide();
+    } else {
+        login->showFullScreen();
+        hide();
+    }
+}
+
+void MainWindow::connectLoginSignals()
+{
+    connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
+        if (!settings) {
+            settings = new DeviceSettings;
+            connect(settings, &DeviceSettings::channels_view, this, [this]() {
+                if (!channels) {
+                    channels = new ChannelsHome;
+                    connect(channels, &ChannelsHome::channelsExit, this, [this]() {
+                        login->showFullScreen();
+                        channels->hide();
+                        settings->hide();
+                    });
+                    connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
+                        settings->showFullScreen();
+                        channels->hide();
+                    });
+                }
+                channels->showFullScreen();
+                settings->hide();
+            });
+        }
+        settings->showFullScreen();
+        login->hide();
+    });
+
+    connect(login, &LoginWidget::factoryLoginSuccess, this, [this]() {
+        if (!factorySettings) {
+            factorySettings = new FactorySettings;
+            connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
+                login->showFullScreen();
+                factorySettings->hide();
+            });
+        }
+        factorySettings->showFullScreen();
+        login->hide();
+    });
 }

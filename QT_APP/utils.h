@@ -9,6 +9,7 @@ QJsonObject getNtpStatus();
 QString getDeviceIp();
 QString getDeviceImei();
 bool setNtpServers(const QStringList &servers);
+QString getUid();
 }
 
 #endif // UTILS_H
