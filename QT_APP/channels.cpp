@@ -1,8 +1,6 @@
 #include "channels.h"
 #include "ui_channels.h"
-#include <QTimer>
 #include <QJsonDocument>
-#include <QThread>
 #include <QDebug>
 
 ChannelsHome::ChannelsHome(QWidget *parent)
@@ -41,7 +39,7 @@ ChannelsHome::ChannelsHome(QWidget *parent)
     });
 
     SerialWorker *worker = nullptr;
-    QThread *serialThread = new QThread(this);
+    serialThread = new QThread(this);
 
     connect(serialThread, &QThread::started, [=]() mutable {
         worker = new SerialWorker("/dev/ttyS1", 115200);
@@ -55,7 +53,7 @@ ChannelsHome::ChannelsHome(QWidget *parent)
     serialThread->start();
 
     // Poll channels in order
-    QTimer *pollTimer = new QTimer(this);
+    pollTimer = new QTimer(this);
     connect(pollTimer, &QTimer::timeout, this, [this] {
         static int ch = 1;
         emit requestChannelPoll(ch);
@@ -71,12 +69,16 @@ ChannelsHome::ChannelsHome(QWidget *parent)
 
 ChannelsHome::~ChannelsHome()
 {
+    serialThread->quit();
+    serialThread->wait();
+    pollTimer->stop();
     delete ui;
 }
 
 void ChannelsHome::handleChannelClick(int channelIndex)
 {
     m_channel = channelIndex;
+    ui->channel_label->setText("CHANNEL " + QString::number(channelIndex));
     ui->stackedWidget->setCurrentIndex(1);
     handleSubButtonClick(1, "gn");
 }
@@ -155,6 +157,8 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
 
     if (channel == m_channel)
     {
+        double temp = json.value("temperature").toDouble();
+        ui->temp->setText(QString::number(temp, 'f', 2));
         QString suffix = QString::number(1);
         QJsonObject data = json.value("data").toObject();
         for (const QString &phase : {"phase_a", "phase_b", "phase_c"}) {
@@ -190,3 +194,15 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
         }
     }
 }
+
+void ChannelsHome::on_exit_clicked()
+{
+    emit channelsExit();
+}
+
+
+void ChannelsHome::on_info_clicked()
+{
+    emit deviceInfo();
+}
+

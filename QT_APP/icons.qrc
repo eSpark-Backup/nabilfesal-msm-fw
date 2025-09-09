@@ -17,5 +17,17 @@
         <file>icons/logo.png</file>
         <file>icons/hidden.png</file>
         <file>icons/eye.png</file>
+        <file>icons/new_logo.png</file>
+        <file>icons/online_feeder.png</file>
+        <file>icons/Rectangle 2234.png</file>
+        <file>icons/measurement.png</file>
+        <file>icons/system.png</file>
+        <file>icons/home.png</file>
+        <file>icons/temperature.png</file>
+        <file>icons/C.png</file>
+        <file>icons/frq.png</file>
+        <file>icons/pf.png</file>
+        <file>icons/power.png</file>
+        <file>icons/battery.png</file>
     </qresource>
 </RCC>

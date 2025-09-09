@@ -5,6 +5,8 @@
 #include "serialhandler.h"
 #include "serialworker.h"
 #include <QLabel>
+#include <QThread>
+#include <QTimer>
 
 namespace Ui {
 class ChannelsHome;
@@ -20,7 +22,13 @@ public:
 
 signals:
     void requestChannelPoll(int channel);
+    void channelsExit();
+    void deviceInfo();
 private slots:
+
+    void on_exit_clicked();
+
+    void on_info_clicked();
 
 private:
     void handleChannelClick(int channelIndex);
