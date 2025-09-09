@@ -8,18 +8,32 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QFile>
+#include <QTimer>
+#include <QTime>
+#include <QKeyEvent>
 
 DeviceSettings::DeviceSettings(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::DeviceSettings)
 {
     ui->setupUi(this);
+    auto uid = Utils::getUid();
+    ui->uuid->setText(uid);
     auto currentIp = Utils::getDeviceIp();
     ui->ip->setText(currentIp);
     auto currentImei = Utils::getDeviceImei();
     ui->imei->setText(currentImei);
     auto ntpData = Utils::getNtpStatus();
     parseNtpJson(ntpData);
+
+    QTimer *timer = new QTimer(this);
+
+    connect(timer, &QTimer::timeout, this, [=]() {
+        QString time = QTime::currentTime().toString("HH:mm:ss");
+        ui->time_input->setText(time);
+    });
+    timer->start(1000);
+
     ui->stackedWidget->setCurrentIndex(0);
     QLabel* label = new QLabel("server 1", ui->server1);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
@@ -138,6 +152,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
             keyboard->hide();
         });
     }
+    this->installEventFilter(this);
 
 }
 
@@ -148,6 +163,16 @@ DeviceSettings::~DeviceSettings()
 
 bool DeviceSettings::eventFilter(QObject *obj, QEvent *event)
 {
+    // First: handle key events globally
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Home) {
+            on_channels_btn_clicked();
+            return true;  // stop further processing
+        }
+    }
+
+    // Then: handle QLineEdit focus/keyboard logic
     QLineEdit *lineEdit = qobject_cast<QLineEdit*>(obj);
     if (lineEdit) {
         if (event->type() == QEvent::FocusIn) {
@@ -162,6 +187,7 @@ bool DeviceSettings::eventFilter(QObject *obj, QEvent *event)
             }
         }
     }
+
     return QWidget::eventFilter(obj, event);
 }
 
@@ -175,6 +201,10 @@ void DeviceSettings::parseNtpJson(const QJsonObject& root)
 {
     QString status = root.value("ntp_status").toString();
     ui->ntp->setText(status);
+    QString date   = root.value("date").toString();
+    QString time   = root.value("time").toString();
+    ui->date_input->setText(date);
+    ui->time_input->setText(time);
 }
 
 void DeviceSettings::on_continue_btn_clicked()
@@ -193,11 +223,7 @@ void DeviceSettings::on_ntp_load_btn_clicked()
 {
     auto ntpData = Utils::getNtpStatus();
     QString date   = ntpData.value("date").toString();
-    QString time   = ntpData.value("time").toString();
-
     ui->date_input->setText(date);
-    ui->time_input->setText(time);
-
 
     // Extract servers
     if (ntpData.contains("ntp_servers") && ntpData["ntp_servers"].isArray()) {
@@ -381,5 +407,21 @@ void DeviceSettings::on_sftp_load_btn_clicked()
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
+}
+
+
+void DeviceSettings::refreshInfo()
+{
+    auto uid = Utils::getUid();
+    ui->uuid->setText(uid);
+    auto currentIp = Utils::getDeviceIp();
+    ui->ip->setText(currentIp);
+    auto currentImei = Utils::getDeviceImei();
+    ui->imei->setText(currentImei);
+    auto ntpData = Utils::getNtpStatus();
+    QString date   = ntpData.value("date").toString();
+    ui->date_input->setText(date);
+    QString status = ntpData.value("ntp_status").toString();
+    ui->ntp->setText(status);
 }
 

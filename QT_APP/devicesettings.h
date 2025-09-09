@@ -42,6 +42,7 @@ protected:
 
 private:
     void parseNtpJson(const QJsonObject& data);
+    void refreshInfo();
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;
 };
