@@ -32,3 +32,5 @@ add_executable(MSM
 target_link_libraries(MSM PRIVATE Qt5::Core Qt5::Widgets Qt5::SerialPort Qt5::Network Qt5::Mqtt)
 target_link_libraries(MSM PRIVATE Qt5::Core)
 target_link_libraries(MSM PRIVATE Qt5::Core)
+
+file(COPY ${CMAKE_SOURCE_DIR}/config DESTINATION ${CMAKE_BINARY_DIR})
