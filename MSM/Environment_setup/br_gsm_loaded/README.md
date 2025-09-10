@@ -14,7 +14,7 @@ GSM Module is able to ping
 ===============================================
 generate uboot.scr
 
-mkimage -C none -A arm -T script -d boot-cmd boot.scr
+mkimage -C none -A arm -T script -d boot.cmd boot.scr
 
 ===============================================
 
