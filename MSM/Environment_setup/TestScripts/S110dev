@@ -21,6 +21,10 @@ start() {
             echo "PermitRootLogin yes" >> "$SSH_CONF"
         fi
     dhclient wlan0
+
+    # SET TIMEZONE 
+    ln -sf /usr/share/zoneinfo/Asia/Karachi /etc/localtime
+
 )&
 }
 
