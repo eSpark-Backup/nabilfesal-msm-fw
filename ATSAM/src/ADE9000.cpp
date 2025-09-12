@@ -13,6 +13,9 @@ Calibration_regs calibration_data;
 VoltageRMSOSRegs voltage_RMS_OS;
 CurrentRMSOSRegs current_RMS_OS;
 
+float current_conversion_constant;
+float current_transfer_functionn;
+
 
 // *****************************************************************************
 // *****************************************************************************
@@ -325,13 +328,18 @@ void ReadLineVoltages(VoltageRMSRegs *rmsData, LineVoltageRegs *lineData)
 void ReadCurrentRMSRegs(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin)
 {
     uint32_t rawValue;
-    Data->CurrentRMSReg_A = int32_t(SPI_Read(ADDR_AIRMS, true, css_pin));
+    Data->CurrentRMSReg_A = uint32_t(SPI_Read(ADDR_AIRMS, true, css_pin));
     Data->CurrentRMSReg_B = int32_t(SPI_Read(ADDR_BIRMS, true, css_pin));
     Data->CurrentRMSReg_C = int32_t(SPI_Read(ADDR_CIRMS, true, css_pin));
 
     if (css_pin)
     {
-        Data->CurrentRMSValue_A = (float)Data->CurrentRMSReg_A / calibration_data.cal_irms_cc;
+//        Data->CurrentRMSValue_A = (float)Data->CurrentRMSReg_A * calibration_data.cal_irms_cc;
+//        \frac{0.04}{100}\cdot10
+//        \frac{\operatorname{ans}}{0.707}
+//        \frac{5\cdot10^{6}}{\operatorname{ans}\cdot52702092}
+        Data->CurrentRMSValue_A = (float)Data->CurrentRMSReg_A * 16.76878406e-6;
+//        Data->CurrentRMSValue_A = (float)Data->CurrentRMSReg_A * calibration_data.cal_irms_cc;
         Data->CurrentRMSValue_B = (float)Data->CurrentRMSReg_B / calibration_data.cal_irms_cc;
         Data->CurrentRMSValue_C = (float)Data->CurrentRMSReg_C / calibration_data.cal_irms_cc;
     }
@@ -526,6 +534,10 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, SPI_CSS_Pin css_p
     uint32_t status0;
     uint32_t rawValue;
     status0 = SPI_Read(ADDR_STATUS0, true, css_pin);
+    
+    // -----------------------------For Testing --------------------------------
+    status0 = 1;
+    // -------------------------------------------------------------------------
 
     if (status0 & 0x01)
     {
@@ -825,14 +837,25 @@ void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data)
     /* Calculation of xIGAIN */
     /****************************************************************************************************/
     
-    float current_transfer_func  = (float) R_BURDEN/ratio;
+//    float current_transfer_func  = (float) R_BURDEN/ratio;
+    float current_transfer_func  = (float) R_BURDEN/(100);  //
+    current_transfer_functionn = current_transfer_func;
+
+//    Current Conversion Constant = (I nominal * 10^6)/(Ifsp*full_scale_rms_codes);
     
-    calibration_data.cal_irms_cc = (SQRT_2 * current_transfer_func * 10 * ADE9000_RMS_FULL_SCALE_CODES);
+//    calibration_data.cal_irms_cc = (SQRT_2 * current_transfer_func * 10 * ADE9000_RMS_FULL_SCALE_CODES); // I_FSP
+    float temp_var;
+    temp_var = (SQRT_2 * current_transfer_func * 10 * ADE9000_RMS_FULL_SCALE_CODES); // I_FSP
+    calibration_data.cal_irms_cc = (NOMINAL_INPUT_CURRENT * 1000000)/(temp_var * ADE9000_RMS_FULL_SCALE_CODES); // Current Conversion Constant
+    //----------------------For testing-------------------
+    current_conversion_constant = calibration_data.cal_irms_cc;
+    //-----------------------------------------------------
     calibration_data.cal_power_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES);
     calibration_data.cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES);
     
     float AIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_A;
     AIGAIN_value = (AIGAIN_value - 1) * pow(2,27);
+    AIGAIN_value = 1.1817572e9;
     
     float BIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_B;
     BIGAIN_value = (BIGAIN_value - 1) * pow(2,27);
@@ -860,9 +883,9 @@ void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data)
     float BP_GAIN = (float)((B_Active_Energy_Expected - B_Active_Energy)/ (B_Active_Energy)) * pow(2,27);
     float CP_GAIN = (float)((C_Active_Energy_Expected - C_Active_Energy)/ (C_Active_Energy)) * pow(2,27);
     
-    SPI_Write(ADDR_APGAIN, AP_GAIN, true, get_css_pin(channel));
-    SPI_Write(ADDR_BPGAIN, BP_GAIN, true, get_css_pin(channel));
-    SPI_Write(ADDR_CPGAIN, CP_GAIN, true, get_css_pin(channel));    
+//    SPI_Write(ADDR_APGAIN, AP_GAIN, true, get_css_pin(channel));
+//    SPI_Write(ADDR_BPGAIN, BP_GAIN, true, get_css_pin(channel));
+//    SPI_Write(ADDR_CPGAIN, CP_GAIN, true, get_css_pin(channel));    
     
     /****************************************************************************************************/
            
@@ -878,7 +901,7 @@ void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin){
     
     float tmp;
     tmp = pow(Data->CurrentRMSValue_A,2) + (pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_A));
-    Data->CurrentRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
+//    Data->CurrentRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
     
     tmp = pow(Data->CurrentRMSValue_B,2) + pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_B);
     Data->CurrentRMSValue_B = tmp > 0 ? sqrt(tmp) : 0;

@@ -188,12 +188,12 @@ void sendChannelJsonData(uint8_t channel)
                 "\"general\":{"
                     "\"line_voltage\":%.2f,"
                     "\"rms_voltage\":%.2f,"
-                    "\"frequency\":%.2f,"
+                    "\"current_conversion_constant\":%.2f,"
                     "\"current\":%.2f"
                 "},"
                 "\"power\":{"
-                    "\"factor\":%.2f,"
-                    "\"active\":%.2f,"
+                    "\"CurrentRMSReg_A\":%.2f,"
+                    "\"current_transfer_functionn\":%.2f,"
                     "\"reactive\":%.2f,"
                     "\"apparent\":%.2f"
                 "},"
@@ -214,8 +214,8 @@ void sendChannelJsonData(uint8_t channel)
                 "}"
             "}%s",
             phases[i],
-            lineVoltage[i], rmsVoltage[i], frequency[i], current[i],
-            powerFactor[i], activePower[i], reactivePower[i], apparentPower[i],
+            lineVoltage[i], rmsVoltage[i], current_conversion_constant, current[i],
+            current[1], current_transfer_functionn, reactivePower[i], apparentPower[i],
             posEnergy[i], negEnergy[i],
             currentTHD[i], voltageTHD[i], angle[i],
             (i < 2) ? "," : "" // Comma between objects, not after last one
@@ -588,7 +588,7 @@ void resetEnergyValues(void)
 //  }
 //}
 
-uint32_t extract_channel_values(const char* channel){
+uint16_t extract_channel_values(const char* channel){
     char *ch;
     if(strstr(rxBuffer, channel) != NULL){
         ch = strstr(rxBuffer, channel);
@@ -822,20 +822,20 @@ int main(void)
     while (true)
     {
         ADE9000_Checking();
-        // if (ADE9000_status[SPI_CSS1 - 1] == 1)
-        // {
-        //     if (ADE9000_hotplug[SPI_CSS1 - 1] == 0)
-        //     {
-        //         ADE9000SetupForUnit(SPI_CSS1);
-        //         ADE9000_hotplug[SPI_CSS1 - 1] = 1;
-        //     }
-        //     ADE9000MeasurementsForUnit(SPI_CSS1, 1);
-        // }
-        // else
-        // {
-        //     ADE9000_hotplug[SPI_CSS1 - 1] = 0;
-        //     ADE9000MeasurementsForUnit_NON(SPI_CSS1, 1);
-        // }
+         if (ADE9000_status[SPI_CSS1 - 1] == 1)
+         {
+             if (ADE9000_hotplug[SPI_CSS1 - 1] == 0)
+             {
+                 ADE9000SetupForUnit(SPI_CSS1);
+                 ADE9000_hotplug[SPI_CSS1 - 1] = 1;
+             }
+             ADE9000MeasurementsForUnit(SPI_CSS1, 1);
+         }
+         else
+         {
+             ADE9000_hotplug[SPI_CSS1 - 1] = 0;
+             ADE9000MeasurementsForUnit_NON(SPI_CSS1, 1);
+         }
         // if (ADE9000_status[SPI_CSS2 - 1] == 1)
         // {
         //     if (ADE9000_hotplug[SPI_CSS2 - 1] == 0)
@@ -906,20 +906,20 @@ int main(void)
         //     ADE9000_hotplug[SPI_CSS6 - 1] = 0;
         //     ADE9000MeasurementsForUnit_NON(SPI_CSS6, 6);
         // }
-        // if (ADE9000_status[SPI_CSS7 - 1] == 1)
-        // {
-        //     if (ADE9000_hotplug[SPI_CSS7 - 1] == 0)
-        //     {
-        //         ADE9000SetupForUnit(SPI_CSS7);
-        //         ADE9000_hotplug[SPI_CSS7 - 1] = 1;
-        //     }
-        //     ADE9000MeasurementsForUnit(SPI_CSS7, 7);
-        // }
-        // else
-        // {
-        //     ADE9000_hotplug[SPI_CSS7 - 1] = 0;
-        //     ADE9000MeasurementsForUnit_NON(SPI_CSS7, 7);
-        // }
+//         if (ADE9000_status[SPI_CSS7 - 1] == 1)
+//         {
+//             if (ADE9000_hotplug[SPI_CSS7 - 1] == 0)
+//             {
+//                 ADE9000SetupForUnit(SPI_CSS7);
+//                 ADE9000_hotplug[SPI_CSS7 - 1] = 1;
+//             }
+//             ADE9000MeasurementsForUnit(SPI_CSS7, 7);
+//         }
+//         else
+//         {
+//             ADE9000_hotplug[SPI_CSS7 - 1] = 0;
+//             ADE9000MeasurementsForUnit_NON(SPI_CSS7, 7);
+//         }
         // if (ADE9000_status[SPI_CSS8 - 1] == 1)
         // {
         //     if (ADE9000_hotplug[SPI_CSS8 - 1] == 0)
@@ -948,20 +948,20 @@ int main(void)
         //     ADE9000_hotplug[SPI_CSS9 - 1] = 0;
         //     ADE9000MeasurementsForUnit_NON(SPI_CSS9, 9);
         // }
-        if (ADE9000_status[SPI_CSS10 - 1] == 1)
-        {
-            if (ADE9000_hotplug[SPI_CSS10 - 1] == 0)
-            {
-                ADE9000SetupForUnit(SPI_CSS10);
-                ADE9000_hotplug[SPI_CSS10 - 1] = 1;
-            }
-            ADE9000MeasurementsForUnit(SPI_CSS10, 10);
-        }
-        else
-        {
-            ADE9000_hotplug[SPI_CSS10 - 1] = 0;
-            ADE9000MeasurementsForUnit_NON(SPI_CSS10, 10);
-        }
+//        if (ADE9000_status[SPI_CSS10 - 1] == 1)
+//        {
+//            if (ADE9000_hotplug[SPI_CSS10 - 1] == 0)
+//            {
+//                ADE9000SetupForUnit(SPI_CSS10);
+//                ADE9000_hotplug[SPI_CSS10 - 1] = 1;
+//            }
+//            ADE9000MeasurementsForUnit(SPI_CSS10, 10);
+//        }
+//        else
+//        {
+//            ADE9000_hotplug[SPI_CSS10 - 1] = 0;
+//            ADE9000MeasurementsForUnit_NON(SPI_CSS10, 10);
+//        }
         // if (ADE9000_status[SPI_CSS11 - 1] == 1)
         // {
         //     if (ADE9000_hotplug[SPI_CSS11 - 1] == 0)

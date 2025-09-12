@@ -60,7 +60,8 @@
 // Section: Data Types
 // *****************************************************************************
 // *****************************************************************************
-
+extern float current_conversion_constant;
+extern float current_transfer_functionn;
 typedef enum {
     SPI_CSS1 = 1,
     SPI_CSS2,
@@ -176,7 +177,7 @@ typedef struct {
 } LineVoltageRegs;
 
 typedef struct {
-    int32_t CurrentRMSReg_A;
+    uint32_t CurrentRMSReg_A;
     int32_t CurrentRMSReg_B;
     int32_t CurrentRMSReg_C;
     float CurrentRMSValue_A;
