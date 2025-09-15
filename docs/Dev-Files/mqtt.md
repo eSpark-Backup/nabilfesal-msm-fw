@@ -35,6 +35,22 @@
               "positive": 0,
               "negative": 0
             }
+          },
+          "avg_power": {
+            "factor": 0,
+            "active": 0,
+            "reactive": 0,
+            "apparent": 0
+          },
+          "avg_energy": {
+            "active": {
+              "positive": 0,
+              "negative": 0
+            },
+            "reactive": {
+              "positive": 0,
+              "negative": 0
+            }
           }
         },
         "phase_b": {
@@ -59,6 +75,22 @@
               "positive": 0,
               "negative": 0
             }
+          },
+          "avg_power": {
+            "factor": 0,
+            "active": 0,
+            "reactive": 0,
+            "apparent": 0
+          },
+          "avg_energy": {
+            "active": {
+              "positive": 0,
+              "negative": 0
+            },
+            "reactive": {
+              "positive": 0,
+              "negative": 0
+            }
           }
         },
         "phase_c": {
@@ -75,6 +107,22 @@
             "apparent": 0
           },
           "energy": {
+            "active": {
+              "positive": 0,
+              "negative": 0
+            },
+            "reactive": {
+              "positive": 0,
+              "negative": 0
+            }
+          },
+          "avg_power": {
+            "factor": 0,
+            "active": 0,
+            "reactive": 0,
+            "apparent": 0
+          },
+          "avg_energy": {
             "active": {
               "positive": 0,
               "negative": 0
