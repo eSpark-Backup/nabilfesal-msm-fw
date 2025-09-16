@@ -158,12 +158,9 @@ void sendChannelJsonData(uint8_t channel)
         m.temperature.Temperature
     );
     ptr += written;
-    
     remaining -= written;
-        
-    const char* phases[3] = { "phase_a", "phase_b", "phase_c" };
-    
 
+    const char* phases[3] = { "phase_a", "phase_b", "phase_c" };
     float rmsVoltage[3]   = { m.voltageRMS.VoltageRMSValue_A, m.voltageRMS.VoltageRMSValue_B, m.voltageRMS.VoltageRMSValue_C };
     float lineVoltage[3]  = { m.lineVoltage.LineVoltage_AB, m.lineVoltage.LineVoltage_BC, m.lineVoltage.LineVoltage_CA };
     float frequency[3]    = { m.periodFrequency.FrequencyValue_A, m.periodFrequency.FrequencyValue_B, m.periodFrequency.FrequencyValue_C };
@@ -188,12 +185,12 @@ void sendChannelJsonData(uint8_t channel)
                 "\"general\":{"
                     "\"line_voltage\":%.2f,"
                     "\"rms_voltage\":%.2f,"
-                    "\"current_conversion_constant\":%.2f,"
+                    "\"frequency\":%.2f,"
                     "\"current\":%.2f"
                 "},"
                 "\"power\":{"
-                    "\"CurrentRMSReg_A\":%.2f,"
-                    "\"current_transfer_functionn\":%.2f,"
+                    "\"factor\":%.2f,"
+                    "\"active\":%.2f,"
                     "\"reactive\":%.2f,"
                     "\"apparent\":%.2f"
                 "},"
@@ -214,8 +211,8 @@ void sendChannelJsonData(uint8_t channel)
                 "}"
             "}%s",
             phases[i],
-            lineVoltage[i], rmsVoltage[i], current_conversion_constant, current[i],
-            current[1], current_transfer_functionn, reactivePower[i], apparentPower[i],
+            lineVoltage[i], rmsVoltage[i], frequency[i], current[i],
+            powerFactor[i], activePower[i], reactivePower[i], apparentPower[i],
             posEnergy[i], negEnergy[i],
             currentTHD[i], voltageTHD[i], angle[i],
             (i < 2) ? "," : "" // Comma between objects, not after last one
@@ -231,6 +228,7 @@ void sendChannelJsonData(uint8_t channel)
     // Send over UART (SERCOM2)
     SERCOM2_USART_Write((uint8_t *)jsonBuffer, ptr - jsonBuffer);
 }
+
 
 void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
 {

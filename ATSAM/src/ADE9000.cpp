@@ -13,8 +13,7 @@ Calibration_regs calibration_data;
 VoltageRMSOSRegs voltage_RMS_OS;
 CurrentRMSOSRegs current_RMS_OS;
 
-float current_conversion_constant;
-float current_transfer_functionn;
+
 
 
 // *****************************************************************************
@@ -218,9 +217,17 @@ void ADE9000_Initialize(SPI_CSS_Pin css_pin)
     SPI_Write(ADDR_AVGAIN, 0x0131B28D, true, css_pin);
     SPI_Write(ADDR_BVGAIN, 0x0131CB92, true, css_pin);
     SPI_Write(ADDR_CVGAIN, 0x01321952, true, css_pin);
-    SPI_Write(ADDR_AIGAIN, 0xF8BFCCA8, true, css_pin); // unit2
-    SPI_Write(ADDR_BIGAIN, 0xF8BE351B, true, css_pin); // unit2
-    SPI_Write(ADDR_CIGAIN, 0xF8950A51, true, css_pin); // unit2
+    
+    SPI_Write(ADDR_AIGAIN, 0xFF200000, true, css_pin); // unit2   Current is 9.38 A through Clamp meter and 9.35 A through ADE9000
+//    SPI_Write(ADDR_BIGAIN, 0xFF200000, true, css_pin); // unit2
+//    SPI_Write(ADDR_CIGAIN, 0xFF200000, true, css_pin); // unit2
+//    SPI_Write(ADDR_AIGAIN, 0xFE146727, true, css_pin);
+//    SPI_Write(ADDR_BIGAIN, 0xFDFDC6ED, true, css_pin);
+//    SPI_Write(ADDR_CIGAIN, 0xFDF8B72C, true, css_pin);
+//    SPI_Write(ADDR_AIGAIN, 0, true, css_pin);
+//    SPI_Write(ADDR_BIGAIN, 0, true, css_pin);
+//    SPI_Write(ADDR_CIGAIN, 0, true, css_pin);
+    
     SPI_Write(ADDR_APGAIN, 0, true, css_pin);
     SPI_Write(ADDR_BPGAIN, 0, true, css_pin);
     SPI_Write(ADDR_CPGAIN, 0, true, css_pin);
@@ -338,10 +345,27 @@ void ReadCurrentRMSRegs(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin)
 //        \frac{0.04}{100}\cdot10
 //        \frac{\operatorname{ans}}{0.707}
 //        \frac{5\cdot10^{6}}{\operatorname{ans}\cdot52702092}
-        Data->CurrentRMSValue_A = (float)Data->CurrentRMSReg_A * 16.76878406e-6;
+//        Data->CurrentRMSValue_A = (float)Data->CurrentRMSReg_A * 16.76878406e-6;
+//        Data->CurrentRMSValue_A = (float)Data->CurrentRMSReg_A * 1.67687841e-4;
+        
+//    float current_transfer_func  = (float) (R_BURDEN/(100)) *10;  //
+////    current_transfer_functionn = current_transfer_func;
+//    
+//    float temp_var;
+//    temp_var = (current_transfer_func / 0.707); // I_FSP
+//    // sqrt_2 * 0.04 / 100 * 10 * 52702092
+//    calibration_data.cal_irms_cc = (NOMINAL_INPUT_CURRENT)/(temp_var * ADE9000_RMS_FULL_SCALE_CODES); // Current Conversion Constant
+    //----------------------For testing-------------------
+//    current_conversion_constant = calibration_data.cal_irms_cc;
+    
+    
+    Data->CurrentRMSValue_A = (float)((float)(Data->CurrentRMSReg_A) / (float)calibration_data.cal_irms_cc);
+//    Data->CurrentRMSValue_A = (float)((float)(Data->CurrentRMSReg_A) / (float)(2981.2805308733837434676435559465));
+
 //        Data->CurrentRMSValue_A = (float)Data->CurrentRMSReg_A * calibration_data.cal_irms_cc;
-        Data->CurrentRMSValue_B = (float)Data->CurrentRMSReg_B / calibration_data.cal_irms_cc;
-        Data->CurrentRMSValue_C = (float)Data->CurrentRMSReg_C / calibration_data.cal_irms_cc;
+    Data->CurrentRMSValue_B = (float)((float)(Data->CurrentRMSReg_B) / (float)calibration_data.cal_irms_cc);
+
+    Data->CurrentRMSValue_C = (float)((float)(Data->CurrentRMSReg_C) / (float)calibration_data.cal_irms_cc);
     }
 
     if (DEBUG)
@@ -451,9 +475,9 @@ void ReadApparentPowerRegs(ApparentPowerRegs *Data, SPI_CSS_Pin css_pin)
     Data->ApparentPowerReg_C = int32_t(SPI_Read(ADDR_CVA, true, css_pin));
     if (css_pin)
     {
-        Data->ApparentPowerValue_A = (float)Data->ApparentPowerReg_A / calibration_data.cal_irms_cc;
-        Data->ApparentPowerValue_B = (float)Data->ApparentPowerReg_B / calibration_data.cal_irms_cc;
-        Data->ApparentPowerValue_C = (float)Data->ApparentPowerReg_C / calibration_data.cal_irms_cc;
+        Data->ApparentPowerValue_A = (float)Data->ApparentPowerReg_A / (calibration_data.cal_power_cc * 1000.0f);
+        Data->ApparentPowerValue_B = (float)Data->ApparentPowerReg_B / (calibration_data.cal_power_cc * 1000.0f);
+        Data->ApparentPowerValue_C = (float)Data->ApparentPowerReg_C / (calibration_data.cal_power_cc * 1000.0f);
     }
 
     if (DEBUG)
@@ -534,9 +558,9 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, SPI_CSS_Pin css_p
     uint32_t status0;
     uint32_t rawValue;
     status0 = SPI_Read(ADDR_STATUS0, true, css_pin);
-    
+    SECONDHEX = true;
     // -----------------------------For Testing --------------------------------
-    status0 = 1;
+    status0 = 0x01;
     // -------------------------------------------------------------------------
 
     if (status0 & 0x01)
@@ -574,9 +598,9 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, SPI_CSS_Pin css_p
         // Data1->ActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
         // Data1->ActiveEnergyValue_kWh_B = Data1->ActiveEnergyReg_B * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
         // Data1->ActiveEnergyValue_kWh_C = Data1->ActiveEnergyReg_C * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
-        // Data1->ReactiveEnergyValue_kWh_A = Data1->ReactiveEnergyReg_A * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
-        // Data1->ReactiveEnergyValue_kWh_B = Data1->ReactiveEnergyReg_B * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
-        // Data1->ReactiveEnergyValue_kWh_C = Data1->ReactiveEnergyReg_C * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
+//         Data1->ReactiveEnergyValue_kWh_A = Data1->ReactiveEnergyReg_A * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
+//         Data1->ReactiveEnergyValue_kWh_B = Data1->ReactiveEnergyReg_B * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
+//         Data1->ReactiveEnergyValue_kWh_C = Data1->ReactiveEnergyReg_C * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
 
         const float timeFactor = 1.0 / 3600.0;
         if (Data2->ActivePowerValue_A < 0)
@@ -837,35 +861,44 @@ void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data)
     /* Calculation of xIGAIN */
     /****************************************************************************************************/
     
-//    float current_transfer_func  = (float) R_BURDEN/ratio;
-    float current_transfer_func  = (float) R_BURDEN/(100);  //
-    current_transfer_functionn = current_transfer_func;
+    float current_transfer_func  = (float) (R_BURDEN/(ratio));  //
 
 //    Current Conversion Constant = (I nominal * 10^6)/(Ifsp*full_scale_rms_codes);
+
+    calibration_data.cal_irms_cc = (SQRT_2 * current_transfer_func * ADE9000_RMS_FULL_SCALE_CODES); // I_FSP
+    float I_FSP;
     
-//    calibration_data.cal_irms_cc = (SQRT_2 * current_transfer_func * 10 * ADE9000_RMS_FULL_SCALE_CODES); // I_FSP
-    float temp_var;
-    temp_var = (SQRT_2 * current_transfer_func * 10 * ADE9000_RMS_FULL_SCALE_CODES); // I_FSP
-    calibration_data.cal_irms_cc = (NOMINAL_INPUT_CURRENT * 1000000)/(temp_var * ADE9000_RMS_FULL_SCALE_CODES); // Current Conversion Constant
-    //----------------------For testing-------------------
-    current_conversion_constant = calibration_data.cal_irms_cc;
-    //-----------------------------------------------------
-    calibration_data.cal_power_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES);
-    calibration_data.cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES);
+    I_FSP = (current_transfer_func / 0.707); // I_FSP
     
-    float AIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_A;
-    AIGAIN_value = (AIGAIN_value - 1) * pow(2,27);
-    AIGAIN_value = 1.1817572e9;
+//    calibration_data.cal_irms_cc = (NOMINAL_INPUT_CURRENT)/(I_FSP * ADE9000_RMS_FULL_SCALE_CODES); // Current Conversion Constant
+    calibration_data.cal_power_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES);
+    calibration_data.cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES);
+//    calibration_data.cal_energy_cc = (5 * 220e6)/(I_FSP*VOLTAGE_TRANSFER_FUNCTION*ADE9000_WATT_FULL_SCALE_CODES*3600*8000*pow(2,-13));
     
-    float BIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_B;
-    BIGAIN_value = (BIGAIN_value - 1) * pow(2,27);
+//    float AIGAIN_value;
+//    AIGAIN_value = (float)((AIGAIN_value - 1) * pow(2,27));
     
-    float CIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_C;
-    CIGAIN_value = (CIGAIN_value - 1) * pow(2,27);
+    // For testing the value is hardcoded below
+//    float I_FSP = ((0.004 / 100) * 10) / 0.707;
+//    float AIRMS_exp = (float)(I_FSP * ADE9000_RMS_FULL_SCALE_CODES);    
+//    float GAIN = (float)((float)(AIRMS_exp) / (float)(Data.CurrentRMSReg_A));
+//    AIGAIN_value = (float)((GAIN - 1) * pow(2,27));
+//    AIGAIN_value = (float)((4 - 1) * pow(2,27));
+//    AIGAIN_value = 164774527.7;
+//  
+//  AIGAIN = (GAIN - 1) * 2^27;
     
-    SPI_Write(ADDR_AIGAIN, AIGAIN_value, true, get_css_pin(channel));
-    SPI_Write(ADDR_BIGAIN, BIGAIN_value, true, get_css_pin(channel));
-    SPI_Write(ADDR_CIGAIN, CIGAIN_value, true, get_css_pin(channel));
+//    float BIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_B;
+//    BIGAIN_value = (BIGAIN_value - 1) * pow(2,27);
+//    
+//    float CIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_C;
+//    CIGAIN_value = (CIGAIN_value - 1) * pow(2,27);
+    
+//    SPI_Write(ADDR_AIGAIN, AIGAIN_value, true, get_css_pin(channel));
+//    SPI_Write(ADDR_AIGAIN, 0xEE6B2800, true, get_css_pin(channel));
+    
+//    SPI_Write(ADDR_BIGAIN, BIGAIN_value, true, get_css_pin(channel));
+//    SPI_Write(ADDR_CIGAIN, CIGAIN_value, true, get_css_pin(channel));
     
     /****************************************************************************************************/
     /* Calculation of xPGAIN */
@@ -874,16 +907,21 @@ void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data)
     uint32_t A_Active_Energy = SPI_Read(ADDR_AWATTHR_HI, true, get_css_pin(channel));
     uint32_t B_Active_Energy = SPI_Read(ADDR_BWATTHR_HI, true, get_css_pin(channel));
     uint32_t C_Active_Energy = SPI_Read(ADDR_CWATTHR_HI, true, get_css_pin(channel));
-    
-    float A_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
-    float B_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
-    float C_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
-            
-    float AP_GAIN = (float)((A_Active_Energy_Expected - A_Active_Energy)/ (A_Active_Energy)) * pow(2,27);
-    float BP_GAIN = (float)((B_Active_Energy_Expected - B_Active_Energy)/ (B_Active_Energy)) * pow(2,27);
-    float CP_GAIN = (float)((C_Active_Energy_Expected - C_Active_Energy)/ (C_Active_Energy)) * pow(2,27);
+//    
+//    float A_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
+//    float B_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
+//    float C_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
+//            
+//    float AP_GAIN = (float)((A_Active_Energy_Expected - A_Active_Energy)/ (A_Active_Energy)) * pow(2,27);
+//    A_Active_Energy = 4294967295;
+    float A_Active_Energy_Expected = 355587.79;
+    float AP_GAIN = (float)(((A_Active_Energy_Expected - A_Active_Energy)/ (A_Active_Energy)) * pow(2,27));
+//    float BP_GAIN = (float)((B_Active_Energy_Expected - B_Active_Energy)/ (B_Active_Energy)) * pow(2,27);
+//    float CP_GAIN = (float)((C_Active_Energy_Expected - C_Active_Energy)/ (C_Active_Energy)) * pow(2,27);
     
 //    SPI_Write(ADDR_APGAIN, AP_GAIN, true, get_css_pin(channel));
+//    SPI_Write(ADDR_APGAIN, (uint32_t)AP_GAIN, true, get_css_pin(channel));
+    
 //    SPI_Write(ADDR_BPGAIN, BP_GAIN, true, get_css_pin(channel));
 //    SPI_Write(ADDR_CPGAIN, CP_GAIN, true, get_css_pin(channel));    
     

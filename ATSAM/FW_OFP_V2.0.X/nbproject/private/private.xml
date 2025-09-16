@@ -5,21 +5,25 @@
             <url>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/ADE9000.cpp</url>
             <bookmark id="1">
                 <name/>
-                <line>272</line>
+                <line>271</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/New%20folder/nabilfesal-msm-fw/ATSAM/src/main.h</file>
-            <file>file:/D:/New%20folder/nabilfesal-msm-fw/ATSAM/src/config/default/exceptions.c</file>
-            <file>file:/C:/Program%20Files/Microchip/xc32/v4.60/pic32c/include/musl/stdlib.h</file>
-            <file>file:/D:/New%20folder/nabilfesal-msm-fw/ATSAM/src/ADE9000.h</file>
-            <file>file:/D:/New%20folder/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/sercom/spi_master/plib_sercom0_spi_master.c</file>
-            <file>file:/D:/New%20folder/nabilfesal-msm-fw/ATSAM/src/ADE9000.cpp</file>
-            <file>file:/D:/New%20folder/nabilfesal-msm-fw/ATSAM/src/main.cpp</file>
-            <file>file:/D:/New%20folder/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/nvic/plib_nvic.c</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/exceptions.c</file>
+            <file>file:/C:/Program%20Files/Microchip/xc32/v4.60/pic32c/include/c++/8.3.1/math.h</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/nvic/plib_nvic.c</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/sercom/spi_master/plib_sercom0_spi_master.c</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/ADE9000.cpp</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/main.h</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/ADE9000Calibration.h</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/ADE9000RegMap.h</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/main.cpp</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/packs/ATSAMD20G17_DFP/component/sercom.h</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/ADE9000.h</file>
+            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/sercom/usart/plib_sercom2_usart.c</file>
         </group>
     </open-files>
 </project-private>
