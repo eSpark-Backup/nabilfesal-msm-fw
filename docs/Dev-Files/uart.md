@@ -35,7 +35,23 @@ channel-N\n
           "negative": 0
         }
       },
-      "threshold": {
+      "avg_power": {
+        "factor": 0,
+        "active": 0,
+        "reactive": 0,
+        "apparent": 0
+      },
+      "avg_energy": {
+        "active": {
+          "positive": 0,
+          "negative": 0
+        },
+        "reactive": {
+          "positive": 0,
+          "negative": 0
+        }
+      },
+      "thd": {
         "current": 0,
         "voltage": 0,
         "angle": 0
@@ -64,7 +80,23 @@ channel-N\n
           "negative": 0
         }
       },
-      "threshold": {
+      "avg_power": {
+        "factor": 0,
+        "active": 0,
+        "reactive": 0,
+        "apparent": 0
+      },
+      "avg_energy": {
+        "active": {
+          "positive": 0,
+          "negative": 0
+        },
+        "reactive": {
+          "positive": 0,
+          "negative": 0
+        }
+      },
+      "thd": {
         "current": 0,
         "voltage": 0,
         "angle": 0
@@ -93,7 +125,23 @@ channel-N\n
           "negative": 0
         }
       },
-      "threshold": {
+      "avg_power": {
+        "factor": 0,
+        "active": 0,
+        "reactive": 0,
+        "apparent": 0
+      },
+      "avg_energy": {
+        "active": {
+          "positive": 0,
+          "negative": 0
+        },
+        "reactive": {
+          "positive": 0,
+          "negative": 0
+        }
+      },
+      "thd": {
         "current": 0,
         "voltage": 0,
         "angle": 0
