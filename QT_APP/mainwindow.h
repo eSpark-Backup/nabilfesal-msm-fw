@@ -9,6 +9,8 @@
 #include "factorysettings.h"
 #include "usbexporter.h"
 #include "usbwatcher.h"
+#include "factsetting.h"
+#include "measurements.h"
 #include <atomic>
 
 QT_BEGIN_NAMESPACE
@@ -42,6 +44,8 @@ private:
     FactorySettings *factorySettings = nullptr;
     UsbExporter *usbExporter = nullptr;
     UsbWatcher *watcher = nullptr;
+    FactSetting *factSettings = nullptr;
+    Measurements *measure = nullptr;
 
     // state
     int progressValue = 0;

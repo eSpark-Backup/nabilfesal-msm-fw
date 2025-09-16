@@ -11,13 +11,15 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      ui(new Ui::MainWindow),
-      progressValue(0),
-      login(nullptr),
-      settings(nullptr),
-      factorySettings(nullptr),
-      channels(nullptr),
-      registration(nullptr)
+    ui(new Ui::MainWindow),
+    progressValue(0),
+    login(nullptr),
+    settings(nullptr),
+    factorySettings(nullptr),
+    channels(nullptr),
+    registration(nullptr),
+    measure(nullptr),
+    factSettings(nullptr)
 {
     ui->setupUi(this);
 
@@ -183,6 +185,31 @@ void MainWindow::connectLoginSignals()
             connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
                 isLogin = false;
                 login->showFullScreen();
+                factorySettings->hide();
+            });
+            connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
+                if (!factSettings){
+                    factSettings = new FactSetting;
+                    connect(factSettings, &FactSetting::usbExport, this, [this](){
+                        usbExporter->show();
+                    });
+                    connect(factSettings, &FactSetting::factoryExit, this, [this](){
+                        factorySettings->showFullScreen();
+                        factSettings->hide();
+                    });
+                }
+                factSettings->showFullScreen();
+                factorySettings->hide();
+            });
+            connect(factorySettings, &FactorySettings::loadMeasurements, this, [this]() {
+                if (!measure){
+                    measure = new Measurements;
+                    connect(measure, &Measurements::measureExit, this, [this](){
+                        factorySettings->showFullScreen();
+                        measure->hide();
+                    });
+                }
+                measure->showFullScreen();
                 factorySettings->hide();
             });
         }
