@@ -11,6 +11,7 @@ public:
 
     bool loadConfig(const QString &filePath);
     void reloadSettings();
+    void disconnectClient();
     void publishMessage(const QString &payload);
     void subscribeToTopic();
 
@@ -18,16 +19,20 @@ private:
     void connectToBroker();
     void disconnectFromBroker();
     bool loadCertificates();
+    QByteArray buildTelemetryJson() const;
 
     QString configPath;
     QMqttClient *mqttClient = nullptr;
 
     // MQTT settings from JSON
     QString host;
+    QString username;
+    QString password;
     int port = 8883;
     QString clientId;
     QString topic;
-    int intervalMs = 0;
+    int intervalSec = 0;
+    bool isConnected = false;
 
     // System certificate paths (fixed)
     QString caPath = "/etc/certs/AmazonRootCA1.pem";

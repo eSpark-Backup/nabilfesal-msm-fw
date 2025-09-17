@@ -303,6 +303,11 @@ void DeviceSettings::on_mqtt_save_btn_clicked()
 
 void DeviceSettings::on_mqtt_load_btn_clicked()
 {
+    if (mqttHandler == nullptr) {
+        mqttHandler = new AwsMqttManager(this);
+    }
+    mqttHandler->disconnectClient();
+
     QFile file("config/mqtt_settings.json");
     if (!file.exists()) {
         QMessageBox::warning(this, "MQTT Settings", "No saved settings found.");
@@ -334,6 +339,10 @@ void DeviceSettings::on_mqtt_load_btn_clicked()
     ui->mqtt_int->setText(mqttSettings.value("interval").toString());
 
     QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
+    
+    QTimer::singleShot(1000, [this](){
+        mqttHandler->reloadSettings();
+    });
 }
 
 

@@ -53,6 +53,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     Utils::keySound();
     showFullScreen();
+
+    // // Instead of creating login, create settings ui directly
+    // if (!settings) {
+    //     settings = new DeviceSettings(this); // parent = this
+    //     settings->show(); // Show settings directly
+    // }
+
+    // // Optional: hide MainWindow itself if you don't want it visible
+    // this->hide(); // MainWindow won't appear, only settings
 }
 
 MainWindow::~MainWindow()

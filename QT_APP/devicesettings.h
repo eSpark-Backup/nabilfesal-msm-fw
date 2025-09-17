@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "msmkeyboard.h"
+#include "awsmqttmanager.h"
 
 namespace Ui {
 class DeviceSettings;
@@ -48,6 +49,7 @@ private:
     void refreshInfo();
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;
+    AwsMqttManager *mqttHandler = nullptr;
 };
 
 #endif // DEVICESETTINGS_H
