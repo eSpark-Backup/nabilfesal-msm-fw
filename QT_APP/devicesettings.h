@@ -22,23 +22,15 @@ signals:
     void usbExport();
 private slots:
     void on_channels_btn_clicked();
-
     void on_continue_btn_clicked();
-
     void on_back_btn_clicked();
-
     void on_ntp_load_btn_clicked();
-
     void on_ntp_save_btn_clicked();
-
+    void load_and_start_mqtt_data();
     void on_mqtt_save_btn_clicked();
-
     void on_mqtt_load_btn_clicked();
-
     void on_sftp_load_btn_clicked();
-
     void on_sftp_save_btn_clicked();
-
     void on_export_btn_clicked();
 
 protected:

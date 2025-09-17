@@ -14,6 +14,7 @@ public:
     void disconnectClient();
     void publishMessage(const QString &payload);
     void subscribeToTopic();
+    bool mqttState();
 
 private:
     void connectToBroker();

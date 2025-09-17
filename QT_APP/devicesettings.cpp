@@ -209,6 +209,7 @@ void DeviceSettings::parseNtpJson(const QJsonObject& root)
 
 void DeviceSettings::on_continue_btn_clicked()
 {
+    load_and_start_mqtt_data();
     ui->stackedWidget->setCurrentIndex(1);
 }
 
@@ -298,6 +299,36 @@ void DeviceSettings::on_mqtt_save_btn_clicked()
     file.close();
 
     QMessageBox::information(this, "MQTT Settings", "MQTT settings saved successfully!");
+}
+
+void DeviceSettings::load_and_start_mqtt_data()
+{
+    if (mqttHandler == nullptr) {
+        mqttHandler = new AwsMqttManager(this);
+    }
+
+    QFile file("config/mqtt_settings.json");
+    if (!file.exists() || !file.open(QIODevice::ReadOnly)) return;
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (doc.isNull() || !doc.isObject()) return;
+    QJsonObject mqttSettings = doc.object();
+
+    ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
+    ui->mqtt_port->setText(mqttSettings.value("port").toString());
+    ui->mqtt_user->setText(mqttSettings.value("user").toString());
+    ui->mqtt_pass->setText(mqttSettings.value("password").toString());
+    ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
+    ui->mqtt_int->setText(mqttSettings.value("interval").toString());
+    
+    if (!mqttHandler->mqttState())
+    {
+        mqttHandler->reloadSettings();
+    }
 }
 
 

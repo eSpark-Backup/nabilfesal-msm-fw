@@ -253,6 +253,11 @@ void AwsMqttManager::reloadSettings()
     connectToBroker();
 }
 
+bool AwsMqttManager::mqttState()
+{
+    return isConnected;
+}
+
 bool AwsMqttManager::loadCertificates()
 {
     QFile caFile("/etc/ssl/certs/AmazonRootCA1.pem");
