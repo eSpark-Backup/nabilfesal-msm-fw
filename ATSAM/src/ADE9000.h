@@ -40,11 +40,24 @@
 #define ADE90xx_FDSP 8000   			/*ADE9000 FDSP: 8000sps, ADE9078 FDSP: 4000sps*/
 #define ADE9000_RUN_ON 0x0001			/*DSP ON*/
 /*Energy Accumulation Settings*/
-#define ADE9000_EP_CFG 0x0011			/*Enable energy accumulation, accumulate samples at 8ksps*/
+
+
+
+//#define ADE9000_EP_CFG 0x0011			/*Enable energy accumulation, accumulate samples at 8ksps*/
 										/*latch energy accumulation after EGYRDY*/
 										/*If accumulation is changed to half line cycle mode, change EGY_TIME*/
 #define ADE9000_EGY_TIME 0x1F3F 				/*Accumulate 8000 samples*/
 
+
+#define ADE9000_EP_CFG 0x0011          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
+/* Set to ~10s accumulation window for testing */
+//#define ADE9000_EGY_TIME 0x13880      /* 80,000 samples ? 10 seconds at 8kSPS */
+
+//#define ADE9000_EGY_TIME 0x3FF      /* 80,000 samples ? 10 seconds at 8kSPS */
+
+
+
+ 
 /*Waveform buffer Settings*/
 #define ADE9000_WFB_CFG 0x1000			/*Neutral current samples enabled, Resampled data enabled*/
 /*Burst all channels*/
@@ -266,9 +279,10 @@ typedef struct {
 
 typedef struct{
     uint16_t ctRatio;
-    uint32_t setIOffset;
-    uint32_t setVOffset;
+    float setIOffset;
+    int32_t setVOffset;
 } ChannelConfig;
+extern ChannelConfig channelConfig[12];
 
 // *****************************************************************************
 // *****************************************************************************
@@ -285,10 +299,11 @@ void ADE9000_Initialize(SPI_CSS_Pin css_pin);
 //void ct_ratio_calibration(uint16_t ratio);
 void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data);
 
-void current_offset_write(int8_t channel, uint32_t offset);
+void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin);
+void current_offset_write(int8_t channel, int32_t offset);
 
 void voltage_offset_calibration(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin);
-void voltage_offset_write(int8_t channel, uint32_t offset);
+void voltage_offset_write(int8_t channel, int32_t offset);
 
 
 void ReadVoltageRMSRegs(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin);

@@ -299,7 +299,7 @@ void ReadVoltageRMSOSRegs(VoltageRMSOSRegs* VRMS_OS, SPI_CSS_Pin css_pin)
 
 void ReadCurrentRMSOSRegs(CurrentRMSOSRegs* IRMS_OS, SPI_CSS_Pin css_pin)
 {
-    int32_t CurrentRMSOSReg_A = int32_t(SPI_Read(ADDR_AIRMSOS, true, css_pin));
+    int32_t CurrentRMSOSReg_A = (int32_t)SPI_Read(ADDR_AIRMSOS, true, css_pin);
     int32_t CurrentRMSOSReg_B = int32_t(SPI_Read(ADDR_BIRMSOS, true, css_pin));
     int32_t CurrentRMSOSReg_C = int32_t(SPI_Read(ADDR_CIRMSOS, true, css_pin));
 
@@ -422,8 +422,41 @@ void ReadPeriodRegsnValues(PeriodRegs *Data, VoltageRMSRegs *RMSData, SPI_CSS_Pi
 }
 
 /***************************POWER VALUES*****************************/
+
+//#define CPU_FREQ 48000000UL  // 48 MHz
+
+//uint32_t get_microseconds(void) {
+//    return (SysTick->VAL / (CPU_FREQ / 1000000));
+//}
+//
+//void get_microseconds(void) {
+//    SysTick->LOAD = CPU_FREQ / 1000000 - 1;  // 1 us tick
+//    SysTick->VAL  = 0;                       // Clear current value
+//    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
+//}
+
+#define CPU_FREQ 48000000UL // 48 MHz
+
+void init_systick(void) {
+    SysTick->LOAD = 0xFFFFFF;              // Max reload
+    SysTick->VAL  = 0;                     // Clear counter
+    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
+}
+
+uint32_t get_cycles(void) {
+    return (0xFFFFFF - SysTick->VAL); // elapsed cycles since last reset
+}
+
+uint32_t get_microseconds(void) {
+    return get_cycles() / (CPU_FREQ / 1000000UL);
+}
 void ReadActivePowerRegs(ActivePowerRegs *Data, SPI_CSS_Pin css_pin)
 {
+    
+    uint32_t start_time = get_microseconds();  // Start
+    uint32_t end_time;
+//    float elapsed_us;
+    
     uint32_t rawValue;
     Data->ActivePowerReg_A = int32_t(SPI_Read(ADDR_AWATT, true, css_pin));
     Data->ActivePowerReg_B = int32_t(SPI_Read(ADDR_BWATT, true, css_pin));
@@ -434,7 +467,11 @@ void ReadActivePowerRegs(ActivePowerRegs *Data, SPI_CSS_Pin css_pin)
         Data->ActivePowerValue_B = (float)Data->ActivePowerReg_B / (calibration_data.cal_power_cc * 1000.0f);
         Data->ActivePowerValue_C = (float)Data->ActivePowerReg_C / (calibration_data.cal_power_cc * 1000.0f);
     }
-
+    
+    end_time = get_microseconds();  // End
+    uint32_t ticks = end_time - start_time;
+float elapsed_us = (ticks / (float)CPU_FREQ) * 1e6;
+//    elapsed_us = (float)(end_time - start_time);s
     if (DEBUG)
     {
         printf("Reading Active Power Registers...\n");
@@ -551,111 +588,230 @@ void ReadPowerFactorRegsnValues(PowerFactorRegs *Data, VoltageRMSRegs *rmsData, 
 }
 
 /***************************ENERGY VALUES*****************************/
-void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, SPI_CSS_Pin css_pin)
-{
+//void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, SPI_CSS_Pin css_pin)
+//{
+//    static uint8_t discardInitialReadingsCount = 0;
+//    const uint8_t INITIAL_READINGS_TO_DISCARD = 10;
+//    uint32_t status0;
+//    uint32_t rawValue;
+//    status0 = SPI_Read(ADDR_STATUS0, true, css_pin);
+//
+//    if (status0 & 0x01)
+//    {
+//        if (discardInitialReadingsCount < INITIAL_READINGS_TO_DISCARD)
+//        {
+//            discardInitialReadingsCount++;
+//            return;
+//        }
+//        if (SECONDHEX)
+//        {
+//            rawValue = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
+//            Data1->ActiveEnergyReg_A = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
+//            rawValue = SPI_Read(ADDR_BFWATTHR_HI, true, css_pin);
+//            Data1->ActiveEnergyReg_B = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
+//            rawValue = SPI_Read(ADDR_CFWATTHR_HI, true, css_pin);
+//            Data1->ActiveEnergyReg_C = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
+//            rawValue = SPI_Read(ADDR_AFVARHR_HI, true, css_pin);
+//            Data1->ReactiveEnergyReg_A = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
+//            rawValue = SPI_Read(ADDR_BFVARHR_HI, true, css_pin);
+//            Data1->ReactiveEnergyReg_B = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
+//            rawValue = SPI_Read(ADDR_CFVARHR_HI, true, css_pin);
+//            Data1->ReactiveEnergyReg_C = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
+//        }
+//        else
+//        {
+//            Data1->ActiveEnergyReg_A = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
+//            Data1->ActiveEnergyReg_B = SPI_Read(ADDR_BFWATTHR_HI, true, css_pin);
+//            Data1->ActiveEnergyReg_C = SPI_Read(ADDR_CFWATTHR_HI, true, css_pin);
+//            Data1->ReactiveEnergyReg_A = SPI_Read(ADDR_AFVARHR_HI, true, css_pin);
+//            Data1->ReactiveEnergyReg_B = SPI_Read(ADDR_BFVARHR_HI, true, css_pin);
+//            Data1->ReactiveEnergyReg_C = SPI_Read(ADDR_CFVARHR_HI, true, css_pin);
+//            
+//        }
+//
+//         Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float) (2.06296 * 8000 * 3600) / 1000000 / 1000;
+//        // Data1->ActiveEnergyValue_kWh_B = Data1->ActiveEnergyReg_B * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
+//        // Data1->ActiveEnergyValue_kWh_C = Data1->ActiveEnergyReg_C * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
+////         Data1->ReactiveEnergyValue_kWh_A = Data1->ReactiveEnergyReg_A * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
+////         Data1->ReactiveEnergyValue_kWh_B = Data1->ReactiveEnergyReg_B * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
+////         Data1->ReactiveEnergyValue_kWh_C = Data1->ReactiveEnergyReg_C * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
+//
+//        const float timeFactor = 1.0 / 3600.0;
+////        if (Data2->ActivePowerValue_A < 0)
+////        {
+////            Data1->NActiveEnergyValue_kWh_A = Data2->ActivePowerValue_A * timeFactor;
+////            Data1->PActiveEnergyValue_kWh_A = 0;
+////        }
+////        else
+////        {
+////            Data1->PActiveEnergyValue_kWh_A = Data2->ActivePowerValue_A * timeFactor;
+////            Data1->NActiveEnergyValue_kWh_A = 0;
+////        }
+//        if (Data2->ActivePowerValue_B < 0)
+//        {
+//            Data1->NActiveEnergyValue_kWh_B = Data2->ActivePowerValue_B * timeFactor;
+//            Data1->PActiveEnergyValue_kWh_B = 0;
+//        }
+//        else
+//        {
+//            Data1->PActiveEnergyValue_kWh_B = Data2->ActivePowerValue_B * timeFactor;
+//            Data1->NActiveEnergyValue_kWh_B = 0;
+//        }
+//        if (Data2->ActivePowerValue_C < 0)
+//        {
+//            Data1->NActiveEnergyValue_kWh_C = Data2->ActivePowerValue_C * timeFactor;
+//            Data1->PActiveEnergyValue_kWh_C = 0;
+//        }
+//        else
+//        {
+//            Data1->PActiveEnergyValue_kWh_C = Data2->ActivePowerValue_C * timeFactor;
+//            Data1->NActiveEnergyValue_kWh_C = 0;
+//        }
+//
+//        SPI_Write(ADDR_STATUS0, (status0 | 0x01), true, css_pin);
+//    }
+//    else
+//    {
+//        Data1->ActiveEnergyReg_A = 0;
+//        Data1->ActiveEnergyReg_B = 0;
+//        Data1->ActiveEnergyReg_C = 0;
+//        Data1->PActiveEnergyValue_kWh_A = 0;
+//        Data1->PActiveEnergyValue_kWh_B = 0;
+//        Data1->PActiveEnergyValue_kWh_C = 0;
+//        Data1->NActiveEnergyValue_kWh_A = 0;
+//        Data1->NActiveEnergyValue_kWh_B = 0;
+//        Data1->NActiveEnergyValue_kWh_C = 0;
+//
+//        Data1->ReactiveEnergyReg_A = 0;
+//        Data1->ReactiveEnergyReg_B = 0;
+//        Data1->ReactiveEnergyReg_C = 0;
+//        Data1->ReactiveEnergyValue_kWh_A = 0;
+//        Data1->ReactiveEnergyValue_kWh_B = 0;
+//        Data1->ReactiveEnergyValue_kWh_C = 0;
+//    }
+//}
+//
+
+///*Energy Accumulation Settings*/
+//#define ADE9000_EP_CFG 0x0011         /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
+///* Set to ~10s accumulation window for testing */
+//#define ADE9000_EGY_TIME 0x13880      /* 80,000 samples ? 10 seconds at 8kSPS */
+
+#define ADE9000_STATUS0_EGYRDY		(1 << 0)
+
+void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, SPI_CSS_Pin css_pin) {
     static uint8_t discardInitialReadingsCount = 0;
     const uint8_t INITIAL_READINGS_TO_DISCARD = 10;
     uint32_t status0;
     uint32_t rawValue;
+ 
+    // Read STATUS0 to check if energy accumulation is ready
     status0 = SPI_Read(ADDR_STATUS0, true, css_pin);
-    SECONDHEX = true;
-    // -----------------------------For Testing --------------------------------
-    status0 = 0x01;
-    // -------------------------------------------------------------------------
-
-    if (status0 & 0x01)
-    {
-        if (discardInitialReadingsCount < INITIAL_READINGS_TO_DISCARD)
-        {
+    
+    if ((status0 & (ADE9000_STATUS0_EGYRDY)) != 0) { // EGYRDY flag set
+        if (discardInitialReadingsCount < INITIAL_READINGS_TO_DISCARD) {
             discardInitialReadingsCount++;
-            return;
+            return; // Skip initial unstable readings
         }
-        if (SECONDHEX)
-        {
+ 
+        if (SECONDHEX) {
             rawValue = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
             Data1->ActiveEnergyReg_A = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
             rawValue = SPI_Read(ADDR_BFWATTHR_HI, true, css_pin);
             Data1->ActiveEnergyReg_B = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
             rawValue = SPI_Read(ADDR_CFWATTHR_HI, true, css_pin);
             Data1->ActiveEnergyReg_C = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
+ 
             rawValue = SPI_Read(ADDR_AFVARHR_HI, true, css_pin);
             Data1->ReactiveEnergyReg_A = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
             rawValue = SPI_Read(ADDR_BFVARHR_HI, true, css_pin);
             Data1->ReactiveEnergyReg_B = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
             rawValue = SPI_Read(ADDR_CFVARHR_HI, true, css_pin);
             Data1->ReactiveEnergyReg_C = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
-        }
-        else
-        {
-            Data1->ActiveEnergyReg_A = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
+        } else {
+//            Data1->ActiveEnergyReg_A = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
+            
+//            uint64_t energyA;
+//
+//            uint32_t hi = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
+//            uint16_t lo = SPI_Read(ADDR_AFWATTHR_LO, false, css_pin);
+//
+//            energyA = ((uint64_t)hi << 13) | (lo & 0x1FFF);
+//
+//            Data1->ActiveEnergyReg_A = energyA;
+            
+//            uint32_t hi = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
+//            uint16_t lo = SPI_Read(ADDR_AFWATTHR_LO, false, css_pin);
+//
+//            Data1->ActiveEnergyReg_A = ((uint64_t)hi << 13) | (lo & 0x1FFF);
+
+            
+            uint32_t high = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
+            uint32_t low  = SPI_Read(ADDR_AFWATTHR_LO, true, css_pin);
+//            return ((uint64_t)high << 13) | (low & 0x1FFF);
+            
+            const double k = 8192.0 / ((double)ADE9000_EGY_TIME + 1.0);
+
+            uint64_t energyCodes;
+
+            // Phase A
+            energyCodes = ((uint64_t)high << 13) | (low & 0x1FFF);
+            Data1->PActiveEnergyValue_kWh_A = (float)(energyCodes * calibration_data.cal_power_cc * k)/ 3600;
+            // clear flag
+            SPI_Write(ADDR_STATUS0, ADE9000_STATUS0_EGYRDY, true, css_pin);
+
             Data1->ActiveEnergyReg_B = SPI_Read(ADDR_BFWATTHR_HI, true, css_pin);
             Data1->ActiveEnergyReg_C = SPI_Read(ADDR_CFWATTHR_HI, true, css_pin);
+ 
             Data1->ReactiveEnergyReg_A = SPI_Read(ADDR_AFVARHR_HI, true, css_pin);
             Data1->ReactiveEnergyReg_B = SPI_Read(ADDR_BFVARHR_HI, true, css_pin);
             Data1->ReactiveEnergyReg_C = SPI_Read(ADDR_CFVARHR_HI, true, css_pin);
+            
         }
-
-        // Data1->ActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
-        // Data1->ActiveEnergyValue_kWh_B = Data1->ActiveEnergyReg_B * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
-        // Data1->ActiveEnergyValue_kWh_C = Data1->ActiveEnergyReg_C * (float) (CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
-//         Data1->ReactiveEnergyValue_kWh_A = Data1->ReactiveEnergyReg_A * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
-//         Data1->ReactiveEnergyValue_kWh_B = Data1->ReactiveEnergyReg_B * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
-//         Data1->ReactiveEnergyValue_kWh_C = Data1->ReactiveEnergyReg_C * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
-
-        const float timeFactor = 1.0 / 3600.0;
-        if (Data2->ActivePowerValue_A < 0)
-        {
-            Data1->NActiveEnergyValue_kWh_A = Data2->ActivePowerValue_A * timeFactor;
-            Data1->PActiveEnergyValue_kWh_A = 0;
+ 
+        // --- Apply scaling to convert to kWh ---
+        // ADE9000_EGY_TIME is the number of samples per accumulation window
+        // CAL_ENERGY_CC must be set from ADE9000 datasheet or calibration
+//        Data1->PActiveEnergyValue_kWh_A =
+//            Data1->ActiveEnergyReg_A * (float)(CAL_ENERGY_CC * ADE9000_EGY_TIME * 3600.0) / 1e9;
+//        Data1->PActiveEnergyValue_kWh_B =
+//            Data1->ActiveEnergyReg_B * (float)(CAL_ENERGY_CC * ADE9000_EGY_TIME * 3600.0) / 1e9;
+//        Data1->PActiveEnergyValue_kWh_C =
+//            Data1->ActiveEnergyReg_C * (float)(CAL_ENERGY_CC * ADE9000_EGY_TIME * 3600.0) / 1e9;
+// 
+//        Data1->ReactiveEnergyValue_kWh_A =
+//            Data1->ReactiveEnergyReg_A * (float)(CAL_ENERGY_CC * ADE9000_EGY_TIME * 3600.0) / 1e9;
+//        Data1->ReactiveEnergyValue_kWh_B =
+//            Data1->ReactiveEnergyReg_B * (float)(CAL_ENERGY_CC * ADE9000_EGY_TIME * 3600.0) / 1e9;
+//        Data1->ReactiveEnergyValue_kWh_C =
+//            Data1->ReactiveEnergyReg_C * (float)(CAL_ENERGY_CC * ADE9000_EGY_TIME * 3600.0) / 1e9;
+ 
+        // --- Positive/Negative energy split based on instantaneous power ---
+        const float timeFactor = 1.0 / 3600.0; // 1 second -> hour conversion
+        if (Data2->ActivePowerValue_A < 0) {
+            Data1->NActiveEnergyValue_kWh_A += Data2->ActivePowerValue_A * timeFactor;
+        } else {
+            Data1->PActiveEnergyValue_kWh_A += Data2->ActivePowerValue_A * timeFactor;
         }
-        else
-        {
-            Data1->PActiveEnergyValue_kWh_A = Data2->ActivePowerValue_A * timeFactor;
-            Data1->NActiveEnergyValue_kWh_A = 0;
+ 
+        if (Data2->ActivePowerValue_B < 0) {
+            Data1->NActiveEnergyValue_kWh_B += Data2->ActivePowerValue_B * timeFactor;
+        } else {
+            Data1->PActiveEnergyValue_kWh_B += Data2->ActivePowerValue_B * timeFactor;
         }
-        if (Data2->ActivePowerValue_B < 0)
-        {
-            Data1->NActiveEnergyValue_kWh_B = Data2->ActivePowerValue_B * timeFactor;
-            Data1->PActiveEnergyValue_kWh_B = 0;
+ 
+        if (Data2->ActivePowerValue_C < 0) {
+            Data1->NActiveEnergyValue_kWh_C += Data2->ActivePowerValue_C * timeFactor;
+        } else {
+            Data1->PActiveEnergyValue_kWh_C += Data2->ActivePowerValue_C * timeFactor;
         }
-        else
-        {
-            Data1->PActiveEnergyValue_kWh_B = Data2->ActivePowerValue_B * timeFactor;
-            Data1->NActiveEnergyValue_kWh_B = 0;
-        }
-        if (Data2->ActivePowerValue_C < 0)
-        {
-            Data1->NActiveEnergyValue_kWh_C = Data2->ActivePowerValue_C * timeFactor;
-            Data1->PActiveEnergyValue_kWh_C = 0;
-        }
-        else
-        {
-            Data1->PActiveEnergyValue_kWh_C = Data2->ActivePowerValue_C * timeFactor;
-            Data1->NActiveEnergyValue_kWh_C = 0;
-        }
-
+ 
+        // Clear EGYRDY flag
         SPI_Write(ADDR_STATUS0, (status0 | 0x01), true, css_pin);
     }
-    else
-    {
-        Data1->ActiveEnergyReg_A = 0;
-        Data1->ActiveEnergyReg_B = 0;
-        Data1->ActiveEnergyReg_C = 0;
-        Data1->PActiveEnergyValue_kWh_A = 0;
-        Data1->PActiveEnergyValue_kWh_B = 0;
-        Data1->PActiveEnergyValue_kWh_C = 0;
-        Data1->NActiveEnergyValue_kWh_A = 0;
-        Data1->NActiveEnergyValue_kWh_B = 0;
-        Data1->NActiveEnergyValue_kWh_C = 0;
-
-        Data1->ReactiveEnergyReg_A = 0;
-        Data1->ReactiveEnergyReg_B = 0;
-        Data1->ReactiveEnergyReg_C = 0;
-        Data1->ReactiveEnergyValue_kWh_A = 0;
-        Data1->ReactiveEnergyValue_kWh_B = 0;
-        Data1->ReactiveEnergyValue_kWh_C = 0;
-    }
+    // IMPORTANT: else branch removed (no reset to zero anymore)
 }
+
 
 /***************************THRESHOLD VALUES*****************************/
 void ReadVoltageTHDRegsnValues(VoltageTHDRegs *Data, SPI_CSS_Pin css_pin)
@@ -773,13 +929,21 @@ void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin)
     tempValue = tempReg * 0.017578125; // mulConstant
     Data->AngleValue_VA_VC = tempValue;
     printf("AngleReg_VA_VC: %u, AngleValue_VA_VC: %f\n", tempReg, tempValue);
-
+    
+////////////////////////////////////////////////////////////////
     tempReg = int32_t(SPI_Read(ADDR_ANGL_VA_IA, true, css_pin));
     Data->AngleReg_VA_IA = tempReg;
     tempValue = tempReg * 0.017578125; // mulConstant
     Data->AngleValue_VA_IA = tempValue;
     printf("AngleValue_VA_IA: %u, AngleValue_VA_IA: %f\n", tempReg, tempValue);
-
+    
+    uint32_t tempReg_2 = int32_t(SPI_Read(ADDR_ANGL_VA_IA, true, css_pin));
+    Data->AngleReg_VA_IA = tempReg_2;
+    float new_var = tempReg_2 * 0.017578125; // mulConstant
+    Data->AngleValue_VA_IA = new_var;
+    printf("AngleValue_VA_IA: %u, AngleValue_VA_IA: %f\n", tempReg_2, new_var);
+////////////////////////////////////////////////////////////////
+    
     tempReg = int32_t(SPI_Read(ADDR_ANGL_VB_IB, true, css_pin));
     Data->AngleReg_VB_IB = tempReg;
     tempValue = tempReg * 0.017578125; // mulConstant
@@ -932,27 +1096,33 @@ void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data)
 void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin){
     /*
      * Formula for Calibration of IRMS
-     * xRMS = sqrt(xRMS0^2 + 2^15 × xRMOSOS)
+     * xRMS = sqrt(xRMS0^2 + xRMOSOS)
      */
     
     ReadCurrentRMSOSRegs(&current_RMS_OS,css_pin);
-    
+//    channelConfig[j-1].setIOffset
     float tmp;
-    tmp = pow(Data->CurrentRMSValue_A,2) + (pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_A));
-//    Data->CurrentRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
+//    tmp = pow(Data->CurrentRMSValue_A,2) + (pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_A));
+//    tmp = pow(Data->CurrentRMSValue_A,2) + (pow(2,15)*(channelConfig[css_pin-1].setIOffset / 1000));
+    tmp = pow(Data->CurrentRMSValue_A,2) + (channelConfig[css_pin-1].setIOffset);
+    Data->CurrentRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
     
-    tmp = pow(Data->CurrentRMSValue_B,2) + pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_B);
+    tmp = pow(Data->CurrentRMSValue_B,2) + (channelConfig[css_pin-1].setIOffset);
     Data->CurrentRMSValue_B = tmp > 0 ? sqrt(tmp) : 0;
     
-    tmp = pow(Data->CurrentRMSValue_C,2) + pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_C);
+    tmp = pow(Data->CurrentRMSValue_C,2) + (channelConfig[css_pin-1].setIOffset);
     Data->CurrentRMSValue_C = tmp > 0 ? sqrt(tmp) : 0;
 }
 
-void current_offset_write(int8_t channel, uint32_t offset){
+void current_offset_write(int8_t channel, int32_t offset){
     
     SPI_Write(ADDR_AIRMSOS, offset, true, get_css_pin(channel));
     SPI_Write(ADDR_BIRMSOS, offset, true, get_css_pin(channel));
     SPI_Write(ADDR_CIRMSOS, offset, true, get_css_pin(channel));
+    
+//    current_RMS_OS.CurrentRMSOSValue_A = offset;
+    
+    
     
 }
 
@@ -974,7 +1144,7 @@ void voltage_offset_calibration(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin){
     tmp = pow(Data->VoltageRMSValue_C,2) + pow(2,15)*(voltage_RMS_OS.VoltageRMSOSValue_C);
     Data->VoltageRMSValue_C = tmp > 0 ? sqrt(tmp) : 0;
 }
-void voltage_offset_write(int8_t channel, uint32_t offset){
+void voltage_offset_write(int8_t channel, int32_t offset){
     
     SPI_Write(ADDR_AVRMSOS, offset, true, get_css_pin(channel));
     SPI_Write(ADDR_BVRMSOS, offset, true, get_css_pin(channel));

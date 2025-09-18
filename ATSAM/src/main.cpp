@@ -241,6 +241,7 @@ void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
     
     ReadLineVoltages(&unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[cssPin - 1].lineVoltage);
     ReadCurrentRMSRegs(&unitMeasurements[unitIndex - 1].currentRMS, cssPin);
+    current_offset_calibration(&unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     ReadPeriodRegsnValues(&unitMeasurements[unitIndex - 1].periodFrequency, &unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
     
     ReadActivePowerRegs(&unitMeasurements[unitIndex - 1].activePower, cssPin);
@@ -586,7 +587,7 @@ void resetEnergyValues(void)
 //  }
 //}
 
-uint16_t extract_channel_values(const char* channel){
+float extract_channel_values(const char* channel){
     char *ch;
     if(strstr(rxBuffer, channel) != NULL){
         ch = strstr(rxBuffer, channel);
@@ -605,9 +606,10 @@ uint16_t extract_channel_values(const char* channel){
 //            strcat(txBuffer, channel);
 //            strcat(txBuffer, " Value received: ");
 //            strcat(txBuffer, value);
-            return atoi(value); // atoi(ASCII TO Int) function is used to convert value from character to integer
+            return atof(value); // atoi(ASCII TO Int) function is used to convert value from character to integer
         }
     }
+    return 0.0f;
 }
 
 void parse_ct_ratio_json(){
@@ -634,10 +636,10 @@ void parse_i_offset_json(){
         char key[20];
         for (int8_t j = 1; j < 13; j++){
             sprintf(key, "channel-%d",j);
-            channelConfig[j].setIOffset = extract_channel_values(key);
+            channelConfig[j-1].setIOffset = extract_channel_values(key);
             //  Write offset Values to ADE9000 registers
             
-            current_offset_write(j, channelConfig[j].setIOffset);
+//            current_offset_write(j, channelConfig[j].setIOffset);
         }
         strcpy(txBuffer, "\nCurrent Offset updated successfully!");
     }
@@ -820,20 +822,20 @@ int main(void)
     while (true)
     {
         ADE9000_Checking();
-         if (ADE9000_status[SPI_CSS1 - 1] == 1)
-         {
-             if (ADE9000_hotplug[SPI_CSS1 - 1] == 0)
-             {
-                 ADE9000SetupForUnit(SPI_CSS1);
-                 ADE9000_hotplug[SPI_CSS1 - 1] = 1;
-             }
-             ADE9000MeasurementsForUnit(SPI_CSS1, 1);
-         }
-         else
-         {
-             ADE9000_hotplug[SPI_CSS1 - 1] = 0;
-             ADE9000MeasurementsForUnit_NON(SPI_CSS1, 1);
-         }
+//         if (ADE9000_status[SPI_CSS1 - 1] == 1)
+//         {
+//             if (ADE9000_hotplug[SPI_CSS1 - 1] == 0)
+//             {
+//                 ADE9000SetupForUnit(SPI_CSS1);
+//                 ADE9000_hotplug[SPI_CSS1 - 1] = 1;
+//             }
+//             ADE9000MeasurementsForUnit(SPI_CSS1, 1);
+//         }
+//         else
+//         {
+//             ADE9000_hotplug[SPI_CSS1 - 1] = 0;
+//             ADE9000MeasurementsForUnit_NON(SPI_CSS1, 1);
+//         }
         // if (ADE9000_status[SPI_CSS2 - 1] == 1)
         // {
         //     if (ADE9000_hotplug[SPI_CSS2 - 1] == 0)
@@ -904,20 +906,20 @@ int main(void)
         //     ADE9000_hotplug[SPI_CSS6 - 1] = 0;
         //     ADE9000MeasurementsForUnit_NON(SPI_CSS6, 6);
         // }
-//         if (ADE9000_status[SPI_CSS7 - 1] == 1)
-//         {
-//             if (ADE9000_hotplug[SPI_CSS7 - 1] == 0)
-//             {
-//                 ADE9000SetupForUnit(SPI_CSS7);
-//                 ADE9000_hotplug[SPI_CSS7 - 1] = 1;
-//             }
-//             ADE9000MeasurementsForUnit(SPI_CSS7, 7);
-//         }
-//         else
-//         {
-//             ADE9000_hotplug[SPI_CSS7 - 1] = 0;
-//             ADE9000MeasurementsForUnit_NON(SPI_CSS7, 7);
-//         }
+         if (ADE9000_status[SPI_CSS7 - 1] == 1)
+         {
+             if (ADE9000_hotplug[SPI_CSS7 - 1] == 0)
+             {
+                 ADE9000SetupForUnit(SPI_CSS7);
+                 ADE9000_hotplug[SPI_CSS7 - 1] = 1;
+             }
+             ADE9000MeasurementsForUnit(SPI_CSS7, 7);
+         }
+         else
+         {
+             ADE9000_hotplug[SPI_CSS7 - 1] = 0;
+             ADE9000MeasurementsForUnit_NON(SPI_CSS7, 7);
+         }
         // if (ADE9000_status[SPI_CSS8 - 1] == 1)
         // {
         //     if (ADE9000_hotplug[SPI_CSS8 - 1] == 0)
