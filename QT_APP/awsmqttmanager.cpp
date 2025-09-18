@@ -106,7 +106,6 @@ void AwsMqttManager::reloadSettings()
 
 bool AwsMqttManager::mqttState()
 {
-    qInfo() << " isconnectedStatus: "<<isConnected;
     return isConnected;
 }
 
@@ -244,15 +243,15 @@ void AwsMqttManager::processIncomingJson(int channel, const QJsonObject &payload
     if(channel == 1)
     {
         // =============== INCOMING CHANNEL =================
-        telemetry["V_R"]     = phaseA["general"].toObject()["line_voltage"].toDouble();
+        telemetry["V_R"]     = phaseA["general"].toObject()["rms_voltage"].toDouble();
         telemetry["In1_R1"]  = phaseA["general"].toObject()["current"].toDouble();
         telemetry["In1_RPF"] = phaseA["power"].toObject()["factor"].toDouble();
 
-        telemetry["V_Y"]     = phaseB["general"].toObject()["line_voltage"].toDouble();
+        telemetry["V_Y"]     = phaseB["general"].toObject()["rms_voltage"].toDouble();
         telemetry["In1_Y1"]  = phaseB["general"].toObject()["current"].toDouble();
         telemetry["In1_YPF"] = phaseB["power"].toObject()["factor"].toDouble();
 
-        telemetry["V_B"]     = phaseC["general"].toObject()["line_voltage"].toDouble();
+        telemetry["V_B"]     = phaseC["general"].toObject()["rms_voltage"].toDouble();
         telemetry["In1_B1"]  = phaseC["general"].toObject()["current"].toDouble();
         telemetry["In1_BPF"] = phaseC["power"].toObject()["factor"].toDouble();
 
