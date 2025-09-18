@@ -238,7 +238,7 @@ bool AwsMqttManager::loadConfig(const QString &filePath)
     qDebug() << "  Port:" << port;
     qDebug() << "  Client ID:" << clientId;
     qDebug() << "  Topic:" << topic;
-    qDebug() << "  Interval (ms):" << intervalSec;
+    qDebug() << "  Interval (sec):" << intervalSec;
 
     return true;
 }

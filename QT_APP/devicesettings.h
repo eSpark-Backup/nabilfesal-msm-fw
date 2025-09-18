@@ -15,6 +15,7 @@ class DeviceSettings : public QWidget
 
 public:
     explicit DeviceSettings(QWidget *parent = nullptr);
+    void load_and_start_mqtt_data();
     ~DeviceSettings();
 
 signals:
@@ -26,7 +27,6 @@ private slots:
     void on_back_btn_clicked();
     void on_ntp_load_btn_clicked();
     void on_ntp_save_btn_clicked();
-    void load_and_start_mqtt_data();
     void on_mqtt_save_btn_clicked();
     void on_mqtt_load_btn_clicked();
     void on_sftp_load_btn_clicked();

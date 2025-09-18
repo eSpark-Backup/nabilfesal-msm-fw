@@ -303,6 +303,7 @@ void DeviceSettings::on_mqtt_save_btn_clicked()
 
 void DeviceSettings::load_and_start_mqtt_data()
 {
+    // qInfo() << "load_and_start_mqtt_data";
     if (mqttHandler == nullptr) {
         mqttHandler = new AwsMqttManager(this);
     }
