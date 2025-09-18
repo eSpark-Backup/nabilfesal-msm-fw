@@ -10,6 +10,7 @@
 #include <QTimer>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include "awsmqttmanager.h"
 
 namespace Utils {
 void keySound() {
@@ -152,6 +153,15 @@ QString getUid()
         file.close();
     }
     return QString();
+}
+
+QString getMqttStatus()
+{
+    AwsMqttManager mqtt;
+    if (mqtt.mqttState())
+        return "Connected";
+    else
+        return "Disconnected";
 }
 
 }

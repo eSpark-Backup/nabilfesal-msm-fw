@@ -25,6 +25,8 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     ui->imei->setText(currentImei);
     auto ntpData = Utils::getNtpStatus();
     parseNtpJson(ntpData);
+    auto mqttData = Utils::getMqttStatus();
+    ui->mqtt->setText(mqttData);
 
     QTimer *timer = new QTimer(this);
 
@@ -303,7 +305,6 @@ void DeviceSettings::on_mqtt_save_btn_clicked()
 
 void DeviceSettings::load_and_start_mqtt_data()
 {
-    // qInfo() << "load_and_start_mqtt_data";
     if (mqttHandler == nullptr) {
         mqttHandler = new AwsMqttManager(this);
     }
@@ -464,6 +465,8 @@ void DeviceSettings::refreshInfo()
     ui->date_input->setText(date);
     QString status = ntpData.value("ntp_status").toString();
     ui->ntp->setText(status);
+    auto mqttData = Utils::getMqttStatus();
+    ui->mqtt->setText(mqttData);
 }
 
 

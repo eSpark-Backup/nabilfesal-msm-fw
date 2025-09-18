@@ -10,6 +10,7 @@ QString getDeviceIp();
 QString getDeviceImei();
 bool setNtpServers(const QStringList &servers);
 QString getUid();
+QString getMqttStatus();
 }
 
 #endif // UTILS_H

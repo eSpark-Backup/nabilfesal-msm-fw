@@ -15,8 +15,10 @@ public:
     void publishMessage(const QString &payload);
     void subscribeToTopic();
     bool mqttState();
+    void processIncomingJson(int channel, const QJsonObject &payload);
 
 private:
+    void initializeTelemetryJson();
     void connectToBroker();
     void disconnectFromBroker();
     bool loadCertificates();
@@ -29,7 +31,7 @@ private:
     QString host;
     QString username;
     QString password;
-    int port = 8883;
+    int port = 1883;
     QString clientId;
     QString topic;
     int intervalSec = 0;
@@ -41,5 +43,6 @@ private:
     QString keyPath = "/etc/certs/privateKey.pem";
 
     QTimer *publishTimer = nullptr;
+    QMap<int, QJsonObject> channelTelemetry;
 };
 

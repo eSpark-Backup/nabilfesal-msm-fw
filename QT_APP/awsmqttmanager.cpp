@@ -13,158 +13,6 @@
 
 #define CONFIG_PATH "config/mqtt_settings.json"
 
-QByteArray AwsMqttManager::buildTelemetryJson() const
-{
-    QJsonObject root;
-
-    // Add metadata
-    root["date"]       = QDate::currentDate().toString("dd-MM-yyyy");
-    root["time"]       = QTime::currentTime().toString("HH:mm");
-    root["ip_address"] = Utils::getDeviceIp();
-    root["ofp_uid"]    = Utils::getUid();
-
-    // Build "data" object
-    QJsonObject data;
-
-    // json
-    data["V_R"]    = QJsonValue();
-    data["In1_R1"] = 123.45;
-    data["In1_RPF"] = 0.98;
-    data["V_Y"] = 1.0;
-    data["In1_Y1"] = 1.1;
-    data["In1_YPF"] = 01.2;
-    data["V_B"] = 1.3;
-    data["In1_B1"] = 1.4;
-    data["In1_BPF"] = 1.5;
-    data["P1_R"] = 1.6;
-    data["P1_B"] = 1.7;
-    data["P1_Y"] = 1.8;
-    data["P1"] = 0;
-    data["Q1_R"] = 0;
-    data["Q1_B"] = 0;
-    data["Q1_Y"] = 0;
-    data["Q1"] = 0;
-    data["S1_R"] = 0;
-    data["S1_B"] = 0;
-    data["S1_Y"] = 0;
-    data["S1"] = 0;
-    data["Epimp1"] = 0;
-    data["Epexp1"] = 0;
-    data["Eqimp1"] = 0;
-    data["Eqexp1"] = 0;
-    data["F1_R"] = 0;
-    data["PF_R1"] = 0;
-    data["F1_Y"] = 0;
-    data["PF_Y1"] = 0;
-    data["F1_B"] = 0;
-    data["PF_B1"] = 0;
-    data["F1_P"] = 0;
-    data["F1_Q"] = 0;
-    data["F1_S"] = 0;
-    data["F1_Epimp"] = 0;
-    data["F1_Epexp"] = 0;
-    data["F1_Eqimp"] = 0;
-    data["F1_Eqexp"] = 0;
-    data["F2_R"] = 0;
-    data["PF_R2"] = 0;
-    data["F2_Y"] = 0;
-    data["PF_Y2"] = 0;
-    data["F2_B"] = 0;
-    data["PF_B2"] = 0;
-    data["F2_P"] = 0;
-    data["F2_Q"] = 0;
-    data["F2_S"] = 0;
-    data["F2_Epimp"] = 0;
-    data["F2_Epexp"] = 0;
-    data["F2_Eqimp"] = 0;
-    data["F2_Eqexp"] = 0;
-    data["F3_R"] = 0;
-    data["PF_R3"] = 0;
-    data["F3_Y"] = 0;
-    data["PF_Y3"] = 0;
-    data["F3_B"] = 0;
-    data["PF_B3"] = 0;
-    data["F3_P"] = 0;
-    data["F3_Q"] = 0;
-    data["F3_S"] = 0;
-    data["F3_Epimp"] = 0;
-    data["F3_Epexp"] = 0;
-    data["F3_Eqimp"] = 0;
-    data["F3_Eqexp"] = 0;
-    data["F4_R"] = 0;
-    data["PF_R4"] = 0;
-    data["F4_Y"] = 0;
-    data["PF_Y4"] = 0;
-    data["F4_B"] = 0;
-    data["PF_B4"] = 0;
-    data["F4_P"] = 0;
-    data["F4_Q"] = 0;
-    data["F4_S"] = 0;
-    data["F4_Epimp"] = 0;
-    data["F4_Epexp"] = 0;
-    data["F4_Eqimp"] = 0;
-    data["F4_Eqexp"] = 0;
-    data["F5_R"] = 0;
-    data["PF_R5"] = 0;
-    data["F5_Y"] = 0;
-    data["PF_Y5"] = 0;
-    data["F5_B"] = 0;
-    data["PF_B5"] = 0;
-    data["F5_P"] = 0;
-    data["F5_Q"] = 0;
-    data["F5_S"] = 0;
-    data["F5_Epimp"] = 0;
-    data["F5_Epexp"] = 0;
-    data["F5_Eqimp"] = 0;
-    data["F5_Eqexp"] = 0;
-    data["F6_R"] = 0;
-    data["PF_R6"] = 0;
-    data["F6_Y"] = 0;
-    data["PF_Y6"] = 0;
-    data["F6_B"] = 0;
-    data["PF_B6"] = 0;
-    data["F6_P"] = 0;
-    data["F6_Q"] = 0;
-    data["F6_S"] = 0;
-    data["F6_Epimp"] = 0;
-    data["F6_Epexp"] = 0;
-    data["F6_Eqimp"] = 0;
-    data["F6_Eqexp"] = 0;
-    data["F7_R"] = 0;
-    data["PF_R7"] = 0;
-    data["F7_Y"] = 0;
-    data["PF_Y7"] = 0;
-    data["F7_B"] = 0;
-    data["PF_B7"] = 0;
-    data["F7_P"] = 0;
-    data["F7_Q"] = 0;
-    data["F7_S"] = 0;
-    data["F7_Epimp"] = 0;
-    data["F7_Epexp"] = 0;
-    data["F7_Eqimp"] = 0;
-    data["F7_Eqexp"] = 0;
-    data["F8_R"] = 0;
-    data["PF_R8"] = 0;
-    data["F8_Y"] = 0;
-    data["PF_Y8"] = 0;
-    data["F8_B"] = 0;
-    data["PF_B8"] = 0;
-    data["F8_P"] = 0;
-    data["F8_Q"] = 0;
-    data["F8_S"] = 0;
-    data["F8_Epimp"] = 0;
-    data["F8_Epexp"] = 0;
-    data["F8_Eqimp"] = 0;
-    data["F8_Eqexp"] = 0;
-    
-    // Attach to root
-    root["data"] = data;
-
-    // Serialize JSON → QByteArray
-    QJsonDocument doc(root);
-    return doc.toJson(QJsonDocument::Compact);
-}
-
 AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 {
     mqttClient = new QMqttClient(this);
@@ -178,6 +26,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
             return;
         }
         QByteArray payload = buildTelemetryJson();
+        // qDebug().noquote() << "TelemetryJson: " << payload;
         publishMessage(payload);
     });
 
@@ -197,6 +46,8 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
         qDebug() << "Disconnected from broker.";
         publishTimer->stop();
     });
+
+    initializeTelemetryJson();
 }
 
 bool AwsMqttManager::loadConfig(const QString &filePath)
@@ -255,6 +106,7 @@ void AwsMqttManager::reloadSettings()
 
 bool AwsMqttManager::mqttState()
 {
+    qInfo() << " isconnectedStatus: "<<isConnected;
     return isConnected;
 }
 
@@ -350,4 +202,175 @@ void AwsMqttManager::subscribeToTopic()
             [](const QMqttMessage &msg) {
                 qDebug() << "Message received:" << msg.payload();
             });
+}
+
+QByteArray AwsMqttManager::buildTelemetryJson() const
+{
+    QJsonObject root;
+
+    // metadata
+    root["date"]       = QDate::currentDate().toString("dd-MM-yyyy");
+    root["time"]       = QTime::currentTime().toString("HH:mm");
+    root["ip_address"] = Utils::getDeviceIp();
+    root["ofp_uid"]    = Utils::getUid();
+
+    // All channel data
+    QJsonObject data;
+    for (auto it = channelTelemetry.begin(); it != channelTelemetry.end(); ++it) {
+        const QJsonObject &channelData = it.value();
+        for (auto key : channelData.keys()) {
+            data[key] = channelData[key];   // merge channel fields into one object
+        }
+    }
+
+    root["data"] = data;
+
+    // Serialize JSON → QByteArray
+    QJsonDocument doc(root);
+    return doc.toJson(QJsonDocument::Compact);
+}
+
+void AwsMqttManager::processIncomingJson(int channel, const QJsonObject &payload)
+{
+    // QJsonDocument doc = QJsonDocument::fromJson(payload);
+    QJsonObject root = payload;
+    QJsonObject data = root["data"].toObject();
+
+    QJsonObject phaseA = data["phase_a"].toObject();
+    QJsonObject phaseB = data["phase_b"].toObject();
+    QJsonObject phaseC = data["phase_c"].toObject();
+    QJsonObject telemetry;
+
+    if(channel == 1)
+    {
+        // =============== INCOMING CHANNEL =================
+        telemetry["V_R"]     = phaseA["general"].toObject()["line_voltage"].toDouble();
+        telemetry["In1_R1"]  = phaseA["general"].toObject()["current"].toDouble();
+        telemetry["In1_RPF"] = phaseA["power"].toObject()["factor"].toDouble();
+
+        telemetry["V_Y"]     = phaseB["general"].toObject()["line_voltage"].toDouble();
+        telemetry["In1_Y1"]  = phaseB["general"].toObject()["current"].toDouble();
+        telemetry["In1_YPF"] = phaseB["power"].toObject()["factor"].toDouble();
+
+        telemetry["V_B"]     = phaseC["general"].toObject()["line_voltage"].toDouble();
+        telemetry["In1_B1"]  = phaseC["general"].toObject()["current"].toDouble();
+        telemetry["In1_BPF"] = phaseC["power"].toObject()["factor"].toDouble();
+
+        // Power
+        double P1_R = phaseA["power"].toObject()["active"].toDouble();
+        double P1_B = phaseB["power"].toObject()["active"].toDouble();
+        double P1_Y = phaseC["power"].toObject()["active"].toDouble();
+        telemetry["P1_R"] = P1_R;
+        telemetry["P1_B"] = P1_B;
+        telemetry["P1_Y"] = P1_Y;
+        telemetry["P1"]   = P1_R + P1_B + P1_Y;
+
+        // Reactive
+        double Q1_R = phaseA["power"].toObject()["reactive"].toDouble();
+        double Q1_B = phaseB["power"].toObject()["reactive"].toDouble();
+        double Q1_Y = phaseC["power"].toObject()["reactive"].toDouble();
+        telemetry["Q1_R"] = Q1_R;
+        telemetry["Q1_B"] = Q1_B;
+        telemetry["Q1_Y"] = Q1_Y;
+        telemetry["Q1"]   = Q1_R + Q1_B + Q1_Y;
+
+        // Apparent
+        double S1_R = phaseA["power"].toObject()["apparent"].toDouble();
+        double S1_B = phaseB["power"].toObject()["apparent"].toDouble();
+        double S1_Y = phaseC["power"].toObject()["apparent"].toDouble();
+        telemetry["S1_R"] = S1_R;
+        telemetry["S1_B"] = S1_B;
+        telemetry["S1_Y"] = S1_Y;
+        telemetry["S1"]   = S1_R + S1_B + S1_Y;
+
+        // Energy
+        QJsonObject energyA = phaseA["energy"].toObject();
+        QJsonObject activeA   = energyA["active"].toObject();
+        QJsonObject reactiveA = energyA["reactive"].toObject();
+
+        telemetry["Epimp1"] = activeA["negative"].toDouble();
+        telemetry["Epexp1"] = activeA["positive"].toDouble();
+        telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
+        telemetry["Eqexp1"] = reactiveA["positive"].toDouble();
+    }
+    else
+    {
+        // =============== OUTGOING CHANNELS =================
+          // Outgoing channels: F(channel-1)_ prefix
+        int idx = channel - 1;  // Channel 2 → F1, Channel 3 → F2, … Channel 12 → F11
+        QString prefix = QString("F%1_").arg(idx);
+
+        double P_R = phaseA["power"].toObject()["active"].toDouble();
+        double P_B = phaseB["power"].toObject()["active"].toDouble();
+        double P_Y = phaseC["power"].toObject()["active"].toDouble();
+
+        double Q_R = phaseA["power"].toObject()["reactive"].toDouble();
+        double Q_B = phaseB["power"].toObject()["reactive"].toDouble();
+        double Q_Y = phaseC["power"].toObject()["reactive"].toDouble();
+
+        double S_R = phaseA["power"].toObject()["apparent"].toDouble();
+        double S_B = phaseB["power"].toObject()["apparent"].toDouble();
+        double S_Y = phaseC["power"].toObject()["apparent"].toDouble();
+
+        QJsonObject energyA   = phaseA["energy"].toObject();
+        QJsonObject activeA   = energyA["active"].toObject();
+        QJsonObject reactiveA = energyA["reactive"].toObject();
+
+        telemetry[prefix + "R"]     = phaseA["general"].toObject()["current"].toDouble();
+        telemetry["PF_R" + QString::number(idx)] = phaseA["power"].toObject()["factor"].toDouble();
+
+        telemetry[prefix + "Y"]     = phaseB["general"].toObject()["current"].toDouble();
+        telemetry["PF_Y" + QString::number(idx)] = phaseB["power"].toObject()["factor"].toDouble();
+
+        telemetry[prefix + "B"]     = phaseC["general"].toObject()["current"].toDouble();
+        telemetry["PF_B" + QString::number(idx)] = phaseC["power"].toObject()["factor"].toDouble();
+
+        telemetry[prefix + "P"] = P_R + P_B + P_Y;
+        telemetry[prefix + "Q"] = Q_R + Q_B + Q_Y;
+        telemetry[prefix + "S"] = S_R + S_B + S_Y;
+
+        telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
+        telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
+        telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
+        telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
+    }
+
+    channelTelemetry[channel] = telemetry;
+    QJsonDocument debugDoc(telemetry);
+    qDebug().noquote() << "Telemetry for channel" << channel << ":" << debugDoc.toJson(QJsonDocument::Compact);
+}
+
+void AwsMqttManager::initializeTelemetryJson()
+{
+ // Initialize channel telemetry with 0s
+    for (int ch = 1; ch <= 12; ++ch) {
+        QJsonObject defaults;
+
+        if (ch == 1) {
+            QStringList keys = {"V_R","In1_R1","In1_RPF","V_Y","In1_Y1","In1_YPF",
+                                "V_B","In1_B1","In1_BPF",
+                                "P1_R","P1_B","P1_Y","P1",
+                                "Q1_R","Q1_B","Q1_Y","Q1",
+                                "S1_R","S1_B","S1_Y","S1",
+                                "Epimp1","Epexp1","Eqimp1","Eqexp1"};
+            for (const QString &k : keys)
+                defaults[k] = 0;
+        } else {
+            QString suffix = QString::number(ch - 1);
+            QStringList keys = {
+                "F" + suffix + "_R", "PF_R" + suffix,
+                "F" + suffix + "_Y", "PF_Y" + suffix,
+                "F" + suffix + "_B", "PF_B" + suffix,
+                "F" + suffix + "_P",
+                "F" + suffix + "_Q",
+                "F" + suffix + "_S",
+                "F" + suffix + "_Epimp", "F" + suffix + "_Epexp",
+                "F" + suffix + "_Eqimp", "F" + suffix + "_Eqexp"
+            };
+            for (const QString &k : keys)
+                defaults[k] = 0;
+        }
+
+        channelTelemetry[ch] = defaults;
+    }
 }

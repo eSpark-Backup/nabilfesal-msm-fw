@@ -155,27 +155,27 @@ void MainWindow::connectLoginSignals()
         isLogin = true;
         if (!settings) {
             settings = new DeviceSettings;
-            connect(settings, &DeviceSettings::channels_view, this, [this]() {
-                if (!channels) {
-                    channels = new ChannelsHome;
-                    connect(channels, &ChannelsHome::channelsExit, this, [this]() {
-                        isLogin = false;
-                        login->showFullScreen();
-                        channels->hide();
-                        settings->hide();
-                    });
-                    connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
-                        settings->showFullScreen();
-                        channels->hide();
-                    });
-                }
-                channels->showFullScreen();
-                settings->hide();
-            });
-            connect(settings, &DeviceSettings::usbExport, this, [this](){
-                usbExporter->show();
-            });
         }
+        connect(settings, &DeviceSettings::channels_view, this, [this]() {
+            if (!channels) {
+                channels = new ChannelsHome;
+                connect(channels, &ChannelsHome::channelsExit, this, [this]() {
+                    isLogin = false;
+                    login->showFullScreen();
+                    channels->hide();
+                    settings->hide();
+                });
+                connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
+                    settings->showFullScreen();
+                    channels->hide();
+                });
+            }
+            channels->showFullScreen();
+            settings->hide();
+        });
+        connect(settings, &DeviceSettings::usbExport, this, [this](){
+            usbExporter->show();
+        });
         settings->showFullScreen();
         login->hide();
     });
