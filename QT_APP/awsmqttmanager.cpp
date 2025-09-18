@@ -11,7 +11,7 @@
 #include <QtNetwork/QSslConfiguration>
 #include "utils.h"
 
-#define CONFIG_PATH "config/mqtt_settings.json"
+#define MQTT_PATH "config/mqtt_settings.json"
 
 AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 {
@@ -96,7 +96,7 @@ bool AwsMqttManager::loadConfig(const QString &filePath)
 
 void AwsMqttManager::reloadSettings()
 {
-    configPath = CONFIG_PATH;
+    configPath = MQTT_PATH;
     if (!loadConfig(configPath)) {
         qWarning() << "No valid config found. Skipping MQTT connection.";
         return;
@@ -214,15 +214,12 @@ QByteArray AwsMqttManager::buildTelemetryJson() const
     root["ofp_uid"]    = Utils::getUid();
 
     // All channel data
-    QJsonObject data;
     for (auto it = channelTelemetry.begin(); it != channelTelemetry.end(); ++it) {
         const QJsonObject &channelData = it.value();
         for (auto key : channelData.keys()) {
-            data[key] = channelData[key];   // merge channel fields into one object
+            root[key] = channelData[key];
         }
     }
-
-    root["data"] = data;
 
     // Serialize JSON → QByteArray
     QJsonDocument doc(root);
