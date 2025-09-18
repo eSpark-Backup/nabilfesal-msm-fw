@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "msmkeyboard.h"
 #include "awsmqttmanager.h"
+#include "sftpManager.h"
 
 namespace Ui {
 class DeviceSettings;
@@ -16,6 +17,7 @@ class DeviceSettings : public QWidget
 public:
     explicit DeviceSettings(QWidget *parent = nullptr);
     void load_and_start_mqtt_data();
+    void load_and_start_sftp_data();
     ~DeviceSettings();
 
 signals:
@@ -42,6 +44,7 @@ private:
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;
     AwsMqttManager *mqttHandler = nullptr;
+    sftpManager *sftpHandler = nullptr;
 };
 
 #endif // DEVICESETTINGS_H

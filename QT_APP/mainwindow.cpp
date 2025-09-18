@@ -144,6 +144,7 @@ void MainWindow::handlePostProgress()
             settings = new DeviceSettings();
         }
         settings->load_and_start_mqtt_data();
+        settings->load_and_start_sftp_data();
         login->showFullScreen();
         hide();
     }

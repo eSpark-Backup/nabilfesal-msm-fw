@@ -12,6 +12,7 @@
 #include <QTime>
 #include <QKeyEvent>
 
+
 DeviceSettings::DeviceSettings(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::DeviceSettings)
@@ -212,6 +213,7 @@ void DeviceSettings::parseNtpJson(const QJsonObject& root)
 void DeviceSettings::on_continue_btn_clicked()
 {
     load_and_start_mqtt_data();
+    load_and_start_sftp_data();
     ui->stackedWidget->setCurrentIndex(1);
 }
 
@@ -386,6 +388,7 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     QString sftpUser     = ui->sftp_username->text().trimmed();
     QString sftpPass     = ui->sftp_pass->text().trimmed();
     QString sftpInterval = ui->sftp_int->text().trimmed();
+    // QString sftpShedule  = ui->sftp_shd->text().trimmed();
 
     // 1. Create JSON object
     QJsonObject sftpSettings;
@@ -394,6 +397,7 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     sftpSettings["username"] = sftpUser;
     sftpSettings["password"] = sftpPass;
     sftpSettings["interval"] = sftpInterval;
+    // sftpSettings["shedule"] = sftpShedule;
 
     // 2. Ensure config directory exists
     QDir dir("config");
@@ -413,11 +417,27 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     file.close();
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
+
+    if (sftpHandler == nullptr) {
+        sftpHandler = new sftpManager(this);
+    }
+
+    QString localPath = "data/" + Utils::getUid();
+    if (!dir.exists(localPath)) {
+        dir.mkpath(localPath);
+    }
+
+    sftpHandler->uploadFile(localPath, "/ToOFP/");
 }
 
 
 void DeviceSettings::on_sftp_load_btn_clicked()
 {
+    if (sftpHandler == nullptr) {
+        sftpHandler = new sftpManager(this);
+    }
+    sftpHandler->disconnectClient();
+
     QFile file("config/sftp_settings.json");
     if (!file.exists()) {
         QMessageBox::warning(this, "SFTP Settings", "No saved settings found.");
@@ -447,8 +467,40 @@ void DeviceSettings::on_sftp_load_btn_clicked()
     ui->sftp_username->setText(sftpSettings.value("username").toString());
     ui->sftp_pass->setText(sftpSettings.value("password").toString());
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
+    // ui->sftp_shd->setText(sftpSettings.value("shedule").toString());
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
+    sftpHandler->reloadSettings();
+}
+
+
+void DeviceSettings::load_and_start_sftp_data()
+{
+    if (sftpHandler == nullptr) {
+        sftpHandler = new sftpManager(this);
+    }
+
+    QFile file("config/sftp_settings.json");
+    if (!file.exists() || !file.open(QIODevice::ReadOnly)) return;
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (doc.isNull() || !doc.isObject()) return;
+    QJsonObject sftpSettings = doc.object();
+
+    ui->sftp_ip->setText(sftpSettings.value("ip").toString());
+    ui->sftp_port->setText(sftpSettings.value("port").toString());
+    ui->sftp_username->setText(sftpSettings.value("username").toString());
+    ui->sftp_pass->setText(sftpSettings.value("password").toString());
+    ui->sftp_int->setText(sftpSettings.value("interval").toString());
+    
+    if (!sftpHandler->sftpState())
+    {
+        sftpHandler->reloadSettings();
+    }
 }
 
 
