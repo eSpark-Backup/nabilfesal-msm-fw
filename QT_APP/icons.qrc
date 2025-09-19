@@ -29,5 +29,7 @@
         <file>icons/pf.png</file>
         <file>icons/power.png</file>
         <file>icons/battery.png</file>
+        <file>icons/Calibration.png</file>
+        <file>icons/i.png</file>
     </qresource>
 </RCC>

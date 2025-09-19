@@ -18,3 +18,15 @@ void FactorySettings::on_pushButton_clicked()
     emit factoryExit();
 }
 
+
+void FactorySettings::on_measurement_clicked()
+{
+    emit loadMeasurements();
+}
+
+
+void FactorySettings::on_system_clicked()
+{
+    emit loadFactSettings();
+}
+

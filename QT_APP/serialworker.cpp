@@ -13,6 +13,9 @@ SerialWorker::SerialWorker(const QString &port, int baud)
     connect(handler, &SerialHandler::jsonResponseReady,
             this, &SerialWorker::handleJsonResponse);
 
+    connect(handler, &SerialHandler::stringResponseReady,
+            this, &SerialWorker::handleStringResponse);
+
 }
 
 void SerialWorker::requestChannel(int channel) {
@@ -45,4 +48,12 @@ void SerialWorker::handleJsonResponse(int channel, const QJsonObject &json) {
     emit channelDataReady(channel, json);
     processing = false;
     QTimer::singleShot(0, this, &SerialWorker::processQueue);
+}
+
+void SerialWorker::sendRawCommand(const QString &cmd) {
+    handler->sendCommand(cmd, -1);
+}
+
+void SerialWorker::handleStringResponse(const QString &resp) {
+    emit genericResponseReady(resp);
 }

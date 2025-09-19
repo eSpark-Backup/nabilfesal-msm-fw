@@ -33,5 +33,10 @@ void SerialHandler::handleReadyRead() {
         if (err.error == QJsonParseError::NoError && doc.isObject()) {
             emit jsonResponseReady(currentChannel, doc.object());
         }
+    } 
+    else if (buffer.endsWith("!\n") || buffer.endsWith("!")) {
+        QString resp = QString::fromUtf8(buffer.trimmed());
+        buffer.clear();
+        emit stringResponseReady(resp);
     }
 }
