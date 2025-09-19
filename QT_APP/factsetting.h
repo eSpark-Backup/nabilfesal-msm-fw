@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include "msmkeyboard.h"
+#include "awsmqttmanager.h"
+#include "sftpManager.h"
 
 namespace Ui {
 class FactSetting;
@@ -23,29 +25,17 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 private slots:
     void on_next_btn_clicked();
-
     void on_back_btn_clicked();
-
     void on_exp_btn_clicked();
-
     void on_exit_btn_clicked();
-
     void on_reboot_btn_clicked();
-
     void on_pushButton_7_clicked();
-
     void on_pushButton_6_clicked();
-
     void on_lan_load_btn_clicked();
-
     void on_lan_save_btn_clicked();
-
     void on_mqtt_load_btn_clicked();
-
     void on_mqtt_save_btn_clicked();
-
     void on_sftp_load_btn_clicked();
-
     void on_sftp_save_btn_clicked();
 
 private:
@@ -66,6 +56,8 @@ private:
     MSMKeyboard *keyboard;
     bool isDhcpEnabled = false;
     bool isStaticEnabled = false;
+    AwsMqttManager *mqttHandler = nullptr;
+    sftpManager *sftpHandler = nullptr;
 };
 
 #endif // FACTSETTING_H

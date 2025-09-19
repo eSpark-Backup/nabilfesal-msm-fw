@@ -16,6 +16,92 @@ FactSetting::FactSetting(QWidget *parent)
     ui->setupUi(this);
     ui->stackedWidget->setCurrentIndex(0);
 
+    ui->stackedWidget->setCurrentIndex(0);
+
+    QLabel* label = new QLabel("MQTT_IP", ui->mqtt_ip);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(272, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTT_PASSWORD", ui->mqtt_pass);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(212, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTT_USER", ui->mqtt_user);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(247, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTT_TOPIC", ui->mqtt_topic);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(242, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("PORT", ui->mqtt_port);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(114, 2);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("INTERVAL", ui->mqtt_int);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(94, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SFTP_IP", ui->sftp_ip);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(272, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SFTP_PORT", ui->sftp_port);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(257, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SFTP_USER", ui->sftp_user);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(257, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SFTP_PASSWORD", ui->sftp_pass);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(217, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("INTERVAL", ui->sftp_int);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(97, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SCHEDULE", ui->sftp_sch);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(84, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
     keyboard = new MSMKeyboard(this);
     keyboard->move(20, 180);
     keyboard->hide();
@@ -23,7 +109,7 @@ FactSetting::FactSetting(QWidget *parent)
     QList<QLineEdit*> edits = {
         ui->lan_address, ui->lan_netmast, ui->dns_server, ui->lan_server,
         ui->mqtt_ip, ui->mqtt_port, ui->mqtt_user,
-        ui->mqtt_pass, ui->mqtt_port_2,
+        ui->mqtt_pass, ui->mqtt_topic, ui->mqtt_int,
         ui->sftp_ip, ui->sftp_port, ui->sftp_user,
         ui->sftp_pass, ui->sftp_int, ui->sftp_sch
     };
@@ -201,7 +287,12 @@ void FactSetting::on_lan_save_btn_clicked()
 
 void FactSetting::on_mqtt_load_btn_clicked()
 {
-    QFile file("config/factory_mqtt_settings.json");
+    if (mqttHandler == nullptr) {
+        mqttHandler = new AwsMqttManager(this);
+    }
+    mqttHandler->disconnectClient();
+
+    QFile file("config/mqtt_settings.json");
     if (!file.exists()) {
         QMessageBox::warning(this, "MQTT Settings", "No saved settings found.");
         return;
@@ -225,30 +316,37 @@ void FactSetting::on_mqtt_load_btn_clicked()
     QJsonObject mqttSettings = doc.object();
 
     ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
-    ui->mqtt_port->setText(mqttSettings.value("server_port").toString());
+    ui->mqtt_port->setText(mqttSettings.value("port").toString());
     ui->mqtt_user->setText(mqttSettings.value("user").toString());
     ui->mqtt_pass->setText(mqttSettings.value("password").toString());
-    ui->mqtt_port_2->setText(mqttSettings.value("port").toString());
-
+    ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
+    ui->mqtt_int->setText(mqttSettings.value("interval").toString());
+    
     QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
+
+    QTimer::singleShot(1000, [this](){
+        mqttHandler->reloadSettings();
+    });
 }
 
 
 void FactSetting::on_mqtt_save_btn_clicked()
 {
     QString mqttIp      = ui->mqtt_ip->text().trimmed();
-    QString mqttServerPort    = ui->mqtt_port->text().trimmed();
+    QString mqttPort    = ui->mqtt_port->text().trimmed();
     QString mqttUser    = ui->mqtt_user->text().trimmed();
     QString mqttPass    = ui->mqtt_pass->text().trimmed();
-    QString mqttPort    = ui->mqtt_port_2->text().trimmed();
+    QString mqttTopic   = ui->mqtt_topic->text().trimmed();
+    QString mqttInterval = ui->mqtt_int->text().trimmed();
 
     // 1. Create JSON object
     QJsonObject mqttSettings;
-    mqttSettings["ip"]              = mqttIp;
-    mqttSettings["server_port"]     = mqttServerPort;
-    mqttSettings["user"]            = mqttUser;
+    mqttSettings["ip"]       = mqttIp;
+    mqttSettings["port"]     = mqttPort;
+    mqttSettings["user"]     = mqttUser;
     mqttSettings["password"] = mqttPass;
-    mqttSettings["port"]    = mqttPort;
+    mqttSettings["topic"]    = mqttTopic;
+    mqttSettings["interval"] = mqttInterval;
 
     // 2. Ensure config directory exists
     QDir dir("config");
@@ -257,7 +355,7 @@ void FactSetting::on_mqtt_save_btn_clicked()
     }
 
     // 3. Write to config/mqtt_settings.json
-    QFile file("config/factory_mqtt_settings.json");
+    QFile file("config/mqtt_settings.json");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QMessageBox::critical(this, "MQTT Settings", "Failed to save MQTT settings.");
         return;
@@ -273,7 +371,12 @@ void FactSetting::on_mqtt_save_btn_clicked()
 
 void FactSetting::on_sftp_load_btn_clicked()
 {
-    QFile file("config/factory_sftp_settings.json");
+    if (sftpHandler == nullptr) {
+        sftpHandler = new sftpManager(this);
+    }
+    sftpHandler->disconnectClient();
+
+    QFile file("config/sftp_settings.json");
     if (!file.exists()) {
         QMessageBox::warning(this, "SFTP Settings", "No saved settings found.");
         return;
@@ -305,11 +408,17 @@ void FactSetting::on_sftp_load_btn_clicked()
     ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
+    sftpHandler->reloadSettings();
 }
 
 
 void FactSetting::on_sftp_save_btn_clicked()
 {
+    if (sftpHandler == nullptr) {
+        sftpHandler = new sftpManager(this);
+    }
+    sftpHandler->disconnectClient();
+    
     QString sftpIp       = ui->sftp_ip->text().trimmed();
     QString sftpPort     = ui->sftp_port->text().trimmed();
     QString sftpUser     = ui->sftp_user->text().trimmed();
@@ -344,5 +453,6 @@ void FactSetting::on_sftp_save_btn_clicked()
     file.close();
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
+    sftpHandler->reloadSettings();
 }
 

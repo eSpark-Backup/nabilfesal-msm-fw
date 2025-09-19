@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
+  </property>
   <property name="styleSheet">
    <string notr="true">background-color: rgb(255, 255, 255);</string>
   </property>
@@ -153,7 +156,7 @@ QPushButton:focus {
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -979,26 +982,11 @@ QPushButton:focus {
                  <property name="text">
                   <string/>
                  </property>
-                 <property name="placeholderText">
-                  <string notr="true">BROKER IP</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="mqtt_port">
-                 <property name="focusPolicy">
-                  <enum>Qt::ClickFocus</enum>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
-    border: 1px solid #1E88E5;        /* Blue thin border */
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    color: black;</string>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                  </property>
                  <property name="placeholderText">
-                  <string>BROKER PORT</string>
+                  <string notr="true"/>
                  </property>
                 </widget>
                </item>
@@ -1015,14 +1003,8 @@ QPushButton:focus {
     font-size: 13px;
     color: black;</string>
                  </property>
-                 <property name="inputMask">
-                  <string/>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
                  <property name="placeholderText">
-                  <string>USERNAME</string>
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -1042,13 +1024,16 @@ QPushButton:focus {
                  <property name="inputMask">
                   <string/>
                  </property>
+                 <property name="text">
+                  <string/>
+                 </property>
                  <property name="placeholderText">
-                  <string>PASSWORD</string>
+                  <string/>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="mqtt_port_2">
+                <widget class="QLineEdit" name="mqtt_topic">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -1060,10 +1045,56 @@ QPushButton:focus {
     font-size: 13px;
     color: black;</string>
                  </property>
+                 <property name="inputMask">
+                  <string/>
+                 </property>
                  <property name="placeholderText">
-                  <string>PORT</string>
+                  <string/>
                  </property>
                 </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                 <item>
+                  <widget class="QLineEdit" name="mqtt_port">
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+                   </property>
+                   <property name="placeholderText">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="mqtt_int">
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                   </property>
+                   <property name="placeholderText">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
@@ -1320,7 +1351,7 @@ QPushButton:focus {
                   <string/>
                  </property>
                  <property name="placeholderText">
-                  <string notr="true">SERVER IP</string>
+                  <string notr="true"/>
                  </property>
                 </widget>
                </item>
@@ -1338,7 +1369,7 @@ QPushButton:focus {
     color: black;</string>
                  </property>
                  <property name="placeholderText">
-                  <string>SERVER PORT</string>
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -1362,7 +1393,7 @@ QPushButton:focus {
                   <string/>
                  </property>
                  <property name="placeholderText">
-                  <string>USERNAME</string>
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -1383,7 +1414,7 @@ QPushButton:focus {
                   <string/>
                  </property>
                  <property name="placeholderText">
-                  <string>PASSWORD</string>
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -1423,24 +1454,6 @@ QPushButton:focus {
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLineEdit" name="sftp_sch">
-                    <property name="focusPolicy">
-                     <enum>Qt::ClickFocus</enum>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
-    border: 1px solid #1E88E5;        /* Blue thin border */
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    color: black;</string>
-                    </property>
-                    <property name="placeholderText">
-                     <string>SCHEDULE</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
                    <widget class="QLineEdit" name="sftp_int">
                     <property name="focusPolicy">
                      <enum>Qt::ClickFocus</enum>
@@ -1454,7 +1467,25 @@ QPushButton:focus {
     color: black;</string>
                     </property>
                     <property name="placeholderText">
-                     <string>INTERVAL</string>
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="sftp_sch">
+                    <property name="focusPolicy">
+                     <enum>Qt::ClickFocus</enum>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+                    </property>
+                    <property name="placeholderText">
+                     <string/>
                     </property>
                    </widget>
                   </item>
