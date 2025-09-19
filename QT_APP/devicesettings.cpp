@@ -28,6 +28,8 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     parseNtpJson(ntpData);
     auto mqttData = Utils::getMqttStatus();
     ui->mqtt->setText(mqttData);
+    auto sftpData = Utils::getSftpStatus();
+    ui->sftp->setText(sftpData);
 
     QTimer *timer = new QTimer(this);
 
@@ -391,6 +393,11 @@ void DeviceSettings::on_mqtt_load_btn_clicked()
 
 void DeviceSettings::on_sftp_save_btn_clicked()
 {
+    if (sftpHandler == nullptr) {
+        sftpHandler = new sftpManager(this);
+    }
+    sftpHandler->disconnectClient();
+    
     QString sftpIp       = ui->sftp_ip->text().trimmed();
     QString sftpPort     = ui->sftp_port->text().trimmed();
     QString sftpUser     = ui->sftp_username->text().trimmed();
@@ -425,6 +432,7 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     file.close();
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
+    sftpHandler->reloadSettings();
 }
 
 
@@ -517,6 +525,8 @@ void DeviceSettings::refreshInfo()
     ui->ntp->setText(status);
     auto mqttData = Utils::getMqttStatus();
     ui->mqtt->setText(mqttData);
+    auto sftpData = Utils::getSftpStatus();
+    ui->sftp->setText(sftpData);
 }
 
 

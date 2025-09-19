@@ -45,8 +45,6 @@ void sftpManager::scheduleSftpUpload()
         return;
     }
 
-    schedule = "1555";  // HHmm format
-
     QString hhmm = this->schedule;
     if (hhmm.length() != 4) {
         qWarning() << "Invalid schedule format:" << hhmm;
@@ -59,10 +57,6 @@ void sftpManager::scheduleSftpUpload()
     // Make both explicitly LocalTime
     QDateTime now = QDateTime::currentDateTime().toLocalTime();
     QDateTime scheduledTime(QDate::currentDate(), QTime(hour, minute), Qt::LocalTime);
-
-    // Debug: print both times
-    qDebug() << "hour: " << hour <<" minute: " << minute;
-    qDebug() << "Current time:" << now.toString("yyyy-MM-dd HH:mm:ss t");
     qDebug() << "Scheduled time:" << scheduledTime.toString("yyyy-MM-dd HH:mm:ss t");
 
     // Only roll to tomorrow if time already passed
@@ -125,6 +119,7 @@ bool sftpManager::loadConfig(const QString &filePath)
     port = portStr.toInt();
     QString intervalSecStr = obj.value("interval").toString();
     intervalSec = intervalSecStr.toInt();
+    schedule = obj.value("schedule").toString();
 
     // // Log the values
     // qDebug() << "SFTP Settings Loaded:";

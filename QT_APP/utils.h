@@ -11,6 +11,7 @@ QString getDeviceImei();
 bool setNtpServers(const QStringList &servers);
 QString getUid();
 QString getMqttStatus();
+QString getSftpStatus();
 }
 
 #endif // UTILS_H

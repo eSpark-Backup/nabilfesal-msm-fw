@@ -15,6 +15,8 @@ public:
     void publishMessage(const QString &payload);
     void subscribeToTopic();
     bool mqttState();
+
+public slots:
     void processIncomingJson(int channel, const QJsonObject &payload);
 
 private:

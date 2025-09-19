@@ -226,6 +226,7 @@ QByteArray AwsMqttManager::buildTelemetryJson() const
     return doc.toJson(QJsonDocument::Compact);
 }
 
+
 void AwsMqttManager::processIncomingJson(int channel, const QJsonObject &payload)
 {
     // QJsonDocument doc = QJsonDocument::fromJson(payload);

@@ -11,6 +11,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "awsmqttmanager.h"
+#include "sftpManager.h"
 
 namespace Utils {
 void keySound() {
@@ -155,10 +156,21 @@ QString getUid()
     return QString();
 }
 
+
 QString getMqttStatus()
 {
     AwsMqttManager mqtt;
     if (mqtt.mqttState())
+        return "Connected";
+    else
+        return "Disconnected";
+}
+
+
+QString getSftpStatus()
+{
+    sftpManager sftp;
+    if (sftp.sftpState())
         return "Connected";
     else
         return "Disconnected";

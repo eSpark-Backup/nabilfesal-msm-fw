@@ -60,6 +60,7 @@ private:
     FactSetting *factSettings = nullptr;
     Measurements *measure = nullptr;
     UsbDataExporter *dataExporter = nullptr;
+    AwsMqttManager *mqttManager = nullptr;
 
     // state
     int progressValue = 0;

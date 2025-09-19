@@ -215,6 +215,7 @@ void MainWindow::connectLoginSignals()
         isLogin = true;
         if (!settings) {
             settings = new DeviceSettings;
+        }
             connect(settings, &DeviceSettings::channels_view, this, [this]() {
                 if (!channels) {
                     channels = new ChannelsHome;
@@ -230,6 +231,10 @@ void MainWindow::connectLoginSignals()
                         settings->showFullScreen();
                         channels->hide();
                     });
+                    if(!mqttManager)
+                        mqttManager = new AwsMqttManager;
+                    connect(channels, &ChannelsHome::handleChannelData,
+                        mqttManager, &AwsMqttManager::processIncomingJson);
                 }
                 channels->showFullScreen();
                 settings->hide();
@@ -237,7 +242,6 @@ void MainWindow::connectLoginSignals()
             connect(settings, &DeviceSettings::usbExport, this, [this](){
                 usbExporter->show();
             });
-        }
         settings->showFullScreen();
         login->hide();
     });
