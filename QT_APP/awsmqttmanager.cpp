@@ -81,15 +81,15 @@ bool AwsMqttManager::loadConfig(const QString &filePath)
     QString intervalSecStr = obj.value("interval").toString();
     intervalSec = intervalSecStr.toInt();
 
-    // Log the values
-    qDebug() << "MQTT Settings Loaded:";
-    qDebug() << "  Host:" << host;
-    qDebug() << "  User:" << username;
-    qDebug() << "  Pass:" << password;
-    qDebug() << "  Port:" << port;
-    qDebug() << "  Client ID:" << clientId;
-    qDebug() << "  Topic:" << topic;
-    qDebug() << "  Interval (sec):" << intervalSec;
+    // // Log the values
+    // qDebug() << "MQTT Settings Loaded:";
+    // qDebug() << "  Host:" << host;
+    // qDebug() << "  User:" << username;
+    // qDebug() << "  Pass:" << password;
+    // qDebug() << "  Port:" << port;
+    // qDebug() << "  Client ID:" << clientId;
+    // qDebug() << "  Topic:" << topic;
+    // qDebug() << "  Interval (sec):" << intervalSec;
 
     return true;
 }

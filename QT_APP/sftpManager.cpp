@@ -8,7 +8,6 @@
 
 
 #define SFTP_PATH "config/sftp_settings.json"
-#define UPLOAD_PATH "/ToOFP/"
 
 sftpManager::sftpManager(QObject *parent) : QObject(parent)
 {
@@ -48,13 +47,23 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
             return;
         }
 
-        QString localPath = "data/" + Utils::getUid();
-        QDir dir;
-        if (!dir.exists(localPath)) {
-            dir.mkpath(localPath);
+        QString uid = Utils::getUid();
+        QDir dir("data/" + uid);
+        dir.mkpath("."); // ensure directory exists
+
+        // Find latest file matching "uid-*.csv"
+        QStringList filters{ uid + "-*.csv" };
+        auto files = dir.entryInfoList(filters, QDir::Files, QDir::Time);
+        if (files.isEmpty()) {
+            qDebug() << "No matching file found in" << dir.path();
+            return;
         }
 
-        uploadFile(localPath, UPLOAD_PATH);
+        QString localFilePath = files.first().absoluteFilePath();
+
+        QString uploadFilePath = "/ToOFP/" + uid;
+
+        uploadFile(localFilePath, uploadFilePath);
     });
 }
 
@@ -88,13 +97,13 @@ bool sftpManager::loadConfig(const QString &filePath)
     QString intervalSecStr = obj.value("interval").toString();
     intervalSec = intervalSecStr.toInt();
 
-    // Log the values
-    qDebug() << "SFTP Settings Loaded:";
-    qDebug() << "  Host:" << host;
-    qDebug() << "  UserName:" << username;
-    qDebug() << "  Pass:" << password;
-    qDebug() << "  Port:" << port;
-    qDebug() << "  Interval (sec):" << intervalSec;
+    // // Log the values
+    // qDebug() << "SFTP Settings Loaded:";
+    // qDebug() << "  Host:" << host;
+    // qDebug() << "  UserName:" << username;
+    // qDebug() << "  Pass:" << password;
+    // qDebug() << "  Port:" << port;
+    // qDebug() << "  Interval (sec):" << intervalSec;
 
     return true;
 }
@@ -156,13 +165,19 @@ void sftpManager::disconnectFromSftp()
 void sftpManager::uploadFile(const QString &localFile, const QString &remotePath)
 {
     if (process->state() == QProcess::Running) {
-        QString cmd = QString("put -r %1 %2\n").arg(localFile, remotePath);
+        QString remoteFile = remotePath + "/" + QFileInfo(localFile).fileName();
+        QString cmd = QString(
+            "mkdir -p %1\n"
+            "put %2 %3\n"
+        ).arg(remotePath, localFile, remoteFile);
+
         process->write(cmd.toUtf8());
-        qDebug() << "SFTP file uploaded.";
+        qDebug() << "SFTP upload command sent for:" << localFile;
     } else {
         qDebug() << "SFTP not connected.";
     }
 }
+
 
 bool sftpManager::sftpState()
 {

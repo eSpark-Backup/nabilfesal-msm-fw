@@ -422,12 +422,22 @@ void DeviceSettings::on_sftp_save_btn_clicked()
         sftpHandler = new sftpManager(this);
     }
 
-    QString localPath = "data/" + Utils::getUid();
-    if (!dir.exists(localPath)) {
-        dir.mkpath(localPath);
+    QString uid = Utils::getUid();
+    QDir dir2("data/" + uid);
+    dir2.mkpath("."); // ensure directory exists
+
+    QStringList filters{ uid + "-*.csv" };
+    auto files = dir2.entryInfoList(filters, QDir::Files, QDir::Time);
+    if (files.isEmpty()) {
+        qDebug() << "No matching file found in" << dir2.path();
+        return;
     }
 
-    sftpHandler->uploadFile(localPath, "/ToOFP/");
+    QString localFilePath = files.first().absoluteFilePath();
+
+    QString uploadFilePath = "/ToOFP/" + uid;
+
+    sftpHandler->uploadFile(localFilePath, uploadFilePath);
 }
 
 
