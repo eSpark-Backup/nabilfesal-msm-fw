@@ -13,6 +13,7 @@ QString getUid();
 QString getMqttStatus();
 QString getSftpStatus();
 void rebootSystem();
+void mainSound();
 }
 
 #endif // UTILS_H

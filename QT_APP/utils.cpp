@@ -23,6 +23,15 @@ void keySound() {
     });
 }
 
+void mainSound() {
+    QProcess::startDetached("sh", {"-c", "echo 0 > /sys/class/backlight/backlight/bl_power"});
+
+    QTimer::singleShot(200, [] {
+        QProcess::startDetached("sh", {"-c", "echo 1 > /sys/class/backlight/backlight/bl_power"});
+    });
+}
+
+
 QJsonObject getNtpStatus()
 {
     QJsonObject result;

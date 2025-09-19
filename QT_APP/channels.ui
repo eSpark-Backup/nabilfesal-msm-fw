@@ -319,6 +319,9 @@ QPushButton:focus {
               </property>
               <item>
                <widget class="QPushButton" name="channel_bt_1">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -944,6 +947,9 @@ QPushButton:focus {
               </property>
               <item>
                <widget class="QPushButton" name="channel_bt_7">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1277,6 +1283,9 @@ QPushButton:focus {
               </property>
               <item>
                <widget class="QPushButton" name="channel_bt_10">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>

@@ -87,6 +87,8 @@ private slots:
             QJsonObject firstChannel = snapshotCopy[snapshotCopy.firstKey()];
             QStringList flatKeys;
             flattenJson(firstChannel, QString(), flatKeys);
+            // removing ID from headers
+            flatKeys.removeAll("ID");
             headers.append(flatKeys);
             out << headers.join(",") << "\n";
         }
@@ -96,11 +98,13 @@ private slots:
         for (auto it = snapshotCopy.begin(); it != snapshotCopy.end(); ++it) {
             QString channelKey = QString::number(it.key());
             QJsonObject channelObj = it.value();
+            if (channelObj.isEmpty())
+                continue;
 
             QStringList flatValues;
             flattenJsonValues(channelObj, QString(), flatValues);
 
-            QStringList row = {timestamp, channelKey};
+            QStringList row = {timestamp};
             row.append(flatValues);
             out << row.join(",") << "\n";
         }

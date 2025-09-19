@@ -108,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(timer, &QTimer::timeout, this, &MainWindow::updateProgress);
     timer->start(500);
 
-    Utils::keySound();
+    Utils::mainSound();
     showFullScreen();
 }
 
@@ -213,36 +213,38 @@ void MainWindow::connectLoginSignals()
 {
     connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
         isLogin = true;
-        if (!settings) {
-            settings = new DeviceSettings;
-        }
-            connect(settings, &DeviceSettings::channels_view, this, [this]() {
-                if (!channels) {
-                    channels = new ChannelsHome;
-                    connect(this, &MainWindow::receivedChannelData,
+        if (!channels)
+            channels = new ChannelsHome;
+        connect(channels, &ChannelsHome::channelsExit, this, [this]() {
+            isLogin = false;
+            login->showFullScreen();
+            channels->hide();
+        });
+        connect(this, &MainWindow::receivedChannelData,
                         channels, &ChannelsHome::handleChannelData);
-                    connect(channels, &ChannelsHome::channelsExit, this, [this]() {
-                        isLogin = false;
-                        login->showFullScreen();
-                        channels->hide();
-                        settings->hide();
-                    });
-                    connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
-                        settings->showFullScreen();
-                        channels->hide();
-                    });
-                    if(!mqttManager)
-                        mqttManager = new AwsMqttManager;
-                    connect(channels, &ChannelsHome::handleChannelData,
-                        mqttManager, &AwsMqttManager::processIncomingJson);
-                }
+        connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
+            if (!settings) {
+                settings = new DeviceSettings;
+            }
+            if(!mqttManager)
+                mqttManager = new AwsMqttManager;
+
+            connect(this, &MainWindow::receivedChannelData,
+                mqttManager, &AwsMqttManager::processIncomingJson);
+
+            connect(settings, &DeviceSettings::channels_view, this, [this]() {
                 channels->showFullScreen();
                 settings->hide();
             });
+
             connect(settings, &DeviceSettings::usbExport, this, [this](){
                 usbExporter->show();
             });
-        settings->showFullScreen();
+
+            settings->showFullScreen();
+            channels->hide();
+        });
+        channels->showFullScreen();
         login->hide();
     });
 
