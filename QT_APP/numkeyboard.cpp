@@ -18,7 +18,6 @@ NumKeyboard::NumKeyboard(QWidget *parent)
         connect(button, &QPushButton::clicked, this, &NumKeyboard::numberClicked);
     }
     setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool);
 }
 
 void NumKeyboard::mousePressEvent(QMouseEvent *event)

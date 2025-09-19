@@ -25,10 +25,19 @@ Measurements::Measurements(QWidget *parent)
     keyboard->move(100, 180);
     keyboard->hide();
 
-    QList<QLineEdit*> edits = {
+    edits = {
         ui->ch1, ui->ch2, ui->ch3, ui->ch4, ui->ch5, ui->ch6,
         ui->ch7, ui->ch8, ui->ch9, ui->ch10, ui->ch11, ui->ch12
     };
+
+    signEdits = {
+        ui->s1, ui->s2, ui->s3, ui->s4, ui->s5, ui->s6,
+        ui->s7, ui->s8, ui->s9, ui->s10, ui->s11, ui->s12
+    };
+
+    for (QLabel *label : signEdits) {
+        label->setText("%");
+    }
 
     for (QLineEdit *edit : edits) {
         edit->installEventFilter(this);
@@ -38,6 +47,8 @@ Measurements::Measurements(QWidget *parent)
         });
     }
     this->installEventFilter(this);
+
+    on_load_btn_clicked();
 }
 
 Measurements::~Measurements()
@@ -108,6 +119,7 @@ void Measurements::on_ration_btn_clicked()
     isRatioActivated = true;
     isVOffsetActivated = false;
     isIOffsetActivated = false;
+    on_load_btn_clicked();
 }
 
 
@@ -118,6 +130,7 @@ void Measurements::on_i_off_btn_clicked()
     isRatioActivated = false;
     isVOffsetActivated = false;
     isIOffsetActivated = true;
+    on_load_btn_clicked();
 }
 
 
@@ -128,6 +141,7 @@ void Measurements::on_v_off_btn_clicked()
     isRatioActivated = false;
     isVOffsetActivated = true;
     isIOffsetActivated = false;
+    on_load_btn_clicked();
 }
 
 
@@ -143,7 +157,9 @@ void Measurements::on_load_btn_clicked()
     {
         QFile file("config/ct_ratio_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this, "CT Ratio Settings", "Failed to open CT Ratio settings file.");
+            for (QLineEdit *edit : edits) {
+                edit->setText("0");
+            }
             return;
         }
 
@@ -172,9 +188,14 @@ void Measurements::on_load_btn_clicked()
     }
     else if (isIOffsetActivated)
     {
+        for (QLabel *label : signEdits) {
+            label->setText("mA");
+        }
         QFile file("config/i_offset_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this, "I-Offset Settings", "Failed to open I-Offset settings file.");
+            for (QLineEdit *edit : edits) {
+                edit->setText("0");
+            }
             return;
         }
 
@@ -203,9 +224,14 @@ void Measurements::on_load_btn_clicked()
     }
     else if (isVOffsetActivated)
     {
+        for (QLabel *label : signEdits) {
+            label->setText("V");
+        }
         QFile file("config/v_offset_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this, "V-Offset Settings", "Failed to open V-Offset settings file.");
+            for (QLineEdit *edit : edits) {
+                edit->setText("0");
+            }
             return;
         }
 

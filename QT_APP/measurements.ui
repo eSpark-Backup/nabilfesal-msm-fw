@@ -233,7 +233,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_2">
+                  <widget class="QLabel" name="s1">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -357,7 +357,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_5">
+                  <widget class="QLabel" name="s2">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -481,7 +481,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_7">
+                  <widget class="QLabel" name="s3">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -612,7 +612,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_9">
+                  <widget class="QLabel" name="s4">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -736,7 +736,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_11">
+                  <widget class="QLabel" name="s5">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -860,7 +860,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_16">
+                  <widget class="QLabel" name="s6">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -991,7 +991,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_18">
+                  <widget class="QLabel" name="s7">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1115,7 +1115,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_20">
+                  <widget class="QLabel" name="s8">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1239,7 +1239,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_22">
+                  <widget class="QLabel" name="s9">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1370,7 +1370,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_24">
+                  <widget class="QLabel" name="s10">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1494,7 +1494,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_26">
+                  <widget class="QLabel" name="s11">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1618,7 +1618,7 @@ border: none</string>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label_28">
+                  <widget class="QLabel" name="s12">
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1645,7 +1645,7 @@ color: rgb(239, 41, 41);</string>
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="">
+        <widget class="QFrame" name="frame">
          <layout class="QHBoxLayout" name="horizontalLayout_36">
           <item>
            <widget class="QPushButton" name="load_btn">

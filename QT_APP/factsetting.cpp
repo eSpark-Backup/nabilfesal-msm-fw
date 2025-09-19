@@ -53,11 +53,11 @@ FactSetting::FactSetting(QWidget *parent)
     label->move(114, 2);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("INTERVAL", ui->mqtt_int);
+    label = new QLabel("INTERVAL (s)", ui->mqtt_int);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(94, 1);
+    label->move(80, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_IP", ui->sftp_ip);
@@ -88,11 +88,11 @@ FactSetting::FactSetting(QWidget *parent)
     label->move(217, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("INTERVAL", ui->sftp_int);
+    label = new QLabel("INTERVAL (s)", ui->sftp_int);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(97, 1);
+    label->move(80, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SCHEDULE", ui->sftp_sch);

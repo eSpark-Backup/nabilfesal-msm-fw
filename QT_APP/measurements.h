@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "numkeyboard.h"
+#include <QLabel>
 
 namespace Ui {
 class Measurements;
@@ -50,6 +51,8 @@ private:
     bool isVOffsetActivated = false;
     bool isIOffsetActivated = false;
     NumKeyboard *keyboard;
+    QList<QLabel*> signEdits;
+    QList<QLineEdit*> edits;
 };
 
 #endif // MEASUREMENTS_H
