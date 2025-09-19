@@ -8,6 +8,8 @@
 #include <QDir>
 #include <QFile>
 #include "utils.h"
+#include "factdialog.h"
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -19,7 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
     channels(nullptr),
     registration(nullptr),
     measure(nullptr),
-    factSettings(nullptr)
+    factSettings(nullptr),
+    dataExporter(nullptr)
 {
     ui->setupUi(this);
 
@@ -36,18 +39,70 @@ MainWindow::MainWindow(QWidget *parent)
     watcher = new UsbWatcher(this);
 
     connect(watcher, &UsbWatcher::usbMounted, this, [=](const QString &dev, const QString &path){
+        m_mountPath = path.toStdString();
         usbExporter->setDeviceName(dev, path);
-        if (isLogin)
-        {
+        if (isLogin) {
             usbExporter->show();
         }
-
     });
 
     connect(watcher, &UsbWatcher::usbUnmounted, this, [=](){
+        m_mountPath.clear();
         usbExporter->removeDeviceName();
-
+        if (dataExporter) {
+            dataExporter->stop();
+            dataExporter->deleteLater();
+            dataExporter = nullptr;
+        }
     });
+
+    connect(usbExporter, &QDialog::accepted, this, [=](){
+        int days = usbExporter->getSelectedIntervalDays();
+        if (days > 0 && !m_mountPath.empty()) {
+            if (dataExporter) {
+                dataExporter->stop();
+                dataExporter->deleteLater();
+                dataExporter = nullptr;
+            }
+            QMutexLocker locker(&latestDataMutex);
+            dataExporter = new UsbDataExporter(QString::fromStdString(m_mountPath), days, latestData, this);
+        }
+    });
+
+    serialThread = new QThread(this);
+
+    worker = new SerialWorker("/dev/ttyS1", 115200);
+    worker->moveToThread(serialThread);
+
+    connect(this, &MainWindow::requestChannelPoll, worker, &SerialWorker::requestChannel);
+    connect(this, &MainWindow::requestSerialCommand, worker, &SerialWorker::sendRawCommand);
+
+    connect(worker, &SerialWorker::channelDataReady, this,
+            [=](int ch, const QJsonObject &obj) {
+                QMutexLocker locker(&latestDataMutex);
+                latestData[ch] = obj;
+                emit receivedChannelData(ch, obj);
+            });
+
+    connect(worker, &SerialWorker::genericResponseReady, this,
+            [this](const QString &resp){
+                FactDialog dialog(this);
+                dialog.setLabel(std::string(resp.toStdString()));
+                dialog.exec();
+                dialog.deleteLater();
+            });
+
+    serialThread->start();
+
+    serialThread->start();
+
+    pollTimer = new QTimer(this);
+    connect(pollTimer, &QTimer::timeout, this, [this] {
+        static int ch = 1;
+        emit requestChannelPoll(ch);
+        ch = (ch % 12) + 1;
+    });
+    pollTimer->start(200);
 
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::updateProgress);
@@ -59,8 +114,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    serialThread->quit();
+    serialThread->wait();
+    pollTimer->stop();
     delete ui;
-    // no need to delete children separately, Qt parent-child takes care
 }
 
 void MainWindow::initConfig()
@@ -156,6 +213,8 @@ void MainWindow::connectLoginSignals()
             connect(settings, &DeviceSettings::channels_view, this, [this]() {
                 if (!channels) {
                     channels = new ChannelsHome;
+                    connect(this, &MainWindow::receivedChannelData,
+                        channels, &ChannelsHome::handleChannelData);
                     connect(channels, &ChannelsHome::channelsExit, this, [this]() {
                         isLogin = false;
                         login->showFullScreen();
@@ -207,6 +266,9 @@ void MainWindow::connectLoginSignals()
                     connect(measure, &Measurements::measureExit, this, [this](){
                         factorySettings->showFullScreen();
                         measure->hide();
+                    });
+                    connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd){
+                        emit requestSerialCommand(cmd);
                     });
                 }
                 measure->showFullScreen();

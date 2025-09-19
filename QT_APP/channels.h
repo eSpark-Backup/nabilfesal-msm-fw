@@ -7,6 +7,8 @@
 #include <QLabel>
 #include <QThread>
 #include <QTimer>
+#include <QMap>
+#include <QJsonObject>
 
 namespace Ui {
 class ChannelsHome;
@@ -19,9 +21,9 @@ class ChannelsHome : public QWidget
 public:
     explicit ChannelsHome(QWidget *parent = nullptr);
     ~ChannelsHome();
+    void handleChannelData(int channel, const QJsonObject &json);
 
 signals:
-    void requestChannelPoll(int channel);
     void channelsExit();
     void deviceInfo();
 private slots:
@@ -34,11 +36,8 @@ private:
     void handleChannelClick(int channelIndex);
     void handleSubButtonClick(int channelIndex, const QString &buttonType);
     void onAnyHomeButtonClicked();
-    void pollAllChannels();
     void updateChannelUI(int channel, const QJsonObject &data);
     void cacheChannelLabels();
-    void handleChannelData(int channel, const QJsonObject &json);
-    void handleChannelError(int channel);
 
 private:
     Ui::ChannelsHome *ui;
@@ -56,9 +55,6 @@ private:
 
     QMap<int, QMap<QString, QLabel*>> channelLabelMap;
 
-    QThread *serialThread;
-    SerialWorker *worker;
-    QTimer *pollTimer;
     int m_channel;
 
 };

@@ -1,6 +1,13 @@
 #include "factsetting.h"
 #include "ui_factsetting.h"
 #include "rebootdialog.h"
+#include "utils.h"
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QMessageBox>
+#include <QDir>
 
 FactSetting::FactSetting(QWidget *parent)
     : QWidget(parent)
@@ -8,6 +15,48 @@ FactSetting::FactSetting(QWidget *parent)
 {
     ui->setupUi(this);
     ui->stackedWidget->setCurrentIndex(0);
+
+    keyboard = new MSMKeyboard(this);
+    keyboard->move(20, 180);
+    keyboard->hide();
+
+    QList<QLineEdit*> edits = {
+        ui->lan_address, ui->lan_netmast, ui->dns_server, ui->lan_server,
+        ui->mqtt_ip, ui->mqtt_port, ui->mqtt_user,
+        ui->mqtt_pass, ui->mqtt_port_2,
+        ui->sftp_ip, ui->sftp_port, ui->sftp_user,
+        ui->sftp_pass, ui->sftp_int, ui->sftp_sch
+    };
+
+    for (QLineEdit *edit : edits) {
+        edit->installEventFilter(this);
+
+        connect(edit, &QLineEdit::editingFinished, this, [=]() {
+            edit->clearFocus();
+            keyboard->hide();
+        });
+    }
+}
+
+bool FactSetting::eventFilter(QObject *obj, QEvent *event)
+{
+    // Then: handle QLineEdit focus/keyboard logic
+    QLineEdit *lineEdit = qobject_cast<QLineEdit*>(obj);
+    if (lineEdit) {
+        if (event->type() == QEvent::FocusIn) {
+            keyboard->setTarget(lineEdit);
+            Utils::keySound();
+            keyboard->show();
+            lineEdit->setFocus();
+        }
+        else if (event->type() == QEvent::FocusOut) {
+            if (!keyboard->isAncestorOf(QApplication::focusWidget())) {
+                keyboard->hide();
+            }
+        }
+    }
+
+    return QWidget::eventFilter(obj, event);
 }
 
 FactSetting::~FactSetting()
@@ -43,5 +92,257 @@ void FactSetting::on_reboot_btn_clicked()
 {
     RebootDialog reboot(this);
     reboot.exec();
+}
+
+
+void FactSetting::on_pushButton_7_clicked()
+{
+    ui->pushButton_7->setStyleSheet(buttonClickedStyle);
+    ui->pushButton_6->setStyleSheet(buttonNormalStyle);
+    isDhcpEnabled = true;
+    isStaticEnabled = false;
+}
+
+
+void FactSetting::on_pushButton_6_clicked()
+{
+    ui->pushButton_6->setStyleSheet(buttonClickedStyle);
+    ui->pushButton_7->setStyleSheet(buttonNormalStyle);
+    isDhcpEnabled = false;
+    isStaticEnabled = true;
+}
+
+
+void FactSetting::on_lan_load_btn_clicked()
+{
+    QFile file("config/lan_settings.json");
+    if (!file.exists()) {
+        QMessageBox::warning(this, "LAN Settings", "No saved settings found.");
+        return;
+    }
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::critical(this, "LAN Settings", "Failed to open settings file.");
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (doc.isNull() || !doc.isObject()) {
+        QMessageBox::critical(this, "LAN Settings", "Invalid JSON format: " + parseError.errorString());
+        return;
+    }
+
+    QJsonObject lanSettings = doc.object();
+
+    isDhcpEnabled = lanSettings.value("isDhcpEnabled").toBool();
+    isStaticEnabled = lanSettings.value("isStaticEnabled").toBool();
+
+    ui->lan_address->setText(lanSettings.value("ip").toString());
+    ui->lan_server->setText(lanSettings.value("server").toString());
+    ui->lan_netmast->setText(lanSettings.value("netmask").toString());
+    ui->dns_server->setText(lanSettings.value("dns_server").toString());
+
+    if (isStaticEnabled)
+    {
+        ui->pushButton_6->setStyleSheet(buttonClickedStyle);
+        ui->pushButton_7->setStyleSheet(buttonNormalStyle);
+    }
+    else
+    {
+        ui->pushButton_7->setStyleSheet(buttonClickedStyle);
+        ui->pushButton_6->setStyleSheet(buttonNormalStyle);
+    }
+
+
+    QMessageBox::information(this, "LAN Settings", "LAN settings loaded successfully!");
+}
+
+
+void FactSetting::on_lan_save_btn_clicked()
+{
+    QString lanIp       = ui->lan_address->text().trimmed();
+    QString lanServer     = ui->lan_server->text().trimmed();
+    QString lanNetMask     = ui->lan_netmast->text().trimmed();
+    QString dnsServer     = ui->dns_server->text().trimmed();
+
+    // 1. Create JSON object
+    QJsonObject lanSettings;
+    lanSettings["ip"]       = lanIp;
+    lanSettings["server"]     = lanServer;
+    lanSettings["netmask"] = lanNetMask;
+    lanSettings["dns_server"] = dnsServer;
+    lanSettings["isDhcpEnabled"] = isDhcpEnabled;
+    lanSettings["isStaticEnabled"] = isStaticEnabled;
+
+    // 2. Ensure config directory exists
+    QDir dir("config");
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+
+    // 3. Write to config/lan_settings.json
+    QFile file("config/lan_settings.json");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QMessageBox::critical(this, "LAN Settings", "Failed to save LAN settings.");
+        return;
+    }
+
+    QJsonDocument doc(lanSettings);
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    QMessageBox::information(this, "LAN Settings", "LAN settings saved successfully!");
+}
+
+
+void FactSetting::on_mqtt_load_btn_clicked()
+{
+    QFile file("config/factory_mqtt_settings.json");
+    if (!file.exists()) {
+        QMessageBox::warning(this, "MQTT Settings", "No saved settings found.");
+        return;
+    }
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::critical(this, "MQTT Settings", "Failed to open settings file.");
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (doc.isNull() || !doc.isObject()) {
+        QMessageBox::critical(this, "MQTT Settings", "Invalid JSON format: " + parseError.errorString());
+        return;
+    }
+
+    QJsonObject mqttSettings = doc.object();
+
+    ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
+    ui->mqtt_port->setText(mqttSettings.value("server_port").toString());
+    ui->mqtt_user->setText(mqttSettings.value("user").toString());
+    ui->mqtt_pass->setText(mqttSettings.value("password").toString());
+    ui->mqtt_port_2->setText(mqttSettings.value("port").toString());
+
+    QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
+}
+
+
+void FactSetting::on_mqtt_save_btn_clicked()
+{
+    QString mqttIp      = ui->mqtt_ip->text().trimmed();
+    QString mqttServerPort    = ui->mqtt_port->text().trimmed();
+    QString mqttUser    = ui->mqtt_user->text().trimmed();
+    QString mqttPass    = ui->mqtt_pass->text().trimmed();
+    QString mqttPort    = ui->mqtt_port_2->text().trimmed();
+
+    // 1. Create JSON object
+    QJsonObject mqttSettings;
+    mqttSettings["ip"]              = mqttIp;
+    mqttSettings["server_port"]     = mqttServerPort;
+    mqttSettings["user"]            = mqttUser;
+    mqttSettings["password"] = mqttPass;
+    mqttSettings["port"]    = mqttPort;
+
+    // 2. Ensure config directory exists
+    QDir dir("config");
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+
+    // 3. Write to config/mqtt_settings.json
+    QFile file("config/factory_mqtt_settings.json");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QMessageBox::critical(this, "MQTT Settings", "Failed to save MQTT settings.");
+        return;
+    }
+
+    QJsonDocument doc(mqttSettings);
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    QMessageBox::information(this, "MQTT Settings", "MQTT settings saved successfully!");
+}
+
+
+void FactSetting::on_sftp_load_btn_clicked()
+{
+    QFile file("config/factory_sftp_settings.json");
+    if (!file.exists()) {
+        QMessageBox::warning(this, "SFTP Settings", "No saved settings found.");
+        return;
+    }
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::critical(this, "SFTP Settings", "Failed to open settings file.");
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (doc.isNull() || !doc.isObject()) {
+        QMessageBox::critical(this, "SFTP Settings", "Invalid JSON format: " + parseError.errorString());
+        return;
+    }
+
+    QJsonObject sftpSettings = doc.object();
+
+    // Update UI line edits safely
+    ui->sftp_ip->setText(sftpSettings.value("ip").toString());
+    ui->sftp_port->setText(sftpSettings.value("port").toString());
+    ui->sftp_user->setText(sftpSettings.value("username").toString());
+    ui->sftp_pass->setText(sftpSettings.value("password").toString());
+    ui->sftp_int->setText(sftpSettings.value("interval").toString());
+    ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
+
+    QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
+}
+
+
+void FactSetting::on_sftp_save_btn_clicked()
+{
+    QString sftpIp       = ui->sftp_ip->text().trimmed();
+    QString sftpPort     = ui->sftp_port->text().trimmed();
+    QString sftpUser     = ui->sftp_user->text().trimmed();
+    QString sftpPass     = ui->sftp_pass->text().trimmed();
+    QString sftpInterval = ui->sftp_int->text().trimmed();
+    QString sftpSchedule = ui->sftp_sch->text().trimmed();
+
+    // 1. Create JSON object
+    QJsonObject sftpSettings;
+    sftpSettings["ip"]       = sftpIp;
+    sftpSettings["port"]     = sftpPort;
+    sftpSettings["username"] = sftpUser;
+    sftpSettings["password"] = sftpPass;
+    sftpSettings["interval"] = sftpInterval;
+    sftpSettings["schedule"] = sftpSchedule;
+
+    // 2. Ensure config directory exists
+    QDir dir("config");
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+
+    // 3. Write to config/factory_sftp_settings.json
+    QFile file("config/sftp_settings.json");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QMessageBox::critical(this, "SFTP Settings", "Failed to save SFTP settings.");
+        return;
+    }
+
+    QJsonDocument doc(sftpSettings);
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
 }
 

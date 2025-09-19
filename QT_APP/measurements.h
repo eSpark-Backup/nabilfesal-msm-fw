@@ -2,6 +2,7 @@
 #define MEASUREMENTS_H
 
 #include <QWidget>
+#include "numkeyboard.h"
 
 namespace Ui {
 class Measurements;
@@ -16,6 +17,7 @@ public:
     ~Measurements();
 signals:
     void measureExit();
+    void requestSerialCommand(const QString &cmd);
 private slots:
     void on_back_1_clicked();
 
@@ -35,8 +37,19 @@ private slots:
 
     void on_cal_btn_clicked();
 
+    void on_load_btn_clicked();
+
+    void on_save_btn_clicked();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+    
 private:
     Ui::Measurements *ui;
+    bool isRatioActivated = false;
+    bool isVOffsetActivated = false;
+    bool isIOffsetActivated = false;
+    NumKeyboard *keyboard;
 };
 
 #endif // MEASUREMENTS_H

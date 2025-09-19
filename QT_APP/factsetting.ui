@@ -45,6 +45,9 @@
          <pointsize>-1</pointsize>
         </font>
        </property>
+       <property name="focusPolicy">
+        <enum>Qt::TabFocus</enum>
+       </property>
        <property name="styleSheet">
         <string notr="true">QPushButton {
     background-color: #1E88E5;   /* Blue */
@@ -82,8 +85,11 @@ QPushButton:focus {
          <pointsize>23</pointsize>
         </font>
        </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
        <property name="text">
-        <string>FACTORT SETTINGS</string>
+        <string>FACTORY SETTINGS</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -109,6 +115,9 @@ QPushButton:focus {
          <family>Gilroy</family>
          <pointsize>-1</pointsize>
         </font>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::TabFocus</enum>
        </property>
        <property name="styleSheet">
         <string notr="true">QPushButton {
@@ -144,7 +153,7 @@ QPushButton:focus {
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -501,6 +510,9 @@ QPushButton:focus {
                   </property>
                   <item>
                    <widget class="QPushButton" name="pushButton_7">
+                    <property name="focusPolicy">
+                     <enum>Qt::TabFocus</enum>
+                    </property>
                     <property name="styleSheet">
                      <string notr="true">QPushButton {
     background-color: #D9D9D9;   /* Grey */
@@ -521,6 +533,9 @@ QPushButton:pressed {
                   </item>
                   <item>
                    <widget class="QPushButton" name="pushButton_6">
+                    <property name="focusPolicy">
+                     <enum>Qt::TabFocus</enum>
+                    </property>
                     <property name="styleSheet">
                      <string notr="true">QPushButton {
     background-color: #D9D9D9;   /* Grey */
@@ -543,7 +558,7 @@ QPushButton:pressed {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="server1">
+                <widget class="QLineEdit" name="lan_address">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -567,7 +582,10 @@ QPushButton:pressed {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit">
+                <widget class="QLineEdit" name="lan_server">
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -582,7 +600,7 @@ QPushButton:pressed {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="server2">
+                <widget class="QLineEdit" name="lan_netmast">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -606,7 +624,7 @@ QPushButton:pressed {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="server3">
+                <widget class="QLineEdit" name="dns_server">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -660,7 +678,7 @@ QPushButton:pressed {
                 <number>0</number>
                </property>
                <item>
-                <widget class="QPushButton" name="ntp_load_btn">
+                <widget class="QPushButton" name="lan_load_btn">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -721,7 +739,7 @@ QPushButton:focus {
                 </spacer>
                </item>
                <item>
-                <widget class="QPushButton" name="ntp_save_btn">
+                <widget class="QPushButton" name="lan_save_btn">
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
@@ -803,6 +821,9 @@ QPushButton:focus {
               <pointsize>-1</pointsize>
              </font>
             </property>
+            <property name="focusPolicy">
+             <enum>Qt::TabFocus</enum>
+            </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
     background-color: #1E88E5;   /* Blue */
@@ -877,6 +898,9 @@ QPushButton:focus {
                 <height>20</height>
                </size>
               </property>
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
+              </property>
               <property name="styleSheet">
                <string notr="true">background-color: #1E88E5;        /* Blue strip at the top */
     color: white;                     /* White text */
@@ -937,7 +961,7 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="server1_4">
+                <widget class="QLineEdit" name="mqtt_ip">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -961,7 +985,10 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit_4">
+                <widget class="QLineEdit" name="mqtt_port">
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -976,7 +1003,7 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="server2_4">
+                <widget class="QLineEdit" name="mqtt_user">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -1000,7 +1027,7 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="server3_4">
+                <widget class="QLineEdit" name="mqtt_pass">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -1021,7 +1048,10 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit_6">
+                <widget class="QLineEdit" name="mqtt_port_2">
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1069,7 +1099,7 @@ QPushButton:focus {
                 <number>0</number>
                </property>
                <item>
-                <widget class="QPushButton" name="ntp_load_btn_4">
+                <widget class="QPushButton" name="mqtt_load_btn">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -1130,7 +1160,7 @@ QPushButton:focus {
                 </spacer>
                </item>
                <item>
-                <widget class="QPushButton" name="ntp_save_btn_4">
+                <widget class="QPushButton" name="mqtt_save_btn">
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
@@ -1271,7 +1301,7 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="server1_5">
+                <widget class="QLineEdit" name="sftp_ip">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -1295,7 +1325,10 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit_5">
+                <widget class="QLineEdit" name="sftp_port">
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1310,7 +1343,7 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="server2_5">
+                <widget class="QLineEdit" name="sftp_user">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -1334,7 +1367,7 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="server3_5">
+                <widget class="QLineEdit" name="sftp_pass">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -1390,7 +1423,10 @@ QPushButton:focus {
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLineEdit" name="lineEdit_7">
+                   <widget class="QLineEdit" name="sftp_sch">
+                    <property name="focusPolicy">
+                     <enum>Qt::ClickFocus</enum>
+                    </property>
                     <property name="styleSheet">
                      <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1405,7 +1441,10 @@ QPushButton:focus {
                    </widget>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="lineEdit_8">
+                   <widget class="QLineEdit" name="sftp_int">
+                    <property name="focusPolicy">
+                     <enum>Qt::ClickFocus</enum>
+                    </property>
                     <property name="styleSheet">
                      <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
@@ -1456,7 +1495,7 @@ QPushButton:focus {
                 <number>0</number>
                </property>
                <item>
-                <widget class="QPushButton" name="ntp_load_btn_5">
+                <widget class="QPushButton" name="sftp_load_btn">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -1517,7 +1556,7 @@ QPushButton:focus {
                 </spacer>
                </item>
                <item>
-                <widget class="QPushButton" name="ntp_save_btn_5">
+                <widget class="QPushButton" name="sftp_save_btn">
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
@@ -1585,6 +1624,9 @@ QPushButton:focus {
              <pointsize>-1</pointsize>
             </font>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {
     background-color: #1E88E5;   /* Blue */
@@ -1646,6 +1688,9 @@ QPushButton:focus {
              <family>Gilroy</family>
              <pointsize>-1</pointsize>
             </font>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
            </property>
            <property name="styleSheet">
             <string notr="true">QPushButton {

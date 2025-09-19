@@ -14,6 +14,7 @@ public:
 
 signals:
     void jsonResponseReady(int channel, QJsonObject);
+    void stringResponseReady(const QString &response);
 
 private slots:
     void handleReadyRead();

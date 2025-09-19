@@ -11,7 +11,15 @@
 #include "usbwatcher.h"
 #include "factsetting.h"
 #include "measurements.h"
+#include "dataexporter.h"
+#include "serialhandler.h"
+#include "serialworker.h"
 #include <atomic>
+#include <QThread>
+#include <QTimer>
+#include <QMap>
+#include <QJsonObject>
+#include <QMutex>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,6 +32,11 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+signals:
+    void requestChannelPoll(int channel);
+    void receivedChannelData(int channel, const QJsonObject &data);
+    void requestSerialCommand(const QString &cmd);
 
 private:
     // helper functions for clarity & optimization
@@ -46,6 +59,7 @@ private:
     UsbWatcher *watcher = nullptr;
     FactSetting *factSettings = nullptr;
     Measurements *measure = nullptr;
+    UsbDataExporter *dataExporter = nullptr;
 
     // state
     int progressValue = 0;
@@ -53,6 +67,13 @@ private:
     QString m_adminPass;
     QString m_factoryPass;
     std::atomic<bool> isLogin{false};
+    std::string m_mountPath;
+
+    QThread *serialThread = nullptr;
+    SerialWorker *worker = nullptr;
+    QTimer *pollTimer;
+    QMap<int, QJsonObject> latestData;
+    QMutex latestDataMutex;
 };
 
 #endif // MAINWINDOW_H

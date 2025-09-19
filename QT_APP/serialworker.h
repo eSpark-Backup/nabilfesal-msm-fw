@@ -12,14 +12,17 @@ public:
 
 public slots:
     void requestChannel(int channel);
+    void sendRawCommand(const QString &cmd);
 
 signals:
     void channelDataReady(int channel, const QJsonObject &);
     void channelError(int channel);
+    void genericResponseReady(QString response);
 
 private slots:
     void handleJsonResponse(int channel, const QJsonObject &json);
     void processQueue();
+    void handleStringResponse(const QString &resp);
 
 private:
     QString portName;

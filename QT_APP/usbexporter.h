@@ -16,9 +16,15 @@ public:
     ~UsbExporter();
     void setDeviceName(const QString &dev, const QString &path);
     void removeDeviceName();
+    int getSelectedIntervalDays() const;
+
+private slots:
+    void slotsAccepted();
 
 private:
     Ui::UsbExporter *ui;
+    std::string m_device;
+    std::string m_mountPath;
 };
 
 #endif // USBEXPORTER_H

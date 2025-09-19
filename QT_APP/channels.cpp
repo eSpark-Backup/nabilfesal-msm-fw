@@ -38,29 +38,6 @@ ChannelsHome::ChannelsHome(QWidget *parent)
         handleSubButtonClick(1, "pw");
     });
 
-    SerialWorker *worker = nullptr;
-    serialThread = new QThread(this);
-
-    connect(serialThread, &QThread::started, [=]() mutable {
-        worker = new SerialWorker("/dev/ttyS1", 115200);
-        worker->moveToThread(serialThread);
-
-        connect(this, &ChannelsHome::requestChannelPoll, worker, &SerialWorker::requestChannel);
-        connect(worker, &SerialWorker::channelDataReady, this, &ChannelsHome::handleChannelData);
-        connect(worker, &SerialWorker::channelError, this, &ChannelsHome::handleChannelError);
-    });
-
-    serialThread->start();
-
-    // Poll channels in order
-    pollTimer = new QTimer(this);
-    connect(pollTimer, &QTimer::timeout, this, [this] {
-        static int ch = 1;
-        emit requestChannelPoll(ch);
-        ch = (ch % 12) + 1;
-    });
-    pollTimer->start(200);
-
     // Cache label pointers once for speed
     cacheChannelLabels();
 
@@ -69,9 +46,6 @@ ChannelsHome::ChannelsHome(QWidget *parent)
 
 ChannelsHome::~ChannelsHome()
 {
-    serialThread->quit();
-    serialThread->wait();
-    pollTimer->stop();
     delete ui;
 }
 
@@ -116,20 +90,8 @@ void ChannelsHome::onAnyHomeButtonClicked()
     ui->stackedWidget->setCurrentIndex(0);
 }
 
-void ChannelsHome::pollAllChannels() {
-    for (int i = 1; i <= 12; ++i) {
-        emit requestChannelPoll(i);
-    }
-}
-
 void ChannelsHome::handleChannelData(int channel, const QJsonObject &json) {
     updateChannelUI(channel, json);
-}
-
-void ChannelsHome::handleChannelError(int channel) {
-    QString suffix = QString::number(channel);
-    QPushButton* chBtn = findChild<QPushButton*>("channel_bt_" + suffix);
-    // if (chBtn) chBtn->setDisabled(true);
 }
 
 void ChannelsHome::cacheChannelLabels() {

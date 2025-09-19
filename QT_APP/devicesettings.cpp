@@ -148,7 +148,8 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     for (QLineEdit *edit : edits) {
         edit->installEventFilter(this);
 
-        connect(edit, &QLineEdit::editingFinished, this, [this]() {
+        connect(edit, &QLineEdit::editingFinished, this, [=]() {
+            edit->clearFocus();
             keyboard->hide();
         });
     }
