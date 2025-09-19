@@ -140,7 +140,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(70, 1);
+    label->move(65, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     keyboard = new MSMKeyboard(this);
