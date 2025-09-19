@@ -279,6 +279,11 @@ void DeviceSettings::on_ntp_save_btn_clicked()
 
 void DeviceSettings::on_mqtt_save_btn_clicked()
 {
+    if (mqttHandler == nullptr) {
+        mqttHandler = new AwsMqttManager(this);
+    }
+    mqttHandler->disconnectClient();
+
     QString mqttIp      = ui->mqtt_ip->text().trimmed();
     QString mqttPort    = ui->mqtt_port->text().trimmed();
     QString mqttUser    = ui->mqtt_user->text().trimmed();
@@ -313,6 +318,10 @@ void DeviceSettings::on_mqtt_save_btn_clicked()
     file.close();
 
     QMessageBox::information(this, "MQTT Settings", "MQTT settings saved successfully!");
+
+    QTimer::singleShot(1000, [this](){
+        mqttHandler->reloadSettings();
+    });
 }
 
 void DeviceSettings::load_and_start_mqtt_data()
