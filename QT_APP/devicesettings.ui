@@ -44,7 +44,7 @@
     <enum>Qt::ClickFocus</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="page">
     <widget class="QFrame" name="DeviceInfoFrame">
@@ -1149,25 +1149,41 @@ QPushButton:focus {
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="sftp_int">
-           <property name="focusPolicy">
-            <enum>Qt::ClickFocus</enum>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QLineEdit" name="sftp_int">
+             <property name="focusPolicy">
+              <enum>Qt::ClickFocus</enum>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 13px;
     color: black;</string>
-           </property>
-           <property name="inputMask">
-            <string/>
-           </property>
-           <property name="placeholderText">
-            <string/>
-           </property>
-          </widget>
+             </property>
+             <property name="inputMask">
+              <string/>
+             </property>
+             <property name="placeholderText">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="sftp_sch">
+             <property name="styleSheet">
+              <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: black;</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>

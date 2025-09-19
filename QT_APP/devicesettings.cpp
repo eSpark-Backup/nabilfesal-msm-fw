@@ -129,11 +129,18 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->move(170, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("SFTP_INTERVAL", ui->sftp_int);
+    label = new QLabel("INTERVAL", ui->sftp_int);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(185, 1);
+    label->move(70, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("SCHEDULE", ui->sftp_sch);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(70, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     keyboard = new MSMKeyboard(this);
@@ -145,7 +152,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
         ui->mqtt_ip, ui->mqtt_port, ui->mqtt_user,
         ui->mqtt_pass, ui->mqtt_topic, ui->mqtt_int,
         ui->sftp_ip, ui->sftp_port, ui->sftp_username,
-        ui->sftp_pass, ui->sftp_int
+        ui->sftp_pass, ui->sftp_int, ui->sftp_sch
     };
 
     for (QLineEdit *edit : edits) {
@@ -389,7 +396,7 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     QString sftpUser     = ui->sftp_username->text().trimmed();
     QString sftpPass     = ui->sftp_pass->text().trimmed();
     QString sftpInterval = ui->sftp_int->text().trimmed();
-    // QString sftpShedule  = ui->sftp_shd->text().trimmed();
+    QString sftpSchedule = ui->sftp_sch->text().trimmed();
 
     // 1. Create JSON object
     QJsonObject sftpSettings;
@@ -398,7 +405,7 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     sftpSettings["username"] = sftpUser;
     sftpSettings["password"] = sftpPass;
     sftpSettings["interval"] = sftpInterval;
-    // sftpSettings["shedule"] = sftpShedule;
+    sftpSettings["schedule"] = sftpSchedule;
 
     // 2. Ensure config directory exists
     QDir dir("config");
@@ -457,7 +464,7 @@ void DeviceSettings::on_sftp_load_btn_clicked()
     ui->sftp_username->setText(sftpSettings.value("username").toString());
     ui->sftp_pass->setText(sftpSettings.value("password").toString());
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
-    // ui->sftp_shd->setText(sftpSettings.value("schedule").toString());
+    ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
     sftpHandler->reloadSettings();
@@ -486,7 +493,7 @@ void DeviceSettings::load_and_start_sftp_data()
     ui->sftp_username->setText(sftpSettings.value("username").toString());
     ui->sftp_pass->setText(sftpSettings.value("password").toString());
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
-    // ui->sftp_shd->setText(sftpSettings.value("schedule").toString());
+    ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
     
     if (!sftpHandler->sftpState())
     {
