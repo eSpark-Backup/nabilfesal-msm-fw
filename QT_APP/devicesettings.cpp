@@ -417,27 +417,6 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     file.close();
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
-
-    if (sftpHandler == nullptr) {
-        sftpHandler = new sftpManager(this);
-    }
-
-    QString uid = Utils::getUid();
-    QDir dir2("data/" + uid);
-    dir2.mkpath("."); // ensure directory exists
-
-    QStringList filters{ uid + "-*.csv" };
-    auto files = dir2.entryInfoList(filters, QDir::Files, QDir::Time);
-    if (files.isEmpty()) {
-        qDebug() << "No matching file found in" << dir2.path();
-        return;
-    }
-
-    QString localFilePath = files.first().absoluteFilePath();
-
-    QString uploadFilePath = "/ToOFP/" + uid;
-
-    sftpHandler->uploadFile(localFilePath, uploadFilePath);
 }
 
 
@@ -477,7 +456,7 @@ void DeviceSettings::on_sftp_load_btn_clicked()
     ui->sftp_username->setText(sftpSettings.value("username").toString());
     ui->sftp_pass->setText(sftpSettings.value("password").toString());
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
-    // ui->sftp_shd->setText(sftpSettings.value("shedule").toString());
+    // ui->sftp_shd->setText(sftpSettings.value("schedule").toString());
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
     sftpHandler->reloadSettings();
@@ -506,6 +485,7 @@ void DeviceSettings::load_and_start_sftp_data()
     ui->sftp_username->setText(sftpSettings.value("username").toString());
     ui->sftp_pass->setText(sftpSettings.value("password").toString());
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
+    // ui->sftp_shd->setText(sftpSettings.value("schedule").toString());
     
     if (!sftpHandler->sftpState())
     {

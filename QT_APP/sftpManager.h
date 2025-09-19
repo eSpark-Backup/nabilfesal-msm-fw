@@ -18,6 +18,7 @@ public:
 private:
     void connectToSftp();
     void disconnectFromSftp();
+    void scheduleSftpUpload();
 
     QProcess *process;
 
@@ -29,7 +30,7 @@ private:
     QString clientId;
     QString topic;
     int intervalSec = 0;
-    int sheduleSec = 0100;
+    QString schedule = "0100";
     QString configPath;
     bool isConnected = false;
     QTimer *publishTimer = nullptr;

@@ -20,9 +20,7 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
     connect(process, &QProcess::started, this, [this]() {
         isConnected = true;
         qDebug() << "Connected to SFTP!";
-        if (intervalSec > 0) {
-            publishTimer->start(intervalSec * 1000);
-        }
+        scheduleSftpUpload();
     });
 
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
@@ -31,27 +29,57 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
         Q_UNUSED(status)
         isConnected = false;
         qDebug() << "Disconnected from SFTP.";
-        publishTimer->stop();
     });
 
     connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
         isConnected = false;
         qWarning() << "SFTP process error:" << error;
-        publishTimer->stop();
     });
+}
 
-    // Timer: only runs when connected
-    connect(publishTimer, &QTimer::timeout, this, [this]() {
-        if (!isConnected) {
-            qWarning() << "Skipped publish, SFTP not connected.";
-            return;
-        }
 
+void sftpManager::scheduleSftpUpload()
+{
+    if (!isConnected) {
+        qWarning() << "Skipped scheduling, SFTP not connected.";
+        return;
+    }
+
+    schedule = "1555";  // HHmm format
+
+    QString hhmm = this->schedule;
+    if (hhmm.length() != 4) {
+        qWarning() << "Invalid schedule format:" << hhmm;
+        return;
+    }
+
+    int hour   = hhmm.left(2).toInt();
+    int minute = hhmm.mid(2, 2).toInt();
+
+    // Make both explicitly LocalTime
+    QDateTime now = QDateTime::currentDateTime().toLocalTime();
+    QDateTime scheduledTime(QDate::currentDate(), QTime(hour, minute), Qt::LocalTime);
+
+    // Debug: print both times
+    qDebug() << "hour: " << hour <<" minute: " << minute;
+    qDebug() << "Current time:" << now.toString("yyyy-MM-dd HH:mm:ss t");
+    qDebug() << "Scheduled time:" << scheduledTime.toString("yyyy-MM-dd HH:mm:ss t");
+
+    // Only roll to tomorrow if time already passed
+    if (scheduledTime < now) {
+        scheduledTime = scheduledTime.addDays(1);
+        qDebug() << "Adjusted scheduledTime to tomorrow:" << scheduledTime.toString("yyyy-MM-dd HH:mm:ss t");
+    }
+
+    qint64 msecToGo = now.msecsTo(scheduledTime);
+    qDebug() << "Next SFTP upload scheduled at:" << scheduledTime
+             << "(in" << msecToGo / 1000 << "seconds)";
+
+    QTimer::singleShot(msecToGo, this, [this]() {
         QString uid = Utils::getUid();
         QDir dir("data/" + uid);
-        dir.mkpath("."); // ensure directory exists
+        dir.mkpath(".");
 
-        // Find latest file matching "uid-*.csv"
         QStringList filters{ uid + "-*.csv" };
         auto files = dir.entryInfoList(filters, QDir::Files, QDir::Time);
         if (files.isEmpty()) {
@@ -60,10 +88,11 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
         }
 
         QString localFilePath = files.first().absoluteFilePath();
-
         QString uploadFilePath = "/ToOFP/" + uid;
 
         uploadFile(localFilePath, uploadFilePath);
+
+        scheduleSftpUpload(); // reschedule
     });
 }
 
