@@ -12,6 +12,7 @@ bool setNtpServers(const QStringList &servers);
 QString getUid();
 QString getMqttStatus();
 QString getSftpStatus();
+void rebootSystem();
 }
 
 #endif // UTILS_H

@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include "awsmqttmanager.h"
 #include "sftpManager.h"
+#include <cstdlib>
 
 namespace Utils {
 void keySound() {
@@ -174,6 +175,12 @@ QString getSftpStatus()
         return "Connected";
     else
         return "Disconnected";
+}
+
+void rebootSystem()
+{
+    // Make sure any pending writes are flushed
+    QProcess::startDetached("sh", {"-c", "sync; reboot"});
 }
 
 }
