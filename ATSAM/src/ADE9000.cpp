@@ -11,6 +11,11 @@ bool SECONDHEX = false;
 Calibration_regs calibration_data;
 VoltageRMSOSRegs voltage_RMS_OS;
 CurrentRMSOSRegs current_RMS_OS;
+AvgActivePowerRegs avg_active_power_regs[12];
+#define MAX_VALUES 30
+int8_t count = 1;
+uint32_t ms_counter;
+
 
 // *****************************************************************************
 // *****************************************************************************
@@ -290,20 +295,26 @@ uint32_t get_microseconds(void)
 }
 void ReadActivePowerRegs(ActivePowerRegs *Data, SPI_CSS_Pin css_pin)
 {
-    uint32_t start_time = get_microseconds(); // Start
-    uint32_t end_time;
-
-    if (css_pin)
-    {
-        Data->ActivePowerValue_A = (float)(int32_t(SPI_Read(ADDR_AWATT, true, css_pin))) / (calibration_data.cal_power_cc * 1000.0f);
-        Data->ActivePowerValue_B = (float)(int32_t(SPI_Read(ADDR_BWATT, true, css_pin))) / (calibration_data.cal_power_cc * 1000.0f);
-        Data->ActivePowerValue_C = (float)(int32_t(SPI_Read(ADDR_CWATT, true, css_pin))) / (calibration_data.cal_power_cc * 1000.0f);
+    uint32_t now = ms_counter;
+    if((now - avg_active_power_regs[css_pin - 1].last_time) > 1000){ // 1 second (1 * 1000) counted for testing actual will be 1 minute (1 * 1000 * 60)
+        avg_active_power_regs[css_pin - 1].last_time = now;
+        if (css_pin)
+        {
+            avg_active_power_regs[css_pin - 1].ActivePowerValue_A += (float)(int32_t(SPI_Read(ADDR_AWATT, true, css_pin))) / (calibration_data.cal_power_cc * 1000.0f);
+            avg_active_power_regs[css_pin - 1].ActivePowerValue_B += (float)(int32_t(SPI_Read(ADDR_BWATT, true, css_pin))) / (calibration_data.cal_power_cc * 1000.0f);
+            avg_active_power_regs[css_pin - 1].ActivePowerValue_C += (float)(int32_t(SPI_Read(ADDR_CWATT, true, css_pin))) / (calibration_data.cal_power_cc * 1000.0f);
+            avg_active_power_regs[css_pin - 1].count++;
+        }
     }
-
-    end_time = get_microseconds(); // End
-    uint32_t ticks = end_time - start_time;
-    float elapsed_us = (ticks / (float)CPU_FREQ) * 1e6;
-    //    elapsed_us = (float)(end_time - start_time);s
+    if(avg_active_power_regs[css_pin - 1].count > MAX_VALUES){ // Calculating Average Values
+        Data->ActivePowerValue_A = avg_active_power_regs[css_pin - 1].ActivePowerValue_A / MAX_VALUES;
+        Data->ActivePowerValue_B = avg_active_power_regs[css_pin - 1].ActivePowerValue_B / MAX_VALUES;
+        Data->ActivePowerValue_C = avg_active_power_regs[css_pin - 1].ActivePowerValue_C / MAX_VALUES;
+        avg_active_power_regs[css_pin - 1].ActivePowerValue_A = 0;
+        avg_active_power_regs[css_pin - 1].ActivePowerValue_B = 0;
+        avg_active_power_regs[css_pin - 1].ActivePowerValue_C = 0;
+        avg_active_power_regs[css_pin - 1].count = 1;
+    }
 }
 
 void ReadReactivePowerRegs(ReactivePowerRegs *Data1, ApparentPowerRegs *Data2, PowerFactorRegs *Data3, SPI_CSS_Pin css_pin)
@@ -422,7 +433,7 @@ void ReadPowerFactorRegsnValues(PowerFactorRegs *Data, VoltageRMSRegs *rmsData, 
 ////            Data1->PActiveEnergyValue_kWh_A = Data2->ActivePowerValue_A * timeFactor;
 ////            Data1->NActiveEnergyValue_kWh_A = 0;
 ////        }
-//        if (Data2->ActivePowerValue_B < 0)
+//        if       (Data2->ActivePowerValue_B < 0)
 //        {
 //            Data1->NActiveEnergyValue_kWh_B = Data2->ActivePowerValue_B * timeFactor;
 //            Data1->PActiveEnergyValue_kWh_B = 0;

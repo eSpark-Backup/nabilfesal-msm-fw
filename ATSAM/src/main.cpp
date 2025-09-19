@@ -142,12 +142,11 @@ void sendChannelJsonData(uint8_t channel)
 {
     if (channel == 0 || channel > 12)
         return;
-
     ADE9000UnitMeasurements& m = unitMeasurements[channel - 1];
+//    AvgActivePowerRegs& avg_m = avg_active_power_regs[channel - 1];
     char jsonBuffer[2048];  // Increase if needed
     char *ptr = jsonBuffer;
     size_t remaining = sizeof(jsonBuffer);
-
     int written = snprintf(ptr, remaining,
         "{"
         "\"ID\":%d,"
@@ -159,26 +158,21 @@ void sendChannelJsonData(uint8_t channel)
     );
     ptr += written;
     remaining -= written;
-
     const char* phases[3] = { "phase_a", "phase_b", "phase_c" };
     float rmsVoltage[3]   = { m.voltageRMS.VoltageRMSValue_A, m.voltageRMS.VoltageRMSValue_B, m.voltageRMS.VoltageRMSValue_C };
     float lineVoltage[3]  = { m.lineVoltage.LineVoltage_AB, m.lineVoltage.LineVoltage_BC, m.lineVoltage.LineVoltage_CA };
     float frequency[3]    = { m.periodFrequency.FrequencyValue_A, m.periodFrequency.FrequencyValue_B, m.periodFrequency.FrequencyValue_C };
     float current[3]      = { m.currentRMS.CurrentRMSValue_A, m.currentRMS.CurrentRMSValue_B, m.currentRMS.CurrentRMSValue_C };
-
     float powerFactor[3]  = { m.powerFactor.PowerFactorValue_A, m.powerFactor.PowerFactorValue_B, m.powerFactor.PowerFactorValue_C };
     float activePower[3]  = { m.activePower.ActivePowerValue_A, m.activePower.ActivePowerValue_B, m.activePower.ActivePowerValue_C };
     float reactivePower[3]= { m.reactivePower.ReactivePowerValue_A, m.reactivePower.ReactivePowerValue_B, m.reactivePower.ReactivePowerValue_C };
     float apparentPower[3]= { m.apparentPower.ApparentPowerValue_A, m.apparentPower.ApparentPowerValue_B, m.apparentPower.ApparentPowerValue_C };
-
     float posEnergy[3] = { m.activeEnergy.PActiveEnergyValue_kWh_A, m.activeEnergy.PActiveEnergyValue_kWh_B, m.activeEnergy.PActiveEnergyValue_kWh_C };
     float negEnergy[3] = { m.activeEnergy.NActiveEnergyValue_kWh_A, m.activeEnergy.NActiveEnergyValue_kWh_B, m.activeEnergy.NActiveEnergyValue_kWh_C };
-
     float currentTHD[3] = { m.currentTHD.CurrentTHDValue_A, m.currentTHD.CurrentTHDValue_B, m.currentTHD.CurrentTHDValue_C };
     float voltageTHD[3] = { m.voltageTHD.VoltageTHDValue_A, m.voltageTHD.VoltageTHDValue_B, m.voltageTHD.VoltageTHDValue_C };
-
     float angle[3] = { m.angleDegree.AngleValue_VA_IA, m.angleDegree.AngleValue_VB_IB, m.angleDegree.AngleValue_VC_IC };
-
+//    float avg_active_power[3] = {avg_m.ActivePowerValue_A, avg_m.ActivePowerValue_B, avg_m.ActivePowerValue_C};
     for (int i = 0; i < 3; i++) {
         written = snprintf(ptr, remaining,
             "\"%s\":{"
@@ -204,7 +198,23 @@ void sendChannelJsonData(uint8_t channel)
                         "\"negative\":0"
                     "}"
                 "},"
-                "\"threshold\":{"
+                "\"avg_power\":{"
+                    "\"factor\": 0,"
+//                    "\"active\": %.2f,"
+                    "\"reactive\": 0,"
+                    "\"apparent\": 0"
+                "},"
+                "\"avg_energy\":{"
+                    "\"active\": {"
+                        "\"positive\": 0,"
+                        "\"negative\": 0"
+                    "},"
+                    "\"reactive\":{"
+                        "\"positive\": 0,"
+                        "\"negative\": 0"
+                    "}"
+                "},"
+                "\"thd\":{"
                     "\"current\":%.2f,"
                     "\"voltage\":%.2f,"
                     "\"angle\":%.2f"
@@ -214,21 +224,19 @@ void sendChannelJsonData(uint8_t channel)
             lineVoltage[i], rmsVoltage[i], frequency[i], current[i],
             powerFactor[i], activePower[i], reactivePower[i], apparentPower[i],
             posEnergy[i], negEnergy[i],
+//                avg_active_power[i],
             currentTHD[i], voltageTHD[i], angle[i],
             (i < 2) ? "," : "" // Comma between objects, not after last one
         );
         ptr += written;
         remaining -= written;
     }
-
     // Close outer JSON objects
     written = snprintf(ptr, remaining, "}}\n");
     ptr += written;
-
     // Send over UART (SERCOM2)
     SERCOM2_USART_Write((uint8_t *)jsonBuffer, ptr - jsonBuffer);
 }
-
 
 void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
 {
@@ -811,10 +819,19 @@ void SetupUSART(void)
 // Section: Main Entry Point
 // *****************************************************************************
 // *****************************************************************************
-
+void MyTC0Callback(TC_TIMER_STATUS status, uintptr_t context)
+{
+    if(status & TC_INTFLAG_OVF_Msk)  // overflow occurred
+    {
+        ms_counter++;  // increment ms
+    }
+}
 int main(void)
 {
     SYS_Initialize(NULL);
+//    TC0_TimerStart();
+    TC0_TimerInitialize();
+    TC0_TimerCallbackRegister(MyTC0Callback, 0);
     TC0_TimerStart();
     ADE9000Setup();
     SetupUSART();

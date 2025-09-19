@@ -10,6 +10,7 @@
 #include "main.h" 
 #include "ADE9000RegMap.h" 
 #include "ADE9000Calibration.h" 
+extern uint32_t ms_counter;
 
 // *****************************************************************************
 // *****************************************************************************
@@ -100,6 +101,14 @@ typedef struct {
     float ActivePowerValue_B;
     float ActivePowerValue_C;
 } ActivePowerRegs;
+
+typedef struct {
+    float ActivePowerValue_A = 0;
+    float ActivePowerValue_B = 0;
+    float ActivePowerValue_C = 0;
+    uint8_t count = 0;
+    uint32_t last_time = 0;
+} AvgActivePowerRegs; // for Average
 
 typedef struct {
     float ReactivePowerValue_A;
