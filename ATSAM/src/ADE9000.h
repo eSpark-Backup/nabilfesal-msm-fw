@@ -73,8 +73,6 @@
 // Section: Data Types
 // *****************************************************************************
 // *****************************************************************************
-extern float current_conversion_constant;
-extern float current_transfer_functionn;
 typedef enum {
     SPI_CSS1 = 1,
     SPI_CSS2,
@@ -98,27 +96,18 @@ typedef struct {
 } Calibration_regs;
 
 typedef struct {
-    int32_t ActivePowerReg_A;
-    int32_t ActivePowerReg_B;
-    int32_t ActivePowerReg_C;
     float ActivePowerValue_A;
     float ActivePowerValue_B;
     float ActivePowerValue_C;
 } ActivePowerRegs;
 
 typedef struct {
-    int32_t ReactivePowerReg_A;
-    int32_t ReactivePowerReg_B;
-    int32_t ReactivePowerReg_C;
     float ReactivePowerValue_A;
     float ReactivePowerValue_B;
     float ReactivePowerValue_C;
 } ReactivePowerRegs;
 
 typedef struct {
-    int32_t ApparentPowerReg_A;
-    int32_t ApparentPowerReg_B;
-    int32_t ApparentPowerReg_C;
     float ApparentPowerValue_A;
     float ApparentPowerValue_B;
     float ApparentPowerValue_C;
@@ -153,27 +142,18 @@ typedef struct {
 } EnergyRegs;
 
 typedef struct {
-    int32_t VoltageRMSReg_A;
-    int32_t VoltageRMSReg_B;
-    int32_t VoltageRMSReg_C;
     float VoltageRMSValue_A;
     float VoltageRMSValue_B;
     float VoltageRMSValue_C;
 } VoltageRMSRegs;
 
 typedef struct {
-    int32_t VoltageRMSOSReg_A;
-    int32_t VoltageRMSOSReg_B;
-    int32_t VoltageRMSOSReg_C;
     float VoltageRMSOSValue_A;
     float VoltageRMSOSValue_B;
     float VoltageRMSOSValue_C;
 } VoltageRMSOSRegs;
 
 typedef struct {
-    int32_t CurrentRMSOSReg_A;
-    int32_t CurrentRMSOSReg_B;
-    int32_t CurrentRMSOSReg_C;
     float CurrentRMSOSValue_A;
     float CurrentRMSOSValue_B;
     float CurrentRMSOSValue_C;
@@ -181,54 +161,36 @@ typedef struct {
 
 
 typedef struct {
-    float VoltageRMS_A;
-    float VoltageRMS_B;
-    float VoltageRMS_C;
     float LineVoltage_AB;
     float LineVoltage_BC;
     float LineVoltage_CA;
 } LineVoltageRegs;
 
 typedef struct {
-    uint32_t CurrentRMSReg_A;
-    int32_t CurrentRMSReg_B;
-    int32_t CurrentRMSReg_C;
     float CurrentRMSValue_A;
     float CurrentRMSValue_B;
     float CurrentRMSValue_C;
 } CurrentRMSRegs;
 
 typedef struct {
-    uint32_t VoltageTHDReg_A;
-    uint32_t VoltageTHDReg_B;
-    uint32_t VoltageTHDReg_C;
     float VoltageTHDValue_A;
     float VoltageTHDValue_B;
     float VoltageTHDValue_C;
 } VoltageTHDRegs;
 
 typedef struct {
-    uint32_t CurrentTHDReg_A;
-    uint32_t CurrentTHDReg_B;
-    uint32_t CurrentTHDReg_C;
     float CurrentTHDValue_A;
     float CurrentTHDValue_B;
     float CurrentTHDValue_C;
 } CurrentTHDRegs;
 
 typedef struct {
-    uint32_t PowerFactorReg_A;
-    uint32_t PowerFactorReg_B;
-    uint32_t PowerFactorReg_C;
     float PowerFactorValue_A;
     float PowerFactorValue_B;
     float PowerFactorValue_C;
 } PowerFactorRegs;
 
 typedef struct {
-    uint32_t PeriodReg_A;
-    uint32_t PeriodReg_B;
-    uint32_t PeriodReg_C;
     float FrequencyValue_A;
     float FrequencyValue_B;
     float FrequencyValue_C;
@@ -236,43 +198,33 @@ typedef struct {
 
 typedef struct 
 {
-	int16_t AngleReg_VA_VB;
-	int16_t AngleReg_VB_VC;
-	int16_t AngleReg_VA_VC;
-	int16_t AngleReg_VA_IA;
-	int16_t AngleReg_VB_IB;
-	int16_t AngleReg_VC_IC;
-	int16_t AngleReg_IA_IB;
-	int16_t AngleReg_IB_IC;
-	int16_t AngleReg_IA_IC;
-	float AngleValue_VA_VB;
-	float AngleValue_VB_VC;
-	float AngleValue_VA_VC;
+	// float AngleValue_VA_VB;
+	// float AngleValue_VB_VC;
+	// float AngleValue_VA_VC;
 	float AngleValue_VA_IA;
 	float AngleValue_VB_IB;
 	float AngleValue_VC_IC;
-	float AngleValue_IA_IB;
-	float AngleValue_IB_IC;
-	float AngleValue_IA_IC;	
+	// float AngleValue_IA_IB;
+	// float AngleValue_IB_IC;
+	// float AngleValue_IA_IC;
 }AngleRegs;   
 
 typedef struct {
-    uint16_t Temperature_Reg;
     float Temperature;
 } TemperatureRegs;
 
 typedef struct {
-    ActivePowerRegs activePower;
-    ReactivePowerRegs reactivePower;
-    ApparentPowerRegs apparentPower;
-    EnergyRegs activeEnergy;
     VoltageRMSRegs voltageRMS;
     LineVoltageRegs lineVoltage;
     CurrentRMSRegs currentRMS;
+    PeriodRegs periodFrequency;
+    ActivePowerRegs activePower;
+    ReactivePowerRegs reactivePower;
+    ApparentPowerRegs apparentPower;
+    PowerFactorRegs powerFactor;
+    EnergyRegs activeEnergy;
     VoltageTHDRegs voltageTHD;
     CurrentTHDRegs currentTHD;
-    PowerFactorRegs powerFactor;
-    PeriodRegs periodFrequency;
     AngleRegs angleDegree;
     TemperatureRegs temperature;
 } ADE9000UnitMeasurements;
@@ -325,7 +277,6 @@ void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin);
 
 void ReadTempRegnValue(TemperatureRegs *Data, SPI_CSS_Pin css_pin);
 
-void getPGA_gain(SPI_CSS_Pin css_pin, uint8_t *currentGain, uint8_t *voltageGain);
 SPI_CSS_Pin get_css_pin(uint8_t channel);
 #endif
 
