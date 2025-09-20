@@ -441,7 +441,10 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     file.close();
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
-    sftpHandler->reloadSettings();
+
+    QTimer::singleShot(1000, [this](){
+        sftpHandler->reloadSettings();
+    });
 }
 
 
@@ -484,7 +487,10 @@ void DeviceSettings::on_sftp_load_btn_clicked()
     ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
-    sftpHandler->reloadSettings();
+    
+    QTimer::singleShot(1000, [this](){
+        sftpHandler->reloadSettings();
+    });
 }
 
 

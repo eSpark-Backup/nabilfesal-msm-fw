@@ -12,6 +12,7 @@
 #include "utils.h"
 
 #define MQTT_PATH "config/mqtt_settings.json"
+QMap<int, QJsonObject> channelTelemetry;
 
 AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 {
@@ -26,7 +27,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
             return;
         }
         QByteArray payload = buildTelemetryJson();
-        // qDebug().noquote() << "TelemetryJson: " << payload;
+        qDebug().noquote() << "TelemetryJson: " << payload;
         publishMessage(payload);
     });
 
@@ -46,8 +47,6 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
         qDebug() << "Disconnected from broker.";
         publishTimer->stop();
     });
-
-    initializeTelemetryJson();
 }
 
 bool AwsMqttManager::loadConfig(const QString &filePath)

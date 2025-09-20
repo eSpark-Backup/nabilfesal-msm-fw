@@ -45,6 +45,5 @@ private:
     QString keyPath = "/etc/certs/privateKey.pem";
 
     QTimer *publishTimer = nullptr;
-    QMap<int, QJsonObject> channelTelemetry;
 };
 
