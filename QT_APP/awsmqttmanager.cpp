@@ -12,7 +12,13 @@
 #include "utils.h"
 
 #define MQTT_PATH "config/mqtt_settings.json"
-QMap<int, QJsonObject> channelTelemetry;
+
+
+AwsMqttManager& AwsMqttManager::instance()
+{
+    static AwsMqttManager _instance;  // created on first call, shared afterwards
+    return _instance;
+}
 
 AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 {

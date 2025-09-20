@@ -169,7 +169,7 @@ QString getUid()
 
 QString getMqttStatus()
 {
-    AwsMqttManager mqtt;
+    AwsMqttManager &mqtt = AwsMqttManager::instance();
     if (mqtt.mqttState())
         return "Connected";
     else
@@ -179,12 +179,13 @@ QString getMqttStatus()
 
 QString getSftpStatus()
 {
-    sftpManager sftp;
+    sftpManager &sftp = sftpManager::instance();
     if (sftp.sftpState())
         return "Connected";
     else
         return "Disconnected";
 }
+
 
 void rebootSystem()
 {

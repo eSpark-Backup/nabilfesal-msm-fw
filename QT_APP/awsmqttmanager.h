@@ -7,7 +7,7 @@ class AwsMqttManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit AwsMqttManager(QObject *parent = nullptr);
+    static AwsMqttManager& instance();
 
     bool loadConfig(const QString &filePath);
     void reloadSettings();
@@ -15,11 +15,15 @@ public:
     void publishMessage(const QString &payload);
     void subscribeToTopic();
     bool mqttState();
+    void testProcessIncomingJson();
 
 public slots:
     void processIncomingJson(int channel, const QJsonObject &payload);
 
 private:
+    explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
+    AwsMqttManager(const AwsMqttManager&) = delete;     // prevent copy
+    AwsMqttManager& operator=(const AwsMqttManager&) = delete; // prevent assignment
     void initializeTelemetryJson();
     void connectToBroker();
     void disconnectFromBroker();
@@ -45,5 +49,6 @@ private:
     QString keyPath = "/etc/certs/privateKey.pem";
 
     QTimer *publishTimer = nullptr;
+    QMap<int, QJsonObject> channelTelemetry;
 };
 

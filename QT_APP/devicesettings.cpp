@@ -36,6 +36,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     connect(timer, &QTimer::timeout, this, [=]() {
         QString time = QTime::currentTime().toString("HH:mm:ss");
         ui->time_input->setText(time);
+        refreshInfo();
     });
     timer->start(1000);
 
@@ -279,9 +280,7 @@ void DeviceSettings::on_ntp_save_btn_clicked()
 
 void DeviceSettings::on_mqtt_save_btn_clicked()
 {
-    if (mqttHandler == nullptr) {
-        mqttHandler = new AwsMqttManager(this);
-    }
+    AwsMqttManager *mqttHandler = &AwsMqttManager::instance();
     mqttHandler->disconnectClient();
 
     QString mqttIp      = ui->mqtt_ip->text().trimmed();
@@ -319,17 +318,13 @@ void DeviceSettings::on_mqtt_save_btn_clicked()
 
     QMessageBox::information(this, "MQTT Settings", "MQTT settings saved successfully!");
 
-    QTimer::singleShot(1000, [this](){
+    QTimer::singleShot(1000, [this, mqttHandler](){
         mqttHandler->reloadSettings();
     });
 }
 
 void DeviceSettings::load_and_start_mqtt_data()
 {
-    if (mqttHandler == nullptr) {
-        mqttHandler = new AwsMqttManager(this);
-    }
-
     QFile file("config/mqtt_settings.json");
     if (!file.exists() || !file.open(QIODevice::ReadOnly)) return;
 
@@ -348,6 +343,7 @@ void DeviceSettings::load_and_start_mqtt_data()
     ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
     ui->mqtt_int->setText(mqttSettings.value("interval").toString());
     
+    AwsMqttManager *mqttHandler = &AwsMqttManager::instance();
     if (!mqttHandler->mqttState())
     {
         mqttHandler->reloadSettings();
@@ -357,9 +353,11 @@ void DeviceSettings::load_and_start_mqtt_data()
 
 void DeviceSettings::on_mqtt_load_btn_clicked()
 {
-    if (mqttHandler == nullptr) {
-        mqttHandler = new AwsMqttManager(this);
-    }
+    // if (mqttHandler == nullptr) {
+    //     mqttHandler = new AwsMqttManager(this);
+    // }
+    AwsMqttManager *mqttHandler = &AwsMqttManager::instance();
+
     mqttHandler->disconnectClient();
 
     QFile file("config/mqtt_settings.json");
@@ -394,7 +392,7 @@ void DeviceSettings::on_mqtt_load_btn_clicked()
 
     QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
     
-    QTimer::singleShot(1000, [this](){
+    QTimer::singleShot(1000, [this, mqttHandler](){
         mqttHandler->reloadSettings();
     });
 }
@@ -402,9 +400,7 @@ void DeviceSettings::on_mqtt_load_btn_clicked()
 
 void DeviceSettings::on_sftp_save_btn_clicked()
 {
-    if (sftpHandler == nullptr) {
-        sftpHandler = new sftpManager(this);
-    }
+    sftpManager *sftpHandler = &sftpManager::instance();
     sftpHandler->disconnectClient();
     
     QString sftpIp       = ui->sftp_ip->text().trimmed();
@@ -442,7 +438,7 @@ void DeviceSettings::on_sftp_save_btn_clicked()
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
 
-    QTimer::singleShot(1000, [this](){
+    QTimer::singleShot(1000, [this, sftpHandler](){
         sftpHandler->reloadSettings();
     });
 }
@@ -450,9 +446,7 @@ void DeviceSettings::on_sftp_save_btn_clicked()
 
 void DeviceSettings::on_sftp_load_btn_clicked()
 {
-    if (sftpHandler == nullptr) {
-        sftpHandler = new sftpManager(this);
-    }
+    sftpManager *sftpHandler = &sftpManager::instance();
     sftpHandler->disconnectClient();
 
     QFile file("config/sftp_settings.json");
@@ -488,7 +482,7 @@ void DeviceSettings::on_sftp_load_btn_clicked()
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
     
-    QTimer::singleShot(1000, [this](){
+    QTimer::singleShot(1000, [this, sftpHandler](){
         sftpHandler->reloadSettings();
     });
 }
@@ -496,10 +490,6 @@ void DeviceSettings::on_sftp_load_btn_clicked()
 
 void DeviceSettings::load_and_start_sftp_data()
 {
-    if (sftpHandler == nullptr) {
-        sftpHandler = new sftpManager(this);
-    }
-
     QFile file("config/sftp_settings.json");
     if (!file.exists() || !file.open(QIODevice::ReadOnly)) return;
 
@@ -517,7 +507,8 @@ void DeviceSettings::load_and_start_sftp_data()
     ui->sftp_pass->setText(sftpSettings.value("password").toString());
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
     ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
-    
+   
+    sftpManager *sftpHandler = &sftpManager::instance();
     if (!sftpHandler->sftpState())
     {
         sftpHandler->reloadSettings();

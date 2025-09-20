@@ -7,7 +7,7 @@ class sftpManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit sftpManager(QObject *parent = nullptr);
+    static sftpManager& instance();
 
     bool loadConfig(const QString &filePath);
     void reloadSettings();
@@ -16,6 +16,9 @@ public:
     void uploadFile(const QString &localFile, const QString &remotePath);
     
 private:
+    explicit sftpManager(QObject *parent = nullptr);
+    sftpManager(const sftpManager&) = delete;
+    sftpManager& operator=(const sftpManager&) = delete;
     void connectToSftp();
     void disconnectFromSftp();
     void scheduleSftpUpload();
