@@ -33,7 +33,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
             return;
         }
         QByteArray payload = buildTelemetryJson();
-        qDebug().noquote() << "TelemetryJson: " << payload;
+        // qDebug().noquote() << "TelemetryJson: " << payload;
         publishMessage(payload);
     });
 
@@ -218,6 +218,8 @@ QByteArray AwsMqttManager::buildTelemetryJson() const
     root["ip_address"] = Utils::getDeviceIp();
     root["ofp_uid"]    = Utils::getUid();
 
+    QReadLocker locker(&telemetryLock);
+
     // All channel data
     for (auto it = channelTelemetry.begin(); it != channelTelemetry.end(); ++it) {
         const QJsonObject &channelData = it.value();
@@ -234,7 +236,6 @@ QByteArray AwsMqttManager::buildTelemetryJson() const
 
 void AwsMqttManager::processIncomingJson(int channel, const QJsonObject &payload)
 {
-    // QJsonDocument doc = QJsonDocument::fromJson(payload);
     QJsonObject root = payload;
     QJsonObject data = root["data"].toObject();
 
@@ -336,10 +337,9 @@ void AwsMqttManager::processIncomingJson(int channel, const QJsonObject &payload
         telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
         telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
     }
-
+    
+    QWriteLocker locker(&telemetryLock);
     channelTelemetry[channel] = telemetry;
-    QJsonDocument debugDoc(telemetry);
-    qDebug().noquote() << "Telemetry for channel" << channel << ":" << debugDoc.toJson(QJsonDocument::Compact);
 }
 
 void AwsMqttManager::initializeTelemetryJson()

@@ -2,6 +2,7 @@
 #include <QObject>
 #include <QMqttClient>
 #include <QTimer>
+#include <QReadWriteLock>
 
 class AwsMqttManager : public QObject
 {
@@ -15,7 +16,6 @@ public:
     void publishMessage(const QString &payload);
     void subscribeToTopic();
     bool mqttState();
-    void testProcessIncomingJson();
 
 public slots:
     void processIncomingJson(int channel, const QJsonObject &payload);
@@ -49,6 +49,7 @@ private:
     QString keyPath = "/etc/certs/privateKey.pem";
 
     QTimer *publishTimer = nullptr;
+    mutable QReadWriteLock telemetryLock;
     QMap<int, QJsonObject> channelTelemetry;
 };
 

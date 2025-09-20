@@ -106,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::updateProgress);
-    timer->start(500);
+    timer->start(50);
 
     Utils::mainSound();
     showFullScreen();
@@ -183,7 +183,7 @@ void MainWindow::updateProgress()
         QTimer::singleShot(500, this, &MainWindow::handlePostProgress);
     }
 
-    progressValue += 10;
+    progressValue += 1;
 }
 
 void MainWindow::handlePostProgress()
@@ -211,7 +211,7 @@ void MainWindow::handlePostProgress()
 
 void MainWindow::connectLoginSignals()
 {
-    AwsMqttManager *mqttHandler = &AwsMqttManager::instance();
+    AwsMqttManager *mqttManager = &AwsMqttManager::instance();
     connect(this, &MainWindow::receivedChannelData,
         mqttManager, &AwsMqttManager::processIncomingJson);
     connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
