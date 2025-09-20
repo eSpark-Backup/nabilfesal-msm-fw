@@ -114,7 +114,7 @@ channel-N\n
     "channel-4": 70,
     "channel-5": 200,
     "channel-6": 80,
-    "channel-7": 200,
+    "channel-7": 100,
     "channel-8": 200,
     "channel-9": 500,
     "channel-10": 200,

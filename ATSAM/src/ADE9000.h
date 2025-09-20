@@ -10,7 +10,6 @@
 #include "main.h" 
 #include "ADE9000RegMap.h" 
 #include "ADE9000Calibration.h" 
-extern uint32_t ms_counter;
 
 // *****************************************************************************
 // *****************************************************************************
@@ -22,7 +21,7 @@ extern uint32_t ms_counter;
 /*Configuration registers*/
 #define ADE9000_PGA_GAIN 0x0000   	    /*PGA@0x0000. Gain of all channels=1*/
 #define ADE9000_CONFIG0 0x00000000		/*Integrator disabled*/
-#define ADE9000_CONFIG1	0x0003			/*CF3/ZX pin outputs Zero crossing */
+#define ADE9000_CONFIG1	0x0002			/*CF3/ZX pin outputs Zero crossing */
 #define ADE9000_CONFIG2	0x0C00			/*Default High pass corner frequency of 1.25Hz*/
 #define ADE9000_CONFIG3	0x0000			/*Peak and overcurrent detection disabled*/
 #define ADE9000_ACCMODE 0x0000			/*60Hz operation, 3P4W Wye configuration, signed accumulation*/
@@ -38,37 +37,14 @@ extern uint32_t ms_counter;
 #define ADE9000_DICOEFF 0x00000000 		/* Set DICOEFF= 0xFFFFE000 when integrator is enabled*/
 
 /*Constant Definitions***/
-#define ADE90xx_FDSP 8000   			/*ADE9000 FDSP: 8000sps, ADE9078 FDSP: 4000sps*/
 #define ADE9000_RUN_ON 0x0001			/*DSP ON*/
+
 /*Energy Accumulation Settings*/
+#define ADE9000_EGY_TIME 0x77359 				/*Accumulate 8000 samples*/
+#define ADE9000_EP_CFG 0xE001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
 
-
-
-//#define ADE9000_EP_CFG 0x0011			/*Enable energy accumulation, accumulate samples at 8ksps*/
-										/*latch energy accumulation after EGYRDY*/
-										/*If accumulation is changed to half line cycle mode, change EGY_TIME*/
-#define ADE9000_EGY_TIME 0x1F3F 				/*Accumulate 8000 samples*/
-
-
-#define ADE9000_EP_CFG 0x0011          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
-/* Set to ~10s accumulation window for testing */
-//#define ADE9000_EGY_TIME 0x13880      /* 80,000 samples ? 10 seconds at 8kSPS */
-
-//#define ADE9000_EGY_TIME 0x3FF      /* 80,000 samples ? 10 seconds at 8kSPS */
-
-
-
- 
 /*Waveform buffer Settings*/
 #define ADE9000_WFB_CFG 0x1000			/*Neutral current samples enabled, Resampled data enabled*/
-/*Burst all channels*/
-#define WFB_ELEMENT_ARRAY_SIZE 512  	/*size of buffer to read. 512 Max.Each element IA,VA...IN has max 512 points 
-										/*[Size of waveform buffer/number of sample sets = 2048/4 = 512]*/
-/*(Refer ADE9000 technical reference manual for more details)*/
-
-/*Size of array reading calibration constants from EEPROM*/
-#define CALIBRATION_CONSTANTS_ARRAY_SIZE 13
-
 // *****************************************************************************
 // *****************************************************************************
 // Section: Data Types
@@ -101,14 +77,6 @@ typedef struct {
     float ActivePowerValue_B;
     float ActivePowerValue_C;
 } ActivePowerRegs;
-
-typedef struct {
-    float ActivePowerValue_A = 0;
-    float ActivePowerValue_B = 0;
-    float ActivePowerValue_C = 0;
-    uint8_t count = 0;
-    uint32_t last_time = 0;
-} AvgActivePowerRegs; // for Average
 
 typedef struct {
     float ReactivePowerValue_A;
@@ -278,7 +246,7 @@ void ReadReactivePowerRegs(ReactivePowerRegs *Data1,ApparentPowerRegs *Data2,Pow
 void ReadApparentPowerRegs(ApparentPowerRegs *Data, SPI_CSS_Pin css_pin);
 void ReadPowerFactorRegsnValues(PowerFactorRegs *Data, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin);
 
-void ReadEnergyRegs(EnergyRegs *Data1,ActivePowerRegs *Data2, SPI_CSS_Pin css_pin);
+void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *CurrentData, SPI_CSS_Pin css_pin);
 
 void ReadVoltageTHDRegsnValues(VoltageTHDRegs *Data, SPI_CSS_Pin css_pin);
 void ReadCurrentTHDRegsnValues(CurrentTHDRegs *Data, SPI_CSS_Pin css_pin);
