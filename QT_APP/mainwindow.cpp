@@ -94,8 +94,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     serialThread->start();
 
-    serialThread->start();
-
     pollTimer = new QTimer(this);
     connect(pollTimer, &QTimer::timeout, this, [this] {
         static int ch = 1;
@@ -250,40 +248,41 @@ void MainWindow::connectLoginSignals()
         isLogin = true;
         if (!factorySettings) {
             factorySettings = new FactorySettings;
-            connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
-                isLogin = false;
-                login->showFullScreen();
-                factorySettings->hide();
-            });
-            connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
-                if (!factSettings){
-                    factSettings = new FactSetting;
-                    connect(factSettings, &FactSetting::usbExport, this, [this](){
-                        usbExporter->show();
-                    });
-                    connect(factSettings, &FactSetting::factoryExit, this, [this](){
-                        factorySettings->showFullScreen();
-                        factSettings->hide();
-                    });
-                }
-                factSettings->showFullScreen();
-                factorySettings->hide();
-            });
-            connect(factorySettings, &FactorySettings::loadMeasurements, this, [this]() {
-                if (!measure){
-                    measure = new Measurements;
-                    connect(measure, &Measurements::measureExit, this, [this](){
-                        factorySettings->showFullScreen();
-                        measure->hide();
-                    });
-                    connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd){
-                        emit requestSerialCommand(cmd);
-                    });
-                }
-                measure->showFullScreen();
-                factorySettings->hide();
-            });
         }
+        connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
+            isLogin = false;
+            login->showFullScreen();
+            factorySettings->hide();
+        });
+        connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
+            if (!factSettings){
+                factSettings = new FactSetting;
+            }
+            connect(factSettings, &FactSetting::usbExport, this, [this](){
+                usbExporter->show();
+            });
+            connect(factSettings, &FactSetting::factoryExit, this, [this](){
+                factorySettings->showFullScreen();
+                factSettings->hide();
+            });
+            factSettings->showFullScreen();
+            factorySettings->hide();
+        });
+        connect(factorySettings, &FactorySettings::loadMeasurements, this, [this]() {
+            if (!measure){
+                measure = new Measurements;
+            }
+            connect(measure, &Measurements::measureExit, this, [this](){
+                factorySettings->showFullScreen();
+                measure->hide();
+            });
+            connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd){
+                emit requestSerialCommand(cmd);
+            });
+            
+            measure->showFullScreen();
+            factorySettings->hide();
+        });
         factorySettings->showFullScreen();
         login->hide();
     });

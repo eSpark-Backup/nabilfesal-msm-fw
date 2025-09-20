@@ -171,6 +171,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -218,6 +221,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -295,6 +301,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_2">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -342,6 +351,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -419,6 +431,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_3">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -466,6 +481,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -550,6 +568,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_4">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -597,6 +618,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -674,6 +698,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_5">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -721,6 +748,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -798,6 +828,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_6">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -845,6 +878,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -929,6 +965,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_7">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -976,6 +1015,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -1053,6 +1095,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_8">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -1100,6 +1145,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -1177,6 +1225,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_9">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -1224,6 +1275,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -1308,6 +1362,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_10">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -1355,6 +1412,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -1432,6 +1492,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_11">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -1479,6 +1542,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);
@@ -1556,6 +1622,9 @@ border-radius: 20px;</string>
                  </property>
                  <item>
                   <widget class="QToolButton" name="toolButton_12">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">border-color: rgb(255, 255, 255);</string>
                    </property>
@@ -1603,6 +1672,9 @@ border-radius: 20px;</string>
                      <family>Gilroy</family>
                      <pointsize>17</pointsize>
                     </font>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">background-color: rgba(255, 255, 255,0);

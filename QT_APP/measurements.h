@@ -42,6 +42,30 @@ private slots:
 
     void on_save_btn_clicked();
 
+    void on_toolButton_clicked();
+
+    void on_toolButton_2_clicked();
+
+    void on_toolButton_3_clicked();
+
+    void on_toolButton_4_clicked();
+
+    void on_toolButton_5_clicked();
+
+    void on_toolButton_6_clicked();
+
+    void on_toolButton_7_clicked();
+
+    void on_toolButton_8_clicked();
+
+    void on_toolButton_9_clicked();
+
+    void on_toolButton_10_clicked();
+
+    void on_toolButton_11_clicked();
+
+    void on_toolButton_12_clicked();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     
