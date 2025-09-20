@@ -211,6 +211,10 @@ void MainWindow::handlePostProgress()
 
 void MainWindow::connectLoginSignals()
 {
+    if(!mqttManager)
+        mqttManager = new AwsMqttManager;
+    connect(this, &MainWindow::receivedChannelData,
+        mqttManager, &AwsMqttManager::processIncomingJson);
     connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
         isLogin = true;
         if (!channels)
@@ -226,11 +230,6 @@ void MainWindow::connectLoginSignals()
             if (!settings) {
                 settings = new DeviceSettings;
             }
-            if(!mqttManager)
-                mqttManager = new AwsMqttManager;
-
-            connect(this, &MainWindow::receivedChannelData,
-                mqttManager, &AwsMqttManager::processIncomingJson);
 
             connect(settings, &DeviceSettings::channels_view, this, [this]() {
                 channels->showFullScreen();
@@ -240,7 +239,7 @@ void MainWindow::connectLoginSignals()
             connect(settings, &DeviceSettings::usbExport, this, [this](){
                 usbExporter->show();
             });
-
+            
             settings->showFullScreen();
             channels->hide();
         });
