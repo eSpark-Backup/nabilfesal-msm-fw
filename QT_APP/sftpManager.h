@@ -2,6 +2,9 @@
 #include <QObject>
 #include <QTimer>
 #include <QProcess>
+#include <QReadWriteLock>
+#include <QMap>
+#include <QJsonObject>
 
 class sftpManager : public QObject
 {
@@ -15,6 +18,9 @@ public:
     bool sftpState();
     void uploadFile(const QString &localFile, const QString &remotePath);
     
+public slots:
+    void processIncomingJson(int channel, const QJsonObject &payload);
+
 private:
     explicit sftpManager(QObject *parent = nullptr);
     sftpManager(const sftpManager&) = delete;
@@ -22,6 +28,7 @@ private:
     void connectToSftp();
     void disconnectFromSftp();
     void scheduleSftpUpload();
+    void exportTelemetryToCsv(const QString &filePath);
 
     QProcess *process;
 
@@ -37,6 +44,10 @@ private:
     QString configPath;
     bool isConnected = false;
     QTimer *publishTimer = nullptr;
+    QString m_filePath;
+
+    mutable QReadWriteLock telemetryLock;
+    QMap<int, QJsonObject> channelTelemetry;
 
 };
 

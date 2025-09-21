@@ -155,6 +155,9 @@ void Measurements::on_load_btn_clicked()
 {
     if (isRatioActivated)
     {
+        for (QLabel *label : signEdits) {
+            label->setText("%");
+        }
         QFile file("config/ct_ratio_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits) {
@@ -357,5 +360,113 @@ void Measurements::on_save_btn_clicked()
 
         emit requestSerialCommand(QString::fromUtf8(QJsonDocument(data).toJson(QJsonDocument::Compact)));
     }
+}
+
+
+void Measurements::on_toolButton_clicked()
+{
+    ui->ch1->setFocus();
+    keyboard->setTarget(ui->ch1);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_2_clicked()
+{
+    ui->ch2->setFocus();
+    keyboard->setTarget(ui->ch2);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_3_clicked()
+{
+    ui->ch3->setFocus();
+    keyboard->setTarget(ui->ch3);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_4_clicked()
+{
+    ui->ch4->setFocus();
+    keyboard->setTarget(ui->ch4);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_5_clicked()
+{
+    ui->ch5->setFocus();
+    keyboard->setTarget(ui->ch5);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_6_clicked()
+{
+    ui->ch6->setFocus();
+    keyboard->setTarget(ui->ch6);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_7_clicked()
+{
+    ui->ch7->setFocus();
+    keyboard->setTarget(ui->ch7);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_8_clicked()
+{
+    ui->ch8->setFocus();
+    keyboard->setTarget(ui->ch8);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_9_clicked()
+{
+    ui->ch9->setFocus();
+    keyboard->setTarget(ui->ch9);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_10_clicked()
+{
+    ui->ch10->setFocus();
+    keyboard->setTarget(ui->ch10);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_11_clicked()
+{
+    ui->ch11->setFocus();
+    keyboard->setTarget(ui->ch11);
+    Utils::keySound();
+    keyboard->show();
+}
+
+
+void Measurements::on_toolButton_12_clicked()
+{
+    ui->ch12->setFocus();
+    keyboard->setTarget(ui->ch12);
+    Utils::keySound();
+    keyboard->show();
 }
 

@@ -115,7 +115,8 @@ void ChannelsHome::cacheChannelLabels() {
 void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
     QString suffix = QString::number(channel);
     QPushButton* chBtn = findChild<QPushButton*>("channel_bt_" + suffix);
-    if (chBtn) chBtn->setDisabled(!json.value("status").toBool());
+    auto status = json.value("status").toInt();
+    if (chBtn) chBtn->setDisabled(status != 1);
 
     if (channel == m_channel)
     {
