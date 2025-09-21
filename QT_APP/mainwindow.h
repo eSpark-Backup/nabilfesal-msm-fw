@@ -14,6 +14,8 @@
 #include "dataexporter.h"
 #include "serialhandler.h"
 #include "serialworker.h"
+#include "awsmqttmanager.h"
+#include "sftpManager.h"
 #include <atomic>
 #include <QThread>
 #include <QTimer>
@@ -61,6 +63,7 @@ private:
     Measurements *measure = nullptr;
     UsbDataExporter *dataExporter = nullptr;
     AwsMqttManager *mqttManager = nullptr;
+    sftpManager *sftpHandler = nullptr;
 
     // state
     int progressValue = 0;

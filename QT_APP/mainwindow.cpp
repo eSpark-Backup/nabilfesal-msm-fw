@@ -212,6 +212,9 @@ void MainWindow::connectLoginSignals()
     AwsMqttManager *mqttManager = &AwsMqttManager::instance();
     connect(this, &MainWindow::receivedChannelData,
         mqttManager, &AwsMqttManager::processIncomingJson);
+    sftpHandler = &sftpManager::instance();
+    connect(this, &MainWindow::receivedChannelData,
+        sftpHandler, &sftpManager::processIncomingJson);
     connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
         isLogin = true;
         if (!channels)

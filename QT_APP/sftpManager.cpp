@@ -5,6 +5,7 @@
 #include <QDebug>
 #include "utils.h"
 #include <QDir>
+#include <QThread>
 
 
 #define SFTP_PATH "config/sftp_settings.json"
@@ -19,6 +20,16 @@ sftpManager& sftpManager::instance()
 
 sftpManager::sftpManager(QObject *parent) : QObject(parent)
 {
+    // fecthing latest file name from data folder to update file path
+    QString uid = Utils::getUid();
+    QDir dir("data/" + uid);
+    dir.mkpath(".");
+    QStringList filters{ uid + "-*.csv" };
+    auto files = dir.entryInfoList(filters, QDir::Files, QDir::Time);
+    if (!files.isEmpty()) {
+        m_filePath = files.first().absoluteFilePath();
+        qDebug() << "Latest data file found:" << m_filePath;
+    }
     publishTimer = new QTimer(this);
     isConnected  = false;
 
@@ -29,6 +40,7 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
         isConnected = true;
         qDebug() << "Connected to SFTP!";
         scheduleSftpUpload();
+        publishTimer->start(intervalSec * 1000);
     });
 
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
@@ -36,12 +48,28 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
         Q_UNUSED(exitCode)
         Q_UNUSED(status)
         isConnected = false;
+        publishTimer->stop();
         qDebug() << "Disconnected from SFTP.";
     });
 
     connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
         isConnected = false;
+        publishTimer->stop();
         qWarning() << "SFTP process error:" << error;
+    });
+
+    connect(publishTimer, &QTimer::timeout, this, [this]() {
+        if (m_filePath.isEmpty()) {
+            QString uid = Utils::getUid();
+            QDir dir("data/" + uid);
+            dir.mkpath(".");
+
+            m_filePath = QString("data/%1/%1-%2.csv")
+                            .arg(uid)
+                            .arg(QDateTime::currentDateTime().toString("yyyyMMdd-HHmm"));
+        }
+
+        exportTelemetryToCsv(m_filePath);
     });
 }
 
@@ -65,12 +93,10 @@ void sftpManager::scheduleSftpUpload()
     // Make both explicitly LocalTime
     QDateTime now = QDateTime::currentDateTime().toLocalTime();
     QDateTime scheduledTime(QDate::currentDate(), QTime(hour, minute), Qt::LocalTime);
-    qDebug() << "Scheduled time:" << scheduledTime.toString("yyyy-MM-dd HH:mm:ss t");
 
     // Only roll to tomorrow if time already passed
     if (scheduledTime < now) {
         scheduledTime = scheduledTime.addDays(1);
-        qDebug() << "Adjusted scheduledTime to tomorrow:" << scheduledTime.toString("yyyy-MM-dd HH:mm:ss t");
     }
 
     qint64 msecToGo = now.msecsTo(scheduledTime);
@@ -79,21 +105,18 @@ void sftpManager::scheduleSftpUpload()
 
     QTimer::singleShot(msecToGo, this, [this]() {
         QString uid = Utils::getUid();
-        QDir dir("data/" + uid);
-        dir.mkpath(".");
-
-        QStringList filters{ uid + "-*.csv" };
-        auto files = dir.entryInfoList(filters, QDir::Files, QDir::Time);
-        if (files.isEmpty()) {
-            qDebug() << "No matching file found in" << dir.path();
-            return;
-        }
-
-        QString localFilePath = files.first().absoluteFilePath();
         QString uploadFilePath = "/ToOFP/" + uid;
 
-        uploadFile(localFilePath, uploadFilePath);
+        uploadFile(m_filePath, uploadFilePath);
 
+        // deleting the uploaded file
+        if (QFile::remove(m_filePath)) {
+            m_filePath = ""; // reset for next file
+        }
+
+        publishTimer->start(intervalSec  * 1000);
+
+        QThread::sleep(1);
         scheduleSftpUpload(); // reschedule
     });
 }
@@ -157,23 +180,22 @@ void sftpManager::connectToSftp()
         return;
     }
 
-    // Build sshpass + sftp command
     QString program = "sshpass";
     QStringList arguments;
-
     arguments << "-p" << password
               << "sftp"
-              << "-P" << QString::number(port)      // pass port
+              << "-oStrictHostKeyChecking=no"
+              << "-P" << QString::number(port)
               << username + "@" + host;
 
-    // Start process
     process->start(program, arguments);
-    if (!process->waitForStarted()) {
-        qDebug() << "Failed to start SFTP process!";
+    if (!process->waitForStarted(5000)) {
+        qWarning() << "Failed to start SFTP process!";
+        qWarning() << "Program:" << program << "Args:" << arguments;
         return;
     }
 
-    qDebug() << "SFTP connected to" << host;
+    qDebug() << "SFTP process started for" << host;
 }
 
 
@@ -196,22 +218,241 @@ void sftpManager::disconnectFromSftp()
 
 void sftpManager::uploadFile(const QString &localFile, const QString &remotePath)
 {
-    if (process->state() == QProcess::Running) {
-        QString remoteFile = remotePath + "/" + QFileInfo(localFile).fileName();
-        QString cmd = QString(
-            "mkdir -p %1\n"
-            "put %2 %3\n"
-        ).arg(remotePath, localFile, remoteFile);
+    publishTimer->stop();
 
-        process->write(cmd.toUtf8());
-        qDebug() << "SFTP upload command sent for:" << localFile;
-    } else {
-        qDebug() << "SFTP not connected.";
+    if (host.isEmpty() || username.isEmpty() || password.isEmpty()) {
+        qWarning() << "SFTP config missing.";
+        return;
     }
+
+    QFileInfo fi(localFile);
+    if (!fi.exists() || !fi.isFile()) {
+        qWarning() << "Local file missing:" << localFile;
+        return;
+    }
+
+    QString absLocal   = fi.absoluteFilePath();
+    QString remoteFile = remotePath + "/" + fi.fileName();
+
+    QStringList arguments;
+    arguments << "-p" << password
+              << "sftp"
+              << "-oStrictHostKeyChecking=no"
+              << "-P" << QString::number(port)
+              << username + "@" + host;
+
+    QProcess sftpProc;
+    sftpProc.start("sshpass", arguments);
+
+    if (!sftpProc.waitForStarted(5000)) {
+        qWarning() << "Failed to start SFTP process!";
+        return;
+    }
+
+    // Batch commands
+    QByteArray batch;
+    batch.append(QString("mkdir %1\n").arg(remotePath).toUtf8());
+    batch.append(QString("put %1 %2\n").arg(absLocal, remoteFile).toUtf8());
+    batch.append("bye\n");
+
+    sftpProc.write(batch);
+    sftpProc.closeWriteChannel();
+
+    sftpProc.waitForFinished(180000);
 }
 
 
 bool sftpManager::sftpState()
 {
     return isConnected;
+}
+
+void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
+{
+    QJsonObject root = payload;
+    QJsonObject data = root["data"].toObject();
+
+    QJsonObject phaseA = data["phase_a"].toObject();
+    QJsonObject phaseB = data["phase_b"].toObject();
+    QJsonObject phaseC = data["phase_c"].toObject();
+    QJsonObject telemetry;
+
+    if(channel == 1)
+    {
+        // =============== INCOMING CHANNEL =================
+        telemetry["V_R"]     = phaseA["general"].toObject()["rms_voltage"].toDouble();
+        telemetry["In1_R1"]  = phaseA["general"].toObject()["current"].toDouble();
+        telemetry["In1_RPF"] = phaseA["power"].toObject()["factor"].toDouble();
+
+        telemetry["V_Y"]     = phaseB["general"].toObject()["rms_voltage"].toDouble();
+        telemetry["In1_Y1"]  = phaseB["general"].toObject()["current"].toDouble();
+        telemetry["In1_YPF"] = phaseB["power"].toObject()["factor"].toDouble();
+
+        telemetry["V_B"]     = phaseC["general"].toObject()["rms_voltage"].toDouble();
+        telemetry["In1_B1"]  = phaseC["general"].toObject()["current"].toDouble();
+        telemetry["In1_BPF"] = phaseC["power"].toObject()["factor"].toDouble();
+
+        // Power
+        double P1_R = phaseA["power"].toObject()["active"].toDouble();
+        double P1_B = phaseB["power"].toObject()["active"].toDouble();
+        double P1_Y = phaseC["power"].toObject()["active"].toDouble();
+        telemetry["P1_R"] = P1_R;
+        telemetry["P1_B"] = P1_B;
+        telemetry["P1_Y"] = P1_Y;
+        telemetry["P1"]   = P1_R + P1_B + P1_Y;
+
+        // Reactive
+        double Q1_R = phaseA["power"].toObject()["reactive"].toDouble();
+        double Q1_B = phaseB["power"].toObject()["reactive"].toDouble();
+        double Q1_Y = phaseC["power"].toObject()["reactive"].toDouble();
+        telemetry["Q1_R"] = Q1_R;
+        telemetry["Q1_B"] = Q1_B;
+        telemetry["Q1_Y"] = Q1_Y;
+        telemetry["Q1"]   = Q1_R + Q1_B + Q1_Y;
+
+        // Apparent
+        double S1_R = phaseA["power"].toObject()["apparent"].toDouble();
+        double S1_B = phaseB["power"].toObject()["apparent"].toDouble();
+        double S1_Y = phaseC["power"].toObject()["apparent"].toDouble();
+        telemetry["S1_R"] = S1_R;
+        telemetry["S1_B"] = S1_B;
+        telemetry["S1_Y"] = S1_Y;
+        telemetry["S1"]   = S1_R + S1_B + S1_Y;
+
+        // Energy
+        QJsonObject energyA = phaseA["energy"].toObject();
+        QJsonObject activeA   = energyA["active"].toObject();
+        QJsonObject reactiveA = energyA["reactive"].toObject();
+
+        telemetry["Epimp1"] = activeA["negative"].toDouble();
+        telemetry["Epexp1"] = activeA["positive"].toDouble();
+        telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
+        telemetry["Eqexp1"] = reactiveA["positive"].toDouble();
+    }
+    else
+    {
+        // =============== OUTGOING CHANNELS =================
+          // Outgoing channels: F(channel-1)_ prefix
+        int idx = channel - 1;  // Channel 2 → F1, Channel 3 → F2, … Channel 12 → F11
+        QString prefix = QString("F%1_").arg(idx);
+
+        double P_R = phaseA["power"].toObject()["active"].toDouble();
+        double P_B = phaseB["power"].toObject()["active"].toDouble();
+        double P_Y = phaseC["power"].toObject()["active"].toDouble();
+
+        double Q_R = phaseA["power"].toObject()["reactive"].toDouble();
+        double Q_B = phaseB["power"].toObject()["reactive"].toDouble();
+        double Q_Y = phaseC["power"].toObject()["reactive"].toDouble();
+
+        double S_R = phaseA["power"].toObject()["apparent"].toDouble();
+        double S_B = phaseB["power"].toObject()["apparent"].toDouble();
+        double S_Y = phaseC["power"].toObject()["apparent"].toDouble();
+
+        QJsonObject energyA   = phaseA["energy"].toObject();
+        QJsonObject activeA   = energyA["active"].toObject();
+        QJsonObject reactiveA = energyA["reactive"].toObject();
+
+        telemetry[prefix + "R"]     = phaseA["general"].toObject()["current"].toDouble();
+        telemetry["PF_R" + QString::number(idx)] = phaseA["power"].toObject()["factor"].toDouble();
+
+        telemetry[prefix + "Y"]     = phaseB["general"].toObject()["current"].toDouble();
+        telemetry["PF_Y" + QString::number(idx)] = phaseB["power"].toObject()["factor"].toDouble();
+
+        telemetry[prefix + "B"]     = phaseC["general"].toObject()["current"].toDouble();
+        telemetry["PF_B" + QString::number(idx)] = phaseC["power"].toObject()["factor"].toDouble();
+
+        telemetry[prefix + "P"] = P_R + P_B + P_Y;
+        telemetry[prefix + "Q"] = Q_R + Q_B + Q_Y;
+        telemetry[prefix + "S"] = S_R + S_B + S_Y;
+
+        telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
+        telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
+        telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
+        telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
+    }
+    
+    QWriteLocker locker(&telemetryLock);
+    channelTelemetry[channel] = telemetry;
+}
+
+void sftpManager::exportTelemetryToCsv(const QString &filePath)
+{
+    QFile file(filePath);
+    bool writeHeader = !file.exists();
+
+    if (!file.open(QIODevice::Append | QIODevice::Text)) {
+        qWarning() << "Could not open file for writing:" << filePath;
+        return;
+    }
+
+    QTextStream out(&file);
+    out.setCodec("UTF-16");  // matches your file encoding
+
+    // Fixed key order per channel
+    QStringList baseKeysIncoming = {
+        "V_R","In1_R1","In1_RPF",
+        "V_Y","In1_Y1","In1_YPF",
+        "V_B","In1_B1","In1_BPF",
+        "P1","Q1","S1",
+        "Epimp1","Epexp1","Eqimp1","Eqexp1"
+    };
+
+    QStringList baseKeysOutgoing = {
+        "R","PF_R","Y","PF_Y","B","PF_B","P","Q","S",
+        "Epimp","Epexp","Eqimp","Eqexp"
+    };
+
+    // ---- Write Header ----
+    if (writeHeader) {
+        QStringList header;
+        header << "\"Date\"" << "\"Time\"";
+
+        // Channel 1 (incoming)
+        for (const QString &k : baseKeysIncoming) {
+            header << "\"" + k + "\"";
+        }
+
+        // Channels 2–12 (outgoing)
+        for (int ch = 2; ch <= 12; ++ch) {
+            int idx = ch - 1;
+            for (const QString &k : baseKeysOutgoing) {
+                header << QString("\"F%1(%2)\"").arg(idx).arg(k);
+            }
+        }
+        out << header.join("\t") << "\n";
+    }
+
+    // ---- Write Row ----
+    QStringList row;
+    QDateTime now = QDateTime::currentDateTime();
+    row << "\"" + now.date().toString("dd/MM/yyyy") + "\"";
+    row << "\"" + now.time().toString("HH:mm") + "\"";
+
+    {
+        QReadLocker locker(&telemetryLock);
+
+        // Channel 1
+        const auto obj1 = channelTelemetry.value(1);
+        for (const QString &k : baseKeysIncoming) {
+            row << "\"" + QString::number(obj1.value(k).toDouble(), 'f', 4) + "\"";
+        }
+
+        // Channels 2–12
+        for (int ch = 2; ch <= 12; ++ch) {
+            int idx = ch - 1;
+            const auto obj = channelTelemetry.value(ch);
+            for (const QString &k : baseKeysOutgoing) {
+                QString fullKey;
+                if (k.startsWith("PF_"))
+                    fullKey = k + QString::number(idx);
+                else
+                    fullKey = QString("F%1_%2").arg(idx).arg(k);
+
+                row << "\"" + QString::number(obj.value(fullKey).toDouble(), 'f', 4) + "\"";
+            }
+        }
+    }
+
+    out << row.join("\t") << "\n";
+    file.close();
 }
