@@ -122,13 +122,18 @@ QString getDeviceImei()
 {
     QProcess process;
     process.start("mmcli", {"-m", "0"});
-    if (!process.waitForFinished(1000))  // 1s max
+    if (!process.waitForFinished(3000))  // 3s max
         return "UNKNOWN";
 
     QString output = process.readAllStandardOutput();
     for (const QString &line : output.split("\n")) {
-        if (line.contains("imei", Qt::CaseInsensitive)) {
-            return line.section(":", 1).trimmed();
+        QString trimmedLine = line.trimmed();
+        if (trimmedLine.startsWith("imei", Qt::CaseInsensitive)) {
+            return trimmedLine.section(":", 1).trimmed();
+        }
+        // Some mmcli versions indent with "|" before "imei"
+        if (trimmedLine.contains("imei", Qt::CaseInsensitive)) {
+            return trimmedLine.section(":", 1).trimmed();
         }
     }
     return "UNKNOWN";

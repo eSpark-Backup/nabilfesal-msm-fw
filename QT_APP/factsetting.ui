@@ -956,7 +956,7 @@ QPushButton:focus {
                   <string notr="true">border-color: rgb(255, 255, 255);</string>
                  </property>
                  <property name="text">
-                  <string>FACTORY MQTT PROTOCOL</string>
+                  <string>MQTT PROTOCOL</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
@@ -1324,7 +1324,7 @@ QPushButton:focus {
                   <string notr="true">border-color: rgb(255, 255, 255);</string>
                  </property>
                  <property name="text">
-                  <string>FACTORY SFTP SERVER</string>
+                  <string>SFTP SERVER</string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignCenter</set>
