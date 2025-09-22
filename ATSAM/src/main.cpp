@@ -613,8 +613,8 @@ void parse_ct_ratio_json(){
         char key[20];
         for (int8_t j = 1; j < 13; j++){
             sprintf(key, "channel-%d",j);
-            channelConfig[j].ctRatio = extract_channel_values(key);
-            ct_ratio_calibration(channelConfig[j].ctRatio, j, unitMeasurements[j-1].currentRMS);
+            channelConfig[j-1].ctRatio = extract_channel_values(key);
+            ct_ratio_calibration(channelConfig[j-1].ctRatio, j-1, unitMeasurements[j-1].currentRMS);
         }
         strcpy(txBuffer, "\nCT Ratio updated successfully!");
     }
