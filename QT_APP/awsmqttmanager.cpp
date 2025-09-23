@@ -10,6 +10,7 @@
 #include <QtNetwork/QSslKey>
 #include <QtNetwork/QSslConfiguration>
 #include "utils.h"
+#include <cmath>
 
 #define MQTT_PATH "config/mqtt_settings.json"
 
@@ -33,7 +34,9 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
             return;
         }
         QByteArray payload = buildTelemetryJson();
+        // qInfo() << "\n========================================================================";
         // qDebug().noquote() << "TelemetryJson: " << payload;
+        // qInfo() << "========================================================================\n";
         publishMessage(payload);
     });
 
@@ -328,9 +331,9 @@ void AwsMqttManager::processIncomingJson(int channel, const QJsonObject &payload
         telemetry[prefix + "B"]     = phaseC["general"].toObject()["current"].toDouble();
         telemetry["PF_B" + QString::number(idx)] = phaseC["power"].toObject()["factor"].toDouble();
 
-        telemetry[prefix + "P"] = P_R + P_B + P_Y;
-        telemetry[prefix + "Q"] = Q_R + Q_B + Q_Y;
-        telemetry[prefix + "S"] = S_R + S_B + S_Y;
+        telemetry[prefix + "P"] = std::round((P_R + P_B + P_Y) * 100.0) / 100.0;
+        telemetry[prefix + "Q"] = std::round((Q_R + Q_B + Q_Y) * 100.0) / 100.0;
+        telemetry[prefix + "S"] = std::round((S_R + S_B + S_Y) * 100.0) / 100.0;
 
         telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
         telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
