@@ -202,6 +202,11 @@ void MainWindow::handlePostProgress()
         }
         settings->on_mqtt_load_btn_clicked(false);
         settings->on_sftp_load_btn_clicked(false);
+        if (!factSettings){
+            factSettings = new FactSetting;
+        }
+        factSettings->on_mqtt_load_btn_clicked(false);
+        factSettings->on_sftp_load_btn_clicked(false);
         login->showFullScreen();
         hide();
     }

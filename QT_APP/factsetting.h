@@ -24,6 +24,10 @@ signals:
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
+public slots:
+    void on_mqtt_load_btn_clicked(bool msgBox = true);
+    void on_sftp_load_btn_clicked(bool msgBox = true);
+
 private slots:
     void on_next_btn_clicked();
     void on_back_btn_clicked();
@@ -34,9 +38,7 @@ private slots:
     void on_pushButton_6_clicked();
     void on_lan_load_btn_clicked();
     void on_lan_save_btn_clicked();
-    void on_mqtt_load_btn_clicked();
     void on_mqtt_save_btn_clicked();
-    void on_sftp_load_btn_clicked();
     void on_sftp_save_btn_clicked();
 
 private:

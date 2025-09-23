@@ -285,9 +285,9 @@ void FactSetting::on_lan_save_btn_clicked()
 }
 
 
-void FactSetting::on_mqtt_load_btn_clicked()
+void FactSetting::on_mqtt_load_btn_clicked(bool msgBox)
 {
-    QJsonObject mqttSettings = loadMqttSettings(true);
+    QJsonObject mqttSettings = loadMqttSettings(msgBox);
 
     if (!mqttSettings.isEmpty())
     {
@@ -297,7 +297,7 @@ void FactSetting::on_mqtt_load_btn_clicked()
         ui->mqtt_pass->setText(mqttSettings.value("password").toString());
         ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
         ui->mqtt_int->setText(mqttSettings.value("interval").toString());
-        QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
+        if(msgBox) QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
     }
 }
 
@@ -323,19 +323,20 @@ void FactSetting::on_mqtt_save_btn_clicked()
 }
 
 
-void FactSetting::on_sftp_load_btn_clicked()
+void FactSetting::on_sftp_load_btn_clicked(bool msgBox)
 {
-    QJsonObject sftpSettings = loadSftpSettings(true);
+    QJsonObject sftpSettings = loadSftpSettings(msgBox);
 
-    // Update UI line edits safely
-    ui->sftp_ip->setText(sftpSettings.value("ip").toString());
-    ui->sftp_port->setText(sftpSettings.value("port").toString());
-    ui->sftp_user->setText(sftpSettings.value("username").toString());
-    ui->sftp_pass->setText(sftpSettings.value("password").toString());
-    ui->sftp_int->setText(sftpSettings.value("interval").toString());
-    ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
-
-    QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
+    if (!sftpSettings.isEmpty())
+    {
+        ui->sftp_ip->setText(sftpSettings.value("ip").toString());
+        ui->sftp_port->setText(sftpSettings.value("port").toString());
+        ui->sftp_user->setText(sftpSettings.value("username").toString());
+        ui->sftp_pass->setText(sftpSettings.value("password").toString());
+        ui->sftp_int->setText(sftpSettings.value("interval").toString());
+        ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
+        if(msgBox) QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
+    }
 }
 
 
