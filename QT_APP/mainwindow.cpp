@@ -200,8 +200,8 @@ void MainWindow::handlePostProgress()
         if (!settings) {
             settings = new DeviceSettings();
         }
-        settings->load_and_start_mqtt_data();
-        settings->load_and_start_sftp_data();
+        settings->on_mqtt_load_btn_clicked(false);
+        settings->on_sftp_load_btn_clicked(false);
         login->showFullScreen();
         hide();
     }
@@ -209,10 +209,23 @@ void MainWindow::handlePostProgress()
 
 void MainWindow::connectLoginSignals()
 {
-    AwsMqttManager *mqttManager = &AwsMqttManager::instance();
+    if (!settings) {
+        settings = new DeviceSettings;
+    }
+    connect(settings, &DeviceSettings::sftp_load, this, [this]() {
+        sftpHandler->disconnectClient();
+        QTimer::singleShot(1000, [this](){
+            sftpHandler->reloadSettings();
+        });
+    });
+    connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
+        mqttManager->disconnectClient();
+        QTimer::singleShot(1000, [this](){
+            mqttManager->reloadSettings();
+        });
+    });
     connect(this, &MainWindow::receivedChannelData,
         mqttManager, &AwsMqttManager::processIncomingJson);
-    sftpHandler = &sftpManager::instance();
     connect(this, &MainWindow::receivedChannelData,
         sftpHandler, &sftpManager::processIncomingJson);
     connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
@@ -261,6 +274,18 @@ void MainWindow::connectLoginSignals()
             if (!factSettings){
                 factSettings = new FactSetting;
             }
+            connect(factSettings, &FactSetting::sftp_load, this, [this]() {
+                sftpHandler->disconnectClient();
+                QTimer::singleShot(1000, [this](){
+                    sftpHandler->reloadSettings();
+                });
+            });
+            connect(factSettings, &FactSetting::mqtt_load, this, [this]() {
+                mqttManager->disconnectClient();
+                QTimer::singleShot(1000, [this](){
+                    mqttManager->reloadSettings();
+                });
+            });
             connect(factSettings, &FactSetting::usbExport, this, [this](){
                 usbExporter->show();
             });

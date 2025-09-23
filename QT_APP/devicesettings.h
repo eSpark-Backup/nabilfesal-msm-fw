@@ -3,26 +3,28 @@
 
 #include <QWidget>
 #include "msmkeyboard.h"
-#include "awsmqttmanager.h"
-#include "sftpManager.h"
+#include "commonSetting.h"
 
 namespace Ui {
 class DeviceSettings;
 }
 
-class DeviceSettings : public QWidget
+class DeviceSettings : public settingsManager
 {
     Q_OBJECT
 
 public:
     explicit DeviceSettings(QWidget *parent = nullptr);
-    void load_and_start_mqtt_data();
-    void load_and_start_sftp_data();
     ~DeviceSettings();
 
 signals:
     void channels_view();
     void usbExport();
+
+public slots:
+    void on_mqtt_load_btn_clicked(bool msgBox = true);
+    void on_sftp_load_btn_clicked(bool msgBox = true);
+
 private slots:
     void on_channels_btn_clicked();
     void on_continue_btn_clicked();
@@ -30,8 +32,6 @@ private slots:
     void on_ntp_load_btn_clicked();
     void on_ntp_save_btn_clicked();
     void on_mqtt_save_btn_clicked();
-    void on_mqtt_load_btn_clicked();
-    void on_sftp_load_btn_clicked();
     void on_sftp_save_btn_clicked();
     void on_export_btn_clicked();
 
@@ -43,8 +43,6 @@ private:
     void refreshInfo();
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;
-    AwsMqttManager *mqttHandler = nullptr;
-    sftpManager *sftpHandler = nullptr;
 };
 
 #endif // DEVICESETTINGS_H

@@ -3,26 +3,27 @@
 
 #include <QWidget>
 #include "msmkeyboard.h"
-#include "awsmqttmanager.h"
-#include "sftpManager.h"
+#include "commonSetting.h"
 
 namespace Ui {
 class FactSetting;
 }
 
-class FactSetting : public QWidget
+class FactSetting : public settingsManager
 {
     Q_OBJECT
 
 public:
     explicit FactSetting(QWidget *parent = nullptr);
     ~FactSetting();
+
 signals:
     void usbExport();
     void factoryExit();
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private slots:
     void on_next_btn_clicked();
     void on_back_btn_clicked();
@@ -56,8 +57,6 @@ private:
     MSMKeyboard *keyboard;
     bool isDhcpEnabled = false;
     bool isStaticEnabled = false;
-    AwsMqttManager *mqttHandler = nullptr;
-    sftpManager *sftpHandler = nullptr;
 };
 
 #endif // FACTSETTING_H

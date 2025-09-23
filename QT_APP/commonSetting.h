@@ -1,0 +1,31 @@
+#ifndef COMMONSETTING_H
+#define COMMONSETTING_H
+
+#include <QWidget>
+#include <QLineEdit> 
+#include "awsmqttmanager.h"
+#include "sftpManager.h"
+
+
+class settingsManager : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit settingsManager(QWidget *parent = nullptr) {};
+    ~settingsManager() {};
+   
+
+signals:
+    void mqtt_load();
+    void sftp_load();
+
+protected:
+    virtual bool eventFilter(QObject *obj, QEvent *event) = 0;
+    QJsonObject loadMqttSettings(bool showMessages);
+    QJsonObject loadSftpSettings(bool showMessages);
+    void saveMqttSettings(QJsonObject sftpSetting);
+    void saveSftpSettings(QJsonObject sftpSetting);
+};
+
+#endif // COMMONSETTING_H

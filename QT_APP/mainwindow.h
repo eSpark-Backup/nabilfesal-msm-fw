@@ -22,6 +22,9 @@
 #include <QMap>
 #include <QJsonObject>
 #include <QMutex>
+#include "awsmqttmanager.h"
+#include "sftpManager.h"
+#include "commonSetting.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -62,8 +65,9 @@ private:
     FactSetting *factSettings = nullptr;
     Measurements *measure = nullptr;
     UsbDataExporter *dataExporter = nullptr;
-    AwsMqttManager *mqttManager = nullptr;
-    sftpManager *sftpHandler = nullptr;
+    settingsManager *settingsHandler = nullptr;
+    AwsMqttManager *mqttManager = &AwsMqttManager::instance();
+    sftpManager *sftpHandler = &sftpManager::instance();;
 
     // state
     int progressValue = 0;

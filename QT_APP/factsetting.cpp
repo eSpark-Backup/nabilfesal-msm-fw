@@ -10,7 +10,7 @@
 #include <QDir>
 
 FactSetting::FactSetting(QWidget *parent)
-    : QWidget(parent)
+    : settingsManager(parent)
     , ui(new Ui::FactSetting)
 {
     ui->setupUi(this);
@@ -287,52 +287,23 @@ void FactSetting::on_lan_save_btn_clicked()
 
 void FactSetting::on_mqtt_load_btn_clicked()
 {
-    AwsMqttManager *mqttHandler = &AwsMqttManager::instance();
-    mqttHandler->disconnectClient();
+    QJsonObject mqttSettings = loadMqttSettings(true);
 
-    QFile file("config/mqtt_settings.json");
-    if (!file.exists()) {
-        QMessageBox::warning(this, "MQTT Settings", "No saved settings found.");
-        return;
+    if (!mqttSettings.isEmpty())
+    {
+        ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
+        ui->mqtt_port->setText(mqttSettings.value("port").toString());
+        ui->mqtt_user->setText(mqttSettings.value("user").toString());
+        ui->mqtt_pass->setText(mqttSettings.value("password").toString());
+        ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
+        ui->mqtt_int->setText(mqttSettings.value("interval").toString());
+        QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
     }
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, "MQTT Settings", "Failed to open settings file.");
-        return;
-    }
-
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (doc.isNull() || !doc.isObject()) {
-        QMessageBox::critical(this, "MQTT Settings", "Invalid JSON format: " + parseError.errorString());
-        return;
-    }
-
-    QJsonObject mqttSettings = doc.object();
-
-    ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
-    ui->mqtt_port->setText(mqttSettings.value("port").toString());
-    ui->mqtt_user->setText(mqttSettings.value("user").toString());
-    ui->mqtt_pass->setText(mqttSettings.value("password").toString());
-    ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
-    ui->mqtt_int->setText(mqttSettings.value("interval").toString());
-    
-    QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
-
-    QTimer::singleShot(1000, [this, mqttHandler](){
-        mqttHandler->reloadSettings();
-    });
 }
 
 
 void FactSetting::on_mqtt_save_btn_clicked()
 {
-    AwsMqttManager *mqttHandler = &AwsMqttManager::instance();
-    mqttHandler->disconnectClient();
-
     QString mqttIp      = ui->mqtt_ip->text().trimmed();
     QString mqttPort    = ui->mqtt_port->text().trimmed();
     QString mqttUser    = ui->mqtt_user->text().trimmed();
@@ -348,59 +319,13 @@ void FactSetting::on_mqtt_save_btn_clicked()
     mqttSettings["password"] = mqttPass;
     mqttSettings["topic"]    = mqttTopic;
     mqttSettings["interval"] = mqttInterval;
-
-    // 2. Ensure config directory exists
-    QDir dir("config");
-    if (!dir.exists()) {
-        dir.mkpath(".");
-    }
-
-    // 3. Write to config/mqtt_settings.json
-    QFile file("config/mqtt_settings.json");
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QMessageBox::critical(this, "MQTT Settings", "Failed to save MQTT settings.");
-        return;
-    }
-
-    QJsonDocument doc(mqttSettings);
-    file.write(doc.toJson(QJsonDocument::Indented));
-    file.close();
-
-    QMessageBox::information(this, "MQTT Settings", "MQTT settings saved successfully!");
-
-    QTimer::singleShot(1000, [this, mqttHandler](){
-        mqttHandler->reloadSettings();
-    });
+    saveMqttSettings(mqttSettings);
 }
 
 
 void FactSetting::on_sftp_load_btn_clicked()
 {
-    sftpManager *sftpHandler = &sftpManager::instance();
-    sftpHandler->disconnectClient();
-
-    QFile file("config/sftp_settings.json");
-    if (!file.exists()) {
-        QMessageBox::warning(this, "SFTP Settings", "No saved settings found.");
-        return;
-    }
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, "SFTP Settings", "Failed to open settings file.");
-        return;
-    }
-
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (doc.isNull() || !doc.isObject()) {
-        QMessageBox::critical(this, "SFTP Settings", "Invalid JSON format: " + parseError.errorString());
-        return;
-    }
-
-    QJsonObject sftpSettings = doc.object();
+    QJsonObject sftpSettings = loadSftpSettings(true);
 
     // Update UI line edits safely
     ui->sftp_ip->setText(sftpSettings.value("ip").toString());
@@ -410,19 +335,12 @@ void FactSetting::on_sftp_load_btn_clicked()
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
     ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
 
-    QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
-
-    QTimer::singleShot(1000, [this, sftpHandler](){
-        sftpHandler->reloadSettings();
-    });
+    QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
 }
 
 
 void FactSetting::on_sftp_save_btn_clicked()
 {
-    sftpManager *sftpHandler = &sftpManager::instance();
-    sftpHandler->disconnectClient();
-    
     QString sftpIp       = ui->sftp_ip->text().trimmed();
     QString sftpPort     = ui->sftp_port->text().trimmed();
     QString sftpUser     = ui->sftp_user->text().trimmed();
@@ -438,28 +356,6 @@ void FactSetting::on_sftp_save_btn_clicked()
     sftpSettings["password"] = sftpPass;
     sftpSettings["interval"] = sftpInterval;
     sftpSettings["schedule"] = sftpSchedule;
-
-    // 2. Ensure config directory exists
-    QDir dir("config");
-    if (!dir.exists()) {
-        dir.mkpath(".");
-    }
-
-    // 3. Write to config/factory_sftp_settings.json
-    QFile file("config/sftp_settings.json");
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QMessageBox::critical(this, "SFTP Settings", "Failed to save SFTP settings.");
-        return;
-    }
-
-    QJsonDocument doc(sftpSettings);
-    file.write(doc.toJson(QJsonDocument::Indented));
-    file.close();
-
-    QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
-    
-    QTimer::singleShot(1000, [this, sftpHandler](){
-        sftpHandler->reloadSettings();
-    });
+    saveSftpSettings(sftpSettings);
 }
 
