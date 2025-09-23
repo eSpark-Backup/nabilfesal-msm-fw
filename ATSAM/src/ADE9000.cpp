@@ -354,6 +354,25 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
         }
         if (1)
         {
+            ////////////////////////////////////////////////////////////////
+//            uint32_t reg_hi = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
+//            reg_hi = (reg_hi & 0x80000000) ? -((int32_t)(~reg_hi + 1)) : (int32_t)reg_hi;
+//            uint32_t reg_lo = SPI_Read(ADDR_AFWATTHR_LO, true, css_pin);
+//            
+//            // Combine into 64 bits (only lower 45 bits are valid)
+//            uint64_t raw45 = ((uint64_t)reg_hi << 32) | reg_lo;
+//            raw45 &= ((1ULL << 45) - 1);  // mask to 45 bits
+//
+//            // Sign extend 45-bit to 64-bit signed integer
+//            int64_t signed45;
+//            if (raw45 & (1ULL << 44)) {       // if sign bit (bit 44) is set
+//                signed45 = (int64_t)(raw45 | (~((1ULL << 45) - 1)));
+//            } else {
+//                signed45 = (int64_t)raw45;
+//            }
+            //////////////////////////////////////////////////////////////
+
+//            Data1->ActiveEnergyReg_A = signed45;
             rawValue = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
             Data1->ActiveEnergyReg_A = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
             rawValue = SPI_Read(ADDR_BFWATTHR_HI, true, css_pin);
@@ -392,8 +411,16 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
 //            \frac{\left(60\cdot\left(\frac{8192}{488281+1}\right)\right)}{3600000}
 //            \frac{\left(60\cdot\left(\frac{8192}{488281+1}\right)\right)}{3600}
 //            \frac{\left(\left(\frac{8192}{488281+1}\right)\right)}{3600}
-        Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * Data2->ActivePowerValue_A * (k))/(3600*1000);  
-//        Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float)(8.59e-4);    
+            
+//      Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * Data2->ActivePowerValue_A * (k))/(3600);
+//        Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * 8.59/10000)/1000; // /1000 
+        
+//        \frac{5\cdot220}{\frac{\left(\frac{0.004}{100}\right)}{0.707}\cdot0.311\cdot20694066\cdot2^{-13}\cdot3600\cdot488281}
+//        Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * 1.40787308)/100000;
+//        Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * (float)(2.56318184 / 1000000000));
+//            \frac{5\cdot220}{\frac{\left(\frac{0.004}{100}\right)}{0.707}\cdot0.311\cdot20694066\cdot2^{-13}\cdot3600\cdot8000}
+        Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * (float)(1.40787308 / (100000 * 1000)));
+        //        Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float)(8.59e-4);    
         }    
 
 //        3427747 | 2934.0476
@@ -625,7 +652,8 @@ void ReadVoltageTHDRegsnValues(VoltageTHDRegs *Data, SPI_CSS_Pin css_pin)
 
     rawValue = SPI_Read(ADDR_AVTHD, true, css_pin);
     tempReg = *(int32_t *)&rawValue;
-    Data->VoltageTHDValue_A = (float)tempReg * 100 / 134217728.0f;
+    Data->VoltageTHDValue_A = (float)tempReg * 100 / 134217728.0f; // Multiplied by 2^-27
+//    Data->VoltageTHDValue_A = (float)((float)tempReg * 7.4505806 / 1000000000)*100; // Multiply for 100 as it will be show in percentage
 
     rawValue = SPI_Read(ADDR_BVTHD, true, css_pin);
     tempReg = *(int32_t *)&rawValue;
@@ -644,6 +672,9 @@ void ReadCurrentTHDRegsnValues(CurrentTHDRegs *Data, SPI_CSS_Pin css_pin)
     rawValue = SPI_Read(ADDR_AITHD, true, css_pin);
     tempReg = *(int32_t *)&rawValue;
     Data->CurrentTHDValue_A = (float)tempReg * 100 / 134217728.0f;
+    
+//    Data->CurrentTHDValue_A = (float)((float)tempReg * 7.4505806 / 1000000000)*100; // Multiply for 100 as it will be show in percentage
+    
 
     rawValue = SPI_Read(ADDR_BITHD, true, css_pin);
     tempReg = *(int32_t *)&rawValue;
@@ -670,8 +701,11 @@ void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin)
     // Data->AngleValue_VA_VB = (SPI_Read(ADDR_ANGL_VA_VB, true, css_pin)) * 0.017578125;          // mulConstant
     // Data->AngleValue_VB_VC = (SPI_Read(ADDR_ANGL_VB_VC, true, css_pin)) * 0.017578125;          // mulConstant
     // Data->AngleValue_VA_VC = (SPI_Read(ADDR_ANGL_VA_VC, true, css_pin)) * 0.017578125;          // mulConstant
+    
+//    int16_t angle_value_register = (int32_t(SPI_Read(ADDR_ANGL_VA_IA, false, css_pin)));
+    Data->AngleValue_VA_IA = abs(((int32_t(SPI_Read(ADDR_ANGL_VA_IA, false, css_pin))) * 0.017578125) - 360); // in Degrees
+//    Data->AngleValue_VA_IA = abs(((int32_t(SPI_Read(ADDR_ANGL_VA_IA, false, css_pin))) * 0.017578125) - 360) * (( 22/7 ) / 180); // in Radians
 
-    Data->AngleValue_VA_IA = (int32_t(SPI_Read(ADDR_ANGL_VA_IA, true, css_pin))) * 0.017578125; // mulConstant
     Data->AngleValue_VB_IB = (int32_t(SPI_Read(ADDR_ANGL_VB_IB, true, css_pin))) * 0.017578125; // mulConstant
     Data->AngleValue_VC_IC = (int32_t(SPI_Read(ADDR_ANGL_VC_IC, true, css_pin))) * 0.017578125; // mulConstant
 
