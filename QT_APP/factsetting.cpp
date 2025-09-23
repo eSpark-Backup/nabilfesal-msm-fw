@@ -95,11 +95,11 @@ FactSetting::FactSetting(QWidget *parent)
     label->move(80, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("SCHEDULE", ui->sftp_sch);
+    label = new QLabel("SCHEDULE (24hr)", ui->sftp_sch);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(84, 1);
+    label->move(55, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     keyboard = new MSMKeyboard(this);

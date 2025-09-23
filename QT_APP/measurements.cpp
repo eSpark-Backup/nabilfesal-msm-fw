@@ -18,6 +18,7 @@ Measurements::Measurements(QWidget *parent)
 {
     ui->setupUi(this);
     ui->header_label->setText("CT RATIO SETTINGS");
+    ui->ration_btn->setFocus();
     ui->verticalStackedWidget->setCurrentIndex(0);
     isRatioActivated = true;
 
@@ -116,6 +117,7 @@ void Measurements::on_ration_btn_clicked()
 {
     ui->header_label->setText("CT RATIO SETTINGS");
     ui->verticalStackedWidget->setCurrentIndex(0);
+    ui->ration_btn->setFocus();
     isRatioActivated = true;
     isVOffsetActivated = false;
     isIOffsetActivated = false;
@@ -127,6 +129,7 @@ void Measurements::on_i_off_btn_clicked()
 {
     ui->header_label->setText("I-OFFSET SETTINGS");
     ui->verticalStackedWidget->setCurrentIndex(0);
+    ui->i_off_btn->setFocus();
     isRatioActivated = false;
     isVOffsetActivated = false;
     isIOffsetActivated = true;
@@ -138,6 +141,7 @@ void Measurements::on_v_off_btn_clicked()
 {
     ui->header_label->setText("V-OFFSET SETTINGS");
     ui->verticalStackedWidget->setCurrentIndex(0);
+    ui->v_off_btn->setFocus();
     isRatioActivated = false;
     isVOffsetActivated = true;
     isIOffsetActivated = false;
@@ -148,6 +152,7 @@ void Measurements::on_v_off_btn_clicked()
 void Measurements::on_cal_btn_clicked()
 {
     ui->verticalStackedWidget->setCurrentIndex(1);
+    ui->cal_btn->setFocus();
 }
 
 
