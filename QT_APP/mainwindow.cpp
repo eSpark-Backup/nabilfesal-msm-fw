@@ -224,13 +224,13 @@ void MainWindow::connectLoginSignals()
         });
     });
     connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
-        mqttManager->disconnectClient();
+        mqttHandler->disconnectClient();
         QTimer::singleShot(1000, [this](){
-            mqttManager->reloadSettings();
+            mqttHandler->reloadSettings();
         });
     });
     connect(this, &MainWindow::receivedChannelData,
-        mqttManager, &AwsMqttManager::processIncomingJson);
+        mqttHandler, &mqttManager::processIncomingJson);
     connect(this, &MainWindow::receivedChannelData,
         sftpHandler, &sftpManager::processIncomingJson);
     connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
@@ -286,9 +286,9 @@ void MainWindow::connectLoginSignals()
                 });
             });
             connect(factSettings, &FactSetting::mqtt_load, this, [this]() {
-                mqttManager->disconnectClient();
+                mqttHandler->disconnectClient();
                 QTimer::singleShot(1000, [this](){
-                    mqttManager->reloadSettings();
+                    mqttHandler->reloadSettings();
                 });
             });
             connect(factSettings, &FactSetting::usbExport, this, [this](){

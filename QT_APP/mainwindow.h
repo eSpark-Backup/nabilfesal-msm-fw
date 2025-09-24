@@ -14,7 +14,7 @@
 #include "dataexporter.h"
 #include "serialhandler.h"
 #include "serialworker.h"
-#include "awsmqttmanager.h"
+#include "mqttManager.h"
 #include "sftpManager.h"
 #include <atomic>
 #include <QThread>
@@ -22,8 +22,6 @@
 #include <QMap>
 #include <QJsonObject>
 #include <QMutex>
-#include "awsmqttmanager.h"
-#include "sftpManager.h"
 #include "commonSetting.h"
 
 QT_BEGIN_NAMESPACE
@@ -66,7 +64,7 @@ private:
     Measurements *measure = nullptr;
     UsbDataExporter *dataExporter = nullptr;
     settingsManager *settingsHandler = nullptr;
-    AwsMqttManager *mqttManager = &AwsMqttManager::instance();
+    mqttManager *mqttHandler = &mqttManager::instance();
     sftpManager *sftpHandler = &sftpManager::instance();;
 
     // state

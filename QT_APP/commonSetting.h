@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QLineEdit> 
-#include "awsmqttmanager.h"
+#include "mqttManager.h"
 #include "sftpManager.h"
 
 

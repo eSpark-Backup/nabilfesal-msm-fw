@@ -10,7 +10,7 @@
 #include <QTimer>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "awsmqttmanager.h"
+#include "mqttManager.h"
 #include "sftpManager.h"
 #include <cstdlib>
 
@@ -174,7 +174,7 @@ QString getUid()
 
 QString getMqttStatus()
 {
-    AwsMqttManager &mqtt = AwsMqttManager::instance();
+    mqttManager &mqtt = mqttManager::instance();
     if (mqtt.mqttState())
         return "Connected";
     else

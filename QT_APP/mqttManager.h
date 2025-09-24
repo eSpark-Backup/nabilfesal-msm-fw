@@ -4,11 +4,11 @@
 #include <QTimer>
 #include <QReadWriteLock>
 
-class AwsMqttManager : public QObject
+class mqttManager : public QObject
 {
     Q_OBJECT
 public:
-    static AwsMqttManager& instance();
+    static mqttManager& instance();
 
     bool loadConfig(const QString &filePath);
     void reloadSettings();
@@ -21,9 +21,9 @@ public slots:
     void processIncomingJson(int channel, const QJsonObject &payload);
 
 private:
-    explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
-    AwsMqttManager(const AwsMqttManager&) = delete;     // prevent copy
-    AwsMqttManager& operator=(const AwsMqttManager&) = delete; // prevent assignment
+    explicit mqttManager(QObject *parent = nullptr); // private ctor
+    mqttManager(const mqttManager&) = delete;     // prevent copy
+    mqttManager& operator=(const mqttManager&) = delete; // prevent assignment
     void initializeTelemetryJson();
     void connectToBroker();
     void disconnectFromBroker();

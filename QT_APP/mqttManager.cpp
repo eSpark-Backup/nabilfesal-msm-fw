@@ -1,4 +1,4 @@
-#include "awsmqttmanager.h"
+#include "mqttManager.h"
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -15,13 +15,13 @@
 #define MQTT_PATH "config/mqtt_settings.json"
 
 
-AwsMqttManager& AwsMqttManager::instance()
+mqttManager& mqttManager::instance()
 {
-    static AwsMqttManager _instance;  // created on first call, shared afterwards
+    static mqttManager _instance;  // created on first call, shared afterwards
     return _instance;
 }
 
-AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
+mqttManager::mqttManager(QObject *parent) : QObject(parent)
 {
     mqttClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
@@ -58,7 +58,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     });
 }
 
-bool AwsMqttManager::loadConfig(const QString &filePath)
+bool mqttManager::loadConfig(const QString &filePath)
 {
     configPath = filePath;
     QFile file(filePath);
@@ -102,7 +102,7 @@ bool AwsMqttManager::loadConfig(const QString &filePath)
     return true;
 }
 
-void AwsMqttManager::reloadSettings()
+void mqttManager::reloadSettings()
 {
     configPath = MQTT_PATH;
     if (!loadConfig(configPath)) {
@@ -112,12 +112,12 @@ void AwsMqttManager::reloadSettings()
     connectToBroker();
 }
 
-bool AwsMqttManager::mqttState()
+bool mqttManager::mqttState()
 {
     return isConnected;
 }
 
-bool AwsMqttManager::loadCertificates()
+bool mqttManager::loadCertificates()
 {
     QFile caFile("/etc/ssl/certs/AmazonRootCA1.pem");
     QFile certFile("/etc/ssl/certs/deviceCert.crt");
@@ -145,7 +145,7 @@ bool AwsMqttManager::loadCertificates()
     return true;
 }
 
-void AwsMqttManager::connectToBroker()
+void mqttManager::connectToBroker()
 {
     if (host.isEmpty() || clientId.isEmpty() || topic.isEmpty()) {
         qWarning() << "MQTT settings incomplete.";
@@ -169,12 +169,12 @@ void AwsMqttManager::connectToBroker()
     mqttClient->connectToHost();
 }
 
-void AwsMqttManager::disconnectClient()
+void mqttManager::disconnectClient()
 {
     disconnectFromBroker();
 }
 
-void AwsMqttManager::disconnectFromBroker()
+void mqttManager::disconnectFromBroker()
 {
     if (!mqttClient) return;
     
@@ -185,7 +185,7 @@ void AwsMqttManager::disconnectFromBroker()
     }
 }
 
-void AwsMqttManager::publishMessage(const QString &payload)
+void mqttManager::publishMessage(const QString &payload)
 {
     if (mqttClient->state() == QMqttClient::Connected) {
         auto id = mqttClient->publish(topic, payload.toUtf8(), 1);
@@ -194,7 +194,7 @@ void AwsMqttManager::publishMessage(const QString &payload)
     }
 }
 
-void AwsMqttManager::subscribeToTopic()
+void mqttManager::subscribeToTopic()
 {
     if (mqttClient->state() != QMqttClient::Connected)
         return;
@@ -211,7 +211,7 @@ void AwsMqttManager::subscribeToTopic()
             });
 }
 
-QByteArray AwsMqttManager::buildTelemetryJson() const
+QByteArray mqttManager::buildTelemetryJson() const
 {
     QJsonObject root;
 
@@ -237,7 +237,7 @@ QByteArray AwsMqttManager::buildTelemetryJson() const
 }
 
 
-void AwsMqttManager::processIncomingJson(int channel, const QJsonObject &payload)
+void mqttManager::processIncomingJson(int channel, const QJsonObject &payload)
 {
     QJsonObject root = payload;
     QJsonObject data = root["data"].toObject();
@@ -345,7 +345,7 @@ void AwsMqttManager::processIncomingJson(int channel, const QJsonObject &payload
     channelTelemetry[channel] = telemetry;
 }
 
-void AwsMqttManager::initializeTelemetryJson()
+void mqttManager::initializeTelemetryJson()
 {
  // Initialize channel telemetry with 0s
     for (int ch = 1; ch <= 12; ++ch) {
