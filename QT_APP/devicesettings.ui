@@ -139,7 +139,7 @@
            <property name="font">
             <font>
              <family>Gilroy</family>
-             <pointsize>13</pointsize>
+             <pointsize>15</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -159,7 +159,7 @@
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -180,6 +180,11 @@
             </property>
             <item>
              <widget class="QLabel" name="label_8">
+              <property name="font">
+               <font>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
               <property name="styleSheet">
                <string notr="true">border-color: rgb(230, 230, 230);</string>
               </property>
@@ -207,7 +212,7 @@
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -255,7 +260,7 @@
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -303,7 +308,7 @@
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -351,7 +356,7 @@
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -399,7 +404,7 @@
             <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -535,7 +540,7 @@
            <property name="font">
             <font>
              <family>Gilroy</family>
-             <pointsize>13</pointsize>
+             <pointsize>15</pointsize>
             </font>
            </property>
            <property name="styleSheet">
@@ -559,7 +564,7 @@
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -583,7 +588,7 @@
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -607,7 +612,7 @@
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -659,7 +664,7 @@
                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #e6e6e6;        /* Blue thin border */
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -716,7 +721,7 @@
                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #e6e6e6;        /* Blue thin border */
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_10">
@@ -1041,7 +1046,7 @@ QPushButton:focus {
            <property name="font">
             <font>
              <family>Gilroy</family>
-             <pointsize>13</pointsize>
+             <pointsize>15</pointsize>
             </font>
            </property>
            <property name="focusPolicy">
@@ -1068,7 +1073,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -1092,7 +1097,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -1116,7 +1121,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -1137,7 +1142,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 14px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -1160,7 +1165,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
              </property>
              <property name="inputMask">
@@ -1178,7 +1183,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
              </property>
             </widget>
@@ -1409,7 +1414,7 @@ QPushButton:focus {
            <property name="font">
             <font>
              <family>Gilroy</family>
-             <pointsize>13</pointsize>
+             <pointsize>15</pointsize>
             </font>
            </property>
            <property name="focusPolicy">
@@ -1439,7 +1444,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -1463,7 +1468,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -1487,7 +1492,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -1511,7 +1516,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 14px;
     color: black;</string>
            </property>
            <property name="inputMask">
@@ -1537,7 +1542,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
              </property>
              <property name="inputMask">
@@ -1561,7 +1566,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
              </property>
              <property name="inputMask">
