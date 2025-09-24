@@ -202,6 +202,7 @@ void MainWindow::handlePostProgress()
         }
         settings->on_mqtt_load_btn_clicked(false);
         settings->on_sftp_load_btn_clicked(false);
+        settings->loadAwsMqttsSettings(false);
         if (!factSettings){
             factSettings = new FactSetting;
         }
@@ -217,16 +218,22 @@ void MainWindow::connectLoginSignals()
     if (!settings) {
         settings = new DeviceSettings;
     }
-    connect(settings, &DeviceSettings::sftp_load, this, [this]() {
-        sftpHandler->disconnectClient();
+    // connect(settings, &DeviceSettings::sftp_load, this, [this]() {
+    //     sftpHandler->disconnectClient();
+    //     QTimer::singleShot(1000, [this](){
+    //         sftpHandler->reloadSettings();
+    //     });
+    // });
+    // connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
+    //     mqttHandler->disconnectClient();
+    //     QTimer::singleShot(1000, [this](){
+    //         mqttHandler->reloadSettings();
+    //     });
+    // });
+    connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
+        awsMqttsHandler->disconnectClient();
         QTimer::singleShot(1000, [this](){
-            sftpHandler->reloadSettings();
-        });
-    });
-    connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
-        mqttHandler->disconnectClient();
-        QTimer::singleShot(1000, [this](){
-            mqttHandler->reloadSettings();
+            awsMqttsHandler->reloadSettings();
         });
     });
     connect(this, &MainWindow::receivedChannelData,
@@ -279,18 +286,18 @@ void MainWindow::connectLoginSignals()
             if (!factSettings){
                 factSettings = new FactSetting;
             }
-            connect(factSettings, &FactSetting::sftp_load, this, [this]() {
-                sftpHandler->disconnectClient();
-                QTimer::singleShot(1000, [this](){
-                    sftpHandler->reloadSettings();
-                });
-            });
-            connect(factSettings, &FactSetting::mqtt_load, this, [this]() {
-                mqttHandler->disconnectClient();
-                QTimer::singleShot(1000, [this](){
-                    mqttHandler->reloadSettings();
-                });
-            });
+            // connect(factSettings, &FactSetting::sftp_load, this, [this]() {
+            //     sftpHandler->disconnectClient();
+            //     QTimer::singleShot(1000, [this](){
+            //         sftpHandler->reloadSettings();
+            //     });
+            // });
+            // connect(factSettings, &FactSetting::mqtt_load, this, [this]() {
+            //     mqttHandler->disconnectClient();
+            //     QTimer::singleShot(1000, [this](){
+            //         mqttHandler->reloadSettings();
+            //     });
+            // });
             connect(factSettings, &FactSetting::usbExport, this, [this](){
                 usbExporter->show();
             });

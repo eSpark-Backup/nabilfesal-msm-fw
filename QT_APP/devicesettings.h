@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "msmkeyboard.h"
 #include "commonSetting.h"
+#include "awsmqttmanager.h"
 
 namespace Ui {
 class DeviceSettings;
@@ -15,11 +16,13 @@ class DeviceSettings : public settingsManager
 
 public:
     explicit DeviceSettings(QWidget *parent = nullptr);
+    void loadAwsMqttsSettings(bool showMessages = true);
     ~DeviceSettings();
 
 signals:
     void channels_view();
     void usbExport();
+    void aws_mqtts_load();
 
 public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = true);

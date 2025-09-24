@@ -15,6 +15,7 @@
 #include "serialhandler.h"
 #include "serialworker.h"
 #include "mqttManager.h"
+#include "awsmqttmanager.h"
 #include "sftpManager.h"
 #include <atomic>
 #include <QThread>
@@ -66,6 +67,7 @@ private:
     settingsManager *settingsHandler = nullptr;
     mqttManager *mqttHandler = &mqttManager::instance();
     sftpManager *sftpHandler = &sftpManager::instance();;
+    AwsMqttManager *awsMqttsHandler = &AwsMqttManager::instance();
 
     // state
     int progressValue = 0;
