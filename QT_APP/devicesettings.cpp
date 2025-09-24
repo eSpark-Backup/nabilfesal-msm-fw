@@ -167,6 +167,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
         });
     }
     this->installEventFilter(this);
+    on_ntp_load_btn_clicked();
 }
 
 DeviceSettings::~DeviceSettings()

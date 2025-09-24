@@ -108,7 +108,7 @@ void MSMKeyboard::on_shift_clicked()
         QString currentText = button->text();
         button->setText(shiftEnabled ? currentText.toUpper() : currentText.toLower());
     }
-    QList<QString> symbols = {".", "!", "@", "#", "$", "%", "&&", "*", "_", "-" };
+    QList<QString> symbols = {".", "!", "@", "#", "$", "%", "/", "*", "_", "-" };
     int i = 0;
     for (QPushButton *button : numberButtons) {
         button->setText(shiftEnabled ? symbols[i] : QString::number(i));
