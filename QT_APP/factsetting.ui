@@ -253,7 +253,7 @@ QPushButton:focus {
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
-                   <pointsize>13</pointsize>
+                   <pointsize>15</pointsize>
                   </font>
                  </property>
                  <property name="styleSheet">
@@ -462,7 +462,7 @@ QPushButton:focus {
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
-                   <pointsize>13</pointsize>
+                   <pointsize>15</pointsize>
                   </font>
                  </property>
                  <property name="styleSheet">
@@ -513,6 +513,12 @@ QPushButton:focus {
                   </property>
                   <item>
                    <widget class="QPushButton" name="pushButton_7">
+                    <property name="font">
+                     <font>
+                      <family>Gilroy</family>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
                     <property name="focusPolicy">
                      <enum>Qt::TabFocus</enum>
                     </property>
@@ -522,7 +528,7 @@ QPushButton:focus {
     color: black;               /* White text */
     border: none;               /* No border line */
     border-radius: 8px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
+    padding: 6px 14px;          /* Spacing inside */
 }
 
 QPushButton:pressed {
@@ -536,6 +542,12 @@ QPushButton:pressed {
                   </item>
                   <item>
                    <widget class="QPushButton" name="pushButton_6">
+                    <property name="font">
+                     <font>
+                      <family>Gilroy</family>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
                     <property name="focusPolicy">
                      <enum>Qt::TabFocus</enum>
                     </property>
@@ -545,7 +557,7 @@ QPushButton:pressed {
     color: black;               /* White text */
     border: none;               /* No border line */
     border-radius: 8px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
+    padding: 6px 14px;          /* Spacing inside */
 }
 
 QPushButton:pressed {
@@ -570,7 +582,7 @@ QPushButton:pressed {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -594,7 +606,7 @@ QPushButton:pressed {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="placeholderText">
@@ -612,7 +624,7 @@ QPushButton:pressed {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -636,7 +648,7 @@ QPushButton:pressed {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -949,7 +961,7 @@ QPushButton:focus {
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
-                   <pointsize>13</pointsize>
+                   <pointsize>15</pointsize>
                   </font>
                  </property>
                  <property name="styleSheet">
@@ -973,7 +985,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -1000,7 +1012,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="placeholderText">
@@ -1018,7 +1030,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -1042,7 +1054,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -1065,7 +1077,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                    </property>
                    <property name="placeholderText">
@@ -1083,7 +1095,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                    </property>
                    <property name="alignment">
@@ -1317,7 +1329,7 @@ QPushButton:focus {
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
-                   <pointsize>13</pointsize>
+                   <pointsize>15</pointsize>
                   </font>
                  </property>
                  <property name="styleSheet">
@@ -1341,7 +1353,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -1365,7 +1377,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="placeholderText">
@@ -1383,7 +1395,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -1407,7 +1419,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -1463,7 +1475,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                     </property>
                     <property name="placeholderText">
@@ -1481,7 +1493,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 13px;
+    font-size: 15px;
     color: black;</string>
                     </property>
                     <property name="placeholderText">

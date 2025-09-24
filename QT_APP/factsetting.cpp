@@ -22,84 +22,84 @@ FactSetting::FactSetting(QWidget *parent)
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(272, 2);
+    label->move(260, 2);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTT_PASSWORD", ui->mqtt_pass);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(212, 2);
+    label->move(195, 2);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTT_USER", ui->mqtt_user);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(247, 2);
+    label->move(237, 2);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTT_TOPIC", ui->mqtt_topic);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(242, 2);
+    label->move(230, 2);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("PORT", ui->mqtt_port);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(114, 2);
+    label->move(100, 2);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("INTERVAL (s)", ui->mqtt_int);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(80, 1);
+    label->move(60, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_IP", ui->sftp_ip);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(272, 1);
+    label->move(260, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_PORT", ui->sftp_port);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(257, 1);
+    label->move(237, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_USER", ui->sftp_user);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(257, 1);
+    label->move(237, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_PASSWORD", ui->sftp_pass);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(217, 1);
+    label->move(200, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("INTERVAL (s)", ui->sftp_int);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(80, 1);
+    label->move(60, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SCHEDULE (24hr)", ui->sftp_sch);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(55, 1);
+    label->move(35, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     keyboard = new MSMKeyboard(this);
