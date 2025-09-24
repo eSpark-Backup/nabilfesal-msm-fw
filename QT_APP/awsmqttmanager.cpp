@@ -113,105 +113,76 @@ bool AwsMqttManager::mqttState()
     return isConnected;
 }
 
-// bool AwsMqttManager::loadCertificates()
-// {
-//     QFile caFile(caPath);
-//     QFile certFile(certPath);
-//     QFile keyFile(keyPath);
-//     QByteArray caData = caFile.readAll();
-//     QByteArray certData = certFile.readAll();
-//     QByteArray keyData = keyFile.readAll();
-
-//     if (!caFile.open(QIODevice::ReadOnly) ||
-//         !certFile.open(QIODevice::ReadOnly) ||
-//         !keyFile.open(QIODevice::ReadOnly)) {
-//         qWarning() << "Failed to open cert files";
-//         return false;
-//     }
-
-//     sslConf.addCaCertificate(QSslCertificate(&caFile));
-//     sslConf.setLocalCertificate(QSslCertificate(&certFile));
-//     sslConf.setPrivateKey(QSslKey(&keyFile, QSsl::Rsa, QSsl::Pem));
-
-//     if (sslConf.localCertificate().isNull())
-//         qWarning() << "Local certificate is null!";
-//     if (sslConf.privateKey().isNull())
-//         qWarning() << "Private key is null!";
-//     if (sslConf.caCertificates().isEmpty())
-//         qWarning() << "CA certificates empty!";
-
-//     // secure socket
-//     sslSocket = new QSslSocket(this);
-//     sslSocket->setParent(mqttClient);
-//     sslSocket->setSslConfiguration(sslConf);
-
-//     // bind socket to mqtt client
-//     mqttClient->setTransport(sslSocket, QMqttClient::IODevice);
-//     caFile.close();
-//     certFile.close();
-//     keyFile.close();
-
-//     return true;
-// }
 
 bool AwsMqttManager::loadCertificates()
 {
-    if(QSslSocket::supportsSsl())
-    {
-       qWarning() << "QSslSocket SupprotSsl returned true";
-    }
-
-    QFile caFile(caPath);
-    QFile certFile(certPath);
-    QFile keyFile(keyPath);
-
-    if (!caFile.open(QIODevice::ReadOnly) ||
-        !certFile.open(QIODevice::ReadOnly) ||
-        !keyFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to open cert files";
+    if (!QSslSocket::supportsSsl()) {
+        qWarning() << "[TLS] SSL/TLS not supported on this system!";
         return false;
     }
 
-    // Read the file contents
-    QByteArray caData = caFile.readAll();
-    QByteArray certData = certFile.readAll();
-    QByteArray keyData = keyFile.readAll();
+    QFile caFile(caPath), certFile(certPath), keyFile(keyPath);
+    if (!caFile.open(QIODevice::ReadOnly) ||
+        !certFile.open(QIODevice::ReadOnly) ||
+        !keyFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "[TLS] Failed to open cert/key files";
+        return false;
+    }
 
+    // Load all CA certs (root + intermediates if present)
+    QList<QSslCertificate> caCerts = QSslCertificate::fromData(caFile.readAll(), QSsl::Pem);
 
+    QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
+    conf.setCaCertificates(caCerts);
+    conf.setLocalCertificate(QSslCertificate(certFile.readAll()));
+    conf.setPrivateKey(QSslKey(keyFile.readAll(), QSsl::Rsa, QSsl::Pem));
+    conf.setProtocol(QSsl::TlsV1_2OrLater);
 
-    // Construct certificates/keys from QByteArray (safe)
-    sslConf = QSslConfiguration();
-    sslConf.addCaCertificate(QSslCertificate(caData));
-    sslConf.setLocalCertificate(QSslCertificate(certData));
-    sslConf.setPrivateKey(QSslKey(keyData, QSsl::Rsa, QSsl::Pem));
-    // sslConf.setProtocol(QSsl::TlsV1_2);
+    // --- Debug TLS config ---
+    qDebug() << "=== TLS Config ===";
+    qDebug() << "Subject:" << conf.localCertificate().subjectInfo(QSslCertificate::CommonName);
+    qDebug() << "Private key valid?" << !conf.privateKey().isNull();
+    qDebug() << "CA count:" << conf.caCertificates().size();
+    qDebug() << "Protocol:" << conf.protocol();
+    qDebug() << "===================";
 
-    caFile.close();
-    certFile.close();
-    keyFile.close();
+    if (conf.localCertificate().isNull() || conf.privateKey().isNull() || conf.caCertificates().isEmpty()) {
+        qWarning() << "[TLS] Invalid certificate, key, or CA chain.";
+        return false;
+    }
 
+    // Create socket WITHOUT parent (QMqttClient will own it after setTransport)
+    sslSocket = new QSslSocket();
+    sslSocket->setSslConfiguration(conf);
 
-    if (sslConf.localCertificate().isNull())
-        qWarning() << "Local certificate is null!";
-    if (sslConf.privateKey().isNull())
-        qWarning() << "Private key is null!";
-    if (sslConf.caCertificates().isEmpty())
-        qWarning() << "CA certificates empty!";
+    // SNI (important for AWS IoT endpoint)
+    sslSocket->setPeerVerifyMode(QSslSocket::VerifyPeer);
+    sslSocket->setPeerVerifyName(host);
 
-    // Secure socket
-    sslSocket = new QSslSocket(mqttClient); // make mqttClient parent
-    sslSocket->setSslConfiguration(sslConf);
+    // --- TLS signal logging ---
+    connect(sslSocket, &QSslSocket::encrypted, this, [this]() {
+        qDebug() << "[TLS] Handshake complete (encrypted)";
+        // Now safe to start MQTT session
+        mqttClient->connectToHost();
+    });
+
     connect(sslSocket,
             static_cast<void(QSslSocket::*)(const QList<QSslError>&)>(&QSslSocket::sslErrors),
             this,
-            [](const QList<QSslError> &errors){
-                for (const auto &e : errors)
-                    qWarning() << "SSL error:" << e.errorString();
+            [](const QList<QSslError> &errs) {
+                for (const auto &e : errs)
+                    qWarning() << "[TLS] SSL error:" << e.errorString();
             });
-    connect(sslSocket, &QSslSocket::encrypted, this, [](){
-        qDebug() << "SSL handshake complete.";
+
+    connect(sslSocket, &QSslSocket::stateChanged, this, [](QAbstractSocket::SocketState state) {
+        qDebug() << "[TLS] Socket state:" << state;
     });
-    // Bind socket to MQTT client
+
+    connect(sslSocket, &QSslSocket::errorOccurred, this, [](QAbstractSocket::SocketError err) {
+        qWarning() << "[TLS] Socket error:" << err;
+    });
+
+    // Hand TLS socket to MQTT client (ownership transferred)
     mqttClient->setTransport(sslSocket, QMqttClient::IODevice);
 
     return true;
@@ -221,36 +192,38 @@ bool AwsMqttManager::loadCertificates()
 void AwsMqttManager::connectToBroker()
 {
     if (host.isEmpty() || clientId.isEmpty() || topic.isEmpty()) {
-        qWarning() << "MQTT settings incomplete.";
+        qWarning() << "[MQTT] Settings incomplete.";
         return;
     }
 
     if (!loadCertificates()) {
-        qWarning() << "Missing certificates. Cannot connect.";
+        qWarning() << "[MQTT] Missing certificates. Cannot connect.";
         return;
     }
-    qWarning() << "certificates loaded successfully.";
-    mqttClient->setHostname(host);
-    mqttClient->setPort(port);
+
+    qInfo() << "[MQTT] Certificates loaded and transport attached.";
+
     mqttClient->setClientId(clientId);
     mqttClient->setCleanSession(true);
     mqttClient->setKeepAlive(30);
 
-    if (sslSocket->sslConfiguration().isNull())
-    qWarning() << "SSL configuration is null!";
-
-    connect(mqttClient, &QMqttClient::stateChanged, this, [](QMqttClient::ClientState state){
-        qDebug() << "MQTT state changed:" << state;
+    // Monitor MQTT states
+    connect(mqttClient, &QMqttClient::stateChanged, this, [](QMqttClient::ClientState state) {
+        qDebug() << "[MQTT] stateChanged:" << state;
+    });
+    connect(mqttClient, &QMqttClient::errorChanged, this, [](QMqttClient::ClientError error) {
+        qWarning() << "[MQTT] errorChanged:" << error;
+    });
+    connect(mqttClient, &QMqttClient::disconnected, this, []() {
+        qWarning() << "[MQTT] disconnected";
     });
 
-    connect(mqttClient, &QMqttClient::errorChanged, this, [](QMqttClient::ClientError error){
-        qWarning() << "MQTT error:" << error;
-    });
-
-    // mqttClient->connectToHost();
-    qWarning() << "connectToHost called";
-
+    // Trigger TLS handshake first (not MQTT yet!)
+    qInfo() << "[TLS] Initiating encrypted connect to" << host << ":" << port;
+    sslSocket->connectToHostEncrypted(host, port);
 }
+
+
 
 void AwsMqttManager::disconnectClient()
 {

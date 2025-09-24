@@ -48,8 +48,7 @@ private:
     // QString keyPath = "/etc/certs/privateKey.pem";
 
     // x86 System certificate paths (fixed)
-    // QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
-    QString basePath = "/usr/local/share/ca-certificates/";
+    QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
     QString caPath   = basePath + "AmazonRootCA1.pem";
     QString certPath = basePath + "deviceCert.pem";
     QString keyPath  = basePath + "privateKey.pem";
