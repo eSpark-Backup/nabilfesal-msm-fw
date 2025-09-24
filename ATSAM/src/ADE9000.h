@@ -40,6 +40,9 @@
 #define ADE9000_RUN_ON 0x0001			/*DSP ON*/
 
 /*Energy Accumulation Settings*/
+//#define ADE9000_EGY_TIME 0x77359 				/*Accumulate 8000 samples*/
+//#define ADE9000_EP_CFG 0xE001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
+
 #define ADE9000_EGY_TIME 0x77359 				/*Accumulate 8000 samples*/
 #define ADE9000_EP_CFG 0xE001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
 

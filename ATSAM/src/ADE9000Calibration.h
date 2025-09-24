@@ -1,6 +1,7 @@
 #ifndef ADE9000CALIBRATION_H
 #define ADE9000CALIBRATION_H
 
+#define PI 3.14159
 #define NOMINAL_INPUT_VOLTAGE 50       //Nominal Calibrating RMS Voltage on all phases (Vrms)
 #define NOMINAL_INPUT_CURRENT 5         //Nominal Calibrating RMS Current on all phases (Irms)
 #define INPUT_FREQUENCY 	  50              //Nominal Calibrating frequency. Used to calculate Omega for phase calibration.Ensure ACCMODE register is set to correct frequency
@@ -29,6 +30,7 @@ Current transfer function= 1/2500*Total Burden = 5/400*11.312= 0.1414
 #define CURRENT_TRANSFER_FUNCTION 0.00707f
 #define NOMINAL_VOLTAGE 0.220
 #define ACCUMULATION_TIME 1 // EP_CFG = 0x0011 and EGY_TIME = 7999 (1 sec accumulation)
+
 /****************************************************************************************************************
 									Voltage Transfer Function
 *****************************************************************************************************************
@@ -80,7 +82,9 @@ e.g Channel A Vrms = (AVRMS(register)*CAL_VRMS_CC/10^6)
 #define CAL_ENERGY_CC	(1000000.0 / (VOLTAGE_TRANSFER_FUNCTION * CURRENT_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES * 2.0f * 8000.0f * 3600.0f *0.0001220703125f))	
 */
 
-#define CAL_ENERGY_CC	(1000000.0 / (VOLTAGE_TRANSFER_FUNCTION * CURRENT_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES * 2.0f * 8000.0f * 3600.0f *0.0001220703125f))	
+#define CAL_ENERGY_CC	((5 * 220 * 1000000.0)/ (VOLTAGE_TRANSFER_FUNCTION * (5.65e-5) * ADE9000_WATT_FULL_SCALE_CODES * 61.3f * 8000.0f * 3600.0f *0.0001220703125f))	
+
+//#define CAL_ENERGY_CC	((5 * 220 * 1000000.0) / (0.5 * 0.00005657f * ADE9000_WATT_FULL_SCALE_CODES * (0.000122070313f) * 8000.0f * 3600.0f))	
 
 //400:5 Outgoing Channel One
 //#define OG_CAL_IRMS_CC		15.18195573f

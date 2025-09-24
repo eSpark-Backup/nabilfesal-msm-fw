@@ -273,6 +273,7 @@ void ReadActivePowerRegs(ActivePowerRegs *Data, SPI_CSS_Pin css_pin)
 {
     if (css_pin)
     {
+        int32_t read_register = (int32_t(SPI_Read(ADDR_AWATT, true, css_pin)));
         Data->ActivePowerValue_A = (float)(int32_t(SPI_Read(ADDR_AWATT, true, css_pin))) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f);
         Data->ActivePowerValue_B = (float)(int32_t(SPI_Read(ADDR_BWATT, true, css_pin))) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f);
         Data->ActivePowerValue_C = (float)(int32_t(SPI_Read(ADDR_CWATT, true, css_pin))) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f);
@@ -354,23 +355,6 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
         }
         if (1)
         {
-            ////////////////////////////////////////////////////////////////
-//            uint32_t reg_hi = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
-//            reg_hi = (reg_hi & 0x80000000) ? -((int32_t)(~reg_hi + 1)) : (int32_t)reg_hi;
-//            uint32_t reg_lo = SPI_Read(ADDR_AFWATTHR_LO, true, css_pin);
-//            
-//            // Combine into 64 bits (only lower 45 bits are valid)
-//            uint64_t raw45 = ((uint64_t)reg_hi << 32) | reg_lo;
-//            raw45 &= ((1ULL << 45) - 1);  // mask to 45 bits
-//
-//            // Sign extend 45-bit to 64-bit signed integer
-//            int64_t signed45;
-//            if (raw45 & (1ULL << 44)) {       // if sign bit (bit 44) is set
-//                signed45 = (int64_t)(raw45 | (~((1ULL << 45) - 1)));
-//            } else {
-//                signed45 = (int64_t)raw45;
-//            }
-            //////////////////////////////////////////////////////////////
 
 //            Data1->ActiveEnergyReg_A = signed45;
             rawValue = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
@@ -396,53 +380,23 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
             Data1->ReactiveEnergyReg_C = SPI_Read(ADDR_CFVARHR_HI, true, css_pin);
         }
 
-//        if(Data2->ActivePowerValue_A == 0.0)
-//        {
-        
-//        \frac{5\cdot220}{\frac{\left(\frac{0.004}{100}\right)}{0.707}\cdot0.311\cdot20694066\cdot2^{-13}\cdot3600\cdot8000}
-//            Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float)(2.06296 * 8000 * 3600) / 1000000 / 1000;
-        if(css_pin == 4){
-            
-             
-//            Data1->PActiveEnergyValue_kWh_A = (double)((Data1->ActiveEnergyReg_A * Data2 -> ActivePowerValue_A * k)/3600.0f);
-    
-//            \frac{\left(3427747\cdot0.55\cdot\left(\frac{8192}{488281+1}\right)\right)}{3600000}
-//        Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float)(2.56318184e-9);
-//            \frac{\left(60\cdot\left(\frac{8192}{488281+1}\right)\right)}{3600000}
-//            \frac{\left(60\cdot\left(\frac{8192}{488281+1}\right)\right)}{3600}
-//            \frac{\left(\left(\frac{8192}{488281+1}\right)\right)}{3600}
-            
-//      Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * Data2->ActivePowerValue_A * (k))/(3600);
-//        Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * 8.59/10000)/1000; // /1000 
-        
-//        \frac{5\cdot220}{\frac{\left(\frac{0.004}{100}\right)}{0.707}\cdot0.311\cdot20694066\cdot2^{-13}\cdot3600\cdot488281}
-//        Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * 1.40787308)/100000;
-//        Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * (float)(2.56318184 / 1000000000));
-//            \frac{5\cdot220}{\frac{\left(\frac{0.004}{100}\right)}{0.707}\cdot0.311\cdot20694066\cdot2^{-13}\cdot3600\cdot8000}
-        Data1->PActiveEnergyValue_kWh_A = (Data1->ActiveEnergyReg_A * (float)(1.40787308 / (100000 * 1000)));
-        //        Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float)(8.59e-4);    
-        }    
 
-//        3427747 | 2934.0476
-//        3452007 | 2944.4348
-//        3467017 | 2965.2742
-//        3484477 | 2978.1677
-//        3498584 | 2993.1658
-//        }
-        if (Data2->ActivePowerValue_B == 0.0)
+        if(CurrentData->CurrentRMSValue_A >= 0.1){
+            
+            Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;  
+        }  
+        if (CurrentData->CurrentRMSValue_B >= 0.1)
         {
-            Data1->PActiveEnergyValue_kWh_B = Data1->ActiveEnergyReg_B * (float)(2.06296 * 8000 * 3600) / 1000000 / 1000;
+            Data1->PActiveEnergyValue_kWh_B = Data1->ActiveEnergyReg_B * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
         }
-        if (Data2->ActivePowerValue_C == 0.0)
+        if (CurrentData->CurrentRMSValue_C >= 0.1)
         {
-            Data1->PActiveEnergyValue_kWh_C = Data1->ActiveEnergyReg_C * (float)(2.06296 * 8000 * 3600) / 1000000 / 1000;
+            Data1->PActiveEnergyValue_kWh_C = Data1->ActiveEnergyReg_C * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
         }
         
-        // Data1->ActiveEnergyValue_kWh_B = Data1->ActiveEnergyReg_B * (float)(CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
-        // Data1->ActiveEnergyValue_kWh_C = Data1->ActiveEnergyReg_C * (float)(CAL_ENERGY_CC * 8000 * 3600) / 1000000 / 1000;
-        //         Data1->ReactiveEnergyValue_kWh_A = Data1->ReactiveEnergyReg_A * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
-        //         Data1->ReactiveEnergyValue_kWh_B = Data1->ReactiveEnergyReg_B * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
-        //         Data1->ReactiveEnergyValue_kWh_C = Data1->ReactiveEnergyReg_C * (float) (calibration_data.cal_energy_cc * 8000 * 3600) / 1000000 / 1000;
+        Data1->ReactiveEnergyValue_kWh_A = Data1->ReactiveEnergyReg_A * (float) (calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
+        Data1->ReactiveEnergyValue_kWh_B = Data1->ReactiveEnergyReg_B * (float) (calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
+        Data1->ReactiveEnergyValue_kWh_C = Data1->ReactiveEnergyReg_C * (float) (calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
 
         // if (Data2->ActivePowerValue_A < 0)
         // {
@@ -653,7 +607,6 @@ void ReadVoltageTHDRegsnValues(VoltageTHDRegs *Data, SPI_CSS_Pin css_pin)
     rawValue = SPI_Read(ADDR_AVTHD, true, css_pin);
     tempReg = *(int32_t *)&rawValue;
     Data->VoltageTHDValue_A = (float)tempReg * 100 / 134217728.0f; // Multiplied by 2^-27
-//    Data->VoltageTHDValue_A = (float)((float)tempReg * 7.4505806 / 1000000000)*100; // Multiply for 100 as it will be show in percentage
 
     rawValue = SPI_Read(ADDR_BVTHD, true, css_pin);
     tempReg = *(int32_t *)&rawValue;
@@ -672,9 +625,7 @@ void ReadCurrentTHDRegsnValues(CurrentTHDRegs *Data, SPI_CSS_Pin css_pin)
     rawValue = SPI_Read(ADDR_AITHD, true, css_pin);
     tempReg = *(int32_t *)&rawValue;
     Data->CurrentTHDValue_A = (float)tempReg * 100 / 134217728.0f;
-    
-//    Data->CurrentTHDValue_A = (float)((float)tempReg * 7.4505806 / 1000000000)*100; // Multiply for 100 as it will be show in percentage
-    
+        
 
     rawValue = SPI_Read(ADDR_BITHD, true, css_pin);
     tempReg = *(int32_t *)&rawValue;
@@ -703,11 +654,16 @@ void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin)
     // Data->AngleValue_VA_VC = (SPI_Read(ADDR_ANGL_VA_VC, true, css_pin)) * 0.017578125;          // mulConstant
     
 //    int16_t angle_value_register = (int32_t(SPI_Read(ADDR_ANGL_VA_IA, false, css_pin)));
-    Data->AngleValue_VA_IA = abs(((int32_t(SPI_Read(ADDR_ANGL_VA_IA, false, css_pin))) * 0.017578125) - 360); // in Degrees
+    
 //    Data->AngleValue_VA_IA = abs(((int32_t(SPI_Read(ADDR_ANGL_VA_IA, false, css_pin))) * 0.017578125) - 360) * (( 22/7 ) / 180); // in Radians
-
-    Data->AngleValue_VB_IB = (int32_t(SPI_Read(ADDR_ANGL_VB_IB, true, css_pin))) * 0.017578125; // mulConstant
-    Data->AngleValue_VC_IC = (int32_t(SPI_Read(ADDR_ANGL_VC_IC, true, css_pin))) * 0.017578125; // mulConstant
+//    Data->AngleValue_VB_IB = abs(360 - ((int32_t(SPI_Read(ADDR_ANGL_VB_IB, false, css_pin))) * 0.017578125)); // in Degrees
+    
+    Data->AngleValue_VA_IA = (abs(360 - ((int32_t(SPI_Read(ADDR_ANGL_VA_IA, false, css_pin))) * 0.017578125)) * (PI / 180)); // in Radians
+    Data->AngleValue_VB_IB = (abs(360 - ((int32_t(SPI_Read(ADDR_ANGL_VB_IB, false, css_pin))) * 0.017578125)) * (PI / 180)); // in Radians
+    Data->AngleValue_VC_IC = (abs(360 - ((int32_t(SPI_Read(ADDR_ANGL_VC_IC, false, css_pin))) * 0.017578125)) * (PI / 180)); // in Radians
+    
+//    Data->AngleValue_VB_IB = (int32_t(SPI_Read(ADDR_ANGL_VB_IB, true, css_pin))) * 0.017578125; // mulConstant
+//    Data->AngleValue_VC_IC = (int32_t(SPI_Read(ADDR_ANGL_VC_IC, true, css_pin))) * 0.017578125; // mulConstant
 
     // Data->AngleValue_IA_IB = (int32_t(SPI_Read(ADDR_ANGL_IA_IB, true, css_pin))) * 0.017578125; // mulConstant
     // Data->AngleValue_IB_IC = (int32_t(SPI_Read(ADDR_ANGL_IB_IC, true, css_pin))) * 0.017578125; // mulConstant
@@ -745,64 +701,20 @@ void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data)
     calibration_data[channel].cal_irms_cc = (SQRT_2 * current_transfer_func * ADE9000_RMS_FULL_SCALE_CODES); // I_FSP
     float I_FSP;
 
-    I_FSP = (current_transfer_func / 0.707); // I_FSP
+    I_FSP = ((current_transfer_func * 10) / 0.707); // I_FSP
+    float accumulation_time = (float)((ADE9000_EGY_TIME + 1) / 8000);
 
     //    calibration_data.cal_irms_cc = (NOMINAL_INPUT_CURRENT)/(I_FSP * ADE9000_RMS_FULL_SCALE_CODES); // Current Conversion Constant
     calibration_data[channel].cal_power_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES);
-    calibration_data[channel].cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES);
-    //    calibration_data.cal_energy_cc = (5 * 220e6)/(I_FSP*VOLTAGE_TRANSFER_FUNCTION*ADE9000_WATT_FULL_SCALE_CODES*3600*8000*pow(2,-13));
+//    calibration_data[channel].cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES * 3600 * 8000 * 2 / 10000000000000);
+//    calibration_data[channel].cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES);
+    calibration_data[channel].cal_energy_cc = ((NOMINAL_INPUT_CURRENT * 220 * 1000000.0)/ (VOLTAGE_TRANSFER_FUNCTION * I_FSP * 4 * ADE9000_WATT_FULL_SCALE_CODES * accumulation_time * 8000.0f * 3600.0f * 0.0001220703125f)); // 2^(-13) = 0.0001220703125f
 
-    //    float AIGAIN_value;
-    //    AIGAIN_value = (float)((AIGAIN_value - 1) * pow(2,27));
+    
+    
+        //    calibration_data.cal_energy_cc = (5 * 220e6)/(I_FSP*VOLTAGE_TRANSFER_FUNCTION*ADE9000_WATT_FULL_SCALE_CODES*3600*8000*pow(2,-13));
 
-    // For testing the value is hardcoded below
-    //    float I_FSP = ((0.004 / 100) * 10) / 0.707;
-    //    float AIRMS_exp = (float)(I_FSP * ADE9000_RMS_FULL_SCALE_CODES);
-    //    float GAIN = (float)((float)(AIRMS_exp) / (float)(Data.CurrentRMSReg_A));
-    //    AIGAIN_value = (float)((GAIN - 1) * pow(2,27));
-    //    AIGAIN_value = (float)((4 - 1) * pow(2,27));
-    //    AIGAIN_value = 164774527.7;
-    //
-    //  AIGAIN = (GAIN - 1) * 2^27;
-
-    //    float BIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_B;
-    //    BIGAIN_value = (BIGAIN_value - 1) * pow(2,27);
-    //
-    //    float CIGAIN_value = (calibration_data.cal_irms_cc) / Data.CurrentRMSValue_C;
-    //    CIGAIN_value = (CIGAIN_value - 1) * pow(2,27);
-
-    //    SPI_Write(ADDR_AIGAIN, AIGAIN_value, true, get_css_pin(channel));
-    //    SPI_Write(ADDR_AIGAIN, 0xEE6B2800, true, get_css_pin(channel));
-
-    //    SPI_Write(ADDR_BIGAIN, BIGAIN_value, true, get_css_pin(channel));
-    //    SPI_Write(ADDR_CIGAIN, CIGAIN_value, true, get_css_pin(channel));
-
-    /****************************************************************************************************/
-    /* Calculation of xPGAIN */
-    /****************************************************************************************************/
-
-//    uint32_t A_Active_Energy = SPI_Read(ADDR_AWATTHR_HI, true, get_css_pin(channel));
-//    uint32_t B_Active_Energy = SPI_Read(ADDR_BWATTHR_HI, true, get_css_pin(channel));
-//    uint32_t C_Active_Energy = SPI_Read(ADDR_CWATTHR_HI, true, get_css_pin(channel));
-    //
-    //    float A_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
-    //    float B_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
-    //    float C_Active_Energy_Expected = (2 * current_transfer_func * 10 * NOMINAL_VOLTAGE * ACCUMULATION_TIME * 8000 * pow(2,-13));
-    //
-    //    float AP_GAIN = (float)((A_Active_Energy_Expected - A_Active_Energy)/ (A_Active_Energy)) * pow(2,27);
-    //    A_Active_Energy = 4294967295;
-//    float A_Active_Energy_Expected = 355587.79;
-//    float AP_GAIN = (float)(((A_Active_Energy_Expected - A_Active_Energy) / (A_Active_Energy)) * pow(2, 27));
-    //    float BP_GAIN = (float)((B_Active_Energy_Expected - B_Active_Energy)/ (B_Active_Energy)) * pow(2,27);
-    //    float CP_GAIN = (float)((C_Active_Energy_Expected - C_Active_Energy)/ (C_Active_Energy)) * pow(2,27);
-
-    //    SPI_Write(ADDR_APGAIN, AP_GAIN, true, get_css_pin(channel));
-    //    SPI_Write(ADDR_APGAIN, (uint32_t)AP_GAIN, true, get_css_pin(channel));
-
-    //    SPI_Write(ADDR_BPGAIN, BP_GAIN, true, get_css_pin(channel));
-    //    SPI_Write(ADDR_CPGAIN, CP_GAIN, true, get_css_pin(channel));
-
-    /****************************************************************************************************/
+    
 }
 
 void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin)
