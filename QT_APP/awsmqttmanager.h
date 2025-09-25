@@ -17,6 +17,15 @@ struct DeviceInfo {
 };
 
 
+struct NtpSettings {
+    QStringList servers;  // up to 3 servers
+
+    bool operator!=(const NtpSettings &other) const {
+        return servers != other.servers;
+    }
+};
+
+
 class AwsMqttManager : public QObject
 {
     Q_OBJECT
@@ -33,7 +42,7 @@ public slots:
     void processDeviceInfo(const DeviceInfo &info);
     void processMqttSettings(const QJsonObject &mqttSetting);
     void processSftpSettings(const QJsonObject &sftpSetting);
-    void processNtpSettings();
+    void processNtpSettings(const NtpSettings &ntpSettings);
     
 private:
     explicit AwsMqttManager(QObject *parent = nullptr); // private ctor

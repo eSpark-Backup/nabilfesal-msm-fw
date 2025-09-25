@@ -394,7 +394,7 @@ void AwsMqttManager::processMqttSettings(const QJsonObject &mqttSetting)
     dataArray.append(brokerData);
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();   // or however you fetch it
+    payload["device_uuid"] = Utils::getUid();
     payload["data"] = dataArray;
 
     QJsonDocument doc(payload);
@@ -418,7 +418,7 @@ void AwsMqttManager::processSftpSettings(const QJsonObject &sftpSetting)
     dataArray.append(serverData);
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();   // or however you fetch it
+    payload["device_uuid"] = Utils::getUid();
     payload["data"] = dataArray;
 
     QJsonDocument doc(payload);
@@ -427,7 +427,23 @@ void AwsMqttManager::processSftpSettings(const QJsonObject &sftpSetting)
 }
 
 
-void AwsMqttManager::processNtpSettings()
+void AwsMqttManager::processNtpSettings(const NtpSettings &ntpSettings)
 {
     if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+
+    QJsonObject ntpData;
+    ntpData["server_1"] = ntpSettings.servers.size() > 0 ? ntpSettings.servers.at(0) : "";
+    ntpData["server_2"] = ntpSettings.servers.size() > 1 ? ntpSettings.servers.at(1) : "";
+    ntpData["server_3"] = ntpSettings.servers.size() > 2 ? ntpSettings.servers.at(2) : "";
+
+    QJsonArray dataArray;
+    dataArray.append(ntpData);
+
+    QJsonObject payload;
+    payload["device_uuid"] = Utils::getUid();
+    payload["data"] = dataArray;
+
+    QJsonDocument doc(payload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_ntp, jsonString);
 }
