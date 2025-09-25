@@ -708,7 +708,7 @@ void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data)
     calibration_data[channel].cal_power_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES);
 //    calibration_data[channel].cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES * 3600 * 8000 * 2 / 10000000000000);
 //    calibration_data[channel].cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES);
-    calibration_data[channel].cal_energy_cc = ((NOMINAL_INPUT_CURRENT * 220 * 1000000.0)/ (VOLTAGE_TRANSFER_FUNCTION * I_FSP * 4 * ADE9000_WATT_FULL_SCALE_CODES * accumulation_time * 8000.0f * 3600.0f * 0.0001220703125f)); // 2^(-13) = 0.0001220703125f
+    calibration_data[channel].cal_energy_cc = ((NOMINAL_INPUT_CURRENT * 220 * 1000000.0)/ (VOLTAGE_TRANSFER_FUNCTION * I_FSP * 3 * ADE9000_WATT_FULL_SCALE_CODES * accumulation_time * 8000.0f * 3600.0f * 0.0001220703125f)); // 2^(-13) = 0.0001220703125f
 
     
     
