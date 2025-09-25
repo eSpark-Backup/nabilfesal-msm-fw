@@ -184,9 +184,9 @@ Example JSON response from the firmware:
 
 
 ## References
-> ADE9000 Datasheet
+> [ADE9000 Datasheet](https://www.analog.com/media/en/technical-documentation/user-guides/ADE9000-UG-1098.pdf)
 
-> ATSAMD20G17 Datasheet
+> [ATSAMD20G17 Datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/SAM-D20-Family-Data-Sheet-DS60001504E.pdf)
 
 ---
 
