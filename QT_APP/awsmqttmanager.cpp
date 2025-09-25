@@ -1,18 +1,35 @@
 #include "awsmqttmanager.h"
 #include <QFile>
+#include <QDebug>
+#include "utils.h"
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QDebug>
-#include <QtMqtt/QMqttClient>
 #include <QtMqtt/QMqttSubscription>
 #include <QtNetwork/QSslSocket>
 #include <QtNetwork/QSslCertificate>
 #include <QtNetwork/QSslKey>
 #include <QtNetwork/QSslConfiguration>
-#include "utils.h"
-#include <cmath>
+#include <QProcessEnvironment>
 
 #define AWS_MQTTS_PATH "config/aws_mqtts_settings.json"
+
+
+#define AWS_LOG(msg) \
+    do { \
+        if (AwsMqttManager::debugEnabled()) { qDebug() << msg; } \
+    } while(0)
+
+
+bool AwsMqttManager::debugEnabled()
+{
+    static bool enabled = []() {
+        // Check once at startup
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        return env.contains("AWS_MQTT_DEBUG") && env.value("AWS_MQTT_DEBUG") == "1";
+    }();
+    return enabled;
+}
 
 
 AwsMqttManager& AwsMqttManager::instance()
@@ -23,7 +40,7 @@ AwsMqttManager& AwsMqttManager::instance()
 
 AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 {
-    mqttClient = new QMqttClient(this);
+    awsMqttsClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
     isConnected  = false;   // add as member variable (bool)
 
@@ -33,15 +50,15 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
             qWarning() << "Skipped publish, client not connected.";
             return;
         }
-        // QByteArray payload = buildTelemetryJson();
-        qInfo() << "\n========================================================================";
-        // // qDebug().noquote() << "TelemetryJson: " << payload;
-        // // qInfo() << "========================================================================\n";
-        // publishMessage(payload);
+        QByteArray awsPayload = buildAwsTelemetryJson();
+        AWS_LOG("\n========================================================================");
+        AWS_LOG("AwsTelemetryJson: " << awsPayload);
+        AWS_LOG("\n========================================================================");
+        publishMessage(awsPayload);
     });
 
     // Connected signal
-    connect(mqttClient, &QMqttClient::connected, this, [this]() {
+    connect(awsMqttsClient, &QMqttClient::connected, this, [this]() {
         isConnected = true;
         qDebug() << "Connected to AWS IoT Core!";
 
@@ -51,7 +68,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     });
 
     // Disconnected signal
-    connect(mqttClient, &QMqttClient::disconnected, this, [this]() {
+    connect(awsMqttsClient, &QMqttClient::disconnected, this, [this]() {
         isConnected = false;
         qDebug() << "Disconnected from AWS IoT Core.";
         publishTimer->stop();
@@ -88,12 +105,12 @@ bool AwsMqttManager::loadConfig(const QString &filePath)
     intervalSec = intervalSecStr.toInt();
 
     // Log the values
-    qDebug() << "AWS MQTTS Settings Loaded:";
-    qDebug() << "  Host:" << host;
-    qDebug() << "  Port:" << port;
-    qDebug() << "  Client ID:" << clientId;
-    qDebug() << "  Topic:" << topic;
-    qDebug() << "  Interval (sec):" << intervalSec;
+    AWS_LOG("AWS MQTTS Settings Loaded:");
+    AWS_LOG("  Host:" << host);
+    AWS_LOG("  Port:" << port);
+    AWS_LOG("  Client ID:" << clientId);
+    AWS_LOG("  Topic:" << topic);
+    AWS_LOG("  Interval (sec):" << intervalSec);
 
     return true;
 }
@@ -102,7 +119,7 @@ void AwsMqttManager::reloadSettings()
 {
     configPath = AWS_MQTTS_PATH;
     if (!loadConfig(configPath)) {
-        qWarning() << "No valid config found. Skipping MQTT connection.";
+        qWarning() << "No valid config found. Skipping AWS MQTTS connection.";
         return;
     }
     connectToBroker();
@@ -129,9 +146,7 @@ bool AwsMqttManager::loadCertificates()
         return false;
     }
 
-    // Load all CA certs (root + intermediates if present)
     QList<QSslCertificate> caCerts = QSslCertificate::fromData(caFile.readAll(), QSsl::Pem);
-
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
     conf.setCaCertificates(caCerts);
     conf.setLocalCertificate(QSslCertificate(certFile.readAll()));
@@ -139,33 +154,27 @@ bool AwsMqttManager::loadCertificates()
     conf.setProtocol(QSsl::TlsV1_2OrLater);
 
     // --- Debug TLS config ---
-    qDebug() << "=== TLS Config ===";
-    qDebug() << "Subject:" << conf.localCertificate().subjectInfo(QSslCertificate::CommonName);
-    qDebug() << "Private key valid?" << !conf.privateKey().isNull();
-    qDebug() << "CA count:" << conf.caCertificates().size();
-    qDebug() << "Protocol:" << conf.protocol();
-    qDebug() << "===================";
+    AWS_LOG("=== TLS Config ===");
+    AWS_LOG("Subject:" << conf.localCertificate().subjectInfo(QSslCertificate::CommonName));
+    AWS_LOG("Private key valid?" << !conf.privateKey().isNull());
+    AWS_LOG("CA count:" << conf.caCertificates().size());
+    AWS_LOG("Protocol:" << conf.protocol());
+    AWS_LOG("===================");
 
     if (conf.localCertificate().isNull() || conf.privateKey().isNull() || conf.caCertificates().isEmpty()) {
         qWarning() << "[TLS] Invalid certificate, key, or CA chain.";
         return false;
     }
 
-    // Create socket WITHOUT parent (QMqttClient will own it after setTransport)
     sslSocket = new QSslSocket();
     sslSocket->setSslConfiguration(conf);
-
-    // SNI (important for AWS IoT endpoint)
     sslSocket->setPeerVerifyMode(QSslSocket::VerifyPeer);
     sslSocket->setPeerVerifyName(host);
 
-    // --- TLS signal logging ---
     connect(sslSocket, &QSslSocket::encrypted, this, [this]() {
-        qDebug() << "[TLS] Handshake complete (encrypted)";
-        // Now safe to start MQTT session
-        mqttClient->connectToHost();
+        AWS_LOG("[TLS] Handshake complete (encrypted)");
+        awsMqttsClient->connectToHost();
     });
-
     connect(sslSocket,
             static_cast<void(QSslSocket::*)(const QList<QSslError>&)>(&QSslSocket::sslErrors),
             this,
@@ -175,16 +184,12 @@ bool AwsMqttManager::loadCertificates()
             });
 
     connect(sslSocket, &QSslSocket::stateChanged, this, [](QAbstractSocket::SocketState state) {
-        qDebug() << "[TLS] Socket state:" << state;
+        AWS_LOG( "[TLS] Socket state:" << state);
     });
-
     connect(sslSocket, &QSslSocket::errorOccurred, this, [](QAbstractSocket::SocketError err) {
         qWarning() << "[TLS] Socket error:" << err;
     });
-
-    // Hand TLS socket to MQTT client (ownership transferred)
-    mqttClient->setTransport(sslSocket, QMqttClient::IODevice);
-
+    awsMqttsClient->setTransport(sslSocket, QMqttClient::IODevice);
     return true;
 }
 
@@ -200,29 +205,12 @@ void AwsMqttManager::connectToBroker()
         qWarning() << "[MQTT] Missing certificates. Cannot connect.";
         return;
     }
-
-    qInfo() << "[MQTT] Certificates loaded and transport attached.";
-
-    mqttClient->setClientId(clientId);
-    mqttClient->setCleanSession(true);
-    mqttClient->setKeepAlive(30);
-
-    // Monitor MQTT states
-    connect(mqttClient, &QMqttClient::stateChanged, this, [](QMqttClient::ClientState state) {
-        qDebug() << "[MQTT] stateChanged:" << state;
-    });
-    connect(mqttClient, &QMqttClient::errorChanged, this, [](QMqttClient::ClientError error) {
-        qWarning() << "[MQTT] errorChanged:" << error;
-    });
-    connect(mqttClient, &QMqttClient::disconnected, this, []() {
-        qWarning() << "[MQTT] disconnected";
-    });
-
-    // Trigger TLS handshake first (not MQTT yet!)
-    qInfo() << "[TLS] Initiating encrypted connect to" << host << ":" << port;
+    awsMqttsClient->setClientId(clientId);
+    awsMqttsClient->setCleanSession(true);
+    awsMqttsClient->setKeepAlive(30);
     sslSocket->connectToHostEncrypted(host, port);
+    AWS_LOG("[TLS] Initiating encrypted connect to" << host << ":" << port);
 }
-
 
 
 void AwsMqttManager::disconnectClient()
@@ -232,19 +220,27 @@ void AwsMqttManager::disconnectClient()
 
 void AwsMqttManager::disconnectFromBroker()
 {
-    if (!mqttClient) return;
-    
-    if (mqttClient->state() != QMqttClient::Disconnected)
-    {
-        publishTimer->stop();
-        mqttClient->disconnectFromHost();
+    if (!awsMqttsClient) return;
+
+    AWS_LOG("[MQTT] Disconnecting...");
+
+    publishTimer->stop();
+
+    if (awsMqttsClient->state() != QMqttClient::Disconnected)
+        awsMqttsClient->disconnectFromHost();
+
+    if (sslSocket) {
+        sslSocket->disconnectFromHost();
+        sslSocket->close();
+        sslSocket->deleteLater();
+        sslSocket = nullptr;
     }
 }
 
 void AwsMqttManager::publishMessage(const QString &payload)
 {
-    if (mqttClient->state() == QMqttClient::Connected) {
-        auto id = mqttClient->publish(topic, payload.toUtf8(), 1);
+    if (awsMqttsClient->state() == QMqttClient::Connected) {
+        auto id = awsMqttsClient->publish(topic, payload.toUtf8(), 1);
         if (id == -1)
             qWarning() << "Publish failed!";
     }
@@ -252,10 +248,10 @@ void AwsMqttManager::publishMessage(const QString &payload)
 
 void AwsMqttManager::subscribeToTopic()
 {
-    if (mqttClient->state() != QMqttClient::Connected)
+    if (awsMqttsClient->state() != QMqttClient::Connected)
         return;
 
-    auto sub = mqttClient->subscribe(topic, 1);
+    auto sub = awsMqttsClient->subscribe(topic, 1);
     if (!sub) {
         qWarning() << "Subscribe failed!";
         return;
@@ -263,175 +259,50 @@ void AwsMqttManager::subscribeToTopic()
 
     connect(sub, &QMqttSubscription::messageReceived, this,
             [](const QMqttMessage &msg) {
-                qDebug() << "Message received:" << msg.payload();
+                AWS_LOG( "Message received:" << msg.payload());
             });
 }
 
-QByteArray AwsMqttManager::buildTelemetryJson() const
+
+QByteArray AwsMqttManager::buildAwsTelemetryJson() const
 {
     QJsonObject root;
 
-    // metadata
-    root["date"]       = QDate::currentDate().toString("dd-MM-yyyy");
-    root["time"]       = QTime::currentTime().toString("HH:mm");
-    root["ip_address"] = Utils::getDeviceIp();
-    root["ofp_uid"]    = Utils::getUid();
+    // ISO8601 timestamp with offset
+    root["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+    root["device_uuid"] = Utils::getUid();
+
+    QJsonArray channelsArray;
 
     QReadLocker locker(&telemetryLock);
-
-    // All channel data
     for (auto it = channelTelemetry.begin(); it != channelTelemetry.end(); ++it) {
-        const QJsonObject &channelData = it.value();
-        for (auto key : channelData.keys()) {
-            root[key] = channelData[key];
-        }
+        channelsArray.append(it.value());
     }
 
-    // Serialize JSON → QByteArray
+    root["channels"] = channelsArray;
+
     QJsonDocument doc(root);
     return doc.toJson(QJsonDocument::Compact);
 }
 
 
-void AwsMqttManager::processIncomingJson(int channel, const QJsonObject &payload)
+void AwsMqttManager::processAwsTelemetry(int channel, const QJsonObject &payload)
 {
-    QJsonObject root = payload;
-    QJsonObject data = root["data"].toObject();
+    QJsonObject cleanPayload = payload;
+    QJsonObject dataObj = cleanPayload["data"].toObject();
 
-    QJsonObject phaseA = data["phase_a"].toObject();
-    QJsonObject phaseB = data["phase_b"].toObject();
-    QJsonObject phaseC = data["phase_c"].toObject();
-    QJsonObject telemetry;
-
-    if(channel == 1)
-    {
-        // =============== INCOMING CHANNEL =================
-        telemetry["V_R"]     = phaseA["general"].toObject()["rms_voltage"].toDouble();
-        telemetry["In1_R1"]  = phaseA["general"].toObject()["current"].toDouble();
-        telemetry["In1_RPF"] = phaseA["power"].toObject()["factor"].toDouble();
-
-        telemetry["V_Y"]     = phaseB["general"].toObject()["rms_voltage"].toDouble();
-        telemetry["In1_Y1"]  = phaseB["general"].toObject()["current"].toDouble();
-        telemetry["In1_YPF"] = phaseB["power"].toObject()["factor"].toDouble();
-
-        telemetry["V_B"]     = phaseC["general"].toObject()["rms_voltage"].toDouble();
-        telemetry["In1_B1"]  = phaseC["general"].toObject()["current"].toDouble();
-        telemetry["In1_BPF"] = phaseC["power"].toObject()["factor"].toDouble();
-
-        // Power
-        double P1_R = phaseA["power"].toObject()["active"].toDouble();
-        double P1_B = phaseB["power"].toObject()["active"].toDouble();
-        double P1_Y = phaseC["power"].toObject()["active"].toDouble();
-        telemetry["P1_R"] = P1_R;
-        telemetry["P1_B"] = P1_B;
-        telemetry["P1_Y"] = P1_Y;
-        telemetry["P1"]   = P1_R + P1_B + P1_Y;
-
-        // Reactive
-        double Q1_R = phaseA["power"].toObject()["reactive"].toDouble();
-        double Q1_B = phaseB["power"].toObject()["reactive"].toDouble();
-        double Q1_Y = phaseC["power"].toObject()["reactive"].toDouble();
-        telemetry["Q1_R"] = Q1_R;
-        telemetry["Q1_B"] = Q1_B;
-        telemetry["Q1_Y"] = Q1_Y;
-        telemetry["Q1"]   = Q1_R + Q1_B + Q1_Y;
-
-        // Apparent
-        double S1_R = phaseA["power"].toObject()["apparent"].toDouble();
-        double S1_B = phaseB["power"].toObject()["apparent"].toDouble();
-        double S1_Y = phaseC["power"].toObject()["apparent"].toDouble();
-        telemetry["S1_R"] = S1_R;
-        telemetry["S1_B"] = S1_B;
-        telemetry["S1_Y"] = S1_Y;
-        telemetry["S1"]   = S1_R + S1_B + S1_Y;
-
-        // Energy
-        QJsonObject energyA = phaseA["energy"].toObject();
-        QJsonObject activeA   = energyA["active"].toObject();
-        QJsonObject reactiveA = energyA["reactive"].toObject();
-
-        telemetry["Epimp1"] = activeA["negative"].toDouble();
-        telemetry["Epexp1"] = activeA["positive"].toDouble();
-        telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
-        telemetry["Eqexp1"] = reactiveA["positive"].toDouble();
-    }
-    else
-    {
-        // =============== OUTGOING CHANNELS =================
-          // Outgoing channels: F(channel-1)_ prefix
-        int idx = channel - 1;  // Channel 2 → F1, Channel 3 → F2, … Channel 12 → F11
-        QString prefix = QString("F%1_").arg(idx);
-
-        double P_R = phaseA["power"].toObject()["active"].toDouble();
-        double P_B = phaseB["power"].toObject()["active"].toDouble();
-        double P_Y = phaseC["power"].toObject()["active"].toDouble();
-
-        double Q_R = phaseA["power"].toObject()["reactive"].toDouble();
-        double Q_B = phaseB["power"].toObject()["reactive"].toDouble();
-        double Q_Y = phaseC["power"].toObject()["reactive"].toDouble();
-
-        double S_R = phaseA["power"].toObject()["apparent"].toDouble();
-        double S_B = phaseB["power"].toObject()["apparent"].toDouble();
-        double S_Y = phaseC["power"].toObject()["apparent"].toDouble();
-
-        QJsonObject energyA   = phaseA["energy"].toObject();
-        QJsonObject activeA   = energyA["active"].toObject();
-        QJsonObject reactiveA = energyA["reactive"].toObject();
-
-        telemetry[prefix + "R"]     = phaseA["general"].toObject()["current"].toDouble();
-        telemetry["PF_R" + QString::number(idx)] = phaseA["power"].toObject()["factor"].toDouble();
-
-        telemetry[prefix + "Y"]     = phaseB["general"].toObject()["current"].toDouble();
-        telemetry["PF_Y" + QString::number(idx)] = phaseB["power"].toObject()["factor"].toDouble();
-
-        telemetry[prefix + "B"]     = phaseC["general"].toObject()["current"].toDouble();
-        telemetry["PF_B" + QString::number(idx)] = phaseC["power"].toObject()["factor"].toDouble();
-
-        telemetry[prefix + "P"] = std::round((P_R + P_B + P_Y) * 100.0) / 100.0;
-        telemetry[prefix + "Q"] = std::round((Q_R + Q_B + Q_Y) * 100.0) / 100.0;
-        telemetry[prefix + "S"] = std::round((S_R + S_B + S_Y) * 100.0) / 100.0;
-
-        telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
-        telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
-        telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
-        telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
-    }
-    
-    QWriteLocker locker(&telemetryLock);
-    channelTelemetry[channel] = telemetry;
-}
-
-void AwsMqttManager::initializeTelemetryJson()
-{
- // Initialize channel telemetry with 0s
-    for (int ch = 1; ch <= 12; ++ch) {
-        QJsonObject defaults;
-
-        if (ch == 1) {
-            QStringList keys = {"V_R","In1_R1","In1_RPF","V_Y","In1_Y1","In1_YPF",
-                                "V_B","In1_B1","In1_BPF",
-                                "P1_R","P1_B","P1_Y","P1",
-                                "Q1_R","Q1_B","Q1_Y","Q1",
-                                "S1_R","S1_B","S1_Y","S1",
-                                "Epimp1","Epexp1","Eqimp1","Eqexp1"};
-            for (const QString &k : keys)
-                defaults[k] = 0;
-        } else {
-            QString suffix = QString::number(ch - 1);
-            QStringList keys = {
-                "F" + suffix + "_R", "PF_R" + suffix,
-                "F" + suffix + "_Y", "PF_Y" + suffix,
-                "F" + suffix + "_B", "PF_B" + suffix,
-                "F" + suffix + "_P",
-                "F" + suffix + "_Q",
-                "F" + suffix + "_S",
-                "F" + suffix + "_Epimp", "F" + suffix + "_Epexp",
-                "F" + suffix + "_Eqimp", "F" + suffix + "_Eqexp"
-            };
-            for (const QString &k : keys)
-                defaults[k] = 0;
+    for (const QString &phase : {"phase_a", "phase_b", "phase_c"}) {
+        if (dataObj.contains(phase)) {
+            QJsonObject phaseObj = dataObj[phase].toObject();
+            phaseObj.remove("avg_power");
+            phaseObj.remove("avg_energy");
+            phaseObj.remove("thd");
+            dataObj[phase] = phaseObj;
         }
-
-        channelTelemetry[ch] = defaults;
     }
+
+    cleanPayload["data"] = dataObj;
+
+    QWriteLocker locker(&telemetryLock);
+    channelTelemetry[channel] = cleanPayload;
 }

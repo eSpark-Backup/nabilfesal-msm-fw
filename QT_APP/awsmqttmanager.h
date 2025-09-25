@@ -1,8 +1,8 @@
 #pragma once
 #include <QObject>
-#include <QMqttClient>
 #include <QTimer>
 #include <QReadWriteLock>
+#include <QtMqtt/QMqttClient>
 #include <QCoreApplication>
 
 class AwsMqttManager : public QObject
@@ -19,22 +19,20 @@ public:
     bool mqttState();
 
 public slots:
-    void processIncomingJson(int channel, const QJsonObject &payload);
+    void processAwsTelemetry(int channel, const QJsonObject &payload);
 
 private:
     explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
     AwsMqttManager(const AwsMqttManager&) = delete;     // prevent copy
     AwsMqttManager& operator=(const AwsMqttManager&) = delete; // prevent assignment
-    void initializeTelemetryJson();
     void connectToBroker();
     void disconnectFromBroker();
     bool loadCertificates();
-    QByteArray buildTelemetryJson() const;
+    static bool debugEnabled();
+    QByteArray buildAwsTelemetryJson() const;
 
     QString configPath;
-    QMqttClient *mqttClient = nullptr;
-
-    // MQTT settings from JSON
+    QMqttClient *awsMqttsClient = nullptr;
     QString host;
     int port = 8883;
     QString clientId = "fleet_prov_shadow_test_1";

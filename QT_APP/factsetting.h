@@ -15,11 +15,13 @@ class FactSetting : public settingsManager
 
 public:
     explicit FactSetting(QWidget *parent = nullptr);
+    void loadAwsMqttsSettings(bool showMessages);
     ~FactSetting();
 
 signals:
     void usbExport();
     void factoryExit();
+    void aws_mqtts_load();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
