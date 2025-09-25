@@ -43,6 +43,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     awsMqttsClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
     isConnected  = false;   // add as member variable (bool)
+    awsTopicsInit();
 
     // Timer: publish telemetry if connected
     connect(publishTimer, &QTimer::timeout, this, [this]() {
@@ -50,11 +51,22 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
             qWarning() << "Skipped publish, client not connected.";
             return;
         }
-        QByteArray awsPayload = buildAwsTelemetryJson();
+
+        int totalChannels = channelTelemetry.size();
+        int mid = totalChannels / 2;
+
+        QByteArray payload1 = buildAwsTelemetryJson(0, mid);
         AWS_LOG("\n========================================================================");
-        AWS_LOG("AwsTelemetryJson: " << awsPayload);
+        AWS_LOG("Publishing first half of telemetry (" << 0 << "-" << mid-1 << ")");
         AWS_LOG("\n========================================================================");
-        publishMessage(awsPayload);
+        publishMessage(topic_pub_telemetry, payload1);
+        // Publish second half
+        QByteArray payload2 = buildAwsTelemetryJson(mid, totalChannels);
+        AWS_LOG("\n========================================================================");
+        AWS_LOG("Publishing second half of telemetry (" << mid << "-" << totalChannels-1 << ")");
+        AWS_LOG("\n========================================================================");
+        publishMessage(topic_pub_telemetry, payload2);
+
     });
 
     // Connected signal
@@ -65,6 +77,8 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
         if (intervalSec > 0) {
             publishTimer->start(intervalSec*1000);
         }
+
+
     });
 
     // Disconnected signal
@@ -75,7 +89,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     });
 }
 
-bool AwsMqttManager::loadConfig(const QString &filePath)
+bool AwsMqttManager::loadAwsConfig(const QString &filePath)
 {
     configPath = filePath;
     QFile file(filePath);
@@ -115,17 +129,18 @@ bool AwsMqttManager::loadConfig(const QString &filePath)
     return true;
 }
 
-void AwsMqttManager::reloadSettings()
+void AwsMqttManager::reloadAwsMqttsSettings()
 {
     configPath = AWS_MQTTS_PATH;
-    if (!loadConfig(configPath)) {
+    if (!loadAwsConfig(configPath)) {
         qWarning() << "No valid config found. Skipping AWS MQTTS connection.";
         return;
     }
     connectToBroker();
 }
 
-bool AwsMqttManager::mqttState()
+
+bool AwsMqttManager::awsMqttsState()
 {
     return isConnected;
 }
@@ -205,6 +220,7 @@ void AwsMqttManager::connectToBroker()
         qWarning() << "[MQTT] Missing certificates. Cannot connect.";
         return;
     }
+
     awsMqttsClient->setClientId(clientId);
     awsMqttsClient->setCleanSession(true);
     awsMqttsClient->setKeepAlive(30);
@@ -213,10 +229,11 @@ void AwsMqttManager::connectToBroker()
 }
 
 
-void AwsMqttManager::disconnectClient()
+void AwsMqttManager::disconnectAwsClient()
 {
     disconnectFromBroker();
 }
+
 
 void AwsMqttManager::disconnectFromBroker()
 {
@@ -237,34 +254,61 @@ void AwsMqttManager::disconnectFromBroker()
     }
 }
 
-void AwsMqttManager::publishMessage(const QString &payload)
+
+void AwsMqttManager::publishMessage(const QString pubTopic, const QString &payload)
 {
     if (awsMqttsClient->state() == QMqttClient::Connected) {
-        auto id = awsMqttsClient->publish(topic, payload.toUtf8(), 1);
+        auto id = awsMqttsClient->publish(pubTopic, payload.toUtf8(), 1);
         if (id == -1)
-            qWarning() << "Publish failed!";
+            qWarning() << "Publish on [" << pubTopic << "] failed!";
     }
 }
+
 
 void AwsMqttManager::subscribeToTopic()
 {
-    if (awsMqttsClient->state() != QMqttClient::Connected)
-        return;
+    QStringList topics = {
+        topic_sub_reboot,
+        topic_sub_ntp,
+        topic_sub_mqtt,
+        topic_sub_sftp
+    };
 
-    auto sub = awsMqttsClient->subscribe(topic, 1);
-    if (!sub) {
-        qWarning() << "Subscribe failed!";
-        return;
-    }
+    for (const QString &t : topics) {
+        auto *sub = awsMqttsClient->subscribe(t, 1);
+        if (!sub) {
+            qWarning() << "[MQTT] Subscribe failed for topic:" << t;
+            continue;
+        }
 
     connect(sub, &QMqttSubscription::messageReceived, this,
             [](const QMqttMessage &msg) {
-                AWS_LOG( "Message received:" << msg.payload());
+                AWS_LOG( "Topic: " << msg.topic() << "Message received:" << msg.payload());
             });
+    }
 }
 
 
-QByteArray AwsMqttManager::buildAwsTelemetryJson() const
+void AwsMqttManager::awsTopicsInit()
+{
+    QString base_pub_topic = "msm/" + Utils::getUid() + "/pub";
+    QString base_sub_topic = "msm/" + Utils::getUid() + "/sub";
+    
+    topic_pub_telemetry     = base_pub_topic + "/telemetry";
+    topic_pub_device_info   = base_pub_topic + "/device_info";
+    topic_pub_reboot        = base_pub_topic + "/reboot";
+    topic_pub_ntp           = base_pub_topic + "/ntp";
+    topic_pub_mqtt          = base_pub_topic + "/mqtt";
+    topic_pub_sftp          = base_pub_topic + "/sftp";
+
+    topic_sub_reboot        = base_sub_topic + "/reboot";
+    topic_sub_ntp           = base_sub_topic + "/ntp";
+    topic_sub_mqtt          = base_sub_topic + "/mqtt";
+    topic_sub_sftp          = base_sub_topic + "/sftp";
+}
+
+
+QByteArray AwsMqttManager::buildAwsTelemetryJson(int startIndex, int endIndex) const
 {
     QJsonObject root;
 
@@ -275,8 +319,11 @@ QByteArray AwsMqttManager::buildAwsTelemetryJson() const
     QJsonArray channelsArray;
 
     QReadLocker locker(&telemetryLock);
-    for (auto it = channelTelemetry.begin(); it != channelTelemetry.end(); ++it) {
-        channelsArray.append(it.value());
+    int i = 0;
+    for (auto it = channelTelemetry.begin(); it != channelTelemetry.end(); ++it, ++i) {
+        if (i >= startIndex && i < endIndex) {
+            channelsArray.append(it.value());
+        }
     }
 
     root["channels"] = channelsArray;

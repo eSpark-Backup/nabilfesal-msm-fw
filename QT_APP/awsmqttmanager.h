@@ -11,12 +11,10 @@ class AwsMqttManager : public QObject
 public:
     static AwsMqttManager& instance();
 
-    bool loadConfig(const QString &filePath);
-    void reloadSettings();
-    void disconnectClient();
-    void publishMessage(const QString &payload);
-    void subscribeToTopic();
-    bool mqttState();
+    bool loadAwsConfig(const QString &filePath);
+    void reloadAwsMqttsSettings();
+    void disconnectAwsClient();
+    bool awsMqttsState();
 
 public slots:
     void processAwsTelemetry(int channel, const QJsonObject &payload);
@@ -25,11 +23,14 @@ private:
     explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
     AwsMqttManager(const AwsMqttManager&) = delete;     // prevent copy
     AwsMqttManager& operator=(const AwsMqttManager&) = delete; // prevent assignment
+    void publishMessage(const QString pubTopic, const QString &payload);
+    void subscribeToTopic();
+    void awsTopicsInit();
     void connectToBroker();
     void disconnectFromBroker();
     bool loadCertificates();
     static bool debugEnabled();
-    QByteArray buildAwsTelemetryJson() const;
+    QByteArray buildAwsTelemetryJson(int startIndex, int endIndex) const;
 
     QString configPath;
     QMqttClient *awsMqttsClient = nullptr;
@@ -50,7 +51,16 @@ private:
     QString caPath   = basePath + "AmazonRootCA1.pem";
     QString certPath = basePath + "deviceCert.pem";
     QString keyPath  = basePath + "privateKey.pem";
-
+    QString topic_pub_telemetry;
+    QString topic_pub_device_info;
+    QString topic_pub_reboot;
+    QString topic_pub_ntp;
+    QString topic_pub_mqtt;
+    QString topic_pub_sftp;
+    QString topic_sub_reboot;
+    QString topic_sub_ntp;
+    QString topic_sub_mqtt;
+    QString topic_sub_sftp;
 
     QTimer *publishTimer = nullptr;
     QSslConfiguration sslConf;

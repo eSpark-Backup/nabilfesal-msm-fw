@@ -231,9 +231,9 @@ void MainWindow::connectLoginSignals()
         });
     });
     connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
-        awsMqttsHandler->disconnectClient();
+        awsMqttsHandler->disconnectAwsClient();
         QTimer::singleShot(1000, [this](){
-            awsMqttsHandler->reloadSettings();
+            awsMqttsHandler->reloadAwsMqttsSettings();
         });
     });
     connect(this, &MainWindow::receivedChannelData,
@@ -301,9 +301,9 @@ void MainWindow::connectLoginSignals()
                 });
             });
             connect(factSettings, &FactSetting::aws_mqtts_load, this, [this]() {
-                awsMqttsHandler->disconnectClient();
+                awsMqttsHandler->disconnectAwsClient();
                 QTimer::singleShot(1000, [this](){
-                    awsMqttsHandler->reloadSettings();
+                    awsMqttsHandler->reloadAwsMqttsSettings();
                 });
             });
             connect(factSettings, &FactSetting::usbExport, this, [this](){
