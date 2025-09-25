@@ -31,6 +31,9 @@ public:
 public slots:
     void processAwsTelemetry(int channel, const QJsonObject &payload);
     void processDeviceInfo(const DeviceInfo &info);
+    void processMqttSettings(const QJsonObject &mqttSetting);
+    void processSftpSettings(const QJsonObject &sftpSetting);
+    void processNtpSettings();
     
 private:
     explicit AwsMqttManager(QObject *parent = nullptr); // private ctor

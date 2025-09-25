@@ -7,9 +7,12 @@
 #include <QDir>
 
 
+#define MQTT_CONFIG_PATH "config/mqtt_settings.json"
+#define SFTP_CONFIG_PATH "config/sftp_settings.json"
+
 QJsonObject settingsManager::loadMqttSettings(bool showMessages)
 {
-    QFile file("config/mqtt_settings.json");
+    QFile file(MQTT_CONFIG_PATH);
     if (!file.exists()) {
         if (showMessages)
             QMessageBox::warning(this, "MQTT Settings", "No saved settings found.");
@@ -41,12 +44,18 @@ QJsonObject settingsManager::loadMqttSettings(bool showMessages)
 
 void settingsManager::saveMqttSettings(QJsonObject mqttSetting)
 {
+    bool isJsonDiff = jsonDifferent(mqttSetting, MQTT_CONFIG_PATH);
+    if (!isJsonDiff) {
+        qInfo() << "[MQTT] Settings unchanged, not rewriting file.";
+        return;
+    }
+
     QDir dir("config");
     if (!dir.exists()) {
         dir.mkpath(".");
     }
 
-    QFile file("config/mqtt_settings.json");
+    QFile file(MQTT_CONFIG_PATH);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         QMessageBox::critical(this, "MQTT Settings", "Failed to save MQTT settings.");
         return;
@@ -57,12 +66,19 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting)
     file.close();
 
     QMessageBox::information(this, "MQTT Settings", "MQTT settings saved successfully!");
+    emit mqttSettingsChanged(mqttSetting);
     emit mqtt_load();
 }
 
 
 void settingsManager::saveSftpSettings(QJsonObject sftpSetting)
 {
+    bool isJsonDiff = jsonDifferent(sftpSetting, SFTP_CONFIG_PATH);
+    if (!isJsonDiff) {
+        qInfo() << "[SFTP] Settings unchanged, not rewriting file.";
+        return;
+    }
+    
     QDir dir("config");
     if (!dir.exists()) {
         dir.mkpath(".");
@@ -80,6 +96,7 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting)
     file.close();
 
     QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
+    emit sftpSettingsChanged(sftpSetting);
     emit sftp_load();    
 }
 
@@ -117,3 +134,25 @@ QJsonObject settingsManager::loadSftpSettings(bool showMessages)
     return sftpSettings;
 }
 
+
+bool settingsManager::jsonDifferent(const QJsonObject &a, const QString &path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return true; // return empty object if not found
+    }
+
+    QJsonDocument old = QJsonDocument::fromJson(file.readAll());
+    file.close();
+    QJsonObject b = old.object();
+
+    if (a.keys() != b.keys())
+        return true;
+
+    for (const QString &key : a.keys()) {
+        if (a.value(key) != b.value(key)) {
+            return true; // mismatch found
+        }
+    }
+    return false; // all fields same
+}

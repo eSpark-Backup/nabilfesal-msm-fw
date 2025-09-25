@@ -291,8 +291,8 @@ void AwsMqttManager::subscribeToTopic()
 
 void AwsMqttManager::awsTopicsInit()
 {
-    QString base_pub_topic = "msm/" + Utils::getUid() + "/pub";
-    QString base_sub_topic = "msm/" + Utils::getUid() + "/sub";
+    QString base_pub_topic = "msm/" + clientId + "/pub"; //clientId to be replace with Utils::getUid()
+    QString base_sub_topic = "msm/" + clientId + "/sub";
     
     topic_pub_telemetry     = base_pub_topic + "/telemetry";
     topic_pub_device_info   = base_pub_topic + "/device_info";
@@ -364,9 +364,12 @@ void AwsMqttManager::processDeviceInfo(const DeviceInfo &info)
     deviceInfoData["device_imei"] = info.imei;
     deviceInfoData["mqtt_status"] = info.mqttStatus;
     deviceInfoData["sftp_status"] = info.sftpStatus;
-    
+
+    QJsonArray dataArray;
+    dataArray.append(deviceInfoData);
+
     QJsonObject deviceInfoPayload;
-    deviceInfoPayload["data"] = deviceInfoData;
+    deviceInfoPayload["data"] = dataArray;
     deviceInfoPayload["device_uuid"] = info.uuid;
 
     QJsonDocument doc(deviceInfoPayload);
@@ -374,3 +377,57 @@ void AwsMqttManager::processDeviceInfo(const DeviceInfo &info)
     publishMessage(topic_pub_device_info, jsonString);
 }
 
+
+void AwsMqttManager::processMqttSettings(const QJsonObject &mqttSetting)
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+
+    QJsonObject brokerData;
+    brokerData["broker_ip"]     = mqttSetting.value("ip").toString();
+    brokerData["broker_port"]   = mqttSetting.value("port").toString().toInt();
+    brokerData["broker_user"]   = mqttSetting.value("user").toString();
+    brokerData["broker_pass"]   = mqttSetting.value("password").toString();
+    brokerData["data_interval"] = mqttSetting.value("interval").toString().toInt();
+    brokerData["mqtt_topic"]    = mqttSetting.value("topic").toString();
+
+    QJsonArray dataArray;
+    dataArray.append(brokerData);
+
+    QJsonObject payload;
+    payload["device_uuid"] = Utils::getUid();   // or however you fetch it
+    payload["data"] = dataArray;
+
+    QJsonDocument doc(payload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_mqtt, jsonString);
+}
+
+
+void AwsMqttManager::processSftpSettings(const QJsonObject &sftpSetting)
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+
+    QJsonObject serverData;
+    serverData["server_ip"]     = sftpSetting.value("ip").toString();
+    serverData["server_port"]   = sftpSetting.value("port").toString().toInt();
+    serverData["username"]   = sftpSetting.value("user").toString();
+    serverData["password"]   = sftpSetting.value("password").toString();
+    serverData["data_interval"] = sftpSetting.value("interval").toString().toInt();
+
+    QJsonArray dataArray;
+    dataArray.append(serverData);
+
+    QJsonObject payload;
+    payload["device_uuid"] = Utils::getUid();   // or however you fetch it
+    payload["data"] = dataArray;
+
+    QJsonDocument doc(payload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_mqtt, jsonString);
+}
+
+
+void AwsMqttManager::processNtpSettings()
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+}

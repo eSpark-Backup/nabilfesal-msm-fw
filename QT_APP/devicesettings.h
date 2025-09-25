@@ -25,6 +25,7 @@ signals:
     void usbExport();
     void aws_mqtts_load();
     void deviceInfoChanged(const DeviceInfo &info);
+    void ntpSettingsChanged();
 
 public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = true);

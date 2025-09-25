@@ -238,6 +238,12 @@ void MainWindow::connectLoginSignals()
     });
     connect(settings, &DeviceSettings::deviceInfoChanged,
         awsMqttsHandler, &AwsMqttManager::processDeviceInfo);
+    connect(settings, &DeviceSettings::mqttSettingsChanged,
+        awsMqttsHandler, &AwsMqttManager::processMqttSettings);
+    connect(settings, &DeviceSettings::sftpSettingsChanged,
+        awsMqttsHandler, &AwsMqttManager::processSftpSettings);
+    connect(settings, &DeviceSettings::ntpSettingsChanged,
+        awsMqttsHandler, &AwsMqttManager::processNtpSettings);
     connect(this, &MainWindow::receivedChannelData,
         mqttHandler, &mqttManager::processIncomingJson);
     connect(this, &MainWindow::receivedChannelData,
