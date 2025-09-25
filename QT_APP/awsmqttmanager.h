@@ -43,6 +43,7 @@ public slots:
     void processMqttSettings(const QJsonObject &mqttSetting);
     void processSftpSettings(const QJsonObject &sftpSetting);
     void processNtpSettings(const NtpSettings &ntpSettings);
+    void processReboot();
     
 private:
     explicit AwsMqttManager(QObject *parent = nullptr); // private ctor

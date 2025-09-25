@@ -447,3 +447,24 @@ void AwsMqttManager::processNtpSettings(const NtpSettings &ntpSettings)
     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
     publishMessage(topic_pub_ntp, jsonString);
 }
+
+
+void AwsMqttManager::processReboot()
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+
+    QJsonObject rebootData;
+    rebootData["command"] = true;
+    
+    QJsonArray dataArray;
+    dataArray.append(rebootData);
+
+    QJsonObject payload;
+    payload["device_uuid"] = Utils::getUid();
+    payload["data"] = dataArray;
+
+    QJsonDocument doc(payload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_reboot, jsonString);
+}
+
