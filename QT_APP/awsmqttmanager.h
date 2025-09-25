@@ -5,6 +5,18 @@
 #include <QtMqtt/QMqttClient>
 #include <QCoreApplication>
 
+
+struct DeviceInfo {
+    QString uuid;
+    QString ip;
+    QString imei;
+    QString date;
+    QString ntpStatus;
+    QString mqttStatus;
+    QString sftpStatus;
+};
+
+
 class AwsMqttManager : public QObject
 {
     Q_OBJECT
@@ -18,7 +30,8 @@ public:
 
 public slots:
     void processAwsTelemetry(int channel, const QJsonObject &payload);
-
+    void processDeviceInfo(const DeviceInfo &info);
+    
 private:
     explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
     AwsMqttManager(const AwsMqttManager&) = delete;     // prevent copy
@@ -32,6 +45,7 @@ private:
     static bool debugEnabled();
     QByteArray buildAwsTelemetryJson(int startIndex, int endIndex) const;
 
+    DeviceInfo newDeviceInfo;
     QString configPath;
     QMqttClient *awsMqttsClient = nullptr;
     QString host;

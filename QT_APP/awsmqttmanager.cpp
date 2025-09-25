@@ -353,3 +353,24 @@ void AwsMqttManager::processAwsTelemetry(int channel, const QJsonObject &payload
     QWriteLocker locker(&telemetryLock);
     channelTelemetry[channel] = cleanPayload;
 }
+
+
+void AwsMqttManager::processDeviceInfo(const DeviceInfo &info)
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+
+    QJsonObject deviceInfoData;
+    deviceInfoData["device_ip"] = info.ip;
+    deviceInfoData["device_imei"] = info.imei;
+    deviceInfoData["mqtt_status"] = info.mqttStatus;
+    deviceInfoData["sftp_status"] = info.sftpStatus;
+    
+    QJsonObject deviceInfoPayload;
+    deviceInfoPayload["data"] = deviceInfoData;
+    deviceInfoPayload["device_uuid"] = info.uuid;
+
+    QJsonDocument doc(deviceInfoPayload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_device_info, jsonString);
+}
+

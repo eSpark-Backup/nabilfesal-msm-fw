@@ -384,21 +384,41 @@ void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
 
 void DeviceSettings::refreshInfo()
 {
-    auto uid = Utils::getUid();
-    ui->uuid->setText(uid);
-    auto currentIp = Utils::getDeviceIp();
-    ui->ip->setText(currentIp);
-    auto currentImei = Utils::getDeviceImei();
-    ui->imei->setText(currentImei);
+    curDevInfo.uuid       = Utils::getUid();
+    curDevInfo.ip         = Utils::getDeviceIp();
+    curDevInfo.imei       = Utils::getDeviceImei();
+
     auto ntpData = Utils::getNtpStatus();
-    QString date   = ntpData.value("date").toString();
-    ui->date_input->setText(date);
-    QString status = ntpData.value("ntp_status").toString();
-    ui->ntp->setText(status);
-    auto mqttData = Utils::getMqttStatus();
-    ui->mqtt->setText(mqttData);
-    auto sftpData = Utils::getSftpStatus();
-    ui->sftp->setText(sftpData);
+    curDevInfo.date       = ntpData.value("date").toString();
+    curDevInfo.ntpStatus  = ntpData.value("ntp_status").toString();
+
+    curDevInfo.mqttStatus = Utils::getMqttStatus();
+    curDevInfo.sftpStatus = Utils::getSftpStatus();
+
+    ui->uuid->setText(curDevInfo.uuid);
+    ui->ip->setText(curDevInfo.ip);
+    ui->imei->setText(curDevInfo.imei);
+    ui->date_input->setText(curDevInfo.date);
+    ui->ntp->setText(curDevInfo.ntpStatus);
+    ui->mqtt->setText(curDevInfo.mqttStatus);
+    ui->sftp->setText(curDevInfo.sftpStatus);
+
+    if (isDifferent(curDevInfo, prvDevInfo)) {
+        emit deviceInfoChanged(curDevInfo);
+        prvDevInfo = curDevInfo;
+    }
+}
+
+
+bool DeviceSettings::isDifferent(const DeviceInfo &a, const DeviceInfo &b)
+{
+    return a.uuid       != b.uuid
+        || a.ip         != b.ip
+        || a.imei       != b.imei
+        || a.date       != b.date
+        || a.ntpStatus  != b.ntpStatus
+        || a.mqttStatus != b.mqttStatus
+        || a.sftpStatus != b.sftpStatus;
 }
 
 

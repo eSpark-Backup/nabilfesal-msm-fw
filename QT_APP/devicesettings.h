@@ -18,11 +18,13 @@ public:
     explicit DeviceSettings(QWidget *parent = nullptr);
     void loadAwsMqttsSettings(bool showMessages = true);
     ~DeviceSettings();
+    DeviceInfo curDevInfo, prvDevInfo;
 
 signals:
     void channels_view();
     void usbExport();
     void aws_mqtts_load();
+    void deviceInfoChanged(const DeviceInfo &info);
 
 public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = true);
@@ -43,6 +45,7 @@ protected:
 
 private:
     void parseNtpJson(const QJsonObject& data);
+    bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
     void refreshInfo();
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;

@@ -236,6 +236,8 @@ void MainWindow::connectLoginSignals()
             awsMqttsHandler->reloadAwsMqttsSettings();
         });
     });
+    connect(settings, &DeviceSettings::deviceInfoChanged,
+        awsMqttsHandler, &AwsMqttManager::processDeviceInfo);
     connect(this, &MainWindow::receivedChannelData,
         mqttHandler, &mqttManager::processIncomingJson);
     connect(this, &MainWindow::receivedChannelData,
