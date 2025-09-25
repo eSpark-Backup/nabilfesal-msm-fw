@@ -14,11 +14,19 @@
 - Apparent Power
 - Power Factor
 
+#### Energy
+- Active Energy
+- Reactive Energy
+- Bidirectional Energy
+
 #### Other Parameters
 - Temperature
+- THD Voltage
+- THD Current
+- Angle values
 
 #### Ratio & Calibration
-- CT- Ratio
+- CT-Ratio
 - V-Offset
 - I-Offset
 
@@ -33,15 +41,11 @@
 - USB Export Integration
 - USB Reboot Sequence
 - UART Integration
+- USB to Ethernet Converter Implementation to provide internet
 
 ## What's Left
-### SCM Board
-- Energy correct conversion
-- Verification of THD Voltage, THD Current & Angle values
-
 ### MCM Board
 - MQTTs
-- Modbus to Ethernet Implementation
 - Dynamic MQTTs Screen
 - Dynamic OTA Screen
 - Factory password to be set as `Admin@441322@` once testing is completed
