@@ -82,6 +82,8 @@ MainWindow::MainWindow(QWidget *parent)
     worker = new SerialWorker("/dev/ttyS1", 115200);
     worker->moveToThread(serialThread);
 
+    bool startApp = true;
+
     connect(this, &MainWindow::requestChannelPoll, worker, &SerialWorker::requestChannel);
     connect(this, &MainWindow::requestSerialCommand, worker, &SerialWorker::sendRawCommand);
 
@@ -93,14 +95,22 @@ MainWindow::MainWindow(QWidget *parent)
             });
 
     connect(worker, &SerialWorker::genericResponseReady, this,
-            [this](const QString &resp){
-                FactDialog dialog(this);
-                dialog.setLabel(std::string(resp.toStdString()));
-                dialog.exec();
-                dialog.deleteLater();
+            [this, &startApp](const QString &resp){
+                if (!startApp){
+                    FactDialog dialog(this);
+                    dialog.setLabel(std::string(resp.toStdString()));
+                    dialog.exec();
+                    dialog.deleteLater();
+                }                
             });
 
     serialThread->start();
+
+    sendRatioSettings();
+
+    QTimer::singleShot(1000, this, [this, &startApp](){
+        startApp = false;
+    });
 
     pollTimer = new QTimer(this);
     connect(pollTimer, &QTimer::timeout, this, [this] {
@@ -398,4 +408,40 @@ void MainWindow::connectLoginSignals()
         factorySettings->showFullScreen();
         login->hide();
     });
+}
+
+void MainWindow::sendRatioSettings()
+{
+    QFile ratioFile("config/ct_ratio_settings.json");
+    if (ratioFile.open(QIODevice::ReadOnly)) {
+        QByteArray jsonData = ratioFile.readAll();
+        ratioFile.close();
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        if (!doc.isNull() && doc.isObject()) {
+            QJsonObject obj = doc.object();
+            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
+        }
+    }
+
+    QFile iOffsetFile("config/i_offset_settings.json");
+    if (iOffsetFile.open(QIODevice::ReadOnly)) {
+        QByteArray jsonData = iOffsetFile.readAll();
+        iOffsetFile.close();
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        if (!doc.isNull() && doc.isObject()) {
+            QJsonObject obj = doc.object();
+            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
+        }
+    }
+
+    QFile vOffsetFile("config/v_offset_settings.json");
+    if (vOffsetFile.open(QIODevice::ReadOnly)) {
+        QByteArray jsonData = vOffsetFile.readAll();
+        vOffsetFile.close();
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        if (!doc.isNull() && doc.isObject()) {
+            QJsonObject obj = doc.object();
+            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
+        }
+    }
 }

@@ -49,6 +49,7 @@ private:
     void updateProgress();
     void handlePostProgress();
     void connectLoginSignals();
+    void sendRatioSettings();
 
 private:
     Ui::MainWindow *ui;
