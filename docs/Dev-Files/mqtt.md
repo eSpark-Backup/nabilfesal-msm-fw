@@ -114,6 +114,7 @@
     "device_uuid": "ESP90000005",
     "data":[
         {
+            "device_pass": "abc123",
             "device_imei": "865788062388016",
             "device_ip": "10.99.72.185",
             "mqtt_status": true,
