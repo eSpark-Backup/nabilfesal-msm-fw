@@ -37,7 +37,16 @@ public:
     void disconnectAwsClient();
     bool awsMqttsState();
 
+signals:
+    //subscribe signals
+    void rebootRequested();
+    void ntpConfigReceived(const QJsonObject &payload);
+    void mqttConfigReceived(const QJsonObject &payload);
+    void sftpConfigReceived(const QJsonObject &payload);
+
 public slots:
+
+    //publish slots
     void processAwsTelemetry(int channel, const QJsonObject &payload);
     void processDeviceInfo(const DeviceInfo &info);
     void processMqttSettings(const QJsonObject &mqttSetting);

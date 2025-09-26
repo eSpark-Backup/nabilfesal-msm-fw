@@ -30,6 +30,7 @@ signals:
 public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = true);
     void on_sftp_load_btn_clicked(bool msgBox = true);
+    void parse_load_store_ntp(const QJsonObject &payload);
 
 private slots:
     void on_channels_btn_clicked();
@@ -40,17 +41,19 @@ private slots:
     void on_mqtt_save_btn_clicked();
     void on_sftp_save_btn_clicked();
     void on_export_btn_clicked();
-
+    
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
-
+    
 private:
+    void apply_ntp_Settings(bool msgBox= true);
     void parseNtpJson(const QJsonObject& data);
     bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
     void refreshInfo();
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;
-    NtpSettings currentNtp, previousNtp;
+    QString server1, server2, server3;
+    NtpSettings newNtp, previousNtp;
 };
 
 #endif // DEVICESETTINGS_H

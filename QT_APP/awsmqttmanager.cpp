@@ -77,8 +77,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
         if (intervalSec > 0) {
             publishTimer->start(intervalSec*1000);
         }
-
-
+        subscribeToTopic();
     });
 
     // Disconnected signal
@@ -282,9 +281,28 @@ void AwsMqttManager::subscribeToTopic()
         }
 
     connect(sub, &QMqttSubscription::messageReceived, this,
-            [](const QMqttMessage &msg) {
-                AWS_LOG( "Topic: " << msg.topic() << "Message received:" << msg.payload());
-            });
+        [this](const QMqttMessage &msg) {
+            const QString topic = msg.topic().name();
+            QByteArray rawPayload = msg.payload();
+            QJsonDocument doc = QJsonDocument::fromJson(rawPayload);
+            QJsonObject obj;
+            if (!doc.isNull() && doc.isObject()) {
+                obj = doc.object();
+                qDebug().noquote() << "\n[AWS] Topic: " << msg.topic() << "Message received:" << "Parsed JSON:" << QJsonDocument(obj).toJson(QJsonDocument::Indented);
+            }
+
+            if (topic == topic_sub_reboot) {
+                emit rebootRequested();
+            } else if (topic == topic_sub_ntp) {
+                emit ntpConfigReceived(obj);
+            } else if (topic == topic_sub_mqtt) {
+                emit mqttConfigReceived(obj);
+            } else if (topic == topic_sub_sftp) {
+                emit sftpConfigReceived(obj);
+            } else {
+                qWarning() << "[MQTT] Unknown topic:" << topic;
+            }
+        });
     }
 }
 

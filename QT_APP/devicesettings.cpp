@@ -251,30 +251,53 @@ void DeviceSettings::on_ntp_load_btn_clicked()
 
 void DeviceSettings::on_ntp_save_btn_clicked()
 {
-    QString server1 = ui->server1->text().trimmed();
-    QString server2 = ui->server2->text().trimmed();
-    QString server3 = ui->server3->text().trimmed();
+    server1 = ui->server1->text().trimmed();
+    server2 = ui->server2->text().trimmed();
+    server3 = ui->server3->text().trimmed();
 
-    NtpSettings newNtp;
+    apply_ntp_Settings();
+}
+
+
+void DeviceSettings::parse_load_store_ntp(const QJsonObject &payload)
+{
+    server1 = payload.value("server_1").toString();
+    server2 = payload.value("server_2").toString();
+    server3 = payload.value("server_3").toString();
+
+    apply_ntp_Settings(false);
+    
+    ui->server1->setText(server1);
+    ui->server2->setText(server2);
+    ui->server3->setText(server3);
+}
+
+
+void DeviceSettings::apply_ntp_Settings(bool msgBox)
+{
+    newNtp.servers.clear();
     if (!server1.isEmpty()) newNtp.servers << server1;
     if (!server2.isEmpty()) newNtp.servers << server2;
     if (!server3.isEmpty()) newNtp.servers << server3;
 
     if (newNtp.servers.isEmpty()) {
-        QMessageBox::warning(this, "NTP Settings", "Please enter at least one NTP server.");
+        if(msgBox) QMessageBox::warning(this, "NTP Settings", "Please enter at least one NTP server.");
         return;
     }
-
+    
     if (newNtp != previousNtp) {
         bool success = Utils::setNtpServers(newNtp.servers);
         if (success) {
-            QMessageBox::information(this, "NTP Settings", "NTP servers saved successfully.\nService restarted.");
-            emit ntpSettingsChanged(newNtp);
+            if(msgBox) {
+                QMessageBox::information(this, "NTP Settings", "NTP servers saved successfully.\nService restarted.");
+                emit ntpSettingsChanged(newNtp);
+            }
             previousNtp = newNtp;
         } else {
-            QMessageBox::critical(this, "NTP Settings", "Failed to save NTP servers.\nMake sure the app has root permissions.");
+            if(msgBox) QMessageBox::critical(this, "NTP Settings", "Failed to save NTP servers.\nMake sure the app has root permissions.");
         }
     } else {
+        if (msgBox) QMessageBox::information(this, "NTP Settings", "No changes detected, settings are already up-to-date.");
         qInfo() << "[NTP] No changes detected, skipping save.";
     }
 }

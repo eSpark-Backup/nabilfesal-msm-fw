@@ -236,6 +236,13 @@ void MainWindow::connectLoginSignals()
             awsMqttsHandler->reloadAwsMqttsSettings();
         });
     });
+    connect(awsMqttsHandler, &AwsMqttManager::rebootRequested, this, [this] {
+        this->close();
+        Utils::rebootSystem();
+    });
+    
+    connect(awsMqttsHandler, &AwsMqttManager::ntpConfigReceived,
+        settings, &DeviceSettings::parse_load_store_ntp);
     connect(settings, &DeviceSettings::deviceInfoChanged,
         awsMqttsHandler, &AwsMqttManager::processDeviceInfo);
     connect(settings, &DeviceSettings::mqttSettingsChanged,
