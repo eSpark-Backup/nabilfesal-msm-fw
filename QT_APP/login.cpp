@@ -119,3 +119,9 @@ void LoginWidget::on_loginButton_clicked()
         QMessageBox::critical(this, "Error", "Could not open configuration file.");
     }
 }
+
+void LoginWidget::on_pushButton_clicked()
+{
+    emit loadChannels();
+}
+

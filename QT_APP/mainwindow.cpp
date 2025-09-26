@@ -1,29 +1,40 @@
+// MainWindow.cpp
 #include "mainwindow.h"
-#include <QTimer>
 #include "ui_mainwindow.h"
-#include "login.h"
-#include "channels.h"
+
+#include <QTimer>
+#include <QThread>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDir>
 #include <QFile>
-#include "utils.h"
-#include "factdialog.h"
 #include <QDebug>
 #include <QMessageBox>
 
+#include "utils.h"
+#include "factdialog.h"
+
+// -----------------------------
+// Constructor / Destructor
+// -----------------------------
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    progressValue(0),
-    login(nullptr),
-    settings(nullptr),
-    factorySettings(nullptr),
-    channels(nullptr),
-    registration(nullptr),
-    measure(nullptr),
-    factSettings(nullptr),
-    dataExporter(nullptr)
+      ui(new Ui::MainWindow),
+      progressValue(0),
+      login(nullptr),
+      settings(nullptr),
+      factorySettings(nullptr),
+      channels(nullptr),
+      registration(nullptr),
+      measure(nullptr),
+      factSettings(nullptr),
+      dataExporter(nullptr),
+      usbExporter(nullptr),
+      watcher(nullptr),
+      serialThread(nullptr),
+      worker(nullptr),
+      pollTimer(nullptr),
+      usbDetected(false)
 {
     ui->setupUi(this);
 
@@ -36,93 +47,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
 
-    // create login once
-    login = new LoginWidget(hardwareVersion, softwareVersion);
-    usbExporter = new UsbExporter(this);
+    // Setup segmented responsibilities
+    setupLogin();
+    setupUsb();
+    setupSerial();
+
+    // Important: set connections between settings/managers
     connectLoginSignals();
 
-    ui->progressBar->setValue(progressValue);
-    ui->process_info->setText("Initializing...");
-
-    watcher = new UsbWatcher(this);
-
-    connect(watcher, &UsbWatcher::usbMounted, this, [=](const QString &dev, const QString &path){
-        m_mountPath = path.toStdString();
-        usbExporter->setDeviceName(dev, path);
-        if (isLogin) {
-            usbExporter->show();
-        }
-    });
-
-    connect(watcher, &UsbWatcher::usbUnmounted, this, [=](){
-        m_mountPath.clear();
-        usbExporter->removeDeviceName();
-        if (dataExporter) {
-            dataExporter->stop();
-            dataExporter->deleteLater();
-            dataExporter = nullptr;
-        }
-    });
-
-    connect(usbExporter, &QDialog::accepted, this, [=](){
-        int days = usbExporter->getSelectedIntervalDays();
-        if (days > 0 && !m_mountPath.empty()) {
-            if (dataExporter) {
-                dataExporter->stop();
-                dataExporter->deleteLater();
-                dataExporter = nullptr;
-            }
-            QMutexLocker locker(&latestDataMutex);
-            dataExporter = new UsbDataExporter(QString::fromStdString(m_mountPath), days, latestData, this);
-        }
-    });
-
-    serialThread = new QThread(this);
-
-    worker = new SerialWorker("/dev/ttyS1", 115200);
-    worker->moveToThread(serialThread);
-
-    bool startApp = true;
-
-    connect(this, &MainWindow::requestChannelPoll, worker, &SerialWorker::requestChannel);
-    connect(this, &MainWindow::requestSerialCommand, worker, &SerialWorker::sendRawCommand);
-
-    connect(worker, &SerialWorker::channelDataReady, this,
-            [=](int ch, const QJsonObject &obj) {
-                QMutexLocker locker(&latestDataMutex);
-                latestData[ch] = obj;
-                emit receivedChannelData(ch, obj);
-            });
-
-    connect(worker, &SerialWorker::genericResponseReady, this,
-            [this, &startApp](const QString &resp){
-                if (!startApp){
-                    FactDialog dialog(this);
-                    dialog.setLabel(std::string(resp.toStdString()));
-                    dialog.exec();
-                    dialog.deleteLater();
-                }                
-            });
-
-    serialThread->start();
-
-    sendRatioSettings();
-
-    QTimer::singleShot(1000, this, [this, &startApp](){
-        startApp = false;
-    });
-
-    pollTimer = new QTimer(this);
-    connect(pollTimer, &QTimer::timeout, this, [this] {
-        static int ch = 1;
-        emit requestChannelPoll(ch);
-        ch = (ch % 12) + 1;
-    });
-    pollTimer->start(200);
-
-    QTimer *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &MainWindow::updateProgress);
-    timer->start(50);
+    // UI progress and polling
+    setupProgressBar();
+    setupPolling();
 
     Utils::mainSound();
     showFullScreen();
@@ -130,12 +65,19 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    serialThread->quit();
-    serialThread->wait();
-    pollTimer->stop();
+    if (serialThread) {
+        serialThread->quit();
+        serialThread->wait();
+    }
+    if (pollTimer) {
+        pollTimer->stop();
+    }
     delete ui;
 }
 
+// -----------------------------
+// Config / Init
+// -----------------------------
 void MainWindow::initConfig()
 {
     QDir dir("config");
@@ -181,6 +123,337 @@ void MainWindow::initConfig()
     }
 }
 
+// -----------------------------
+// Setup: login / USB / Serial
+// -----------------------------
+void MainWindow::setupLogin()
+{
+    login = new LoginWidget(hardwareVersion, softwareVersion);
+
+    // simple routing: handlers implemented as slots
+    connect(login, &LoginWidget::loadChannels, this, &MainWindow::onLoadChannels);
+    connect(login, &LoginWidget::adminLoginSuccess, this, &MainWindow::onAdminLogin);
+    connect(login, &LoginWidget::factoryLoginSuccess, this, &MainWindow::onFactoryLogin);
+}
+
+void MainWindow::setupUsb()
+{
+    usbExporter = new UsbExporter(this);
+    watcher = new UsbWatcher(this);
+
+    connect(watcher, &UsbWatcher::usbMounted, this, &MainWindow::onUsbMounted);
+    connect(watcher, &UsbWatcher::usbUnmounted, this, &MainWindow::onUsbUnmounted);
+    connect(usbExporter, &QDialog::accepted, this, &MainWindow::onUsbExportAccepted);
+}
+
+void MainWindow::setupSerial()
+{
+    serialThread = new QThread(this);
+    worker = new SerialWorker("/dev/ttyS1", 115200);
+    worker->moveToThread(serialThread);
+
+    connect(this, &MainWindow::requestChannelPoll, worker, &SerialWorker::requestChannel);
+    connect(this, &MainWindow::requestSerialCommand, worker, &SerialWorker::sendRawCommand);
+
+    connect(worker, &SerialWorker::channelDataReady, this,
+            &MainWindow::onChannelDataReady);
+
+    connect(worker, &SerialWorker::genericResponseReady, this,
+            &MainWindow::onGenericResponseReady);
+
+    serialThread->start();
+
+    // Send CT/I/V ratio and offsets at startup (if config present)
+    sendRatioSettings();
+    QTimer::singleShot(1000, this, [this]() { startApp = false; });
+}
+
+// -----------------------------
+// Progress & Polling setup
+// -----------------------------
+void MainWindow::setupProgressBar()
+{
+    ui->progressBar->setValue(progressValue);
+    ui->process_info->setText("Initializing...");
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &MainWindow::updateProgress);
+    timer->start(50);
+}
+
+void MainWindow::setupPolling()
+{
+    pollTimer = new QTimer(this);
+    connect(pollTimer, &QTimer::timeout, this, [this] {
+        static int ch = 1;
+        emit requestChannelPoll(ch);
+        ch = (ch % 12) + 1;
+    });
+    pollTimer->start(200);
+}
+
+// -----------------------------
+// Common helper connectors
+// -----------------------------
+void MainWindow::connectChannels(ChannelsHome *ch)
+{
+    connect(ch, &ChannelsHome::channelsExit, this, &MainWindow::onChannelsExit);
+    connect(this, &MainWindow::receivedChannelData, ch, &ChannelsHome::handleChannelData);
+}
+
+void MainWindow::connectFactSettings(FactSetting *fs)
+{
+    // Keep configuration reload handling the same as DeviceSettings
+    connect(fs, &FactSetting::sftp_load, this, [this]() {
+        sftpHandler->disconnectClient();
+        QTimer::singleShot(1000, [this]() { sftpHandler->reloadSettings(); });
+    });
+    connect(fs, &FactSetting::mqtt_load, this, [this]() {
+        mqttHandler->disconnectClient();
+        QTimer::singleShot(1000, [this]() { mqttHandler->reloadSettings(); });
+    });
+    connect(fs, &FactSetting::aws_mqtts_load, this, [this]() {
+        awsMqttsHandler->disconnectAwsClient();
+        QTimer::singleShot(1000, [this]() { awsMqttsHandler->reloadAwsMqttsSettings(); });
+    });
+
+    connect(fs, &FactSetting::usbExport, this, [this]() { usbExporter->show(); });
+
+    connect(fs, &FactSetting::factoryExit, this, [this, fs]() {
+        if (factorySettings) {
+            factorySettings->showFullScreen();
+            fs->hide();
+        }
+    });
+}
+
+// -----------------------------
+// connectLoginSignals (restored & cleaned)
+// -----------------------------
+void MainWindow::connectLoginSignals()
+{
+    // Ensure settings exists so manager <-> settings connections are present early.
+    if (!settings) {
+        settings = new DeviceSettings;
+    }
+
+    // When DeviceSettings says "reload SFTP", disconnect and reload after a short delay.
+    connect(settings, &DeviceSettings::sftp_load, this, [this]() {
+        sftpHandler->disconnectClient();
+        QTimer::singleShot(1000, [this]() { sftpHandler->reloadSettings(); });
+    });
+
+    // When DeviceSettings says "reload MQTT", disconnect and reload.
+    connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
+        mqttHandler->disconnectClient();
+        QTimer::singleShot(1000, [this]() { mqttHandler->reloadSettings(); });
+    });
+
+    // AWS MQTTS reload request
+    connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
+        awsMqttsHandler->disconnectAwsClient();
+        QTimer::singleShot(1000, [this]() { awsMqttsHandler->reloadAwsMqttsSettings(); });
+    });
+
+    // AWS manager may ask for reboot
+    connect(awsMqttsHandler, &AwsMqttManager::rebootRequested, this, [this]() {
+        this->close();
+        Utils::rebootSystem();
+    });
+
+    // If AWS sends back stored configs, populate DeviceSettings fields
+    connect(awsMqttsHandler, &AwsMqttManager::ntpConfigReceived,
+            settings, &DeviceSettings::parse_load_store_ntp);
+    connect(awsMqttsHandler, &AwsMqttManager::sftpConfigReceived,
+            settings, &DeviceSettings::parse_load_store_sftp);
+    connect(awsMqttsHandler, &AwsMqttManager::mqttConfigReceived,
+            settings, &DeviceSettings::parse_load_store_mqtt);
+
+    // When settings change, notify AWS manager to process them
+    connect(settings, &DeviceSettings::deviceInfoChanged,
+            awsMqttsHandler, &AwsMqttManager::processDeviceInfo);
+    connect(settings, &DeviceSettings::mqttSettingsChanged,
+            awsMqttsHandler, &AwsMqttManager::processMqttSettings);
+    connect(settings, &DeviceSettings::sftpSettingsChanged,
+            awsMqttsHandler, &AwsMqttManager::processSftpSettings);
+    connect(settings, &DeviceSettings::ntpSettingsChanged,
+            awsMqttsHandler, &AwsMqttManager::processNtpSettings);
+
+    // Wire telemetry -> managers
+    connect(this, &MainWindow::receivedChannelData,
+            mqttHandler, &mqttManager::processIncomingJson);
+    connect(this, &MainWindow::receivedChannelData,
+            sftpHandler, &sftpManager::processIncomingJson);
+    connect(this, &MainWindow::receivedChannelData,
+            awsMqttsHandler, &AwsMqttManager::processAwsTelemetry);
+
+    // Note:
+    // Navigation-related connections (showing/hiding settings/channels/usbExport)
+    // are handled where UI is shown (onAdminLogin / onFactoryLogin) to avoid double
+    // connecting repeated lambdas.
+}
+
+// -----------------------------
+// USB slots
+// -----------------------------
+void MainWindow::onUsbMounted(const QString &dev, const QString &path)
+{
+    m_mountPath = path.toStdString();
+    usbExporter->setDeviceName(dev, path);
+
+    if (!isLogin) {
+        usbDetected = true;
+        login->showFullScreen();
+    } else {
+        usbExporter->show();
+    }
+}
+
+void MainWindow::onUsbUnmounted()
+{
+    m_mountPath.clear();
+    usbExporter->removeDeviceName();
+    if (dataExporter) {
+        dataExporter->stop();
+        dataExporter->deleteLater();
+        dataExporter = nullptr;
+    }
+}
+
+void MainWindow::onUsbExportAccepted()
+{
+    int days = usbExporter->getSelectedIntervalDays();
+    if (days > 0 && !m_mountPath.empty()) {
+        if (dataExporter) {
+            dataExporter->stop();
+            dataExporter->deleteLater();
+            dataExporter = nullptr;
+        }
+        QMutexLocker locker(&latestDataMutex);
+        dataExporter = new UsbDataExporter(QString::fromStdString(m_mountPath), days, latestData, this);
+    }
+}
+
+// -----------------------------
+// Serial slots
+// -----------------------------
+void MainWindow::onChannelDataReady(int ch, const QJsonObject &obj)
+{
+    QMutexLocker locker(&latestDataMutex);
+    latestData[ch] = obj;
+    emit receivedChannelData(ch, obj);
+}
+
+void MainWindow::onGenericResponseReady(const QString &resp)
+{
+    if (!startApp) {
+        FactDialog dialog(this);
+        dialog.setLabel(resp.toStdString());
+        dialog.exec();
+        dialog.deleteLater();
+    }
+}
+
+// -----------------------------
+// Login / Navigation slots
+// -----------------------------
+void MainWindow::onLoadChannels()
+{
+    if (!channels)
+        channels = new ChannelsHome(hardwareVersion, softwareVersion);
+
+    connectChannels(channels);
+    channels->showFullScreen();
+    login->hide();
+}
+
+void MainWindow::onAdminLogin()
+{
+    isLogin = true;
+    if (!settings)
+        settings = new DeviceSettings;
+
+    // navigation actions for settings
+    // -> when settings asks to view channels
+    connect(settings, &DeviceSettings::channels_view, this, [this]() {
+        isLogin = false;
+        if (!channels) channels = new ChannelsHome(hardwareVersion, softwareVersion);
+        connectChannels(channels);
+        channels->showFullScreen();
+        settings->hide();
+    });
+
+    // -> when settings requests USB export
+    connect(settings, &DeviceSettings::usbExport, this, [this]() {
+        if (usbExporter) usbExporter->show();
+    });
+
+    settings->showFullScreen();
+    login->hide();
+
+    if (usbDetected) {
+        usbExporter->show();
+        usbDetected = false;
+    }
+}
+
+void MainWindow::onFactoryLogin()
+{
+    isLogin = true;
+    if (!factorySettings)
+        factorySettings = new FactorySettings(hardwareVersion, softwareVersion);
+
+    // exit back to login
+    connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
+        isLogin = false;
+        login->showFullScreen();
+        factorySettings->hide();
+    });
+
+    // load fact settings (factory -> factSettings)
+    connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
+        if (!factSettings)
+            factSettings = new FactSetting;
+        connectFactSettings(factSettings);
+        factSettings->showFullScreen();
+        factorySettings->hide();
+    });
+
+    // load measurements
+    connect(factorySettings, &FactorySettings::loadMeasurements, this, [this]() {
+        if (!measure)
+            measure = new Measurements;
+        connect(measure, &Measurements::measureExit, this, [this]() {
+            factorySettings->showFullScreen();
+            measure->hide();
+        });
+        connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd) {
+            emit requestSerialCommand(cmd);
+        });
+
+        measure->showFullScreen();
+        factorySettings->hide();
+    });
+
+    factorySettings->showFullScreen();
+    login->hide();
+
+    if (usbDetected) {
+        usbExporter->show();
+        usbDetected = false;
+    }
+}
+
+void MainWindow::onChannelsExit()
+{
+    isLogin = false;
+    if (login) login->showFullScreen();
+    if (channels) channels->hide();
+}
+
+// -----------------------------
+// Progress management
+// -----------------------------
 void MainWindow::startProgress()
 {
     ui->progressBar->setValue(progressValue);
@@ -216,200 +489,52 @@ void MainWindow::updateProgress()
 
 void MainWindow::handlePostProgress()
 {
+    // If first setup not done, show registration UI
     if (m_uid.isEmpty() || m_adminPass.isEmpty()) {
         if (!registration) {
             registration = new Registration(hardwareVersion, softwareVersion);
+
             connect(registration, &Registration::registrationComplete, this, [this]() {
                 if (!channels)
                     channels = new ChannelsHome(hardwareVersion, softwareVersion);
-
-                connect(channels, &ChannelsHome::channelsExit, this, [this]() {
-                    login->showFullScreen();
-                    channels->hide();
-                });
-                connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
-                    if (isLogin && settings) {
-                        settings->showFullScreen();
-                        channels->hide();
-                    }
-                    else{
-                        QMessageBox::warning(this, "Access Denied", "Please login as admin to access device settings.");                
-                    }
-                });
-                
-                connect(this, &MainWindow::receivedChannelData,
-                    channels, &ChannelsHome::handleChannelData);
-
+                connectChannels(channels);
                 channels->showFullScreen();
                 registration->hide();
             });
         }
+
         registration->showFullScreen();
         hide();
-    } else {
-        if (!settings) {
-            settings = new DeviceSettings();
-        }
-        settings->on_mqtt_load_btn_clicked(false);
-        settings->on_sftp_load_btn_clicked(false);
-        settings->loadAwsMqttsSettings(false);
-        if (!factSettings){
-            factSettings = new FactSetting;
-        }
-        factSettings->on_mqtt_load_btn_clicked(false);
-        factSettings->on_sftp_load_btn_clicked(false);
-
-        if (!channels)
-            channels = new ChannelsHome(hardwareVersion, softwareVersion);
-
-        connect(channels, &ChannelsHome::channelsExit, this, [this]() {
-            login->showFullScreen();
-            channels->hide();
-        });
-
-        connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
-            if (isLogin && settings) {
-                settings->showFullScreen();
-                channels->hide();
-            }
-            else{
-                QMessageBox::warning(this, "Access Denied", "Please login as admin to access device settings.");                
-            }
-        });
-
-        connect(this, &MainWindow::receivedChannelData,
-                    channels, &ChannelsHome::handleChannelData);
-
-        channels->showFullScreen();
-        hide();
+        return;
     }
-}
 
-void MainWindow::connectLoginSignals()
-{
+    // Normal flow when system already configured
     if (!settings) {
-        settings = new DeviceSettings;
+        settings = new DeviceSettings();
     }
 
-    connect(settings, &DeviceSettings::sftp_load, this, [this]() {
-        sftpHandler->disconnectClient();
-        QTimer::singleShot(1000, [this]() {
-            sftpHandler->reloadSettings();
-        });
-    });
-    connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
-        mqttHandler->disconnectClient();
-        QTimer::singleShot(1000, [this]() {
-            mqttHandler->reloadSettings();
-        });
-    });
-    connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
-        awsMqttsHandler->disconnectAwsClient();
-        QTimer::singleShot(1000, [this](){
-            awsMqttsHandler->reloadAwsMqttsSettings();
-        });
-    });
-    connect(awsMqttsHandler, &AwsMqttManager::rebootRequested, this, [this] {
-        this->close();
-        Utils::rebootSystem();
-    });
-    
-    connect(awsMqttsHandler, &AwsMqttManager::ntpConfigReceived,
-        settings, &DeviceSettings::parse_load_store_ntp);
-    connect(awsMqttsHandler, &AwsMqttManager::sftpConfigReceived,
-        settings, &DeviceSettings::parse_load_store_sftp);
-    connect(awsMqttsHandler, &AwsMqttManager::mqttConfigReceived,
-        settings, &DeviceSettings::parse_load_store_mqtt);
-    connect(settings, &DeviceSettings::deviceInfoChanged,
-        awsMqttsHandler, &AwsMqttManager::processDeviceInfo);
-    connect(settings, &DeviceSettings::mqttSettingsChanged,
-        awsMqttsHandler, &AwsMqttManager::processMqttSettings);
-    connect(settings, &DeviceSettings::sftpSettingsChanged,
-        awsMqttsHandler, &AwsMqttManager::processSftpSettings);
-    connect(settings, &DeviceSettings::ntpSettingsChanged,
-        awsMqttsHandler, &AwsMqttManager::processNtpSettings);
-    connect(this, &MainWindow::receivedChannelData,
-        mqttHandler, &mqttManager::processIncomingJson);
-    connect(this, &MainWindow::receivedChannelData,
-        sftpHandler, &sftpManager::processIncomingJson);
-    connect(this, &MainWindow::receivedChannelData,
-        awsMqttsHandler, &AwsMqttManager::processAwsTelemetry);
-    connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
-        isLogin = true;
-        connect(settings, &DeviceSettings::channels_view, this, [this]() {
-            channels->showFullScreen();
-            settings->hide();
-        });
-        connect(settings, &DeviceSettings::usbExport, this, [this]() {
-            usbExporter->show();
-        });
-        settings->showFullScreen();
-        login->hide();
-    });
+    // load preset settings into DeviceSettings and FactSetting (original behavior)
+    settings->on_mqtt_load_btn_clicked(false);
+    settings->on_sftp_load_btn_clicked(false);
+    settings->loadAwsMqttsSettings(false);
 
-    // Factory login -> FactorySettings
-    connect(login, &LoginWidget::factoryLoginSuccess, this, [this]() {
-        isLogin = true;
-        if (!factorySettings) {
-            factorySettings = new FactorySettings(hardwareVersion, softwareVersion);
-        }
-        connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
-            isLogin = false;
-            login->showFullScreen();
-            factorySettings->hide();
-        });
-        connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
-            if (!factSettings) {
-                factSettings = new FactSetting;
-            }
-            connect(factSettings, &FactSetting::sftp_load, this, [this]() {
-                sftpHandler->disconnectClient();
-                QTimer::singleShot(1000, [this]() {
-                    sftpHandler->reloadSettings();
-                });
-            });
-            connect(factSettings, &FactSetting::mqtt_load, this, [this]() {
-                mqttHandler->disconnectClient();
-                QTimer::singleShot(1000, [this]() {
-                    mqttHandler->reloadSettings();
-                });
-            });
-            connect(factSettings, &FactSetting::aws_mqtts_load, this, [this]() {
-                awsMqttsHandler->disconnectAwsClient();
-                QTimer::singleShot(1000, [this](){
-                    awsMqttsHandler->reloadAwsMqttsSettings();
-                });
-            });
-            connect(factSettings, &FactSetting::usbExport, this, [this](){
-                usbExporter->show();
-            });
-            connect(factSettings, &FactSetting::factoryExit, this, [this]() {
-                factorySettings->showFullScreen();
-                factSettings->hide();
-            });
-            factSettings->showFullScreen();
-            factorySettings->hide();
-        });
-        connect(factorySettings, &FactorySettings::loadMeasurements, this, [this]() {
-            if (!measure) {
-                measure = new Measurements;
-            }
-            connect(measure, &Measurements::measureExit, this, [this]() {
-                factorySettings->showFullScreen();
-                measure->hide();
-            });
-            connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd) {
-                emit requestSerialCommand(cmd);
-            });
+    if (!factSettings) {
+        factSettings = new FactSetting;
+    }
+    factSettings->on_mqtt_load_btn_clicked(false);
+    factSettings->on_sftp_load_btn_clicked(false);
 
-            measure->showFullScreen();
-            factorySettings->hide();
-        });
-        factorySettings->showFullScreen();
-        login->hide();
-    });
+    if (!channels)
+        channels = new ChannelsHome(hardwareVersion, softwareVersion);
+
+    connectChannels(channels);
+    channels->showFullScreen();
+    hide();
 }
 
+// -----------------------------
+// File-based ratio/offset send
+// -----------------------------
 void MainWindow::sendRatioSettings()
 {
     QFile ratioFile("config/ct_ratio_settings.json");

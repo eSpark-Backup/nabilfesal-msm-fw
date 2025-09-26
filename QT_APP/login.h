@@ -19,8 +19,11 @@ public:
 signals:
     void adminLoginSuccess();
     void factoryLoginSuccess();
+    void loadChannels();
 private slots:
     void on_loginButton_clicked();
+
+    void on_pushButton_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

@@ -203,10 +203,3 @@ void ChannelsHome::on_exit_clicked()
 {
     emit channelsExit();
 }
-
-
-void ChannelsHome::on_info_clicked()
-{
-    emit deviceInfo();
-}
-

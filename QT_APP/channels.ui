@@ -135,57 +135,11 @@
              <number>0</number>
             </property>
             <property name="leftMargin">
-             <number>30</number>
+             <number>60</number>
             </property>
             <property name="rightMargin">
              <number>30</number>
             </property>
-            <item>
-             <widget class="QPushButton" name="info">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>120</width>
-                <height>60</height>
-               </size>
-              </property>
-              <property name="focusPolicy">
-               <enum>Qt::TabFocus</enum>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton {
-    background-color: #1E88E5;   /* Blue */
-    color: white;               /* White text */
-    border: none;               /* No border line */
-    border-radius: 10px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-}
-
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-    border: 2px solid black;       /* White glow/border */
-}</string>
-              </property>
-              <property name="text">
-               <string>Info</string>
-              </property>
-             </widget>
-            </item>
             <item>
              <widget class="QLabel" name="label_11">
               <property name="sizePolicy">
@@ -270,7 +224,7 @@ QPushButton:focus {
 }</string>
               </property>
               <property name="text">
-               <string>Exit</string>
+               <string>Login</string>
               </property>
              </widget>
             </item>
@@ -320,7 +274,7 @@ QPushButton:focus {
               <item>
                <widget class="QPushButton" name="channel_bt_1">
                 <property name="enabled">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">

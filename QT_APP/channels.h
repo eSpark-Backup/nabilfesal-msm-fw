@@ -25,12 +25,9 @@ public:
 
 signals:
     void channelsExit();
-    void deviceInfo();
+
 private slots:
-
     void on_exit_clicked();
-
-    void on_info_clicked();
 
 private:
     void handleChannelClick(int channelIndex);
