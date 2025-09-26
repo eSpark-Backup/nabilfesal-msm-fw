@@ -450,7 +450,22 @@ void DeviceSettings::apply_sftp_Settings(const QJsonObject &sftpSettings, bool m
 
 void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
 {
-    // QFile file("config/aws_mqtts_settings.json");
+    QString certPath = "/MSM/potential-pancake/MSM/creds/prov_certs/deviceCert.pem";
+    QString keyPath  = "/MSM/potential-pancake/MSM/creds/prov_certs/privateKey.pem";
+
+    if ((!QFile::exists(certPath) || !QFile::exists(keyPath)) && !Utils::getUid().isEmpty()) {
+        qDebug() << "One or more certificate files are missing!";
+        QFile::remove(certPath); QFile::remove(keyPath);
+        
+        if(Utils::updateSerialInConfig())
+        {
+            runFleetProvisionerAsync();
+        }
+    }
+    else
+        emit aws_mqtts_load();
+
+    // file("config/aws_mqtts_settings.json");
     // if (!file.exists()) {
     //     if (showMessages)
     //         QMessageBox::warning(this, "AWS MQTTS Settings", "No saved settings found.");
@@ -475,8 +490,73 @@ void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
     // }
 
     // QJsonObject mqttSettings = doc.object();
-    emit aws_mqtts_load();
+    // emit aws_mqtts_load();
 }
+
+
+void DeviceSettings::runFleetProvisionerAsync()
+{
+    QString program = "/home/msm/Documents/aws-iot-device-sdk-embedded-C/build/bin/msm_fleet_provisioner";
+
+    QProcess *process = new QProcess(this);   // parent = this, auto cleanup if DeviceSettings destroyed
+    process->setProgram(program);
+    process->setWorkingDirectory("/home/msm/Documents/aws-iot-device-sdk-embedded-C/build/bin");
+
+    QString *logBuffer = new QString();
+
+    qDebug() << "[Fleet] Starting provisioner:" << program;
+
+    // 🔹 capture start failure
+    QObject::connect(process, &QProcess::errorOccurred, [process](QProcess::ProcessError err) {
+        qWarning() << "[Fleet ERROR] QProcess error:" << err
+                   << "Details:" << process->errorString();
+    });
+
+    // 🔹 stdout
+    QObject::connect(process, &QProcess::readyReadStandardOutput, [process, logBuffer]() {
+        QByteArray output = process->readAllStandardOutput();
+        logBuffer->append(QString::fromUtf8(output));
+        qDebug().noquote() << "[Fleet STDOUT]" << output;
+    });
+
+    // 🔹 stderr
+    QObject::connect(process, &QProcess::readyReadStandardError, [process]() {
+        QByteArray error = process->readAllStandardError();
+        qWarning().noquote() << "[Fleet STDERR]" << error;
+    });
+
+    // 🔹 finished
+    QObject::connect(process,
+                     QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                     [this, process, logBuffer](int exitCode, QProcess::ExitStatus exitStatus) {
+        bool exitedNormally = (exitStatus == QProcess::NormalExit && exitCode == 0);
+        bool demoSuccess = logBuffer->contains("Demo completed successfully.");
+
+        qDebug() << "[Fleet] Finished with code:" << exitCode
+                 << "status:" << (exitStatus == QProcess::NormalExit ? "Normal" : "Crashed")
+                 << "success:" << (demoSuccess && exitedNormally);
+
+        if (demoSuccess && exitedNormally) {
+            emit aws_mqtts_load();
+        } else {
+            qWarning() << "[Fleet] Provisioning failed.";
+        }
+
+        delete logBuffer;
+        process->deleteLater();
+    });
+    qDebug() << "Process start called here";
+    process->start();
+
+    // 🔹 immediate check
+    if (!process->waitForStarted(3000)) {
+        qWarning() << "[Fleet ERROR] Failed to start process:" << program
+                   << "Reason:" << process->errorString();
+        delete logBuffer;
+        process->deleteLater();
+    }
+}
+
 
 
 void DeviceSettings::refreshInfo()

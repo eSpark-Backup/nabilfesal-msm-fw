@@ -72,21 +72,20 @@ private:
     QMqttClient *awsMqttsClient = nullptr;
     QString host;
     int port = 8883;
-    QString clientId = "fleet_prov_shadow_test_1";
-    QString topic;
+    QString clientId;
     int intervalSec = 10;
     bool isConnected = false;
 
-    // // System certificate paths (fixed)
-    // QString caPath = "/etc/certs/AmazonRootCA1.pem";
-    // QString certPath = "/etc/certs/deviceCert.pem";
-    // QString keyPath = "/etc/certs/privateKey.pem";
+    // System certificate paths (fixed)
+    QString caPath   = "/MSM/potential-pancake/MSM/creds/claim_certs/AmazonRootCA1.pem";
+    QString certPath = "/MSM/potential-pancake/MSM/creds/prov_certs/deviceCert.pem";
+    QString keyPath  = "/MSM/potential-pancake/MSM/creds/prov_certs/privateKey.pem";
 
-    // x86 System certificate paths (fixed)
-    QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
-    QString caPath   = basePath + "AmazonRootCA1.pem";
-    QString certPath = basePath + "deviceCert.pem";
-    QString keyPath  = basePath + "privateKey.pem";
+    // // x86 System certificate paths (fixed)
+    // QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
+    // QString caPath   = basePath + "AmazonRootCA1.pem";
+    // QString certPath = basePath + "deviceCert.pem";
+    // QString keyPath  = basePath + "privateKey.pem";
     QString topic_pub_telemetry;
     QString topic_pub_device_info;
     QString topic_pub_reboot;

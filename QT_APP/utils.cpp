@@ -198,4 +198,48 @@ void rebootSystem()
     QProcess::startDetached("sh", {"-c", "sync; reboot"});
 }
 
+
+bool updateSerialInConfig()
+{
+    QString path = "/home/msm/Documents/aws-iot-device-sdk-embedded-C/build/bin/config.json";
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open config file for reading:" << path;
+        return false;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        qWarning() << "Invalid JSON in config file:" << parseError.errorString();
+        return false;
+    }
+
+    QJsonObject obj = doc.object();
+
+    // ✅ overwrite Serial
+    QString uid = Utils::getUid();
+    if (uid.isEmpty()) {
+        qWarning() << "UID is empty, not updating Serial!";
+        return false;
+    }
+    obj["serial"] = uid;
+
+    // Write back to file
+    doc.setObject(obj);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        qWarning() << "Failed to open config file for writing:" << path;
+        return false;
+    }
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    qDebug() << "Serial updated to:" << uid;
+    return true;
+}
+
 }

@@ -54,6 +54,7 @@ private:
     void apply_sftp_Settings(const QJsonObject &sftpSetting, bool msgBox = true);
     void apply_mqtt_Settings(const QJsonObject &mqttSetting, bool msgBox = true);
     bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
+    void runFleetProvisionerAsync();
     void refreshInfo();
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;

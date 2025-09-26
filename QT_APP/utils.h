@@ -14,6 +14,7 @@ QString getMqttStatus();
 QString getSftpStatus();
 void rebootSystem();
 void mainSound();
+bool updateSerialInConfig();
 }
 
 #endif // UTILS_H

@@ -112,8 +112,7 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
     host = obj.value("endpoint").toString();
     QString portStr = obj.value("port").toString();
     port = portStr.toInt();
-    // clientId = Utils::getUid();
-    topic = obj.value("topic").toString();
+    clientId = Utils::getUid();
     QString intervalSecStr = obj.value("interval").toString();
     intervalSec = intervalSecStr.toInt();
 
@@ -122,7 +121,6 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
     AWS_LOG("  Host:" << host);
     AWS_LOG("  Port:" << port);
     AWS_LOG("  Client ID:" << clientId);
-    AWS_LOG("  Topic:" << topic);
     AWS_LOG("  Interval (sec):" << intervalSec);
 
     return true;
@@ -210,13 +208,13 @@ bool AwsMqttManager::loadCertificates()
 
 void AwsMqttManager::connectToBroker()
 {
-    if (host.isEmpty() || clientId.isEmpty() || topic.isEmpty()) {
-        qWarning() << "[MQTT] Settings incomplete.";
+    if (host.isEmpty() || clientId.isEmpty()) {
+        qWarning() << "[AWS MQTT] Settings incomplete.";
         return;
     }
 
     if (!loadCertificates()) {
-        qWarning() << "[MQTT] Missing certificates. Cannot connect.";
+        qWarning() << "[AWS MQTT] Missing certificates. Cannot connect.";
         return;
     }
 
