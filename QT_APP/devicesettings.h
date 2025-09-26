@@ -31,6 +31,9 @@ public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = true);
     void on_sftp_load_btn_clicked(bool msgBox = true);
     void parse_load_store_ntp(const QJsonObject &payload);
+    void parse_load_store_sftp(const QJsonObject &payload);
+    void parse_load_store_mqtt(const QJsonObject &payload);
+    
 
 private slots:
     void on_channels_btn_clicked();
@@ -46,8 +49,10 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     
 private:
-    void apply_ntp_Settings(bool msgBox= true);
+    bool apply_ntp_Settings(bool msgBox= true);
     void parseNtpJson(const QJsonObject& data);
+    void apply_sftp_Settings(const QJsonObject &sftpSetting, bool msgBox = true);
+    void apply_mqtt_Settings(const QJsonObject &mqttSetting, bool msgBox = true);
     bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
     void refreshInfo();
     Ui::DeviceSettings *ui;

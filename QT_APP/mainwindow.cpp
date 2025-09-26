@@ -243,6 +243,10 @@ void MainWindow::connectLoginSignals()
     
     connect(awsMqttsHandler, &AwsMqttManager::ntpConfigReceived,
         settings, &DeviceSettings::parse_load_store_ntp);
+    connect(awsMqttsHandler, &AwsMqttManager::sftpConfigReceived,
+        settings, &DeviceSettings::parse_load_store_sftp);
+    connect(awsMqttsHandler, &AwsMqttManager::mqttConfigReceived,
+        settings, &DeviceSettings::parse_load_store_mqtt);
     connect(settings, &DeviceSettings::deviceInfoChanged,
         awsMqttsHandler, &AwsMqttManager::processDeviceInfo);
     connect(settings, &DeviceSettings::mqttSettingsChanged,
