@@ -103,7 +103,7 @@ FactSetting::FactSetting(QWidget *parent)
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     keyboard = new MSMKeyboard(this);
-    keyboard->move(20, 180);
+    keyboard->move(20, 120);
     keyboard->hide();
 
     QList<QLineEdit*> edits = {

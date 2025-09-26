@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "factdialog.h"
 #include <QDebug>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -28,8 +29,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     initConfig();
 
+    if (hardwareVersion.isEmpty() || softwareVersion.isEmpty()) {
+        hardwareVersion = "1.5.0";
+        softwareVersion = "2.0.0";
+    }
+
+    ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
+
     // create login once
-    login = new LoginWidget;
+    login = new LoginWidget(hardwareVersion, softwareVersion);
     usbExporter = new UsbExporter(this);
     connectLoginSignals();
 
@@ -149,6 +157,18 @@ void MainWindow::initConfig()
         }
         file.close();
     }
+
+    QFile hwFile("version.json");
+    if (hwFile.open(QIODevice::ReadOnly)) {
+        const auto data = hwFile.readAll();
+        const auto doc = QJsonDocument::fromJson(data);
+        if (doc.isObject()) {
+            const auto obj = doc.object();
+            hardwareVersion = obj.value("hardware_version").toString();
+            softwareVersion = obj.value("software_version").toString();
+        }
+        hwFile.close();
+    }
 }
 
 void MainWindow::startProgress()
@@ -188,9 +208,29 @@ void MainWindow::handlePostProgress()
 {
     if (m_uid.isEmpty() || m_adminPass.isEmpty()) {
         if (!registration) {
-            registration = new Registration;
+            registration = new Registration(hardwareVersion, softwareVersion);
             connect(registration, &Registration::registrationComplete, this, [this]() {
-                login->showFullScreen();
+                if (!channels)
+                    channels = new ChannelsHome(hardwareVersion, softwareVersion);
+
+                connect(channels, &ChannelsHome::channelsExit, this, [this]() {
+                    login->showFullScreen();
+                    channels->hide();
+                });
+                connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
+                    if (isLogin && settings) {
+                        settings->showFullScreen();
+                        channels->hide();
+                    }
+                    else{
+                        QMessageBox::warning(this, "Access Denied", "Please login as admin to access device settings.");                
+                    }
+                });
+                
+                connect(this, &MainWindow::receivedChannelData,
+                    channels, &ChannelsHome::handleChannelData);
+
+                channels->showFullScreen();
                 registration->hide();
             });
         }
@@ -208,7 +248,29 @@ void MainWindow::handlePostProgress()
         }
         factSettings->on_mqtt_load_btn_clicked(false);
         factSettings->on_sftp_load_btn_clicked(false);
-        login->showFullScreen();
+
+        if (!channels)
+            channels = new ChannelsHome(hardwareVersion, softwareVersion);
+
+        connect(channels, &ChannelsHome::channelsExit, this, [this]() {
+            login->showFullScreen();
+            channels->hide();
+        });
+
+        connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
+            if (isLogin && settings) {
+                settings->showFullScreen();
+                channels->hide();
+            }
+            else{
+                QMessageBox::warning(this, "Access Denied", "Please login as admin to access device settings.");                
+            }
+        });
+
+        connect(this, &MainWindow::receivedChannelData,
+                    channels, &ChannelsHome::handleChannelData);
+
+        channels->showFullScreen();
         hide();
     }
 }
@@ -218,15 +280,16 @@ void MainWindow::connectLoginSignals()
     if (!settings) {
         settings = new DeviceSettings;
     }
+
     connect(settings, &DeviceSettings::sftp_load, this, [this]() {
         sftpHandler->disconnectClient();
-        QTimer::singleShot(1000, [this](){
+        QTimer::singleShot(1000, [this]() {
             sftpHandler->reloadSettings();
         });
     });
     connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
         mqttHandler->disconnectClient();
-        QTimer::singleShot(1000, [this](){
+        QTimer::singleShot(1000, [this]() {
             mqttHandler->reloadSettings();
         });
     });
@@ -263,40 +326,22 @@ void MainWindow::connectLoginSignals()
         awsMqttsHandler, &AwsMqttManager::processAwsTelemetry);
     connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
         isLogin = true;
-        if (!channels)
-            channels = new ChannelsHome;
-        connect(channels, &ChannelsHome::channelsExit, this, [this]() {
-            isLogin = false;
-            login->showFullScreen();
-            channels->hide();
+        connect(settings, &DeviceSettings::channels_view, this, [this]() {
+            channels->showFullScreen();
+            settings->hide();
         });
-        connect(this, &MainWindow::receivedChannelData,
-                        channels, &ChannelsHome::handleChannelData);
-        connect(channels, &ChannelsHome::deviceInfo, this, [this]() {
-            if (!settings) {
-                settings = new DeviceSettings;
-            }
-
-            connect(settings, &DeviceSettings::channels_view, this, [this]() {
-                channels->showFullScreen();
-                settings->hide();
-            });
-
-            connect(settings, &DeviceSettings::usbExport, this, [this](){
-                usbExporter->show();
-            });
-
-            settings->showFullScreen();
-            channels->hide();
+        connect(settings, &DeviceSettings::usbExport, this, [this]() {
+            usbExporter->show();
         });
-        channels->showFullScreen();
+        settings->showFullScreen();
         login->hide();
     });
 
+    // Factory login -> FactorySettings
     connect(login, &LoginWidget::factoryLoginSuccess, this, [this]() {
         isLogin = true;
         if (!factorySettings) {
-            factorySettings = new FactorySettings;
+            factorySettings = new FactorySettings(hardwareVersion, softwareVersion);
         }
         connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
             isLogin = false;
@@ -304,18 +349,18 @@ void MainWindow::connectLoginSignals()
             factorySettings->hide();
         });
         connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
-            if (!factSettings){
+            if (!factSettings) {
                 factSettings = new FactSetting;
             }
             connect(factSettings, &FactSetting::sftp_load, this, [this]() {
                 sftpHandler->disconnectClient();
-                QTimer::singleShot(1000, [this](){
+                QTimer::singleShot(1000, [this]() {
                     sftpHandler->reloadSettings();
                 });
             });
             connect(factSettings, &FactSetting::mqtt_load, this, [this]() {
                 mqttHandler->disconnectClient();
-                QTimer::singleShot(1000, [this](){
+                QTimer::singleShot(1000, [this]() {
                     mqttHandler->reloadSettings();
                 });
             });
@@ -328,7 +373,7 @@ void MainWindow::connectLoginSignals()
             connect(factSettings, &FactSetting::usbExport, this, [this](){
                 usbExporter->show();
             });
-            connect(factSettings, &FactSetting::factoryExit, this, [this](){
+            connect(factSettings, &FactSetting::factoryExit, this, [this]() {
                 factorySettings->showFullScreen();
                 factSettings->hide();
             });
@@ -336,17 +381,17 @@ void MainWindow::connectLoginSignals()
             factorySettings->hide();
         });
         connect(factorySettings, &FactorySettings::loadMeasurements, this, [this]() {
-            if (!measure){
+            if (!measure) {
                 measure = new Measurements;
             }
-            connect(measure, &Measurements::measureExit, this, [this](){
+            connect(measure, &Measurements::measureExit, this, [this]() {
                 factorySettings->showFullScreen();
                 measure->hide();
             });
-            connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd){
+            connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd) {
                 emit requestSerialCommand(cmd);
             });
-            
+
             measure->showFullScreen();
             factorySettings->hide();
         });

@@ -82,6 +82,9 @@ private:
     QTimer *pollTimer;
     QMap<int, QJsonObject> latestData;
     QMutex latestDataMutex;
+
+    QString hardwareVersion;
+    QString softwareVersion;
 };
 
 #endif // MAINWINDOW_H

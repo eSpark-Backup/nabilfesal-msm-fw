@@ -14,7 +14,7 @@ class Registration : public QWidget
     Q_OBJECT
 
 public:
-    explicit Registration(QWidget *parent = nullptr);
+    explicit Registration(QString hardwareVersion, QString softwareVersion, QWidget *parent = nullptr);
     ~Registration();
 
 signals:
@@ -25,9 +25,6 @@ protected:
 
 private slots:
     void on_pushButton_clicked();
-
-private:
-    QString getParentFrameName(QLineEdit *lineEdit);
 
 private:
     Ui::Registration *ui;

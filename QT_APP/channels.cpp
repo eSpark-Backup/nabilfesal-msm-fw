@@ -3,12 +3,14 @@
 #include <QJsonDocument>
 #include <QDebug>
 
-ChannelsHome::ChannelsHome(QWidget *parent)
+ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ChannelsHome)
     ,m_channel(1)
 {
     ui->setupUi(this);
+
+    ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
 
     connect(ui->ch_home_bt, &QPushButton::clicked, this, &ChannelsHome::onAnyHomeButtonClicked);
 
@@ -74,12 +76,26 @@ void ChannelsHome::handleSubButtonClick(int channelIndex, const QString &buttonT
     pw->setStyleSheet(buttonNormalStyle);
 
     if (buttonType == "gn") {
+        energyCounter = 0;
+        en->setText("Energy\n");
         gn->setStyleSheet(buttonClickedStyle);
         channelStack->setCurrentIndex(0);
     } else if (buttonType == "pw") {
+        energyCounter = 0;
+        en->setText("Energy\n");
         pw->setStyleSheet(buttonClickedStyle);
         channelStack->setCurrentIndex(1);
     } else if (buttonType == "en") {
+        energyCounter++;
+        if (energyCounter == 1)
+        {
+            en->setText("Active\nEnergy\n");
+        }
+        else if (energyCounter == 2)
+        {
+            en->setText("Reactive\nEnergy\n");
+            energyCounter = 0;
+        }
         en->setStyleSheet(buttonClickedStyle);
         channelStack->setCurrentIndex(2);
     }
@@ -151,9 +167,34 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
             setValue("acp_", power.value("active").toDouble());
             setValue("rp_", power.value("reactive").toDouble());
             setValue("pf_", power.value("factor").toDouble());
-            setValue("pe_", activeEnergy.value("positive").toDouble());
-            setValue("ne_", activeEnergy.value("negative").toDouble());
-            setValue("be_", reactiveEnergy.value("positive").toDouble());
+
+            auto positiveEnergy = 0.0;
+            auto negativeEnergy = 0.0;
+            auto bidirectionalEnergy = positiveEnergy + negativeEnergy;
+
+            if (energyCounter == 0)
+            {
+                positiveEnergy = activeEnergy.value("positive").toDouble();
+                negativeEnergy = activeEnergy.value("negative").toDouble();
+                bidirectionalEnergy = positiveEnergy + negativeEnergy;
+            }
+            else if (energyCounter == 1)
+            {
+                positiveEnergy = activeEnergy.value("positive").toDouble();
+                negativeEnergy = activeEnergy.value("negative").toDouble();
+                bidirectionalEnergy = positiveEnergy + negativeEnergy;
+            }
+                
+            else if (energyCounter == 2)
+            {
+                positiveEnergy = reactiveEnergy.value("positive").toDouble();
+                negativeEnergy = reactiveEnergy.value("negative").toDouble();
+                bidirectionalEnergy = positiveEnergy + negativeEnergy;
+            }
+
+            setValue("pe_", positiveEnergy);
+            setValue("ne_", negativeEnergy);
+            setValue("be_", bidirectionalEnergy);            
         }
     }
 }

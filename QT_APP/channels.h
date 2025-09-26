@@ -19,7 +19,7 @@ class ChannelsHome : public QWidget
     Q_OBJECT
 
 public:
-    explicit ChannelsHome(QWidget *parent = nullptr);
+    explicit ChannelsHome(QString hardwareVersion, QString softwareVersion, QWidget *parent = nullptr);
     ~ChannelsHome();
     void handleChannelData(int channel, const QJsonObject &json);
 
@@ -56,6 +56,7 @@ private:
     QMap<int, QMap<QString, QLabel*>> channelLabelMap;
 
     int m_channel;
+    int energyCounter = 0;
 
 };
 

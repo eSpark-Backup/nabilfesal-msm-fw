@@ -13,7 +13,7 @@ class LoginWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit LoginWidget(QWidget *parent = nullptr);
+    explicit LoginWidget(QString hardwareVersion, QString softwareVersion, QWidget *parent = nullptr);
     ~LoginWidget();
 
 signals:

@@ -15,11 +15,12 @@
 #include <QDir>
 #include <QFile>
 
-LoginWidget::LoginWidget(QWidget *parent)
+LoginWidget::LoginWidget(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::LoginWidget)
 {
     ui->setupUi(this);
+    ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
 
     QToolButton *toggleButton = new QToolButton(ui->passwordLineEdit);
     toggleButton->setCursor(Qt::ArrowCursor);
@@ -28,30 +29,32 @@ LoginWidget::LoginWidget(QWidget *parent)
     toggleButton->setIconSize(QSize(50, 50));
     toggleButton->setFocusPolicy(Qt::StrongFocus);
 
-    // Set button size and position inside the line edit
     int frameWidth = ui->passwordLineEdit->style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
     QSize buttonSize = QSize(30, 30);
     toggleButton->setFixedSize(buttonSize);
     toggleButton->move(ui->passwordLineEdit->rect().right() - buttonSize.width() - frameWidth,
                        (ui->passwordLineEdit->rect().height() - buttonSize.height()) / 2);
 
-    // Ensure button stays in place when resized
     QMargins margins = ui->passwordLineEdit->textMargins();
-    ui->passwordLineEdit->setTextMargins(margins.left(), margins.top(), buttonSize.width() + frameWidth, margins.bottom());
+    ui->passwordLineEdit->setTextMargins(margins.left(), margins.top(),
+                                         buttonSize.width() + frameWidth, margins.bottom());
+
+    keyboard = new MSMKeyboard(this);
+    keyboard->move(20, 120);
+    keyboard->hide();
 
     connect(toggleButton, &QToolButton::clicked, [=]() mutable {
         bool isPasswordHidden = (ui->passwordLineEdit->echoMode() == QLineEdit::Password);
-        ui->passwordLineEdit->setEchoMode(isPasswordHidden ? QLineEdit::Normal : QLineEdit::Password);
+        QLineEdit::EchoMode newMode = isPasswordHidden ? QLineEdit::Normal : QLineEdit::Password;
+
+        // Apply to actual line edit
+        ui->passwordLineEdit->setEchoMode(newMode);
+
+        // Apply to keyboard’s proxy line edit
+        keyboard->getKeyInput()->setEchoMode(newMode);
+
+        // Update icon
         toggleButton->setIcon(QIcon(isPasswordHidden ? ":/icons/hidden.png" : ":/icons/eye.png"));
-    });
-
-    keyboard = new MSMKeyboard(this);
-    keyboard->move(20, 180);
-    keyboard->hide();
-    ui->pass_frame->move(20, 145);
-
-    connect(ui->passwordLineEdit, &QLineEdit::textChanged, this, [=]() {
-        ui->pass_frame->move(20, 145);
     });
 
     connect(ui->passwordLineEdit, &QLineEdit::editingFinished, this, [=]() {
@@ -78,7 +81,6 @@ bool LoginWidget::eventFilter(QObject *obj, QEvent *event)
         }
         else if (event->type() == QEvent::FocusOut) {
             if (!keyboard->isAncestorOf(QApplication::focusWidget())) {
-                ui->pass_frame->move(20, 302);
                 keyboard->hide();
             }
         }

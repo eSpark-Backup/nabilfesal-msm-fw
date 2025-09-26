@@ -17,6 +17,7 @@ public:
     explicit MSMKeyboard(QWidget *parent = nullptr);
     ~MSMKeyboard();
     void setTarget(QLineEdit *lineEdit);
+    QLineEdit* getKeyInput() const;
 
 private slots:
     void numberClicked();
@@ -27,6 +28,7 @@ private slots:
     void on_shift_clicked();
 
     void on_hide_clicked();
+    void showPopup(QPushButton *button, const QString &text);
 
 private:
     Ui::MSMKeyboard *ui;
@@ -34,6 +36,7 @@ private:
     bool shiftEnabled;
     QList<QPushButton*> letterButtons;
     QList<QPushButton*> numberButtons;
+    QList<QPushButton*> characterButtons;
 };
 
 #endif // MSMKEYBOARD_H

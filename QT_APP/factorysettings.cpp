@@ -1,11 +1,12 @@
 #include "factorysettings.h"
 #include "ui_factorysettings.h"
 
-FactorySettings::FactorySettings(QWidget *parent)
+FactorySettings::FactorySettings(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::FactorySettings)
 {
     ui->setupUi(this);
+    ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
 }
 
 FactorySettings::~FactorySettings()

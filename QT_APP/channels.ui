@@ -127,7 +127,7 @@
            <number>0</number>
           </property>
           <property name="bottomMargin">
-           <number>0</number>
+           <number>5</number>
           </property>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_38">
@@ -320,7 +320,7 @@ QPushButton:focus {
               <item>
                <widget class="QPushButton" name="channel_bt_1">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1576,6 +1576,45 @@ QPushButton:focus {
             </item>
            </layout>
           </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_41">
+            <property name="leftMargin">
+             <number>9</number>
+            </property>
+            <property name="rightMargin">
+             <number>9</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_25">
+              <property name="font">
+               <font>
+                <family>Gilroy</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Ein Technology Labs Sdn Bhd</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="hf">
+              <property name="font">
+               <font>
+                <family>Gilroy</family>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>HW: 1.5.0  FW: 1.2.0</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
        </item>
@@ -2052,7 +2091,7 @@ background-color: #D9D9D9;</string>
              </size>
             </property>
             <property name="currentIndex">
-             <number>1</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="general">
              <property name="sizePolicy">
@@ -3531,7 +3570,7 @@ image: url(:/icons/I.jpg);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>I</string>
+                           <string>A</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -3750,7 +3789,7 @@ image: url(:/icons/I.jpg);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>I</string>
+                           <string>A</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -3968,7 +4007,7 @@ image: url(:/icons/I.jpg);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>I</string>
+                           <string>A</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
