@@ -252,27 +252,65 @@ void DeviceSettings::on_ntp_load_btn_clicked()
 
 void DeviceSettings::on_ntp_save_btn_clicked()
 {
-    QString server1 = ui->server1->text().trimmed();
-    QString server2 = ui->server2->text().trimmed();
-    QString server3 = ui->server3->text().trimmed();
+    server1 = ui->server1->text().trimmed();
+    server2 = ui->server2->text().trimmed();
+    server3 = ui->server3->text().trimmed();
 
-    QStringList servers;
-    if (!server1.isEmpty()) servers << server1;
-    if (!server2.isEmpty()) servers << server2;
-    if (!server3.isEmpty()) servers << server3;
+    apply_ntp_Settings();
+}
 
-    if (servers.isEmpty()) {
-        QMessageBox::warning(this, "NTP Settings", "Please enter at least one NTP server.");
+
+void DeviceSettings::parse_load_store_ntp(const QJsonObject &payload)
+{
+    QJsonArray dataArray = payload.value("data").toArray();
+    if (dataArray.isEmpty()) {
+        qWarning() << "[NTP] 'data' array is incomplete";
         return;
     }
 
-    bool success = Utils::setNtpServers(servers);
+    QJsonObject ntpPayload = dataArray.at(0).toObject();
+    server1 = ntpPayload.value("server_1").toString();
+    server2 = ntpPayload.value("server_2").toString();
+    server3 = ntpPayload.value("server_3").toString();
 
-    if (success) {
-        QMessageBox::information(this, "NTP Settings", "NTP servers saved successfully.\nService restarted.");
-    } else {
-        QMessageBox::critical(this, "NTP Settings", "Failed to save NTP servers.\nMake sure the app has root permissions.");
+    if(apply_ntp_Settings(true))
+    {   
+        ui->server1->setText(server1);
+        ui->server2->setText(server2);
+        ui->server3->setText(server3);
     }
+}
+
+
+bool DeviceSettings::apply_ntp_Settings(bool msgBox)
+{
+    newNtp.servers.clear();
+    if (!server1.isEmpty()) newNtp.servers << server1;
+    if (!server2.isEmpty()) newNtp.servers << server2;
+    if (!server3.isEmpty()) newNtp.servers << server3;
+
+    if (newNtp.servers.isEmpty()) {
+        if(msgBox) QMessageBox::warning(this, "NTP Settings", "Please enter at least one NTP server.");
+        return false;
+    }
+    
+    bool success = false;
+    if (newNtp != previousNtp) {
+        success = Utils::setNtpServers(newNtp.servers);
+        if (success) {
+            if(msgBox) {
+                QMessageBox::information(this, "NTP Settings", "NTP servers saved successfully.\nService restarted.");
+                emit ntpSettingsChanged(newNtp);
+            }
+            previousNtp = newNtp;
+        } else {
+            if(msgBox) QMessageBox::critical(this, "NTP Settings", "Failed to save NTP servers.\nMake sure the app has root permissions.");
+        }
+    } else {
+        if (msgBox) QMessageBox::information(this, "NTP Settings", "No changes detected, settings are already up-to-date.");
+        qInfo() << "[NTP] No changes detected, skipping save.";
+    }
+    return success;
 }
 
 
@@ -285,7 +323,6 @@ void DeviceSettings::on_mqtt_save_btn_clicked()
     QString mqttTopic   = ui->mqtt_topic->text().trimmed();
     QString mqttInterval = ui->mqtt_int->text().trimmed();
 
-    // 1. Create JSON object
     QJsonObject mqttSettings;
     mqttSettings["ip"]       = mqttIp;
     mqttSettings["port"]     = mqttPort;
@@ -303,15 +340,44 @@ void DeviceSettings::on_mqtt_load_btn_clicked(bool msgBox)
 
     if (!mqttSettings.isEmpty())
     {
-        ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
-        ui->mqtt_port->setText(mqttSettings.value("port").toString());
-        ui->mqtt_user->setText(mqttSettings.value("user").toString());
-        ui->mqtt_pass->setText(mqttSettings.value("password").toString());
-        ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
-        ui->mqtt_int->setText(mqttSettings.value("interval").toString());
-       
-        if(msgBox) QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
+        apply_mqtt_Settings(mqttSettings, msgBox);
     }
+}
+
+
+void DeviceSettings::parse_load_store_mqtt(const QJsonObject &payload)
+{
+    QJsonArray dataArray = payload.value("data").toArray();
+    if (dataArray.isEmpty()) {
+        qWarning() << "[MQTT] 'data' array is incomplete!";
+        return;
+    }
+
+    QJsonObject mqttPayload = dataArray.at(0).toObject();
+    QJsonObject mqttSettings;
+    mqttSettings["ip"]       = mqttPayload.value("broker_ip").toString();
+    mqttSettings["port"]     = QString::number(mqttPayload.value("broker_port").toInt());
+    mqttSettings["user"]     = mqttPayload.value("broker_user").toString();
+    mqttSettings["password"] = mqttPayload.value("broker_pass").toString();
+    mqttSettings["topic"]    = mqttPayload.value("mqtt_topic").toString();
+    mqttSettings["interval"] = QString::number(mqttPayload.value("data_interval").toInt());
+
+    saveMqttSettings(mqttSettings, false);
+    apply_mqtt_Settings(mqttSettings);
+}
+
+
+void DeviceSettings::apply_mqtt_Settings(const QJsonObject &mqttSettings, bool msgBox)
+{
+    ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
+    ui->mqtt_port->setText(mqttSettings.value("port").toString());
+    ui->mqtt_user->setText(mqttSettings.value("user").toString());
+    ui->mqtt_pass->setText(mqttSettings.value("password").toString());
+    ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
+    ui->mqtt_int->setText(mqttSettings.value("interval").toString());
+    
+    if(msgBox)
+        QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
 }
 
 
@@ -341,34 +407,115 @@ void DeviceSettings::on_sftp_load_btn_clicked(bool msgBox)
 
     if (!sftpSettings.isEmpty())
     {
-        ui->sftp_ip->setText(sftpSettings.value("ip").toString());
-        ui->sftp_port->setText(sftpSettings.value("port").toString());
-        ui->sftp_username->setText(sftpSettings.value("username").toString());
-        ui->sftp_pass->setText(sftpSettings.value("password").toString());
-        ui->sftp_int->setText(sftpSettings.value("interval").toString());
-        ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
-        if(msgBox) QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
+        apply_sftp_Settings(sftpSettings, msgBox);
     }
+}
+
+
+void DeviceSettings::parse_load_store_sftp(const QJsonObject &payload)
+{
+    QJsonArray dataArray = payload.value("data").toArray();
+    if (dataArray.isEmpty()) {
+        qWarning() << "[SFTP] 'data' array is incomplete";
+        return;
+    }
+
+    QJsonObject sftpPayload = dataArray.at(0).toObject();
+    QJsonObject sftpSettings;
+    sftpSettings["ip"]       = sftpPayload.value("server_ip").toString();
+    sftpSettings["port"]     = QString::number(sftpPayload.value("server_port").toInt());
+    sftpSettings["username"] = sftpPayload.value("username").toString();
+    sftpSettings["password"] = sftpPayload.value("password").toString();
+    sftpSettings["interval"] = QString::number(sftpPayload.value("data_interval").toInt());
+    sftpSettings["schedule"] = ui->sftp_sch->text().trimmed();
+    
+    saveSftpSettings(sftpSettings, false);
+    apply_sftp_Settings(sftpSettings);
+}
+
+
+void DeviceSettings::apply_sftp_Settings(const QJsonObject &sftpSettings, bool msgBox)
+{
+    ui->sftp_ip->setText(sftpSettings.value("ip").toString());
+    ui->sftp_port->setText(sftpSettings.value("port").toString());
+    ui->sftp_username->setText(sftpSettings.value("username").toString());
+    ui->sftp_pass->setText(sftpSettings.value("password").toString());
+    ui->sftp_int->setText(sftpSettings.value("interval").toString());
+    ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
+    
+    if(msgBox)
+        QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
+}
+
+
+void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
+{
+    // QFile file("config/aws_mqtts_settings.json");
+    // if (!file.exists()) {
+    //     if (showMessages)
+    //         QMessageBox::warning(this, "AWS MQTTS Settings", "No saved settings found.");
+    //     return;
+    // }
+
+    // if (!file.open(QIODevice::ReadOnly)) {
+    //     if (showMessages)
+    //         QMessageBox::critical(this, "AWS MQTTS Settings", "Failed to open settings file.");
+    //     return;
+    // }
+
+    // QByteArray data = file.readAll();
+    // file.close();
+
+    // QJsonParseError parseError;
+    // QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    // if (doc.isNull() || !doc.isObject()) {
+    //     if (showMessages)
+    //         QMessageBox::critical(this, "AWS MQTTS Settings", "Invalid JSON format: " + parseError.errorString());
+    //     return;
+    // }
+
+    // QJsonObject mqttSettings = doc.object();
+    emit aws_mqtts_load();
 }
 
 
 void DeviceSettings::refreshInfo()
 {
-    auto uid = Utils::getUid();
-    ui->uuid->setText(uid);
-    auto currentIp = Utils::getDeviceIp();
-    ui->ip->setText(currentIp);
-    auto currentImei = Utils::getDeviceImei();
-    ui->imei->setText(currentImei);
+    curDevInfo.uuid       = Utils::getUid();
+    curDevInfo.ip         = Utils::getDeviceIp();
+    curDevInfo.imei       = Utils::getDeviceImei();
+
     auto ntpData = Utils::getNtpStatus();
-    QString date   = ntpData.value("date").toString();
-    ui->date_input->setText(date);
-    QString status = ntpData.value("ntp_status").toString();
-    ui->ntp->setText(status);
-    auto mqttData = Utils::getMqttStatus();
-    ui->mqtt->setText(mqttData);
-    auto sftpData = Utils::getSftpStatus();
-    ui->sftp->setText(sftpData);
+    curDevInfo.date       = ntpData.value("date").toString();
+    curDevInfo.ntpStatus  = ntpData.value("ntp_status").toString();
+
+    curDevInfo.mqttStatus = Utils::getMqttStatus();
+    curDevInfo.sftpStatus = Utils::getSftpStatus();
+
+    ui->uuid->setText(curDevInfo.uuid);
+    ui->ip->setText(curDevInfo.ip);
+    ui->imei->setText(curDevInfo.imei);
+    ui->date_input->setText(curDevInfo.date);
+    ui->ntp->setText(curDevInfo.ntpStatus);
+    ui->mqtt->setText(curDevInfo.mqttStatus);
+    ui->sftp->setText(curDevInfo.sftpStatus);
+
+    if (isDifferent(curDevInfo, prvDevInfo)) {
+        emit deviceInfoChanged(curDevInfo);
+        prvDevInfo = curDevInfo;
+    }
+}
+
+
+bool DeviceSettings::isDifferent(const DeviceInfo &a, const DeviceInfo &b)
+{
+    return a.uuid       != b.uuid
+        || a.ip         != b.ip
+        || a.imei       != b.imei
+        || a.date       != b.date
+        || a.ntpStatus  != b.ntpStatus
+        || a.mqttStatus != b.mqttStatus
+        || a.sftpStatus != b.sftpStatus;
 }
 
 

@@ -202,6 +202,7 @@ void MainWindow::handlePostProgress()
         }
         settings->on_mqtt_load_btn_clicked(false);
         settings->on_sftp_load_btn_clicked(false);
+        settings->loadAwsMqttsSettings(false);
         if (!factSettings){
             factSettings = new FactSetting;
         }
@@ -229,10 +230,37 @@ void MainWindow::connectLoginSignals()
             mqttHandler->reloadSettings();
         });
     });
+    connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
+        awsMqttsHandler->disconnectAwsClient();
+        QTimer::singleShot(1000, [this](){
+            awsMqttsHandler->reloadAwsMqttsSettings();
+        });
+    });
+    connect(awsMqttsHandler, &AwsMqttManager::rebootRequested, this, [this] {
+        this->close();
+        Utils::rebootSystem();
+    });
+    
+    connect(awsMqttsHandler, &AwsMqttManager::ntpConfigReceived,
+        settings, &DeviceSettings::parse_load_store_ntp);
+    connect(awsMqttsHandler, &AwsMqttManager::sftpConfigReceived,
+        settings, &DeviceSettings::parse_load_store_sftp);
+    connect(awsMqttsHandler, &AwsMqttManager::mqttConfigReceived,
+        settings, &DeviceSettings::parse_load_store_mqtt);
+    connect(settings, &DeviceSettings::deviceInfoChanged,
+        awsMqttsHandler, &AwsMqttManager::processDeviceInfo);
+    connect(settings, &DeviceSettings::mqttSettingsChanged,
+        awsMqttsHandler, &AwsMqttManager::processMqttSettings);
+    connect(settings, &DeviceSettings::sftpSettingsChanged,
+        awsMqttsHandler, &AwsMqttManager::processSftpSettings);
+    connect(settings, &DeviceSettings::ntpSettingsChanged,
+        awsMqttsHandler, &AwsMqttManager::processNtpSettings);
     connect(this, &MainWindow::receivedChannelData,
         mqttHandler, &mqttManager::processIncomingJson);
     connect(this, &MainWindow::receivedChannelData,
         sftpHandler, &sftpManager::processIncomingJson);
+    connect(this, &MainWindow::receivedChannelData,
+        awsMqttsHandler, &AwsMqttManager::processAwsTelemetry);
     connect(login, &LoginWidget::adminLoginSuccess, this, [this]() {
         isLogin = true;
         if (!channels)
@@ -289,6 +317,12 @@ void MainWindow::connectLoginSignals()
                 mqttHandler->disconnectClient();
                 QTimer::singleShot(1000, [this](){
                     mqttHandler->reloadSettings();
+                });
+            });
+            connect(factSettings, &FactSetting::aws_mqtts_load, this, [this]() {
+                awsMqttsHandler->disconnectAwsClient();
+                QTimer::singleShot(1000, [this](){
+                    awsMqttsHandler->reloadAwsMqttsSettings();
                 });
             });
             connect(factSettings, &FactSetting::usbExport, this, [this](){

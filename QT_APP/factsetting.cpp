@@ -360,3 +360,33 @@ void FactSetting::on_sftp_save_btn_clicked()
     saveSftpSettings(sftpSettings);
 }
 
+
+void FactSetting::loadAwsMqttsSettings(bool showMessages)
+{
+    // QFile file("config/aws_mqtts_settings.json");
+    // if (!file.exists()) {
+    //     if (showMessages)
+    //         QMessageBox::warning(this, "AWS MQTTS Settings", "No saved settings found.");
+    //     return;
+    // }
+
+    // if (!file.open(QIODevice::ReadOnly)) {
+    //     if (showMessages)
+    //         QMessageBox::critical(this, "AWS MQTTS Settings", "Failed to open settings file.");
+    //     return;
+    // }
+
+    // QByteArray data = file.readAll();
+    // file.close();
+
+    // QJsonParseError parseError;
+    // QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    // if (doc.isNull() || !doc.isObject()) {
+    //     if (showMessages)
+    //         QMessageBox::critical(this, "AWS MQTTS Settings", "Invalid JSON format: " + parseError.errorString());
+    //     return;
+    // }
+
+    // QJsonObject mqttSettings = doc.object();
+    emit aws_mqtts_load();
+}
