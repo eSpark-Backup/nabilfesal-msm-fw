@@ -164,8 +164,9 @@ void MainWindow::setupSerial()
     serialThread->start();
 
     // Send CT/I/V ratio and offsets at startup (if config present)
+    startApp = true;
     sendRatioSettings();
-    QTimer::singleShot(1000, this, [this]() { startApp = false; });
+    QTimer::singleShot(20000, this, [this]() { startApp = false; });
 }
 
 // -----------------------------
