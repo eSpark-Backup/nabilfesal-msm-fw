@@ -36,9 +36,12 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     connect(timer, &QTimer::timeout, this, [=]() {
         QString time = QTime::currentTime().toString("HH:mm:ss");
         ui->time_input->setText(time);
-        refreshInfo();
     });
     timer->start(1000);
+
+    QTimer *refreshTimer = new QTimer(this);
+    connect(refreshTimer, &QTimer::timeout, this, &DeviceSettings::refreshInfo);
+    refreshTimer->start(10 * 1000); // every 10 seconds
 
     ui->stackedWidget->setCurrentIndex(0);
     QLabel* label = new QLabel("server 1", ui->server1);
@@ -147,7 +150,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     keyboard = new MSMKeyboard(this);
-    keyboard->move(20, 180);
+    keyboard->move(20, 120);
     keyboard->hide();
 
     QList<QLineEdit*> edits = {
@@ -213,8 +216,8 @@ void DeviceSettings::on_channels_btn_clicked()
 
 void DeviceSettings::parseNtpJson(const QJsonObject& root)
 {
-    QString status = root.value("ntp_status").toString();
-    ui->ntp->setText(status);
+    QString signal = Utils::getSignalCategoryFromFile();
+    ui->ntp->setText(signal);
     QString date   = root.value("date").toString();
     QString time   = root.value("time").toString();
     ui->date_input->setText(date);
@@ -567,7 +570,7 @@ void DeviceSettings::refreshInfo()
 
     auto ntpData = Utils::getNtpStatus();
     curDevInfo.date       = ntpData.value("date").toString();
-    curDevInfo.ntpStatus  = ntpData.value("ntp_status").toString();
+    curDevInfo.ntpStatus  = Utils::getSignalCategoryFromFile();
 
     curDevInfo.mqttStatus = Utils::getMqttStatus();
     curDevInfo.sftpStatus = Utils::getSftpStatus();

@@ -12,7 +12,7 @@ class FactorySettings : public QWidget
     Q_OBJECT
 
 public:
-    explicit FactorySettings(QWidget *parent = nullptr);
+    explicit FactorySettings(QString hardwareVersion, QString softwareVersion, QWidget *parent = nullptr);
     ~FactorySettings();
 
 signals:

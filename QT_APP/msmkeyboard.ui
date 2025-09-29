@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>750</width>
-    <height>310</height>
+    <height>350</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,13 +22,13 @@
   <property name="minimumSize">
    <size>
     <width>750</width>
-    <height>310</height>
+    <height>350</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>750</width>
-    <height>310</height>
+    <height>350</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -40,10 +40,10 @@
   <widget class="QFrame" name="verticalFrame">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>9</y>
-     <width>731</width>
-     <height>300</height>
+     <x>0</x>
+     <y>0</y>
+     <width>750</width>
+     <height>350</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -69,6 +69,55 @@ border-radius: 20px;</string>
     <property name="bottomMargin">
      <number>0</number>
     </property>
+    <item>
+     <widget class="QFrame" name="horizontalFrame">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border: 0px solid #000000;
+color: rgb(255, 255, 255);
+background-color: rgb(47, 60, 61);
+border-radius: 0px;</string>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLineEdit" name="key_input">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Gilroy</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border: 0px solid #000000;
+color: rgb(255, 255, 255);
+background-color: rgb(47, 60, 61);
+border-radius: 0px;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignHCenter|Qt::AlignTop</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="spacing">
@@ -1475,7 +1524,7 @@ QPushButton:pressed {
        <widget class="QPushButton" name="hide">
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>80</width>
           <height>40</height>
          </size>
         </property>
@@ -1525,8 +1574,83 @@ QPushButton:pressed {
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_5">
       <property name="spacing">
-       <number>0</number>
+       <number>6</number>
       </property>
+      <item>
+       <widget class="QPushButton" name="ch1">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color: rgb(0, 0, 0);
+    background-color: #f2f2f2;
+    border: 2px solid #999;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 18px;
+}
+
+QPushButton:pressed {
+    background-color: #ccc;
+    border: 2px inset #666;
+}</string>
+        </property>
+        <property name="text">
+         <string>,</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ch2">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color: rgb(0, 0, 0);
+    background-color: #f2f2f2;
+    border: 2px solid #999;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 18px;
+}
+
+QPushButton:pressed {
+    background-color: #ccc;
+    border: 2px inset #666;
+}</string>
+        </property>
+        <property name="text">
+         <string>.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ch3">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color: rgb(0, 0, 0);
+    background-color: #f2f2f2;
+    border: 2px solid #999;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 18px;
+}
+
+QPushButton:pressed {
+    background-color: #ccc;
+    border: 2px inset #666;
+}</string>
+        </property>
+        <property name="text">
+         <string>-</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QPushButton" name="enter_2">
         <property name="sizePolicy">
@@ -1537,7 +1661,7 @@ QPushButton:pressed {
         </property>
         <property name="maximumSize">
          <size>
-          <width>500</width>
+          <width>250</width>
           <height>40</height>
          </size>
         </property>
@@ -1570,6 +1694,81 @@ QPushButton:pressed {
         </property>
         <property name="flat">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ch4">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color: rgb(0, 0, 0);
+    background-color: #f2f2f2;
+    border: 2px solid #999;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 18px;
+}
+
+QPushButton:pressed {
+    background-color: #ccc;
+    border: 2px inset #666;
+}</string>
+        </property>
+        <property name="text">
+         <string>/</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ch5">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color: rgb(0, 0, 0);
+    background-color: #f2f2f2;
+    border: 2px solid #999;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 18px;
+}
+
+QPushButton:pressed {
+    background-color: #ccc;
+    border: 2px inset #666;
+}</string>
+        </property>
+        <property name="text">
+         <string>;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ch6">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+	color: rgb(0, 0, 0);
+    background-color: #f2f2f2;
+    border: 2px solid #999;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 18px;
+}
+
+QPushButton:pressed {
+    background-color: #ccc;
+    border: 2px inset #666;
+}</string>
+        </property>
+        <property name="text">
+         <string>'</string>
         </property>
        </widget>
       </item>

@@ -2,6 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QThread>
+#include <QTimer>
+#include <QMap>
+#include <QJsonObject>
+#include <QMutex>
+#include <atomic>
+
 #include "login.h"
 #include "channels.h"
 #include "devicesettings.h"
@@ -12,17 +19,10 @@
 #include "factsetting.h"
 #include "measurements.h"
 #include "dataexporter.h"
-#include "serialhandler.h"
 #include "serialworker.h"
 #include "mqttManager.h"
 #include "awsmqttmanager.h"
 #include "sftpManager.h"
-#include <atomic>
-#include <QThread>
-#include <QTimer>
-#include <QMap>
-#include <QJsonObject>
-#include <QMutex>
 #include "commonSetting.h"
 
 QT_BEGIN_NAMESPACE
@@ -42,13 +42,42 @@ signals:
     void receivedChannelData(int channel, const QJsonObject &data);
     void requestSerialCommand(const QString &cmd);
 
-private:
-    // helper functions for clarity & optimization
-    void initConfig();
-    void startProgress();
+private slots:
+    // USB handling
+    void onUsbMounted(const QString &dev, const QString &path);
+    void onUsbUnmounted();
+    void onUsbExportAccepted();
+
+    // Serial handling
+    void onChannelDataReady(int ch, const QJsonObject &obj);
+    void onGenericResponseReady(const QString &resp);
+
+    // Login / navigation
+    void onLoadChannels();
+    void onAdminLogin();
+    void onFactoryLogin();
+    void onChannelsExit();
+
+    // Progress management
     void updateProgress();
-    void handlePostProgress();
+    void setupProgressBar();
+
+private:
+    // Setup helpers
+    void initConfig();
+    void setupLogin();
+    void setupUsb();
+    void setupSerial();
+    void setupPolling();
     void connectLoginSignals();
+    void startProgress();
+    void handlePostProgress();
+
+    // Utility connection helpers
+    void connectChannels(ChannelsHome *ch);
+    void connectFactSettings(FactSetting *fs);
+
+    void sendRatioSettings();
 
 private:
     Ui::MainWindow *ui;
@@ -64,9 +93,11 @@ private:
     FactSetting *factSettings = nullptr;
     Measurements *measure = nullptr;
     UsbDataExporter *dataExporter = nullptr;
+
+    // managers (mostly singletons)
     settingsManager *settingsHandler = nullptr;
     mqttManager *mqttHandler = &mqttManager::instance();
-    sftpManager *sftpHandler = &sftpManager::instance();;
+    sftpManager *sftpHandler = &sftpManager::instance();
     AwsMqttManager *awsMqttsHandler = &AwsMqttManager::instance();
 
     // state
@@ -74,12 +105,17 @@ private:
     QString m_uid;
     QString m_adminPass;
     QString m_factoryPass;
+    QString hardwareVersion;
+    QString softwareVersion;
     std::atomic<bool> isLogin{false};
-    std::string m_mountPath;
+    std::atomic<bool> startApp{true};
+    std::atomic< bool> usbDetected{false};
 
+    std::string m_mountPath;
     QThread *serialThread = nullptr;
     SerialWorker *worker = nullptr;
-    QTimer *pollTimer;
+    QTimer *pollTimer = nullptr;
+
     QMap<int, QJsonObject> latestData;
     QMutex latestDataMutex;
 };

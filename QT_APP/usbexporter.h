@@ -2,6 +2,7 @@
 #define USBEXPORTER_H
 
 #include <QDialog>
+#include "numkeyboard.h"
 
 namespace Ui {
 class UsbExporter;
@@ -21,10 +22,14 @@ public:
 private slots:
     void slotsAccepted();
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+    
 private:
     Ui::UsbExporter *ui;
     std::string m_device;
     std::string m_mountPath;
+    NumKeyboard *keyboard;
 };
 
 #endif // USBEXPORTER_H

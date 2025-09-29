@@ -120,23 +120,51 @@ bool setNtpServers(const QStringList &servers)
 
 QString getDeviceImei()
 {
-    QProcess process;
-    process.start("mmcli", {"-m", "0"});
-    if (!process.waitForFinished(3000))  // 3s max
-        return "UNKNOWN";
+    // Try modems 0,1,2 in sequence
+    for (int i = 0; i < 3; ++i) {
+        QProcess process;
+        process.start("mmcli", {"-m", QString::number(i)});
+        if (!process.waitForFinished(3000))  // 3s max
+            continue;
 
-    QString output = process.readAllStandardOutput();
-    for (const QString &line : output.split("\n")) {
-        QString trimmedLine = line.trimmed();
-        if (trimmedLine.startsWith("imei", Qt::CaseInsensitive)) {
-            return trimmedLine.section(":", 1).trimmed();
-        }
-        // Some mmcli versions indent with "|" before "imei"
-        if (trimmedLine.contains("imei", Qt::CaseInsensitive)) {
-            return trimmedLine.section(":", 1).trimmed();
+        QString output = process.readAllStandardOutput();
+        for (const QString &line : output.split("\n")) {
+            QString trimmedLine = line.trimmed();
+            if (trimmedLine.startsWith("imei", Qt::CaseInsensitive) ||
+                trimmedLine.contains("imei", Qt::CaseInsensitive)) {
+                return trimmedLine.section(":", 1).trimmed();
+            }
         }
     }
     return "UNKNOWN";
+}
+
+QString getSignalCategoryFromFile(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return "UNKNOWN";
+    }
+
+    QString content = QString::fromUtf8(file.readAll());
+    file.close();
+
+    // Parse response: +CSQ: <rssi>,<ber>
+    QRegularExpression re("\\+CSQ:\\s*(\\d+),(\\d+)");
+    QRegularExpressionMatch match = re.match(content);
+    if (!match.hasMatch())
+        return "UNKNOWN";
+
+    int rssi = match.captured(1).toInt();
+    if (rssi == 99)
+        return "UNKNOWN";
+
+    int dBm = -113 + (2 * rssi);
+
+    if (dBm >= -70) return QString("Strong (%1)").arg(dBm);
+    else if (dBm >= -85) return QString("Normal (%1)").arg(dBm);
+    else if (dBm >= -100) return QString("Weak (%1)").arg(dBm);
+    else return QString("Low (%1)").arg(dBm);
 }
 
 QString getDeviceIp()

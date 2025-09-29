@@ -11,11 +11,12 @@
 #include <QToolButton>
 #include <QStyle>
 
-Registration::Registration(QWidget *parent)
+Registration::Registration(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Registration)
 {
     ui->setupUi(this);
+    ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
 
     QToolButton *toggleButton = new QToolButton(ui->admin_pass);
     toggleButton->setCursor(Qt::ArrowCursor);
@@ -66,7 +67,7 @@ Registration::Registration(QWidget *parent)
     });
 
     keyboard = new MSMKeyboard(this);
-    keyboard->move(20, 180);
+    keyboard->move(20, 120);
     keyboard->hide();
 
     QList<QLineEdit*> edits = {
@@ -79,22 +80,6 @@ Registration::Registration(QWidget *parent)
         connect(edit, &QLineEdit::editingFinished, this, [=]() {
             keyboard->hide();
             edit->clearFocus();
-        });
-
-        connect(edit, &QLineEdit::textChanged, this, [=]() {
-            QString frameName = getParentFrameName(edit);
-            if (frameName == ui->uid_frame->objectName())
-            {
-                ui->uid_frame->move(9,120);
-            }
-            else if (frameName == ui->admin_frame->objectName())
-            {
-                ui->admin_frame->move(9,120);
-            }
-            else if (frameName == ui->confirm_frame->objectName())
-            {
-                ui->confirm_frame->move(9,120);
-            }
         });
     }
 }
@@ -116,37 +101,11 @@ bool Registration::eventFilter(QObject *obj, QEvent *event)
         }
         else if (event->type() == QEvent::FocusOut) {
             if (!keyboard->isAncestorOf(QApplication::focusWidget())) {
-                QString frameName = getParentFrameName(lineEdit);
-                if (frameName == ui->uid_frame->objectName())
-                {
-                    ui->uid_frame->move(9,187);
-                }
-                else if (frameName == ui->admin_frame->objectName())
-                {
-                    ui->admin_frame->move(9,263);
-                }
-                else if (frameName == ui->confirm_frame->objectName())
-                {
-                    ui->confirm_frame->move(9,339);
-                }
                 keyboard->hide();
             }
         }
     }
     return QWidget::eventFilter(obj, event);
-}
-
-QString Registration::getParentFrameName(QLineEdit *lineEdit)
-{
-    QWidget *p = lineEdit->parentWidget();
-    while (p && !qobject_cast<QFrame*>(p)) {
-        p = p->parentWidget();
-    }
-    QFrame *parentFrame = qobject_cast<QFrame*>(p);
-    if (parentFrame) {
-        return parentFrame->objectName();  // 👈 frame name from Qt Designer
-    }
-    return QString(); // empty if no frame found
 }
 
 void Registration::on_pushButton_clicked()

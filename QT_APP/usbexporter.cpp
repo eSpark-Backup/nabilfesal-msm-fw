@@ -3,6 +3,7 @@
 #include <QPushButton>
 #include <QPainterPath>
 #include <QMessageBox>
+#include "utils.h"
 
 UsbExporter::UsbExporter(QWidget *parent)
     : QDialog(parent)
@@ -29,11 +30,43 @@ UsbExporter::UsbExporter(QWidget *parent)
     QPainterPath path;
     path.addRoundedRect(rect(), 20, 20); // radius = 20
     setMask(QRegion(path.toFillPolygon().toPolygon()));
+
+    keyboard = new NumKeyboard(this);
+    keyboard->move(200, 100);
+    keyboard->hide();
+
+    connect(ui->lineEdit, &QLineEdit::editingFinished, this, [=]() {
+        ui->lineEdit->clearFocus();
+        keyboard->hide();
+    });
+    ui->lineEdit->installEventFilter(this);
+    this->installEventFilter(this);
 }
 
 UsbExporter::~UsbExporter()
 {
     delete ui;
+}
+
+bool UsbExporter::eventFilter(QObject *obj, QEvent *event)
+{
+    // Then: handle QLineEdit focus/keyboard logic
+    QLineEdit *lineEdit = qobject_cast<QLineEdit*>(obj);
+    if (lineEdit) {
+        if (event->type() == QEvent::FocusIn) {
+            keyboard->setTarget(lineEdit);
+            Utils::keySound();
+            keyboard->show();
+            lineEdit->setFocus();
+        }
+        else if (event->type() == QEvent::FocusOut) {
+            if (!keyboard->isAncestorOf(QApplication::focusWidget())) {
+                keyboard->hide();
+            }
+        }
+    }
+
+    return QWidget::eventFilter(obj, event);
 }
 
 void UsbExporter::setDeviceName(const QString &dev, const QString &path)
@@ -51,6 +84,12 @@ void UsbExporter::removeDeviceName()
 }
 
 int UsbExporter::getSelectedIntervalDays() const {
+
+    if(ui->lineEdit->text().length() > 0) {
+        bool ok = false;
+        int val = ui->lineEdit->text().toInt(&ok);
+        if(ok && val > 0) return val;
+    }
     if (ui->r_7->isChecked())   return 7;
     if (ui->r_14->isChecked())  return 14;
     if (ui->r_28->isChecked())  return 28;
