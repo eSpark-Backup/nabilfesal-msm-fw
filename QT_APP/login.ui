@@ -39,7 +39,7 @@
     <number>20</number>
    </property>
    <property name="topMargin">
-    <number>10</number>
+    <number>20</number>
    </property>
    <property name="rightMargin">
     <number>20</number>
@@ -173,13 +173,13 @@ QPushButton:focus {
         <property name="minimumSize">
          <size>
           <width>300</width>
-          <height>180</height>
+          <height>150</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>180</height>
+          <height>150</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -551,6 +551,9 @@ QPushButton:focus {
          <pointsize>12</pointsize>
         </font>
        </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(148, 214, 235);</string>
+       </property>
        <property name="text">
         <string>Ein Technology Labs Sdn Bhd</string>
        </property>
@@ -569,6 +572,9 @@ QPushButton:focus {
          <family>Gilroy</family>
          <pointsize>12</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(148, 214, 235);</string>
        </property>
        <property name="text">
         <string>HW: 1.5.0  FW: 1.2.0</string>
