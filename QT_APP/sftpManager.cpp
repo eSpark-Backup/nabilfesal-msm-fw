@@ -20,29 +20,34 @@ sftpManager& sftpManager::instance()
 
 sftpManager::sftpManager(QObject *parent) : QObject(parent)
 {
-    // fecthing latest file name from data folder to update file path
-    QString uid = Utils::getUid();
-    QDir dir("data/" + uid);
-    dir.mkpath(".");
-    QStringList filters{ uid + "-*.csv" };
-    auto files = dir.entryInfoList(filters, QDir::Files, QDir::Time);
-    if (!files.isEmpty()) {
-        m_filePath = files.first().absoluteFilePath();
-        qDebug() << "Latest data file found:" << m_filePath;
-    }
+    // existing code ...
+
     publishTimer = new QTimer(this);
+    reconnectTimer = new QTimer(this);
     isConnected  = false;
 
     process = new QProcess(this);
 
-    // Track process state changes
+    reconnectTimer->setInterval(5 * 60 * 1000);   // 5 minute
+    reconnectTimer->setSingleShot(false);     // keep retrying
+
+    connect(reconnectTimer, &QTimer::timeout, this, [this]() {
+        if (!isConnected) {
+            qWarning() << "Retrying SFTP connection...";
+            connectToSftp();
+        }
+    });
+
+    // Process connected
     connect(process, &QProcess::started, this, [this]() {
         isConnected = true;
         qDebug() << "Connected to SFTP!";
+        reconnectTimer->stop();   // stop retries when connected
         scheduleSftpUpload();
         publishTimer->start(intervalSec * 1000);
     });
 
+    // Process disconnected
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             this, [this](int exitCode, QProcess::ExitStatus status) {
         Q_UNUSED(exitCode)
@@ -50,25 +55,30 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
         isConnected = false;
         publishTimer->stop();
         qDebug() << "Disconnected from SFTP.";
+        if (!reconnectTimer->isActive()) {
+            reconnectTimer->start();   // start retry loop
+        }
     });
 
     connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
         isConnected = false;
         publishTimer->stop();
         qWarning() << "SFTP process error:" << error;
+        if (!reconnectTimer->isActive()) {
+            reconnectTimer->start();   // start retry loop
+        }
     });
 
+    // Publish CSV timer
     connect(publishTimer, &QTimer::timeout, this, [this]() {
         if (m_filePath.isEmpty()) {
             QString uid = Utils::getUid();
             QDir dir("data/" + uid);
             dir.mkpath(".");
-
             m_filePath = QString("data/%1/%1-%2.csv")
                             .arg(uid)
                             .arg(QDateTime::currentDateTime().toString("yyyyMMdd-HHmm"));
         }
-
         exportTelemetryToCsv(m_filePath);
     });
 }

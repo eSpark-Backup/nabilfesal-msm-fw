@@ -61,6 +61,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     Utils::mainSound();
     showFullScreen();
+
+    // Send CT/I/V ratio and offsets at startup (if config present)
+    startApp = true;
+    sendRatioSettings();
+    QTimer::singleShot(20000, this, [this]() { startApp = false; });
 }
 
 MainWindow::~MainWindow()
@@ -162,11 +167,6 @@ void MainWindow::setupSerial()
             &MainWindow::onGenericResponseReady);
 
     serialThread->start();
-
-    // Send CT/I/V ratio and offsets at startup (if config present)
-    startApp = true;
-    sendRatioSettings();
-    QTimer::singleShot(20000, this, [this]() { startApp = false; });
 }
 
 // -----------------------------

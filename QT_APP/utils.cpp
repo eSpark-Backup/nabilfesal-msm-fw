@@ -229,7 +229,7 @@ void rebootSystem()
 
 bool updateSerialInConfig()
 {
-    QString path = "/home/msm/Documents/aws-iot-device-sdk-embedded-C/build/bin/config.json";
+    QString path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner/config.json";
 
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {

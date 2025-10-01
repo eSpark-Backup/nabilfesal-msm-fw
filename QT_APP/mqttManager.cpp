@@ -25,36 +25,50 @@ mqttManager::mqttManager(QObject *parent) : QObject(parent)
 {
     mqttClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
-    isConnected  = false;   // add as member variable (bool)
+    reconnectTimer = new QTimer(this);
+    isConnected  = false;
 
-    // Timer: publish telemetry if connected
+    reconnectTimer->setInterval(30 * 1000);  // 30 seconds
+    reconnectTimer->setSingleShot(false);    // repeat until success
+
+    connect(reconnectTimer, &QTimer::timeout, this, [this]() {
+        if (!isConnected) {
+            qWarning() << "Reconnection attempt...";
+            connectToBroker();
+        }
+    });
+
+    // Publish timer
     connect(publishTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected) {
             qWarning() << "Skipped publish, client not connected.";
             return;
         }
         QByteArray payload = buildTelemetryJson();
-        // qInfo() << "\n========================================================================";
-        // qDebug().noquote() << "TelemetryJson: " << payload;
-        // qInfo() << "========================================================================\n";
         publishMessage(payload);
     });
 
-    // Connected signal
+    // Connected
     connect(mqttClient, &QMqttClient::connected, this, [this]() {
         isConnected = true;
         qDebug() << "Connected to broker!";
 
+        reconnectTimer->stop();  // stop retrying when connected
+
         if (intervalSec > 0) {
-            publishTimer->start(intervalSec*1000);
+            publishTimer->start(intervalSec * 1000);
         }
     });
 
-    // Disconnected signal
+    // Disconnected
     connect(mqttClient, &QMqttClient::disconnected, this, [this]() {
         isConnected = false;
         qDebug() << "Disconnected from broker.";
+
         publishTimer->stop();
+        if (!reconnectTimer->isActive()) {
+            reconnectTimer->start();  // retry every 1 min
+        }
     });
 }
 
@@ -88,16 +102,6 @@ bool mqttManager::loadConfig(const QString &filePath)
     topic = obj.value("topic").toString();
     QString intervalSecStr = obj.value("interval").toString();
     intervalSec = intervalSecStr.toInt();
-
-    // // Log the values
-    // qDebug() << "MQTT Settings Loaded:";
-    // qDebug() << "  Host:" << host;
-    // qDebug() << "  User:" << username;
-    // qDebug() << "  Pass:" << password;
-    // qDebug() << "  Port:" << port;
-    // qDebug() << "  Client ID:" << clientId;
-    // qDebug() << "  Topic:" << topic;
-    // qDebug() << "  Interval (sec):" << intervalSec;
 
     return true;
 }
@@ -151,11 +155,6 @@ void mqttManager::connectToBroker()
         qWarning() << "MQTT settings incomplete.";
         return;
     }
-
-    // if (!loadCertificates()) {
-    //     qWarning() << "Missing certificates. Cannot connect.";
-    //     return;
-    // }
     mqttClient->setHostname(host);
     mqttClient->setPort(port);
     mqttClient->setClientId(clientId);
