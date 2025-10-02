@@ -103,5 +103,6 @@ private:
     QSslSocket *sslSocket = nullptr;
     mutable QReadWriteLock telemetryLock;
     QMap<int, QJsonObject> channelTelemetry;
+    QTimer *reconnectTimer;
 };
 

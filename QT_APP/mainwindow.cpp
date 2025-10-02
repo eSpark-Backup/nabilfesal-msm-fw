@@ -253,7 +253,7 @@ void MainWindow::connectLoginSignals()
     // AWS MQTTS reload request
     connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
         awsMqttsHandler->disconnectAwsClient();
-        QTimer::singleShot(1000, [this]() { awsMqttsHandler->reloadAwsMqttsSettings(); });
+        QTimer::singleShot(5000, [this]() { awsMqttsHandler->reloadAwsMqttsSettings(); });
     });
 
     // AWS manager may ask for reboot

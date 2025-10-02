@@ -51,7 +51,7 @@ mqttManager::mqttManager(QObject *parent) : QObject(parent)
     // Connected
     connect(mqttClient, &QMqttClient::connected, this, [this]() {
         isConnected = true;
-        qDebug() << "Connected to broker!";
+        qDebug() << "Connected to MQTT broker!";
 
         reconnectTimer->stop();  // stop retrying when connected
 
@@ -63,7 +63,7 @@ mqttManager::mqttManager(QObject *parent) : QObject(parent)
     // Disconnected
     connect(mqttClient, &QMqttClient::disconnected, this, [this]() {
         isConnected = false;
-        qDebug() << "Disconnected from broker.";
+        qDebug() << "Disconnected from MQTT broker.";
 
         publishTimer->stop();
         if (!reconnectTimer->isActive()) {

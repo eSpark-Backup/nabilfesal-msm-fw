@@ -42,8 +42,19 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 {
     awsMqttsClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
-    isConnected  = false;   // add as member variable (bool)
+    reconnectTimer = new QTimer(this);
+    isConnected  = false;
     awsTopicsInit();
+
+    reconnectTimer->setInterval(30 * 1000);  // 30 seconds
+    reconnectTimer->setSingleShot(false);    // repeat until success
+
+    connect(reconnectTimer, &QTimer::timeout, this, [this]() {
+        if (!isConnected) {
+            qWarning() << "AWS Reconnection attempt...";
+            connectToBroker();
+        }
+    });
 
     // Timer: publish telemetry if connected
     connect(publishTimer, &QTimer::timeout, this, [this]() {
@@ -73,6 +84,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     connect(awsMqttsClient, &QMqttClient::connected, this, [this]() {
         isConnected = true;
         qDebug() << "Connected to AWS IoT Core!";
+        reconnectTimer->stop();
 
         if (intervalSec > 0) {
             publishTimer->start(intervalSec*1000);
@@ -85,6 +97,9 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
         isConnected = false;
         qDebug() << "Disconnected from AWS IoT Core.";
         publishTimer->stop();
+        if (!reconnectTimer->isActive()) {
+            reconnectTimer->start();  // retry every 1 min
+        }
     });
 }
 
