@@ -44,7 +44,6 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);
     isConnected  = false;
-    awsTopicsInit();
 
     reconnectTimer->setInterval(30 * 1000);  // 30 seconds
     reconnectTimer->setSingleShot(false);    // repeat until success
@@ -89,6 +88,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
         if (intervalSec > 0) {
             publishTimer->start(intervalSec*1000);
         }
+        awsTopicsInit();
         subscribeToTopic();
     });
 

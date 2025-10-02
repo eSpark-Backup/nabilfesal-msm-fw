@@ -71,7 +71,6 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessage
         emit mqttSettingsChanged(mqttSetting);
     }
     emit mqtt_load();
-    qDebug() << "mqtt signal passed";
 }
 
 
