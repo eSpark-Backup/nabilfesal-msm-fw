@@ -59,6 +59,11 @@ MainWindow::MainWindow(QWidget *parent)
     setupProgressBar();
     setupPolling();
 
+    channelDataWatchdog = new QTimer(this);
+    channelDataWatchdog->setSingleShot(true);
+    connect(channelDataWatchdog, &QTimer::timeout, this, &MainWindow::onChannelDataWatchdogTimeout);
+    channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
+
     Utils::mainSound();
     showFullScreen();
 
@@ -343,6 +348,7 @@ void MainWindow::onChannelDataReady(int ch, const QJsonObject &obj)
     QMutexLocker locker(&latestDataMutex);
     latestData[ch] = obj;
     emit receivedChannelData(ch, obj);
+    channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
 }
 
 void MainWindow::onGenericResponseReady(const QString &resp)
@@ -570,4 +576,30 @@ void MainWindow::sendRatioSettings()
             emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
         }
     }
+}
+
+void MainWindow::onChannelDataWatchdogTimeout()
+{
+    
+    // Stop Polling
+    if (pollTimer && pollTimer->isActive()) {
+        pollTimer->stop();
+    }
+
+    QProcess::execute("sh", QStringList() << "-c" << "echo 0 > /sys/class/gpio/gpio37/value");
+    QThread::sleep(1);
+    QProcess::execute("sh", QStringList() << "-c" << "echo 1 > /sys/class/gpio/gpio37/value");
+
+
+    if (pollTimer) {
+        pollTimer->start(200);
+    }
+
+    startApp = true;
+    sendRatioSettings();
+    QTimer::singleShot(20000, this, [this]() { 
+        startApp = false; 
+    });
+
+    channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
 }
