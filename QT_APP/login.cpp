@@ -25,7 +25,7 @@ LoginWidget::LoginWidget(QString hardwareVersion, QString softwareVersion, QWidg
     QToolButton *toggleButton = new QToolButton(ui->passwordLineEdit);
     toggleButton->setCursor(Qt::ArrowCursor);
     toggleButton->setIcon(QIcon(":/icons/eye.png"));
-    toggleButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
+    toggleButton->setStyleSheet("QToolButton { border: none; padding: 5px; }");
     toggleButton->setIconSize(QSize(50, 50));
     toggleButton->setFocusPolicy(Qt::StrongFocus);
 

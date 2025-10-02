@@ -229,11 +229,16 @@ void rebootSystem()
 
 bool updateSerialInConfig()
 {
-    QString path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner/config.json";
+    QString configJson_path;
+    #if defined(BUILD_X86)
+        configJson_path = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/config.json";
+    #elif defined(BUILD_V3S)
+        configJson_path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner/config.json";
+    #endif
 
-    QFile file(path);
+    QFile file(configJson_path);
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to open config file for reading:" << path;
+        qWarning() << "Failed to open config file for reading:" << configJson_path;
         return false;
     }
 
@@ -248,8 +253,6 @@ bool updateSerialInConfig()
     }
 
     QJsonObject obj = doc.object();
-
-    // ✅ overwrite Serial
     QString uid = Utils::getUid();
     if (uid.isEmpty()) {
         qWarning() << "UID is empty, not updating Serial!";
@@ -257,16 +260,14 @@ bool updateSerialInConfig()
     }
     obj["serial"] = uid;
 
-    // Write back to file
     doc.setObject(obj);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        qWarning() << "Failed to open config file for writing:" << path;
+        qWarning() << "Failed to open config file for writing:" << configJson_path;
         return false;
     }
     file.write(doc.toJson(QJsonDocument::Indented));
     file.close();
 
-    qDebug() << "Serial updated to:" << uid;
     return true;
 }
 

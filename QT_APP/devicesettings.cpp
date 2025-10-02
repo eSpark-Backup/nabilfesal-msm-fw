@@ -139,7 +139,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(40, 1);
+    label->move(42, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SCHEDULE", ui->sftp_sch);
@@ -453,8 +453,15 @@ void DeviceSettings::apply_sftp_Settings(const QJsonObject &sftpSettings, bool m
 
 void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
 {
-    QString certPath = "/MSM/potential-pancake/MSM/creds/prov_certs/deviceCert.pem";
-    QString keyPath  = "/MSM/potential-pancake/MSM/creds/prov_certs/privateKey.pem";
+    QString certs_path;
+    #if defined(BUILD_X86)
+        certs_path = QCoreApplication::applicationDirPath() + "/data/certs/";
+    #elif defined(BUILD_V3S)
+        certs_path = "/MSM/potential-pancake/MSM/creds/prov_certs/";
+    #endif
+
+    QString certPath = certs_path + "deviceCert.pem";
+    QString keyPath  = certs_path + "privateKey.pem";
 
     if ((!QFile::exists(certPath) || !QFile::exists(keyPath)) && !Utils::getUid().isEmpty()) {
         qDebug() << "One or more certificate files are missing!";
@@ -499,36 +506,37 @@ void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
 
 void DeviceSettings::runFleetProvisionerAsync()
 {
-    QString program = "/home/msm/Documents/aws-iot-device-sdk-embedded-C/build/bin/msm_fleet_provisioner";
+    QString exe_path;
+    #if defined(BUILD_X86)
+        exe_path = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin";
+    #elif defined(BUILD_V3S)
+        exe_path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner";
+    #endif
 
-    QProcess *process = new QProcess(this);   // parent = this, auto cleanup if DeviceSettings destroyed
+    QString program = exe_path + "/msm_fleet_provisioner";
+
+    QProcess *process = new QProcess(this);
     process->setProgram(program);
-    process->setWorkingDirectory("/home/msm/Documents/aws-iot-device-sdk-embedded-C/build/bin");
+    process->setWorkingDirectory(exe_path);
 
     QString *logBuffer = new QString();
 
-    qDebug() << "[Fleet] Starting provisioner:" << program;
-
-    // 🔹 capture start failure
     QObject::connect(process, &QProcess::errorOccurred, [process](QProcess::ProcessError err) {
         qWarning() << "[Fleet ERROR] QProcess error:" << err
                    << "Details:" << process->errorString();
     });
 
-    // 🔹 stdout
     QObject::connect(process, &QProcess::readyReadStandardOutput, [process, logBuffer]() {
         QByteArray output = process->readAllStandardOutput();
         logBuffer->append(QString::fromUtf8(output));
         qDebug().noquote() << "[Fleet STDOUT]" << output;
     });
 
-    // 🔹 stderr
     QObject::connect(process, &QProcess::readyReadStandardError, [process]() {
         QByteArray error = process->readAllStandardError();
         qWarning().noquote() << "[Fleet STDERR]" << error;
     });
 
-    // 🔹 finished
     QObject::connect(process,
                      QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                      [this, process, logBuffer](int exitCode, QProcess::ExitStatus exitStatus) {

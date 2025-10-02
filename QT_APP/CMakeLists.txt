@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.5)
 
 project(MSM LANGUAGES CXX)
 
+if(BUILD_X86)
+    add_definitions(-DBUILD_X86)
+elseif(BUILD_V3S)
+    add_definitions(-DBUILD_V3S)
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)

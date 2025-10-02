@@ -845,7 +845,7 @@ QPushButton:focus {
                     </font>
                    </property>
                    <property name="text">
-                    <string>Date</string>
+                    <string> Date</string>
                    </property>
                    <property name="indent">
                     <number>0</number>
@@ -902,7 +902,7 @@ QPushButton:focus {
                     </font>
                    </property>
                    <property name="text">
-                    <string>Time</string>
+                    <string> Time</string>
                    </property>
                    <property name="indent">
                     <number>0</number>

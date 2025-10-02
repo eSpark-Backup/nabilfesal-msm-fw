@@ -76,16 +76,17 @@ private:
     int intervalSec = 10;
     bool isConnected = false;
 
-    // System certificate paths (fixed)
-    QString caPath   = "/MSM/potential-pancake/MSM/creds/claim_certs/AmazonRootCA1.pem";
-    QString certPath = "/MSM/potential-pancake/MSM/creds/prov_certs/deviceCert.pem";
-    QString keyPath  = "/MSM/potential-pancake/MSM/creds/prov_certs/privateKey.pem";
+    #if defined(BUILD_X86)
+        QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
+        QString caPath   = basePath + "AmazonRootCA1.pem";
+    #elif defined(BUILD_V3S)
+        QString basePath = "/MSM/potential-pancake/MSM/creds/prov_certs/";
+        QString caPath = "/MSM/potential-pancake/MSM/creds/claim_certs/AmazonRootCA1.pem"; //v3s
+    #endif
 
-    // // x86 System certificate paths (fixed)
-    // QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
-    // QString caPath   = basePath + "AmazonRootCA1.pem";
-    // QString certPath = basePath + "deviceCert.pem";
-    // QString keyPath  = basePath + "privateKey.pem";
+    QString certPath = basePath + "deviceCert.pem";
+    QString keyPath  = basePath + "privateKey.pem";
+
     QString topic_pub_telemetry;
     QString topic_pub_device_info;
     QString topic_pub_reboot;
