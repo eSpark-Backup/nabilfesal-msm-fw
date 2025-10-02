@@ -200,6 +200,23 @@ QString getUid()
 }
 
 
+QString getDevPassword()
+{
+    QFile file("config/project.json");
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+        if (doc.isObject()) {
+            QJsonObject obj = doc.object();
+            auto uid = obj.value("admin").toString();
+            return uid;
+        }
+        file.close();
+    }
+    return QString();
+}
+
+
 QString getMqttStatus()
 {
     mqttManager &mqtt = mqttManager::instance();

@@ -8,6 +8,7 @@
 
 struct DeviceInfo {
     QString uuid;
+    QString pass;
     QString ip;
     QString imei;
     QString date;

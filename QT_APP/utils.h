@@ -11,6 +11,7 @@ QString getDeviceIp();
 QString getDeviceImei();
 bool setNtpServers(const QStringList &servers);
 QString getUid();
+QString getDevPassword();
 QString getMqttStatus();
 QString getSftpStatus();
 void rebootSystem();

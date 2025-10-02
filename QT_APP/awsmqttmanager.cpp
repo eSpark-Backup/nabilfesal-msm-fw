@@ -392,6 +392,7 @@ void AwsMqttManager::processDeviceInfo(const DeviceInfo &info)
 
     QJsonObject deviceInfoData;
     deviceInfoData["device_ip"] = info.ip;
+    deviceInfoData["device_pass"] = info.pass;
     deviceInfoData["device_imei"] = info.imei;
     deviceInfoData["mqtt_status"] = info.mqttStatus;
     deviceInfoData["sftp_status"] = info.sftpStatus;

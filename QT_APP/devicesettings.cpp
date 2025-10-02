@@ -573,6 +573,7 @@ void DeviceSettings::runFleetProvisionerAsync()
 void DeviceSettings::refreshInfo()
 {
     curDevInfo.uuid       = Utils::getUid();
+    curDevInfo.pass       = Utils::getDevPassword();
     curDevInfo.ip         = Utils::getDeviceIp();
     curDevInfo.imei       = Utils::getDeviceImei();
 
@@ -601,6 +602,7 @@ void DeviceSettings::refreshInfo()
 bool DeviceSettings::isDifferent(const DeviceInfo &a, const DeviceInfo &b)
 {
     return a.uuid       != b.uuid
+        || a.pass       != b.pass
         || a.ip         != b.ip
         || a.imei       != b.imei
         || a.date       != b.date
