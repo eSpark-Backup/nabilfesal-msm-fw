@@ -394,8 +394,8 @@ void AwsMqttManager::processDeviceInfo(const DeviceInfo &info)
     deviceInfoData["device_ip"] = info.ip;
     deviceInfoData["device_pass"] = info.pass;
     deviceInfoData["device_imei"] = info.imei;
-    deviceInfoData["mqtt_status"] = info.mqttStatus;
-    deviceInfoData["sftp_status"] = info.sftpStatus;
+    deviceInfoData["mqtt_status"] = info.mqttStatus == "Connected" ? true : false;
+    deviceInfoData["sftp_status"] = info.sftpStatus == "Connected" ? true : false;
 
     QJsonArray dataArray;
     dataArray.append(deviceInfoData);
@@ -442,7 +442,7 @@ void AwsMqttManager::processSftpSettings(const QJsonObject &sftpSetting)
     QJsonObject serverData;
     serverData["server_ip"]     = sftpSetting.value("ip").toString();
     serverData["server_port"]   = sftpSetting.value("port").toString().toInt();
-    serverData["username"]   = sftpSetting.value("user").toString();
+    serverData["username"]   = sftpSetting.value("username").toString();
     serverData["password"]   = sftpSetting.value("password").toString();
     serverData["data_interval"] = sftpSetting.value("interval").toString().toInt();
 
@@ -455,7 +455,7 @@ void AwsMqttManager::processSftpSettings(const QJsonObject &sftpSetting)
 
     QJsonDocument doc(payload);
     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
-    publishMessage(topic_pub_mqtt, jsonString);
+    publishMessage(topic_pub_sftp, jsonString);
 }
 
 
