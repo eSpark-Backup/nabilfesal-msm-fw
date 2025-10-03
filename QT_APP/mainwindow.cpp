@@ -595,11 +595,13 @@ void MainWindow::onChannelDataWatchdogTimeout()
         pollTimer->start(200);
     }
 
-    startApp = true;
-    sendRatioSettings();
-    QTimer::singleShot(20000, this, [this]() { 
-        startApp = false; 
-    });
+    QTimer::singleShot(5000, this, [this](){
+        startApp = true;
+        sendRatioSettings();
+        QTimer::singleShot(20000, this, [this]() { 
+            startApp = false; 
+        });
+    });    
 
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
 }
