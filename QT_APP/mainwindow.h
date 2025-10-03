@@ -62,6 +62,8 @@ private slots:
     void updateProgress();
     void setupProgressBar();
 
+    void onChannelDataWatchdogTimeout();
+
 private:
     // Setup helpers
     void initConfig();
@@ -118,6 +120,8 @@ private:
 
     QMap<int, QJsonObject> latestData;
     QMutex latestDataMutex;
+    QTimer *channelDataWatchdog;
+    const int WATCHDOG_TIMEOUT_MS = 30000;
 };
 
 #endif // MAINWINDOW_H
