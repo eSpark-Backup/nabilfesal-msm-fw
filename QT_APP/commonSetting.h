@@ -24,8 +24,8 @@ signals:
 
 protected:
     virtual bool eventFilter(QObject *obj, QEvent *event) = 0;
-    QJsonObject loadMqttSettings(bool showMessages);
-    QJsonObject loadSftpSettings(bool showMessages);
+    QJsonObject loadMqttSettings(bool showMessages, bool reloadSettings = true);
+    QJsonObject loadSftpSettings(bool showMessages, bool reloadSettings = true);
     void saveMqttSettings(QJsonObject sftpSetting, bool showMessages = true);
     void saveSftpSettings(QJsonObject sftpSetting, bool showMessages = true);
     bool jsonDifferent(const QJsonObject &a, const QString &path);

@@ -10,7 +10,7 @@
 #define MQTT_CONFIG_PATH "config/mqtt_settings.json"
 #define SFTP_CONFIG_PATH "config/sftp_settings.json"
 
-QJsonObject settingsManager::loadMqttSettings(bool showMessages)
+QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSettings)
 {
     QFile file(MQTT_CONFIG_PATH);
     if (!file.exists()) {
@@ -37,7 +37,7 @@ QJsonObject settingsManager::loadMqttSettings(bool showMessages)
     }
 
     QJsonObject mqttSettings = doc.object();
-    emit mqtt_load();
+    if(reloadSettings) emit mqtt_load();
     return mqttSettings;
 }
 
@@ -106,7 +106,7 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
 }
 
 
-QJsonObject settingsManager::loadSftpSettings(bool showMessages)
+QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSettings)
 {
     QFile file("config/sftp_settings.json");
     if (!file.exists()) {
@@ -135,7 +135,7 @@ QJsonObject settingsManager::loadSftpSettings(bool showMessages)
 
     QJsonObject sftpSettings = doc.object();
 
-    emit sftp_load();
+    if(reloadSettings) emit sftp_load();
     return sftpSettings;
 }
 

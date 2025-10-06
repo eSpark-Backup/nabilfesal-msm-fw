@@ -43,7 +43,6 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     awsMqttsClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);
-    isConnected  = false;
 
     reconnectTimer->setInterval(30 * 1000);  // 30 seconds
     reconnectTimer->setSingleShot(false);    // repeat until success
@@ -90,6 +89,10 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
         }
         awsTopicsInit();
         subscribeToTopic();
+        if(isFirstTime) {
+            isFirstTime = false;
+            emit updateAwsData();
+        }
     });
 
     // Disconnected signal

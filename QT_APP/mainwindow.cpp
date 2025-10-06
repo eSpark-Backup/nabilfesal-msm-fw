@@ -258,7 +258,7 @@ void MainWindow::connectLoginSignals()
     // AWS MQTTS reload request
     connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
         awsMqttsHandler->disconnectAwsClient();
-        QTimer::singleShot(5000, [this]() { awsMqttsHandler->reloadAwsMqttsSettings(); });
+        QTimer::singleShot(1000, [this]() { awsMqttsHandler->reloadAwsMqttsSettings(); });
     });
 
     // AWS manager may ask for reboot
@@ -274,6 +274,8 @@ void MainWindow::connectLoginSignals()
             settings, &DeviceSettings::parse_load_store_sftp);
     connect(awsMqttsHandler, &AwsMqttManager::mqttConfigReceived,
             settings, &DeviceSettings::parse_load_store_mqtt);
+    connect(awsMqttsHandler, &AwsMqttManager::updateAwsData,
+            settings, &DeviceSettings::send_aws_updated_data);
 
     // When settings change, notify AWS manager to process them
     connect(settings, &DeviceSettings::deviceInfoChanged,
@@ -283,7 +285,7 @@ void MainWindow::connectLoginSignals()
     connect(settings, &DeviceSettings::sftpSettingsChanged,
             awsMqttsHandler, &AwsMqttManager::processSftpSettings);
     connect(settings, &DeviceSettings::ntpSettingsChanged,
-            awsMqttsHandler, &AwsMqttManager::processNtpSettings);
+            awsMqttsHandler, &AwsMqttManager::processNtpSettings);           
 
     // Wire telemetry -> managers
     connect(this, &MainWindow::receivedChannelData,

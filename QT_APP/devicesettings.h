@@ -33,6 +33,7 @@ public slots:
     void parse_load_store_ntp(const QJsonObject &payload);
     void parse_load_store_sftp(const QJsonObject &payload);
     void parse_load_store_mqtt(const QJsonObject &payload);
+    void send_aws_updated_data();
     
 
 private slots:

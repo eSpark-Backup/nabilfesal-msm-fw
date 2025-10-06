@@ -617,3 +617,19 @@ void DeviceSettings::on_export_btn_clicked()
     emit usbExport();
 }
 
+
+void DeviceSettings::send_aws_updated_data()
+{
+    QJsonObject mqttSettings = loadMqttSettings(false, false);
+    if (!mqttSettings.isEmpty())
+        emit mqttSettingsChanged(mqttSettings);
+
+    QJsonObject sftpSettings = loadSftpSettings(false, false);
+    if (!sftpSettings.isEmpty())
+        emit sftpSettingsChanged(sftpSettings);
+
+    NtpSettings ntp;
+    if (Utils::setNtpServers(ntp.servers))
+        emit ntpSettingsChanged(ntp);
+}
+

@@ -44,6 +44,7 @@ signals:
     void ntpConfigReceived(const QJsonObject &payload);
     void mqttConfigReceived(const QJsonObject &payload);
     void sftpConfigReceived(const QJsonObject &payload);
+    void updateAwsData();
 
 public slots:
 
@@ -76,6 +77,7 @@ private:
     QString clientId;
     int intervalSec = 10;
     bool isConnected = false;
+    bool isFirstTime = true;
 
     #if defined(BUILD_X86)
         QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
