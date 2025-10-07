@@ -1,0 +1,96 @@
+#!/bin/sh
+# ota_update.sh - Application OTA for /MSM directory
+
+# =============================
+# Arguments
+# =============================
+if [ -z "$1" ]; then
+    echo "Usage: $0 <OTA_FILENAME.zip>"
+    exit 1
+fi
+
+FILENAME="$1"
+
+# =============================
+# Config
+# =============================
+SERVER="ap-southeast-1.sftpcloud.io"    # your SFTP server
+USER="ofp-msm"                          # your username
+PASS="root123456"                       # your password
+REMOTE_PATH="/ota-test/$FILENAME"       # remote file path on SFTP
+LOCAL_TMP="/tmp/$FILENAME"
+STAGING_DIR="/tmp/MSM_update"
+INSTALL_DIR="/MSM/potential-pancake/MSM"
+
+# =============================
+# Download OTA package
+# =============================
+echo "[OTA] Downloading update from $SERVER:$REMOTE_PATH..."
+BATCH_FILE=$(mktemp)
+echo "get $REMOTE_PATH $LOCAL_TMP" > "$BATCH_FILE"
+
+sshpass -p "$PASS" sftp -oBatchMode=no -b "$BATCH_FILE" "$USER@$SERVER"
+status=$?
+rm -f "$BATCH_FILE"
+
+if [ $status -ne 0 ]; then
+    echo "[OTA] ERROR: sftp failed (exit $status)"
+    exit 1
+fi
+
+if [ ! -s "$LOCAL_TMP" ]; then
+    echo "[OTA] ERROR: Download failed (file missing or empty)"
+    exit 1
+fi
+
+# =============================
+# Extract & prepare update
+# =============================
+echo "[OTA] Extracting update..."
+rm -rf "$STAGING_DIR"
+mkdir -p "$STAGING_DIR"
+unzip -o "$LOCAL_TMP" -d "$STAGING_DIR" || exit 1
+
+# =============================
+# Stop running services
+# =============================
+echo "[OTA] Stopping services..."
+kill "$(cat /var/run/msm_run.pid)" || true
+
+# =============================
+# Preserve important data
+# =============================
+echo "[OTA] Preserving configs and provisioned certs..."
+cp -r "$INSTALL_DIR/bin/config" "$STAGING_DIR/MSM/bin/" || true
+cp -r "$INSTALL_DIR/creds/prov_certs" "$STAGING_DIR/MSM/creds/" || true
+
+# =============================
+# Deploy update
+# =============================
+echo "[OTA] Installing update into $INSTALL_DIR..."
+rm -rf "$INSTALL_DIR"
+cp -r "$STAGING_DIR/MSM" "$INSTALL_DIR"
+
+
+# Remove the scripts that are added in last OTA update
+rm -rf /etc/init.d/S100msm
+rm -rf /etc/init.d/S99gsm
+rm -rf /etc/init.d/S110dev
+rm -rf /etc/init.d/S200git
+rm -rf /etc/init.d/S210at_axec
+rm -rf /etc/init.d/S98usb_reboot
+
+chmod +x "$INSTALL_DIR/init-scripts/"*
+cp -r "$INSTALL_DIR/init-scripts/"* "/etc/init.d/"
+
+# =============================
+# Cleanup
+# =============================
+echo "[OTA] Cleaning up..."
+rm -rf "$LOCAL_TMP" "$STAGING_DIR"
+
+# =============================
+# Reboot
+# =============================
+echo "[OTA] Update completed. Rebooting..."
+reboot
