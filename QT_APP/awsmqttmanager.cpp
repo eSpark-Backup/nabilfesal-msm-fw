@@ -66,14 +66,16 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 
         QByteArray payload1 = buildAwsTelemetryJson(0, mid);
         AWS_LOG("\n========================================================================");
-        AWS_LOG("Publishing first half of telemetry (" << 0 << "-" << mid-1 << ")");
+        AWS_LOG("Publishing first half of telemetry (" << 0 << "-" << mid-1 << ") : payload" << payload1);
         AWS_LOG("\n========================================================================");
+        if (!payload1.isEmpty())
         publishMessage(topic_pub_telemetry, payload1);
         // Publish second half
         QByteArray payload2 = buildAwsTelemetryJson(mid, totalChannels);
         AWS_LOG("\n========================================================================");
-        AWS_LOG("Publishing second half of telemetry (" << mid << "-" << totalChannels-1 << ")");
+        AWS_LOG("Publishing second half of telemetry (" << mid << "-" << totalChannels-1 << "):  payload" << payload2);
         AWS_LOG("\n========================================================================");
+        if (!payload2.isEmpty())
         publishMessage(topic_pub_telemetry, payload2);
 
     });
@@ -359,7 +361,8 @@ QByteArray AwsMqttManager::buildAwsTelemetryJson(int startIndex, int endIndex) c
             channelsArray.append(it.value());
         }
     }
-
+    locker.unlock();
+    if (channelsArray.isEmpty())    return {};
     root["channels"] = channelsArray;
 
     QJsonDocument doc(root);

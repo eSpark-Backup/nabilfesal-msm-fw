@@ -629,7 +629,17 @@ void DeviceSettings::send_aws_updated_data()
         emit sftpSettingsChanged(sftpSettings);
 
     NtpSettings ntp;
-    if (Utils::setNtpServers(ntp.servers))
+    auto ntpData = Utils::getNtpStatus();
+    if (ntpData.contains("ntp_servers") && ntpData["ntp_servers"].isArray()) {
+        QJsonArray serverArray = ntpData["ntp_servers"].toArray();
+        for (const auto &val : serverArray) {
+        QString server = val.toString().trimmed();
+        if (!server.isEmpty())
+            ntp.servers.append(server);
+    }
+
+    if (!ntp.servers.isEmpty())
         emit ntpSettingsChanged(ntp);
+    }
 }
 
