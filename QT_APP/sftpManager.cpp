@@ -399,12 +399,25 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
     out.setCodec("UTF-16");  // matches your file encoding
 
     // Fixed key order per channel
+    QStringList baseKeysIncoming_Modified = {
+        "V(R)","In1(R1)","In1(RPF)",
+        "V(Y)","In1(Y1)","In1(YPF)",
+        "V(B)","In1(B1)","In1(BPF)",
+        "P1","Q1","S1",
+        "Epimp1","Epexp1","Eqimp1","Eqexp1"
+    };
+
     QStringList baseKeysIncoming = {
         "V_R","In1_R1","In1_RPF",
         "V_Y","In1_Y1","In1_YPF",
         "V_B","In1_B1","In1_BPF",
         "P1","Q1","S1",
         "Epimp1","Epexp1","Eqimp1","Eqexp1"
+    };
+
+    QStringList baseKeysOutgoing_Modified = {
+        "R","PF(R","Y","PF(Y","B","PF(B","P","Q","S",
+        "Epimp","Epexp","Eqimp","Eqexp"
     };
 
     QStringList baseKeysOutgoing = {
@@ -415,21 +428,24 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
     // ---- Write Header ----
     if (writeHeader) {
         QStringList header;
-        header << "\"Date\"" << "\"Time\"";
+        header << "\"Date\"" << "\"Time\"" << "\"IP\"" << "\"UUID\"";
 
         // Channel 1 (incoming)
-        for (const QString &k : baseKeysIncoming) {
+        for (const QString &k : baseKeysIncoming_Modified) {
             header << "\"" + k + "\"";
         }
 
         // Channels 2–12 (outgoing)
         for (int ch = 2; ch <= 12; ++ch) {
             int idx = ch - 1;
-            for (const QString &k : baseKeysOutgoing) {
-                header << QString("\"F%1(%2)\"").arg(idx).arg(k);
+            for (const QString &k : baseKeysOutgoing_Modified) {
+                if (k == "PF(R" || k == "PF(Y" || k == "PF(B")
+                    header << QString("\"%1%2)\"").arg(k).arg(idx);
+                else
+                    header << QString("\"F%1(%2)\"").arg(idx).arg(k);
             }
         }
-        out << header.join("\t") << "\n";
+        out << header.join(",") << "\n";
     }
 
     // ---- Write Row ----
@@ -437,6 +453,8 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
     QDateTime now = QDateTime::currentDateTime();
     row << "\"" + now.date().toString("dd/MM/yyyy") + "\"";
     row << "\"" + now.time().toString("HH:mm") + "\"";
+    row << "\"" + Utils::getDeviceIp() + "\"";
+    row << "\"" + Utils::getUid() + "\"";
 
     {
         QReadLocker locker(&telemetryLock);
@@ -463,6 +481,6 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
         }
     }
 
-    out << row.join("\t") << "\n";
+    out << row.join(",") << "\n";
     file.close();
 }

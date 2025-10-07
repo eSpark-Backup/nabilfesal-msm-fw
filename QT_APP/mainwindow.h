@@ -63,6 +63,7 @@ private slots:
     void setupProgressBar();
 
     void onChannelDataWatchdogTimeout();
+    void processIncomingJson(int channel, const QJsonObject &payload);
 
 private:
     // Setup helpers

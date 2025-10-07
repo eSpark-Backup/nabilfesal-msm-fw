@@ -309,11 +309,14 @@ void MainWindow::onUsbMounted(const QString &dev, const QString &path)
     m_mountPath = path.toStdString();
     usbExporter->setDeviceName(dev, path);
 
-    if (!isLogin) {
-        usbDetected = true;
-        login->showFullScreen();
-    } else {
-        usbExporter->show();
+    if (!startApp)
+    {
+        if (!isLogin) {
+            usbDetected = true;
+            login->showFullScreen();
+        } else {
+            usbExporter->show();
+        }
     }
 }
 
@@ -347,8 +350,7 @@ void MainWindow::onUsbExportAccepted()
 // -----------------------------
 void MainWindow::onChannelDataReady(int ch, const QJsonObject &obj)
 {
-    QMutexLocker locker(&latestDataMutex);
-    latestData[ch] = obj;
+    processIncomingJson(ch, obj);
     emit receivedChannelData(ch, obj);
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
 }
@@ -606,4 +608,112 @@ void MainWindow::onChannelDataWatchdogTimeout()
     });    
 
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
+}
+
+void MainWindow::processIncomingJson(int channel, const QJsonObject &payload)
+{
+    QJsonObject root = payload;
+    QJsonObject data = root["data"].toObject();
+
+    QJsonObject phaseA = data["phase_a"].toObject();
+    QJsonObject phaseB = data["phase_b"].toObject();
+    QJsonObject phaseC = data["phase_c"].toObject();
+    QJsonObject telemetry;
+
+    if(channel == 1)
+    {
+        // =============== INCOMING CHANNEL =================
+        telemetry["V_R"]     = phaseA["general"].toObject()["rms_voltage"].toDouble();
+        telemetry["In1_R1"]  = phaseA["general"].toObject()["current"].toDouble();
+        telemetry["In1_RPF"] = phaseA["power"].toObject()["factor"].toDouble();
+
+        telemetry["V_Y"]     = phaseB["general"].toObject()["rms_voltage"].toDouble();
+        telemetry["In1_Y1"]  = phaseB["general"].toObject()["current"].toDouble();
+        telemetry["In1_YPF"] = phaseB["power"].toObject()["factor"].toDouble();
+
+        telemetry["V_B"]     = phaseC["general"].toObject()["rms_voltage"].toDouble();
+        telemetry["In1_B1"]  = phaseC["general"].toObject()["current"].toDouble();
+        telemetry["In1_BPF"] = phaseC["power"].toObject()["factor"].toDouble();
+
+        // Power
+        double P1_R = phaseA["power"].toObject()["active"].toDouble();
+        double P1_B = phaseB["power"].toObject()["active"].toDouble();
+        double P1_Y = phaseC["power"].toObject()["active"].toDouble();
+        telemetry["P1_R"] = P1_R;
+        telemetry["P1_B"] = P1_B;
+        telemetry["P1_Y"] = P1_Y;
+        telemetry["P1"]   = P1_R + P1_B + P1_Y;
+
+        // Reactive
+        double Q1_R = phaseA["power"].toObject()["reactive"].toDouble();
+        double Q1_B = phaseB["power"].toObject()["reactive"].toDouble();
+        double Q1_Y = phaseC["power"].toObject()["reactive"].toDouble();
+        telemetry["Q1_R"] = Q1_R;
+        telemetry["Q1_B"] = Q1_B;
+        telemetry["Q1_Y"] = Q1_Y;
+        telemetry["Q1"]   = Q1_R + Q1_B + Q1_Y;
+
+        // Apparent
+        double S1_R = phaseA["power"].toObject()["apparent"].toDouble();
+        double S1_B = phaseB["power"].toObject()["apparent"].toDouble();
+        double S1_Y = phaseC["power"].toObject()["apparent"].toDouble();
+        telemetry["S1_R"] = S1_R;
+        telemetry["S1_B"] = S1_B;
+        telemetry["S1_Y"] = S1_Y;
+        telemetry["S1"]   = S1_R + S1_B + S1_Y;
+
+        // Energy
+        QJsonObject energyA = phaseA["energy"].toObject();
+        QJsonObject activeA   = energyA["active"].toObject();
+        QJsonObject reactiveA = energyA["reactive"].toObject();
+
+        telemetry["Epimp1"] = activeA["negative"].toDouble();
+        telemetry["Epexp1"] = activeA["positive"].toDouble();
+        telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
+        telemetry["Eqexp1"] = reactiveA["positive"].toDouble();
+    }
+    else
+    {
+        // =============== OUTGOING CHANNELS =================
+          // Outgoing channels: F(channel-1)_ prefix
+        int idx = channel - 1;  // Channel 2 → F1, Channel 3 → F2, … Channel 12 → F11
+        QString prefix = QString("F%1_").arg(idx);
+
+        double P_R = phaseA["power"].toObject()["active"].toDouble();
+        double P_B = phaseB["power"].toObject()["active"].toDouble();
+        double P_Y = phaseC["power"].toObject()["active"].toDouble();
+
+        double Q_R = phaseA["power"].toObject()["reactive"].toDouble();
+        double Q_B = phaseB["power"].toObject()["reactive"].toDouble();
+        double Q_Y = phaseC["power"].toObject()["reactive"].toDouble();
+
+        double S_R = phaseA["power"].toObject()["apparent"].toDouble();
+        double S_B = phaseB["power"].toObject()["apparent"].toDouble();
+        double S_Y = phaseC["power"].toObject()["apparent"].toDouble();
+
+        QJsonObject energyA   = phaseA["energy"].toObject();
+        QJsonObject activeA   = energyA["active"].toObject();
+        QJsonObject reactiveA = energyA["reactive"].toObject();
+
+        telemetry[prefix + "R"]     = phaseA["general"].toObject()["current"].toDouble();
+        telemetry["PF_R" + QString::number(idx)] = phaseA["power"].toObject()["factor"].toDouble();
+
+        telemetry[prefix + "Y"]     = phaseB["general"].toObject()["current"].toDouble();
+        telemetry["PF_Y" + QString::number(idx)] = phaseB["power"].toObject()["factor"].toDouble();
+
+        telemetry[prefix + "B"]     = phaseC["general"].toObject()["current"].toDouble();
+        telemetry["PF_B" + QString::number(idx)] = phaseC["power"].toObject()["factor"].toDouble();
+
+        telemetry[prefix + "P"] = P_R + P_B + P_Y;
+        telemetry[prefix + "Q"] = Q_R + Q_B + Q_Y;
+        telemetry[prefix + "S"] = S_R + S_B + S_Y;
+
+        telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
+        telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
+        telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
+        telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
+    }
+    
+    QMutexLocker locker(&latestDataMutex);
+    latestData[channel] = telemetry;
 }

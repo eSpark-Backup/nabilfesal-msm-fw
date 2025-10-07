@@ -15,8 +15,11 @@
 class UsbDataExporter : public QObject {
     Q_OBJECT
 public:
-    UsbDataExporter(const QString &mountPath, int intervalDays, QMap<int, QJsonObject> snapShot, QObject *parent = nullptr)
-        : QObject(parent), m_mountPath(mountPath), m_intervalDays(intervalDays), m_elapsedDays(0)
+    UsbDataExporter(const QString &mountPath, int intervalDays, const QMap<int, QJsonObject> &snapShot, QObject *parent = nullptr)
+        : QObject(parent),
+          m_mountPath(mountPath),
+          m_intervalDays(intervalDays),
+          m_elapsedDays(0)
     {
         auto uuid = Utils::getUid();
         auto filename = uuid + "_" + QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss") + ".csv";
@@ -27,18 +30,26 @@ public:
             m_latestSnapshot = snapShot;
         }
 
-        m_timer = new QTimer(this);
-        connect(m_timer, &QTimer::timeout, this, &UsbDataExporter::onDayPassed);
+        // Timers for periodic actions
+        m_logTimer = new QTimer(this);
+        m_dayTimer = new QTimer(this);
 
-        // export immediately at startup
         exportSnapshot();
 
-        // tick every 1 day (safe: 86,400,000 < INT_MAX)
-        m_timer->start(24 * 60 * 60 * 1000);
+        connect(m_logTimer, &QTimer::timeout, this, &UsbDataExporter::exportSnapshot);
+        connect(m_dayTimer, &QTimer::timeout, this, &UsbDataExporter::onDayPassed);
 
+
+        // Log every 10 minutes
+        m_logTimer->start(10 * 60 * 1000);
+
+        // Track day progress every 24 hours
+        m_dayTimer->start(24 * 60 * 60 * 1000);
+
+        // Connect to parent data signal if available
         if (parent) {
-            connect(parent, SIGNAL(receivedChannelData(int,QJsonObject)),
-                    this, SLOT(onNewChannelData(int,QJsonObject)));
+            connect(parent, SIGNAL(receivedChannelData(int, QJsonObject)),
+                    this, SLOT(onNewChannelData(int, QJsonObject)));
         }
     }
 
@@ -46,72 +57,212 @@ public:
 
 public slots:
     void stop() {
-        m_timer->stop();
+        if (m_logTimer) m_logTimer->stop();
+        if (m_dayTimer) m_dayTimer->stop();
     }
 
-    void onNewChannelData(int channel, const QJsonObject &data) {
+    void onNewChannelData(int channel, const QJsonObject &payload) {
+        // Defensive parsing
+        if (payload.isEmpty()) return;
+
+        QJsonObject data = payload["data"].toObject();
+        if (data.isEmpty()) return;
+
+        QJsonObject phaseA = data["phase_a"].toObject();
+        QJsonObject phaseB = data["phase_b"].toObject();
+        QJsonObject phaseC = data["phase_c"].toObject();
+        QJsonObject telemetry;
+
+        // =================== INCOMING CHANNEL ===================
+        if (channel == 1) {
+            telemetry["V_R"]     = phaseA["general"].toObject()["rms_voltage"].toDouble();
+            telemetry["In1_R1"]  = phaseA["general"].toObject()["current"].toDouble();
+            telemetry["In1_RPF"] = phaseA["power"].toObject()["factor"].toDouble();
+
+            telemetry["V_Y"]     = phaseB["general"].toObject()["rms_voltage"].toDouble();
+            telemetry["In1_Y1"]  = phaseB["general"].toObject()["current"].toDouble();
+            telemetry["In1_YPF"] = phaseB["power"].toObject()["factor"].toDouble();
+
+            telemetry["V_B"]     = phaseC["general"].toObject()["rms_voltage"].toDouble();
+            telemetry["In1_B1"]  = phaseC["general"].toObject()["current"].toDouble();
+            telemetry["In1_BPF"] = phaseC["power"].toObject()["factor"].toDouble();
+
+            // Power
+            double P1_R = phaseA["power"].toObject()["active"].toDouble();
+            double P1_Y = phaseB["power"].toObject()["active"].toDouble();
+            double P1_B = phaseC["power"].toObject()["active"].toDouble();
+            telemetry["P1"] = P1_R + P1_Y + P1_B;
+
+            // Reactive
+            double Q1_R = phaseA["power"].toObject()["reactive"].toDouble();
+            double Q1_Y = phaseB["power"].toObject()["reactive"].toDouble();
+            double Q1_B = phaseC["power"].toObject()["reactive"].toDouble();
+            telemetry["Q1"] = Q1_R + Q1_Y + Q1_B;
+
+            // Apparent
+            double S1_R = phaseA["power"].toObject()["apparent"].toDouble();
+            double S1_Y = phaseB["power"].toObject()["apparent"].toDouble();
+            double S1_B = phaseC["power"].toObject()["apparent"].toDouble();
+            telemetry["S1"] = S1_R + S1_Y + S1_B;
+
+            // Energy
+            QJsonObject energyA   = phaseA["energy"].toObject();
+            QJsonObject activeA   = energyA["active"].toObject();
+            QJsonObject reactiveA = energyA["reactive"].toObject();
+
+            telemetry["Epimp1"] = activeA["negative"].toDouble();
+            telemetry["Epexp1"] = activeA["positive"].toDouble();
+            telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
+            telemetry["Eqexp1"] = reactiveA["positive"].toDouble();
+        } 
+        // =================== OUTGOING CHANNELS ===================
+        else {
+            int idx = channel - 1;
+            QString prefix = QString("F%1_").arg(idx);
+
+            double P_R = phaseA["power"].toObject()["active"].toDouble();
+            double P_Y = phaseB["power"].toObject()["active"].toDouble();
+            double P_B = phaseC["power"].toObject()["active"].toDouble();
+
+            double Q_R = phaseA["power"].toObject()["reactive"].toDouble();
+            double Q_Y = phaseB["power"].toObject()["reactive"].toDouble();
+            double Q_B = phaseC["power"].toObject()["reactive"].toDouble();
+
+            double S_R = phaseA["power"].toObject()["apparent"].toDouble();
+            double S_Y = phaseB["power"].toObject()["apparent"].toDouble();
+            double S_B = phaseC["power"].toObject()["apparent"].toDouble();
+
+            QJsonObject energyA   = phaseA["energy"].toObject();
+            QJsonObject activeA   = energyA["active"].toObject();
+            QJsonObject reactiveA = energyA["reactive"].toObject();
+
+            telemetry[prefix + "R"]     = phaseA["general"].toObject()["current"].toDouble();
+            telemetry["PF_R" + QString::number(idx)] = phaseA["power"].toObject()["factor"].toDouble();
+
+            telemetry[prefix + "Y"]     = phaseB["general"].toObject()["current"].toDouble();
+            telemetry["PF_Y" + QString::number(idx)] = phaseB["power"].toObject()["factor"].toDouble();
+
+            telemetry[prefix + "B"]     = phaseC["general"].toObject()["current"].toDouble();
+            telemetry["PF_B" + QString::number(idx)] = phaseC["power"].toObject()["factor"].toDouble();
+
+            telemetry[prefix + "P"] = P_R + P_Y + P_B;
+            telemetry[prefix + "Q"] = Q_R + Q_Y + Q_B;
+            telemetry[prefix + "S"] = S_R + S_Y + S_B;
+
+            telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
+            telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
+            telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
+            telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
+        }
+
         QMutexLocker locker(&m_mutex);
-        m_latestSnapshot[channel] = data;
+        m_latestSnapshot[channel] = telemetry;
     }
 
 private slots:
     void onDayPassed() {
         m_elapsedDays++;
         if (m_elapsedDays >= m_intervalDays) {
-            exportSnapshot();
-            m_elapsedDays = 0; // reset
+            stop();
         }
     }
 
     void exportSnapshot() {
         QMap<int, QJsonObject> snapshotCopy;
         {
-            // take a copy while holding lock
             QMutexLocker locker(&m_mutex);
             snapshotCopy = m_latestSnapshot;
         }
 
-        if (snapshotCopy.isEmpty())
+        if (snapshotCopy.isEmpty()) {
             return;
+        }
 
         QFile file(m_filePath);
-        bool newFile = !file.exists();
-        if (!file.open(QIODevice::Append | QIODevice::Text))
+        bool writeHeader = !file.exists();
+
+        if (!file.open(QIODevice::Append | QIODevice::Text)) {
             return;
+        }
 
         QTextStream out(&file);
+        out.setCodec("UTF-16");
 
-        // Write header only once
-        if (newFile) {
-            QStringList headers = {"timestamp", "channel"};
-            QJsonObject firstChannel = snapshotCopy[snapshotCopy.firstKey()];
-            QStringList flatKeys;
-            flattenJson(firstChannel, QString(), flatKeys);
-            // removing ID from headers
-            flatKeys.removeAll("ID");
-            headers.append(flatKeys);
-            out << headers.join(",") << "\n";
+        QStringList baseKeysIncoming_Modified = {
+            "V(R)","In1(R1)","In1(RPF)",
+            "V(Y)","In1(Y1)","In1(YPF)",
+            "V(B)","In1(B1)","In1(BPF)",
+            "P1","Q1","S1",
+            "Epimp1","Epexp1","Eqimp1","Eqexp1"
+        };
+
+        QStringList baseKeysIncoming = {
+            "V_R","In1_R1","In1_RPF",
+            "V_Y","In1_Y1","In1_YPF",
+            "V_B","In1_B1","In1_BPF",
+            "P1","Q1","S1",
+            "Epimp1","Epexp1","Eqimp1","Eqexp1"
+        };
+
+        QStringList baseKeysOutgoing_Modified = {
+            "R","PF(R","Y","PF(Y","B","PF(B","P","Q","S",
+            "Epimp","Epexp","Eqimp","Eqexp"
+        };
+
+        QStringList baseKeysOutgoing = {
+            "R","PF_R","Y","PF_Y","B","PF_B","P","Q","S",
+            "Epimp","Epexp","Eqimp","Eqexp"
+        };
+
+        // ---- Write Header ----
+        if (writeHeader) {
+            QStringList header;
+            header << "\"Date\"" << "\"Time\"" << "\"IP\"" << "\"UUID\"";
+
+            // Channel 1 (incoming)
+            for (const QString &k : baseKeysIncoming_Modified) {
+                header << "\"" + k + "\"";
+            }
+
+            // Channels 2–12 (outgoing)
+            for (int ch = 2; ch <= 12; ++ch) {
+                int idx = ch - 1;
+                for (const QString &k : baseKeysOutgoing_Modified) {
+                    if (k == "PF(R" || k == "PF(Y" || k == "PF(B")
+                        header << QString("\"%1%2)\"").arg(k).arg(idx);
+                    else
+                        header << QString("\"F%1(%2)\"").arg(idx).arg(k);
+                }
+            }
+            out << header.join(",") << "\n";
         }
 
-        // For each channel → one row
-        QString timestamp = QDateTime::currentDateTime().toString(Qt::ISODate);
-        for (auto it = snapshotCopy.begin(); it != snapshotCopy.end(); ++it) {
-            QString channelKey = QString::number(it.key());
-            QJsonObject channelObj = it.value();
-            if (channelObj.isEmpty())
-                continue;
+        // Row
+        QStringList row;
+        QDateTime now = QDateTime::currentDateTime();
+        row << "\"" + now.date().toString("dd/MM/yyyy") + "\"";
+        row << "\"" + now.time().toString("HH:mm:ss") + "\"";
+        row << "\"" + Utils::getDeviceIp() + "\"";
+        row << "\"" + Utils::getUid() + "\"";
 
-            QStringList flatValues;
-            flattenJsonValues(channelObj, QString(), flatValues);
+        const auto obj1 = snapshotCopy.value(1);
+        for (const QString &k : baseKeysIncoming)
+            row << "\"" + QString::number(obj1.value(k).toDouble(), 'f', 4) + "\"";
 
-            QStringList row = {timestamp};
-            row.append(flatValues);
-            out << row.join(",") << "\n";
+        for (int ch = 2; ch <= 12; ++ch) {
+            int idx = ch - 1;
+            const auto obj = snapshotCopy.value(ch);
+            for (const QString &k : baseKeysOutgoing) {
+                QString fullKey = k.startsWith("PF_") ? k + QString::number(idx)
+                                                      : QString("F%1_%2").arg(idx).arg(k);
+                row << "\"" + QString::number(obj.value(fullKey).toDouble(), 'f', 4) + "\"";
+            }
         }
 
+        out << row.join(",") << "\n";
         file.close();
 
-        // trim logic
+        // Trim if low on storage
         QStorageInfo storage(m_mountPath);
         if (storage.bytesAvailable() < 5 * 1024 * 1024) {
             trimCsvFile();
@@ -130,7 +281,9 @@ private:
             lines << in.readLine();
         file.close();
 
-        if (lines.size() < 20) return;
+        // Keep the header
+        if (lines.size() <= 2) return;
+
         int removeCount = lines.size() / 10;
         lines = lines.mid(removeCount);
 
@@ -141,39 +294,13 @@ private:
         }
     }
 
-    void flattenJson(const QJsonObject &obj, const QString &prefix, QStringList &keys) {
-        for (auto it = obj.begin(); it != obj.end(); ++it) {
-            QString key = prefix.isEmpty() ? it.key() : prefix + "." + it.key();
-
-            if (it.value().isObject()) {
-                flattenJson(it.value().toObject(), key, keys);
-            } else {
-                keys << key;
-            }
-        }
-    }
-
-    void flattenJsonValues(const QJsonObject &obj, const QString &prefix, QStringList &values) {
-        for (auto it = obj.begin(); it != obj.end(); ++it) {
-            if (it.value().isObject()) {
-                flattenJsonValues(it.value().toObject(), prefix.isEmpty() ? it.key() : prefix + "." + it.key(), values);
-            } else {
-                if (it.value().isDouble()) {
-                    values << QString::number(it.value().toDouble(), 'f', 2);
-                } else if (it.value().isBool()) {
-                    values << (it.value().toBool() ? "true" : "false");
-                } else {
-                    values << it.value().toString();
-                }
-            }
-        }
-    }
-
+private:
     QString m_mountPath;
     QString m_filePath;
     int m_intervalDays;
-    QTimer *m_timer;
     int m_elapsedDays;
+    QTimer *m_logTimer;
+    QTimer *m_dayTimer;
     QMap<int, QJsonObject> m_latestSnapshot;
-    QMutex m_mutex;  // protects m_latestSnapshot
+    QMutex m_mutex;
 };
