@@ -552,7 +552,7 @@ QPushButton:focus {
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: rgb(148, 214, 235);</string>
+        <string notr="true">color: rgb(52, 101, 164);</string>
        </property>
        <property name="text">
         <string>Ein Technology Labs Sdn Bhd</string>
@@ -574,7 +574,7 @@ QPushButton:focus {
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: rgb(148, 214, 235);</string>
+        <string notr="true">color: rgb(52, 101, 164);</string>
        </property>
        <property name="text">
         <string>HW: 1.5.0  FW: 1.2.0</string>

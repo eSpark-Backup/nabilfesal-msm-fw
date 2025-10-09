@@ -13,6 +13,8 @@
 #include "mqttManager.h"
 #include "sftpManager.h"
 #include <cstdlib>
+#include <QLabel>
+#include <QPixmap>
 
 namespace Utils {
 void keySound() {
@@ -239,8 +241,8 @@ QString getSftpStatus()
 
 void rebootSystem()
 {
-    // Make sure any pending writes are flushed
-    QProcess::startDetached("sh", {"-c", "sync; reboot"});
+    QString imgPath = ":/icons/rebooting.png";
+    showImageFullscreenFor(imgPath, 2000);
 }
 
 
@@ -286,6 +288,32 @@ bool updateSerialInConfig()
     file.close();
 
     return true;
+}
+
+
+void showImageFullscreenFor(const QString &imagePath, int milliseconds)
+{
+    QLabel *label = new QLabel;
+    QPixmap pixmap(imagePath);
+
+    if (pixmap.isNull()) {
+        qWarning("Failed to load image");
+        return;
+    }
+
+    label->setPixmap(pixmap);
+    label->setFixedSize(pixmap.size());
+    label->setScaledContents(false);
+    label->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    label->move(0, 0);
+    label->show();
+
+
+    QTimer::singleShot(milliseconds, [label]() {
+        label->close();
+        label->deleteLater();
+        QProcess::startDetached("sh", {"-c", "sync; reboot"});
+    });
 }
 
 }

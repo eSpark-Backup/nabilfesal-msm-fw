@@ -45,7 +45,7 @@
     </size>
    </property>
    <property name="styleSheet">
-    <string notr="true">background: qlineargradient( x1:0, y0:1, x2:0, y2:1, stop:0 rgba(12, 137, 226, 89), stop:1 rgba(255, 255, 255, 20) );</string>
+    <string notr="true">background: qlineargradient( x1:0, y0:1, x2:0, y2:1, stop:0 rgba(100, 170, 240, 255), stop:1 rgba(255, 255, 255, 255));</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <property name="spacing">
@@ -119,14 +119,14 @@ background-color: rgba(255, 255, 255,0);</string>
     border-radius: 12px;            /* Rounded corners */
     background-color: white;        /* Background inside */
     text-align: center;             /* Center the % text */
-    color: black;                   /* Text color */
+	color: black;                   /* Text color */
     font: bold 14px;                /* Text style */
 }
 
 QProgressBar::chunk {
     border-radius: 8px;            /* Rounded fill */
     background-color: #0078d7;      /* Blue progress color */
-    margin: 3px;                    /* Prevents gaps */
+    margin: 2px;                    /* Prevents gaps */
 }</string>
             </property>
             <property name="value">
@@ -184,7 +184,7 @@ QProgressBar::chunk {
         </property>
         <property name="styleSheet">
          <string notr="true">background-color: rgba(255, 255, 255,0);
-color: rgb(148, 214, 235);</string>
+color: rgb(52, 101, 164);</string>
         </property>
         <property name="text">
          <string>Ein Technology Labs Sdn Bhd</string>
@@ -200,8 +200,8 @@ color: rgb(148, 214, 235);</string>
          </font>
         </property>
         <property name="styleSheet">
-         <string notr="true">color: rgb(148, 214, 235);
-background-color: rgba(255, 255, 255,0);</string>
+         <string notr="true">background-color: rgba(255, 255, 255,0);
+color: rgb(52, 101, 164);</string>
         </property>
         <property name="text">
          <string>HW: 1.5.0  FW: 1.2.0</string>

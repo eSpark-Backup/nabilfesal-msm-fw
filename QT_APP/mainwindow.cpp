@@ -482,6 +482,25 @@ void MainWindow::updateProgress()
 
     ui->progressBar->setValue(progressValue);
 
+    // change text color on the progress bar when >= 50%
+    if (progressValue >= 50) {
+        ui->progressBar->setStyleSheet(R"(
+            QProgressBar {
+                border: 2px solid #0078d7;
+                border-radius: 12px;
+                background-color: white;
+                text-align: center;
+                color: white;            /* white text when >= 50% */
+                font: bold 14px;
+            }
+            QProgressBar::chunk {
+                border-radius: 8px;
+                background-color: #0078d7;
+                margin: 2px;
+            }
+        )");
+    } 
+
     if (progressValue < 20)
         ui->process_info->setText("Initializing...");
     else if (progressValue < 40)

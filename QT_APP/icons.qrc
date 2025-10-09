@@ -31,5 +31,6 @@
         <file>icons/battery.png</file>
         <file>icons/Calibration.png</file>
         <file>icons/i.png</file>
+        <file>icons/rebooting.png</file>
     </qresource>
 </RCC>
