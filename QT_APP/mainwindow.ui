@@ -178,13 +178,16 @@ QProgressBar::chunk {
        <widget class="QLabel" name="label">
         <property name="font">
          <font>
-          <family>Gilroy</family>
-          <pointsize>12</pointsize>
+          <family>Ubuntu</family>
+          <pointsize>11</pointsize>
+          <italic>false</italic>
+          <bold>false</bold>
          </font>
         </property>
         <property name="styleSheet">
          <string notr="true">background-color: rgba(255, 255, 255,0);
-color: rgb(52, 101, 164);</string>
+color: rgb(52, 101, 164);
+font: 11pt &quot;Ubuntu&quot;;</string>
         </property>
         <property name="text">
          <string>Ein Technology Labs Sdn Bhd</string>
@@ -195,13 +198,16 @@ color: rgb(52, 101, 164);</string>
        <widget class="QLabel" name="hf">
         <property name="font">
          <font>
-          <family>Gilroy</family>
-          <pointsize>12</pointsize>
+          <family>Ubuntu</family>
+          <pointsize>11</pointsize>
+          <italic>false</italic>
+          <bold>false</bold>
          </font>
         </property>
         <property name="styleSheet">
          <string notr="true">background-color: rgba(255, 255, 255,0);
-color: rgb(52, 101, 164);</string>
+color: rgb(52, 101, 164);
+font: 11pt &quot;Ubuntu&quot;;</string>
         </property>
         <property name="text">
          <string>HW: 1.5.0  FW: 1.2.0</string>

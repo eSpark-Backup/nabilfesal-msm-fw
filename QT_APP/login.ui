@@ -381,6 +381,15 @@ QPushButton:focus {
         <property name="echoMode">
          <enum>QLineEdit::Password</enum>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="dragEnabled">
+         <bool>false</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
         <property name="placeholderText">
          <string>Login To Configuration Page</string>
         </property>
@@ -547,12 +556,15 @@ QPushButton:focus {
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
-         <family>Gilroy</family>
-         <pointsize>12</pointsize>
+         <family>Ubuntu</family>
+         <pointsize>11</pointsize>
+         <italic>false</italic>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: rgb(52, 101, 164);</string>
+        <string notr="true">color: rgb(52, 101, 164);
+font: 11pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
         <string>Ein Technology Labs Sdn Bhd</string>
@@ -569,12 +581,15 @@ QPushButton:focus {
        </property>
        <property name="font">
         <font>
-         <family>Gilroy</family>
-         <pointsize>12</pointsize>
+         <family>Ubuntu</family>
+         <pointsize>11</pointsize>
+         <italic>false</italic>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: rgb(52, 101, 164);</string>
+        <string notr="true">color: rgb(52, 101, 164);
+font: 11pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
         <string>HW: 1.5.0  FW: 1.2.0</string>
