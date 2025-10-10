@@ -77,23 +77,23 @@ void ChannelsHome::handleSubButtonClick(int channelIndex, const QString &buttonT
 
     if (buttonType == "gn") {
         energyCounter = 0;
-        en->setText("Energy\n");
+        en->setText("Energy");
         gn->setStyleSheet(buttonClickedStyle);
         channelStack->setCurrentIndex(0);
     } else if (buttonType == "pw") {
         energyCounter = 0;
-        en->setText("Energy\n");
+        en->setText("Energy");
         pw->setStyleSheet(buttonClickedStyle);
         channelStack->setCurrentIndex(1);
     } else if (buttonType == "en") {
         energyCounter++;
         if (energyCounter == 1)
         {
-            en->setText("Active\nEnergy\n");
+            en->setText("Active\nEnergy");
         }
         else if (energyCounter == 2)
         {
-            en->setText("Reactive\nEnergy\n");
+            en->setText("Reactive\nEnergy");
             energyCounter = 0;
         }
         en->setStyleSheet(buttonClickedStyle);

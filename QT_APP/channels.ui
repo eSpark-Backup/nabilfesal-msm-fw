@@ -74,7 +74,7 @@
       <enum>QFrame::Raised</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="channels">
       <property name="sizePolicy">
@@ -1746,6 +1746,18 @@ QPushButton:focus {
              </item>
              <item>
               <widget class="QFrame" name="horizontalFrame">
+               <property name="minimumSize">
+                <size>
+                 <width>200</width>
+                 <height>60</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>1000</width>
+                 <height>500</height>
+                </size>
+               </property>
                <property name="focusPolicy">
                 <enum>Qt::NoFocus</enum>
                </property>
@@ -1781,7 +1793,7 @@ background-color: #D9D9D9;</string>
                   <property name="minimumSize">
                    <size>
                     <width>100</width>
-                    <height>60</height>
+                    <height>10</height>
                    </size>
                   </property>
                   <property name="maximumSize">
@@ -1811,8 +1823,7 @@ border-radius: 14px;
 background-color: #D9D9D9;</string>
                   </property>
                   <property name="text">
-                   <string>General
-</string>
+                   <string>General</string>
                   </property>
                   <property name="flat">
                    <bool>true</bool>
@@ -1830,7 +1841,7 @@ background-color: #D9D9D9;</string>
                   <property name="minimumSize">
                    <size>
                     <width>100</width>
-                    <height>60</height>
+                    <height>50</height>
                    </size>
                   </property>
                   <property name="maximumSize">
@@ -1857,8 +1868,7 @@ border-radius: 14px;
 background-color: #D9D9D9;</string>
                   </property>
                   <property name="text">
-                   <string>Power
-</string>
+                   <string>Power</string>
                   </property>
                   <property name="flat">
                    <bool>true</bool>
@@ -1876,13 +1886,19 @@ background-color: #D9D9D9;</string>
                   <property name="minimumSize">
                    <size>
                     <width>100</width>
-                    <height>60</height>
+                    <height>10</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>100</width>
                     <height>50</height>
+                   </size>
+                  </property>
+                  <property name="baseSize">
+                   <size>
+                    <width>200</width>
+                    <height>60</height>
                    </size>
                   </property>
                   <property name="font">
@@ -1903,8 +1919,7 @@ border-radius: 14px;
 background-color: #D9D9D9;</string>
                   </property>
                   <property name="text">
-                   <string>Energy
-</string>
+                   <string>Energy</string>
                   </property>
                   <property name="flat">
                    <bool>true</bool>
@@ -1924,7 +1939,7 @@ background-color: #D9D9D9;</string>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>100</width>
+                 <width>80</width>
                  <height>20</height>
                 </size>
                </property>
@@ -2011,6 +2026,9 @@ background-color: #D9D9D9;</string>
            <layout class="QHBoxLayout" name="horizontalLayout_39">
             <property name="spacing">
              <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>9</number>
             </property>
             <item>
              <widget class="QLabel" name="channel_label">
@@ -7114,6 +7132,9 @@ border-color: rgb(255, 255, 255);</string>
                 <layout class="QVBoxLayout" name="verticalLayout_116">
                  <property name="spacing">
                   <number>6</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
                  </property>
                  <item>
                   <layout class="QHBoxLayout" name="horizontalLayout_72">
