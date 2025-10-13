@@ -2613,7 +2613,7 @@ image: url(:/icons/V.jpg);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -3274,7 +3274,7 @@ image: url(:/icons/V.jpg);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -3936,7 +3936,7 @@ image: url(:/icons/I.jpg);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -4603,7 +4603,7 @@ image: url(:/icons/frq.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -5019,7 +5019,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KVA</string>
+                           <string>kVA</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -5069,7 +5069,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>PHASE A - APPARANT PWR</string>
+                           <string>PHASE A - APPARENT PWR</string>
                           </property>
                           <property name="wordWrap">
                            <bool>false</bool>
@@ -5204,7 +5204,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KVA</string>
+                           <string>kVA</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -5254,7 +5254,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>PHASE B - APPARANT PWR</string>
+                           <string>PHASE B - APPARENT PWR</string>
                           </property>
                           <property name="wordWrap">
                            <bool>false</bool>
@@ -5283,7 +5283,7 @@ image: url(:/icons/power.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -5395,7 +5395,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KVA</string>
+                           <string>kVA</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -5448,7 +5448,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>PHASE C - APPARANT PWR</string>
+                           <string>PHASE C - APPARENT PWR</string>
                           </property>
                           <property name="wordWrap">
                            <bool>false</bool>
@@ -5590,7 +5590,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KW</string>
+                           <string>kW</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -5772,7 +5772,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KW</string>
+                           <string>kW</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -5848,7 +5848,7 @@ image: url(:/icons/power.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -5954,7 +5954,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KW</string>
+                           <string>kW</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -6143,7 +6143,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KVAR</string>
+                           <string>kVAR</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -6325,7 +6325,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KVAR</string>
+                           <string>kVAR</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -6401,7 +6401,7 @@ image: url(:/icons/power.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -6507,7 +6507,7 @@ image: url(:/icons/power.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KVAR</string>
+                           <string>kVAR</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -6960,7 +6960,7 @@ image: url(:/icons/pf.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>1.0</string>
@@ -7310,7 +7310,7 @@ image: url(:/icons/battery.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KWH</string>
+                           <string>kWh</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -7504,7 +7504,7 @@ image: url(:/icons/battery.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KWH</string>
+                           <string>kWh</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -7586,7 +7586,7 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -7698,7 +7698,7 @@ image: url(:/icons/battery.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KWH</string>
+                           <string>kWh</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -7899,7 +7899,7 @@ image: url(:/icons/battery.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KWH</string>
+                           <string>kWh</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -8093,7 +8093,7 @@ image: url(:/icons/battery.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KWH</string>
+                           <string>kWh</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -8175,7 +8175,7 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -8287,7 +8287,7 @@ image: url(:/icons/battery.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KWH</string>
+                           <string>kWh</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -8488,7 +8488,7 @@ image: url(:/icons/battery.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KWH</string>
+                           <string>kWh</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -8682,7 +8682,7 @@ image: url(:/icons/battery.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KWH</string>
+                           <string>kWh</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
@@ -8764,7 +8764,7 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(252, 233, 79);</string>
+color: rgb(237, 212, 0);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -8876,7 +8876,7 @@ image: url(:/icons/battery.png);</string>
                            <string notr="true">border-color: rgb(255, 255, 255);</string>
                           </property>
                           <property name="text">
-                           <string>KWH</string>
+                           <string>kWh</string>
                           </property>
                           <property name="alignment">
                            <set>Qt::AlignCenter</set>
