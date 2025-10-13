@@ -45,6 +45,7 @@ signals:
     void mqttConfigReceived(const QJsonObject &payload);
     void sftpConfigReceived(const QJsonObject &payload);
     void updateAwsData();
+    void settingsChanged();
 
 public slots:
 

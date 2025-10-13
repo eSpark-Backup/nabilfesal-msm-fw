@@ -17,6 +17,7 @@ public:
         inactivityTimer->setSingleShot(true);
 
         connect(inactivityTimer, &QTimer::timeout, this, &InactivityWatcher::goScreenOff);
+        connect(&AwsMqttManager::instance(), &AwsMqttManager::settingsChanged, this, &InactivityWatcher::wakeUp);
         inactivityTimer->start();
 
         // Overlay (black screen)
@@ -47,6 +48,12 @@ public:
         return QObject::eventFilter(obj, event);
     }
 
+public slots:
+    void wakeUp() {
+        resetTimer();
+        if (overlay->isVisible())
+            overlay->hide();
+    }
 
 private slots:
     void goScreenOff() {

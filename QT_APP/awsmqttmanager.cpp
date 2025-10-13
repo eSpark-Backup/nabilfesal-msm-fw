@@ -308,6 +308,7 @@ void AwsMqttManager::subscribeToTopic()
                 obj = doc.object();
                 qDebug().noquote() << "\n[AWS] Topic: " << msg.topic() << "Message received:" << "Parsed JSON:" << QJsonDocument(obj).toJson(QJsonDocument::Indented);
             }
+            emit settingsChanged();
 
             if (topic == topic_sub_reboot) {
                 emit rebootRequested();
