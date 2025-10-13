@@ -11,7 +11,7 @@
 #include <QTimer>
 #include <QTime>
 #include <QKeyEvent>
-
+#include "toast.h"
 
 DeviceSettings::DeviceSettings(QWidget *parent)
     : settingsManager(parent)
@@ -302,7 +302,7 @@ bool DeviceSettings::apply_ntp_Settings(bool msgBox)
         success = Utils::setNtpServers(newNtp.servers);
         if (success) {
             if(msgBox) {
-                QMessageBox::information(this, "NTP Settings", "NTP servers saved successfully.\nService restarted.");
+                Toast::show("NTP servers saved successfully.\nService restarted.", this, Toast::Info);
                 emit ntpSettingsChanged(newNtp);
             }
             previousNtp = newNtp;
@@ -310,8 +310,7 @@ bool DeviceSettings::apply_ntp_Settings(bool msgBox)
             if(msgBox) QMessageBox::critical(this, "NTP Settings", "Failed to save NTP servers.\nMake sure the app has root permissions.");
         }
     } else {
-        if (msgBox) QMessageBox::information(this, "NTP Settings", "No changes detected, settings are already up-to-date.");
-        qInfo() << "[NTP] No changes detected, skipping save.";
+        if (msgBox) Toast::show("No NTP changes detected, settings are already up-to-date.", this, Toast::Info);
     }
     return success;
 }
@@ -380,7 +379,7 @@ void DeviceSettings::apply_mqtt_Settings(const QJsonObject &mqttSettings, bool m
     ui->mqtt_int->setText(mqttSettings.value("interval").toString());
     
     if(msgBox)
-        QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
+        Toast::show("MQTT settings loaded successfully!", this, Toast::Info);
 }
 
 
@@ -447,7 +446,7 @@ void DeviceSettings::apply_sftp_Settings(const QJsonObject &sftpSettings, bool m
     ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
     
     if(msgBox)
-        QMessageBox::information(this, "SFTP Settings", "SFTP settings loaded successfully!");
+        Toast::show("SFTP settings loaded successfully!", this, Toast::Info);
 }
 
 

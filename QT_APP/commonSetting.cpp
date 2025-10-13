@@ -3,9 +3,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonParseError>
-#include <QMessageBox>
 #include <QDir>
-
+#include "toast.h"
 
 #define MQTT_CONFIG_PATH "config/mqtt_settings.json"
 #define SFTP_CONFIG_PATH "config/sftp_settings.json"
@@ -14,14 +13,12 @@ QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSett
 {
     QFile file(MQTT_CONFIG_PATH);
     if (!file.exists()) {
-        if (showMessages)
-            QMessageBox::warning(this, "MQTT Settings", "No saved settings found.");
+        if(showMessages) Toast::show("No MQTT settings Found!", this, Toast::Warning);
         return {};
     }
 
     if (!file.open(QIODevice::ReadOnly)) {
-        if (showMessages)
-            QMessageBox::critical(this, "MQTT Settings", "Failed to open settings file.");
+        if (showMessages) Toast::show("Failed to open MQTT setting file!", this, Toast::Error);
         return {};
     }
 
@@ -31,8 +28,7 @@ QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSett
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (doc.isNull() || !doc.isObject()) {
-        if (showMessages)
-            QMessageBox::critical(this, "MQTT Settings", "Invalid JSON format: " + parseError.errorString());
+        if (showMessages) Toast::show("[MQTT] Invalid JSON format: " + parseError.errorString(), this, Toast::Error);
         return {};
     }
 
@@ -57,7 +53,7 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessage
 
     QFile file(MQTT_CONFIG_PATH);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        if(showMessages) QMessageBox::critical(this, "MQTT Settings", "Failed to save MQTT settings.");
+        if(showMessages) Toast::show("Failed to save MQTT settings!", this, Toast::Error);
         return;
     }
 
@@ -67,7 +63,7 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessage
 
     if(showMessages) 
     {
-        QMessageBox::information(this, "MQTT Settings", "MQTT settings saved successfully!");
+        Toast::show("MQTT settings saved successfully!", this, Toast::Info);
         emit mqttSettingsChanged(mqttSetting);
     }
     emit mqtt_load();
@@ -90,7 +86,7 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
     // 3. Write to config/factory_sftp_settings.json
     QFile file("config/sftp_settings.json");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        if (showMessages) QMessageBox::critical(this, "SFTP Settings", "Failed to save SFTP settings.");
+        if (showMessages) Toast::show("Failed to save SFTP settings!", this, Toast::Error);
         return;
     }
 
@@ -99,7 +95,7 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
     file.close();
 
     if (showMessages) {
-        QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
+        Toast::show("SFTP settings saved successfully!", this, Toast::Info);
         emit sftpSettingsChanged(sftpSetting);
     }
     emit sftp_load();    
@@ -110,14 +106,12 @@ QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSett
 {
     QFile file("config/sftp_settings.json");
     if (!file.exists()) {
-        if (showMessages)
-            QMessageBox::warning(this, "SFTP Settings", "No saved settings found.");
+        if (showMessages) Toast::show("No SFTP settings found!", this, Toast::Warning);
         return {};
     }
 
     if (!file.open(QIODevice::ReadOnly)) {
-        if (showMessages)
-            QMessageBox::critical(this, "SFTP Settings", "Failed to open settings file.");
+        if (showMessages) Toast::show("Failed to open SFTP setting file!", this, Toast::Error);
         return {};
     }
 
@@ -127,9 +121,7 @@ QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSett
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (doc.isNull() || !doc.isObject()) {
-        if (showMessages)
-            QMessageBox::critical(this, "SFTP Settings",
-                                  "Invalid JSON format: " + parseError.errorString());
+        if (showMessages) Toast::show("[SFTP] Invalid JSON format: " + parseError.errorString(), this, Toast::Error);
         return {};
     }
 
