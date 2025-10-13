@@ -686,6 +686,7 @@ void MainWindow::processIncomingJson(int channel, const QJsonObject &payload)
         QJsonObject activeA   = energyA["active"].toObject();
         QJsonObject reactiveA = energyA["reactive"].toObject();
 
+        telemetry["T_C"]    = root["temperature"].toDouble();
         telemetry["Epimp1"] = activeA["negative"].toDouble();
         telemetry["Epexp1"] = activeA["positive"].toDouble();
         telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
@@ -714,6 +715,7 @@ void MainWindow::processIncomingJson(int channel, const QJsonObject &payload)
         QJsonObject activeA   = energyA["active"].toObject();
         QJsonObject reactiveA = energyA["reactive"].toObject();
 
+        telemetry[prefix + "T"]     = root["temperature"].toObject();
         telemetry[prefix + "R"]     = phaseA["general"].toObject()["current"].toDouble();
         telemetry["PF_R" + QString::number(idx)] = phaseA["power"].toObject()["factor"].toDouble();
 

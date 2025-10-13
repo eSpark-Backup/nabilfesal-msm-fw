@@ -293,6 +293,7 @@ void mqttManager::processIncomingJson(int channel, const QJsonObject &payload)
         QJsonObject activeA   = energyA["active"].toObject();
         QJsonObject reactiveA = energyA["reactive"].toObject();
 
+        telemetry["T_C"]    = root["temperature"].toDouble();
         telemetry["Epimp1"] = activeA["negative"].toDouble();
         telemetry["Epexp1"] = activeA["positive"].toDouble();
         telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
@@ -334,6 +335,7 @@ void mqttManager::processIncomingJson(int channel, const QJsonObject &payload)
         telemetry[prefix + "Q"] = std::round((Q_R + Q_B + Q_Y) * 100.0) / 100.0;
         telemetry[prefix + "S"] = std::round((S_R + S_B + S_Y) * 100.0) / 100.0;
 
+        telemetry[prefix + "T"]     = root["temperature"].toDouble();
         telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
         telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
         telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
