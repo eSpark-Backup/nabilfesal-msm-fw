@@ -4,6 +4,7 @@
 # Requires: sftp, sshpass
 
 CONFIG_FILE="/MSM/potential-pancake/MSM/bin/config/sftp_settings.json"
+DEFAULT_OUTPUT="/etc/ota_versions.json"
 
 # =============================
 # Read config values
@@ -24,8 +25,13 @@ PASS=$(get_json_value "password")
 REMOTE_DIR=$(get_json_value "remote_dir")
 OUTPUT_FILE=$(get_json_value "output_file")
 
-if [ -z "$SERVER" ] || [ -z "$USER" ] || [ -z "$PASS" ] || [ -z "$REMOTE_DIR" ]; then
-    echo "Error: Missing required fields in $CONFIG_FILE"
+# Default fallback for output file
+if [ -z "$OUTPUT_FILE" ]; then
+    OUTPUT_FILE="$DEFAULT_OUTPUT"
+fi
+
+if [ -z "$SERVER" ] || [ -z "$USER" ] || [ -z "$PASS" ]; then
+    echo "Error: Missing required fields (ip, username, or password) in $CONFIG_FILE"
     exit 1
 fi
 
@@ -35,7 +41,11 @@ fi
 echo "Fetching file list from $SERVER:$REMOTE_DIR..."
 
 TMP_BATCH=$(mktemp)
-echo "ls -1 $REMOTE_DIR" > "$TMP_BATCH"
+if [ -n "$REMOTE_DIR" ]; then
+    echo "ls -1 $REMOTE_DIR" > "$TMP_BATCH"
+else
+    echo "ls -1" > "$TMP_BATCH"
+fi
 
 FILE_LIST=$(sshpass -p "$PASS" sftp -oBatchMode=no -oStrictHostKeyChecking=no "$USER@$SERVER" < "$TMP_BATCH" 2>/dev/null)
 rm -f "$TMP_BATCH"
