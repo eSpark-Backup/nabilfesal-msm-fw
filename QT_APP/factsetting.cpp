@@ -260,7 +260,6 @@ void FactSetting::on_sftp_load_btn_clicked(bool msgBox)
     if (!sftpSettings.isEmpty())
     {
         ui->sftp_ip->setText(sftpSettings.value("ip").toString());
-        ui->sftp_port->setText(sftpSettings.value("port").toString());
         ui->sftp_pass->setText(sftpSettings.value("password").toString());
         ui->sftp_int->setText(sftpSettings.value("interval").toString());
         ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
