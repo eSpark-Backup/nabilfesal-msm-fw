@@ -334,6 +334,7 @@ void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
         QJsonObject activeA   = energyA["active"].toObject();
         QJsonObject reactiveA = energyA["reactive"].toObject();
 
+        telemetry["T_C"]    = root["temperature"].toDouble();
         telemetry["Epimp1"] = activeA["negative"].toDouble();
         telemetry["Epexp1"] = activeA["positive"].toDouble();
         telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
@@ -375,6 +376,7 @@ void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
         telemetry[prefix + "Q"] = Q_R + Q_B + Q_Y;
         telemetry[prefix + "S"] = S_R + S_B + S_Y;
 
+        telemetry[prefix + "T"]     = root["temperature"].toDouble();
         telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
         telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
         telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
@@ -403,7 +405,7 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
         "V(R)","In1(R1)","In1(RPF)",
         "V(Y)","In1(Y1)","In1(YPF)",
         "V(B)","In1(B1)","In1(BPF)",
-        "P1","Q1","S1",
+        "P1","Q1","S1","T(*C)",
         "Epimp1","Epexp1","Eqimp1","Eqexp1"
     };
 
@@ -411,17 +413,17 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
         "V_R","In1_R1","In1_RPF",
         "V_Y","In1_Y1","In1_YPF",
         "V_B","In1_B1","In1_BPF",
-        "P1","Q1","S1",
+        "P1","Q1","S1","T_C",
         "Epimp1","Epexp1","Eqimp1","Eqexp1"
     };
 
     QStringList baseKeysOutgoing_Modified = {
-        "R","PF(R","Y","PF(Y","B","PF(B","P","Q","S",
+        "R","PF(R","Y","PF(Y","B","PF(B","P","Q","S","T",
         "Epimp","Epexp","Eqimp","Eqexp"
     };
 
     QStringList baseKeysOutgoing = {
-        "R","PF_R","Y","PF_Y","B","PF_B","P","Q","S",
+        "R","PF_R","Y","PF_Y","B","PF_B","P","Q","S","T",
         "Epimp","Epexp","Eqimp","Eqexp"
     };
 
