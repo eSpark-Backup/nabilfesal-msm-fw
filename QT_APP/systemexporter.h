@@ -11,40 +11,28 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include "utils.h"
+#include <QDir>
 
-class UsbDataExporter : public QObject {
+class SystemDataExporter : public QObject {
     Q_OBJECT
 public:
-    UsbDataExporter(const QString &mountPath, int intervalDays, const QMap<int, QJsonObject> &snapShot, QObject *parent = nullptr)
-        : QObject(parent),
-          m_mountPath(mountPath),
-          m_intervalDays(intervalDays),
-          m_elapsedDays(0)
+    SystemDataExporter( QObject *parent = nullptr)
+        : QObject(parent)
     {
+        QString logDir = "data/logs";
+        QDir().mkpath(logDir);
         auto uuid = Utils::getUid();
-        auto filename = uuid + "_" + QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss") + ".csv";
-        m_filePath = m_mountPath + "/" + filename;
-
-        {
-            QMutexLocker locker(&m_mutex);
-            m_latestSnapshot = snapShot;
-        }
+        auto filename = "uart_logs.csv";
+        m_filePath = logDir + "/" + filename;
 
         // Timers for periodic actions
         m_logTimer = new QTimer(this);
-        m_dayTimer = new QTimer(this);
 
-        exportSnapshot();
-
-        connect(m_logTimer, &QTimer::timeout, this, &UsbDataExporter::exportSnapshot);
-        connect(m_dayTimer, &QTimer::timeout, this, &UsbDataExporter::onDayPassed);
+        connect(m_logTimer, &QTimer::timeout, this, &SystemDataExporter::exportSnapshot);
 
 
         // Log every 10 minutes
         m_logTimer->start(10 * 60 * 1000);
-
-        // Track day progress every 24 hours
-        m_dayTimer->start(24 * 60 * 60 * 1000);
 
         // Connect to parent data signal if available
         if (parent) {
@@ -53,12 +41,16 @@ public:
         }
     }
 
-    ~UsbDataExporter() override = default;
+    QString getFilePath()
+    {
+        return m_filePath;
+    }
+
+    ~SystemDataExporter() override = default;
 
 public slots:
     void stop() {
         if (m_logTimer) m_logTimer->stop();
-        if (m_dayTimer) m_dayTimer->stop();
     }
 
     void onNewChannelData(int channel, const QJsonObject &payload) {
@@ -155,18 +147,20 @@ public slots:
             telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
         }
 
-        QMutexLocker locker(&m_mutex);
-        m_latestSnapshot[channel] = telemetry;
-    }
+        QMap<int, QJsonObject> snapshotCopy;
+        {
+            QMutexLocker locker(&m_mutex);
+            m_latestSnapshot[channel] = telemetry;
+            snapshotCopy = m_latestSnapshot;
+        }
 
-private slots:
-    void onDayPassed() {
-        m_elapsedDays++;
-        if (m_elapsedDays >= m_intervalDays) {
-            stop();
+        QFile file(m_filePath);
+        if (snapshotCopy.size() == 12 && !file.exists()) {
+            exportSnapshot();
         }
     }
 
+private slots:
     void exportSnapshot() {
         QMap<int, QJsonObject> snapshotCopy;
         {
@@ -186,7 +180,7 @@ private slots:
         }
 
         QTextStream out(&file);
-        out.setCodec("UTF-16");
+        out.setCodec("UTF-8");
 
         QStringList baseKeysIncoming_Modified = {
             "V(R)","In1(R1)","In1(RPF)",
@@ -247,7 +241,7 @@ private slots:
 
         const auto obj1 = snapshotCopy.value(1);
         for (const QString &k : baseKeysIncoming)
-            row << "\"" + QString::number(obj1.value(k).toDouble(), 'f', 4) + "\"";
+            row << "\"" + QString::number(obj1.value(k).toDouble(), 'f', 2) + "\"";
 
         for (int ch = 2; ch <= 12; ++ch) {
             int idx = ch - 1;
@@ -255,18 +249,14 @@ private slots:
             for (const QString &k : baseKeysOutgoing) {
                 QString fullKey = k.startsWith("PF_") ? k + QString::number(idx)
                                                       : QString("F%1_%2").arg(idx).arg(k);
-                row << "\"" + QString::number(obj.value(fullKey).toDouble(), 'f', 4) + "\"";
+                row << "\"" + QString::number(obj.value(fullKey).toDouble(), 'f', 2) + "\"";
             }
         }
 
         out << row.join(",") << "\n";
         file.close();
 
-        // Trim if low on storage
-        QStorageInfo storage(m_mountPath);
-        if (storage.bytesAvailable() < 5 * 1024 * 1024) {
-            trimCsvFile();
-        }
+        trimCsvFile();
     }
 
 private:
@@ -281,26 +271,31 @@ private:
             lines << in.readLine();
         file.close();
 
-        // Keep the header
         if (lines.size() <= 2) return;
 
-        int removeCount = lines.size() / 10;
-        lines = lines.mid(removeCount);
+        QString header = lines.first();
+        QStringList filtered;
+        filtered << header;
+
+        QDate cutoff = QDate::currentDate().addDays(-730);
+        for (int i = 1; i < lines.size(); ++i) {
+            QStringList parts = lines[i].split(",");
+            if (parts.size() < 1) continue;
+            QDate date = QDate::fromString(parts[0].remove("\""), "dd/MM/yyyy");
+            if (date >= cutoff)
+                filtered << lines[i];
+        }
 
         if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             QTextStream out(&file);
-            for (const QString &l : lines)
+            for (const QString &l : filtered)
                 out << l << "\n";
         }
     }
 
 private:
-    QString m_mountPath;
     QString m_filePath;
-    int m_intervalDays;
-    int m_elapsedDays;
     QTimer *m_logTimer;
-    QTimer *m_dayTimer;
     QMap<int, QJsonObject> m_latestSnapshot;
     QMutex m_mutex;
 };

@@ -48,105 +48,133 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(210, 1);
+    label->move(240, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("server 2", ui->server2);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(210, 1);
+    label->move(240, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("server 3", ui->server3);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();;
-    label->move(210, 1);
+    label->move(240, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTT_IP", ui->mqtt_ip);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(215, 1);
+    label->move(265, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTT_PASSWORD", ui->mqtt_pass);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(150, 1);
+    label->move(200, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTT_USER", ui->mqtt_user);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(190, 1);
+    label->move(250, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTT_TOPIC", ui->mqtt_topic);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(185, 1);
+    label->move(245, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("PORT", ui->mqtt_port);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(80, 1);
+    label->move(115, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("INTERVAL (s)", ui->mqtt_int);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(45, 1);
+    label->move(65, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_IP", ui->sftp_ip);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(215, 1);
+    label->move(275, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_PORT", ui->sftp_port);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(200, 1);
+    label->move(250, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_USER", ui->sftp_username);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(200, 1);
+    label->move(250, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_PASSWORD", ui->sftp_pass);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(150, 1);
+    label->move(220, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("INTERVAL (s)", ui->sftp_int);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(42, 1);
+    label->move(72, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SCHEDULE", ui->sftp_sch);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(55, 1);
+    label->move(75, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTTs_ENDPOINT", ui->mqtts_endpoint);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(165, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTTs_CLIENT_ID", ui->mqtts_client_id);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(170, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTTs_PORT", ui->mqtts_port);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(200, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("MQTTs_INTERVAL", ui->mqtts_interval);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(185, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     keyboard = new MSMKeyboard(this);
@@ -158,7 +186,8 @@ DeviceSettings::DeviceSettings(QWidget *parent)
         ui->mqtt_ip, ui->mqtt_port, ui->mqtt_user,
         ui->mqtt_pass, ui->mqtt_topic, ui->mqtt_int,
         ui->sftp_ip, ui->sftp_port, ui->sftp_username,
-        ui->sftp_pass, ui->sftp_int, ui->sftp_sch
+        ui->sftp_pass, ui->sftp_int, ui->sftp_sch,
+        ui->mqtts_interval
     };
 
     for (QLineEdit *edit : edits) {
@@ -232,7 +261,7 @@ void DeviceSettings::on_continue_btn_clicked()
 
 void DeviceSettings::on_back_btn_clicked()
 {
-    ui->stackedWidget->setCurrentIndex(0);
+    ui->stackedWidget->setCurrentIndex(1);
 }
 
 
@@ -373,7 +402,6 @@ void DeviceSettings::parse_load_store_mqtt(const QJsonObject &payload)
 void DeviceSettings::apply_mqtt_Settings(const QJsonObject &mqttSettings, bool msgBox)
 {
     ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
-    ui->mqtt_port->setText(mqttSettings.value("port").toString());
     ui->mqtt_user->setText(mqttSettings.value("user").toString());
     ui->mqtt_pass->setText(mqttSettings.value("password").toString());
     ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
@@ -440,7 +468,6 @@ void DeviceSettings::parse_load_store_sftp(const QJsonObject &payload)
 void DeviceSettings::apply_sftp_Settings(const QJsonObject &sftpSettings, bool msgBox)
 {
     ui->sftp_ip->setText(sftpSettings.value("ip").toString());
-    ui->sftp_port->setText(sftpSettings.value("port").toString());
     ui->sftp_username->setText(sftpSettings.value("username").toString());
     ui->sftp_pass->setText(sftpSettings.value("password").toString());
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
@@ -575,7 +602,13 @@ void DeviceSettings::refreshInfo()
     curDevInfo.uuid       = Utils::getUid();
     curDevInfo.pass       = Utils::getDevPassword();
     curDevInfo.ip         = Utils::getDeviceIp();
-    curDevInfo.imei       = Utils::getDeviceImei();
+    
+    QString newImei = Utils::getDeviceImei();
+    if (newImei != "UNKNOWN" && !newImei.isEmpty()) {
+        curDevInfo.imei = newImei;
+    } else {
+        curDevInfo.imei = prvDevInfo.imei;
+    }
 
     auto ntpData = Utils::getNtpStatus();
     curDevInfo.date       = ntpData.value("date").toString();
@@ -641,5 +674,29 @@ void DeviceSettings::send_aws_updated_data()
     if (!ntp.servers.isEmpty())
         emit ntpSettingsChanged(ntp);
     }
+}
+
+
+void DeviceSettings::on_pushButton_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+
+void DeviceSettings::on_pushButton_2_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(2);
+}
+
+
+void DeviceSettings::on_mqtts_load_btn_clicked()
+{
+
+}
+
+
+void DeviceSettings::on_mqtts_save_btn_clicked()
+{
+
 }
 

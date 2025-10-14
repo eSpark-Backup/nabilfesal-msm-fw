@@ -49,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Setup segmented responsibilities
     setupLogin();
+    dataExporter = new SystemDataExporter(this);
     setupUsb();
     setupSerial();
 
@@ -324,24 +325,86 @@ void MainWindow::onUsbUnmounted()
 {
     m_mountPath.clear();
     usbExporter->removeDeviceName();
-    if (dataExporter) {
-        dataExporter->stop();
-        dataExporter->deleteLater();
-        dataExporter = nullptr;
-    }
 }
 
 void MainWindow::onUsbExportAccepted()
 {
     int days = usbExporter->getSelectedIntervalDays();
     if (days > 0 && !m_mountPath.empty()) {
-        if (dataExporter) {
-            dataExporter->stop();
-            dataExporter->deleteLater();
-            dataExporter = nullptr;
+
+        QString sysFilePath = dataExporter->getFilePath();
+
+        QFile inFile(sysFilePath);
+        if (!inFile.exists()) {
+            QMessageBox::warning(nullptr, "Export Error", "System CSV file not found!");
+            return ;
         }
-        QMutexLocker locker(&latestDataMutex);
-        dataExporter = new UsbDataExporter(QString::fromStdString(m_mountPath), days, latestData, this);
+
+        if (!inFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QMessageBox::warning(nullptr, "Export Error", "Unable to open system log file!");
+            return ;
+        }
+
+        QTextStream in(&inFile);
+        in.setCodec("UTF-8");
+
+        QStringList lines;
+        while (!in.atEnd())
+            lines << in.readLine();
+        inFile.close();
+
+        if (lines.size() <= 1) {
+            QMessageBox::warning(nullptr, "Export Error", "No data available for export.");
+            return ;
+        }
+
+        QString header = lines.first();
+        QStringList filtered;
+        filtered << header;
+
+        QDate cutoff = QDate::currentDate().addDays(-days);
+        QDate startDate, endDate = QDate::currentDate();
+
+        for (int i = 1; i < lines.size(); ++i) {
+            QStringList parts = lines[i].split(",");
+            if (parts.isEmpty()) continue;
+            QDate date = QDate::fromString(parts[0].remove("\""), "dd/MM/yyyy");
+            if (date >= cutoff) {
+                filtered << lines[i];
+                if (!startDate.isValid() || date < startDate)
+                    startDate = date;
+            }
+        }
+
+        if (filtered.size() <= 1) {
+            QMessageBox::information(nullptr, "Export Info", "No data found in selected range.");
+            return ;
+        }
+
+        QString exportFileName = QString("%1_%2_to_%3.csv")
+                                    .arg(m_uid)
+                                    .arg(startDate.toString("yyyyMMdd"))
+                                    .arg(endDate.toString("yyyyMMdd"));
+
+        auto exportedFilePath = QString::fromStdString(m_mountPath) + "/" + exportFileName;
+
+        QFile outFile(exportedFilePath);
+        if (!outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QMessageBox::warning(nullptr, "Export Error", "Unable to write to USB drive!");
+            return ;
+        }
+
+        QTextStream out(&outFile);
+        out.setCodec("UTF-8");
+        for (const QString &l : filtered)
+            out << l << "\n";
+        outFile.close();
+
+        QMessageBox::information(nullptr, "Export Complete",
+                                QString("Exported last %1 days to:\n%2")
+                                    .arg(days)
+                                    .arg(exportedFilePath));
+        
     }
 }
 
@@ -350,7 +413,6 @@ void MainWindow::onUsbExportAccepted()
 // -----------------------------
 void MainWindow::onChannelDataReady(int ch, const QJsonObject &obj)
 {
-    processIncomingJson(ch, obj);
     emit receivedChannelData(ch, obj);
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
 }
@@ -627,112 +689,4 @@ void MainWindow::onChannelDataWatchdogTimeout()
     });    
 
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
-}
-
-void MainWindow::processIncomingJson(int channel, const QJsonObject &payload)
-{
-    QJsonObject root = payload;
-    QJsonObject data = root["data"].toObject();
-
-    QJsonObject phaseA = data["phase_a"].toObject();
-    QJsonObject phaseB = data["phase_b"].toObject();
-    QJsonObject phaseC = data["phase_c"].toObject();
-    QJsonObject telemetry;
-
-    if(channel == 1)
-    {
-        // =============== INCOMING CHANNEL =================
-        telemetry["V_R"]     = phaseA["general"].toObject()["rms_voltage"].toDouble();
-        telemetry["In1_R1"]  = phaseA["general"].toObject()["current"].toDouble();
-        telemetry["In1_RPF"] = phaseA["power"].toObject()["factor"].toDouble();
-
-        telemetry["V_Y"]     = phaseB["general"].toObject()["rms_voltage"].toDouble();
-        telemetry["In1_Y1"]  = phaseB["general"].toObject()["current"].toDouble();
-        telemetry["In1_YPF"] = phaseB["power"].toObject()["factor"].toDouble();
-
-        telemetry["V_B"]     = phaseC["general"].toObject()["rms_voltage"].toDouble();
-        telemetry["In1_B1"]  = phaseC["general"].toObject()["current"].toDouble();
-        telemetry["In1_BPF"] = phaseC["power"].toObject()["factor"].toDouble();
-
-        // Power
-        double P1_R = phaseA["power"].toObject()["active"].toDouble();
-        double P1_B = phaseB["power"].toObject()["active"].toDouble();
-        double P1_Y = phaseC["power"].toObject()["active"].toDouble();
-        telemetry["P1_R"] = P1_R;
-        telemetry["P1_B"] = P1_B;
-        telemetry["P1_Y"] = P1_Y;
-        telemetry["P1"]   = P1_R + P1_B + P1_Y;
-
-        // Reactive
-        double Q1_R = phaseA["power"].toObject()["reactive"].toDouble();
-        double Q1_B = phaseB["power"].toObject()["reactive"].toDouble();
-        double Q1_Y = phaseC["power"].toObject()["reactive"].toDouble();
-        telemetry["Q1_R"] = Q1_R;
-        telemetry["Q1_B"] = Q1_B;
-        telemetry["Q1_Y"] = Q1_Y;
-        telemetry["Q1"]   = Q1_R + Q1_B + Q1_Y;
-
-        // Apparent
-        double S1_R = phaseA["power"].toObject()["apparent"].toDouble();
-        double S1_B = phaseB["power"].toObject()["apparent"].toDouble();
-        double S1_Y = phaseC["power"].toObject()["apparent"].toDouble();
-        telemetry["S1_R"] = S1_R;
-        telemetry["S1_B"] = S1_B;
-        telemetry["S1_Y"] = S1_Y;
-        telemetry["S1"]   = S1_R + S1_B + S1_Y;
-
-        // Energy
-        QJsonObject energyA = phaseA["energy"].toObject();
-        QJsonObject activeA   = energyA["active"].toObject();
-        QJsonObject reactiveA = energyA["reactive"].toObject();
-
-        telemetry["Epimp1"] = activeA["negative"].toDouble();
-        telemetry["Epexp1"] = activeA["positive"].toDouble();
-        telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
-        telemetry["Eqexp1"] = reactiveA["positive"].toDouble();
-    }
-    else
-    {
-        // =============== OUTGOING CHANNELS =================
-          // Outgoing channels: F(channel-1)_ prefix
-        int idx = channel - 1;  // Channel 2 → F1, Channel 3 → F2, … Channel 12 → F11
-        QString prefix = QString("F%1_").arg(idx);
-
-        double P_R = phaseA["power"].toObject()["active"].toDouble();
-        double P_B = phaseB["power"].toObject()["active"].toDouble();
-        double P_Y = phaseC["power"].toObject()["active"].toDouble();
-
-        double Q_R = phaseA["power"].toObject()["reactive"].toDouble();
-        double Q_B = phaseB["power"].toObject()["reactive"].toDouble();
-        double Q_Y = phaseC["power"].toObject()["reactive"].toDouble();
-
-        double S_R = phaseA["power"].toObject()["apparent"].toDouble();
-        double S_B = phaseB["power"].toObject()["apparent"].toDouble();
-        double S_Y = phaseC["power"].toObject()["apparent"].toDouble();
-
-        QJsonObject energyA   = phaseA["energy"].toObject();
-        QJsonObject activeA   = energyA["active"].toObject();
-        QJsonObject reactiveA = energyA["reactive"].toObject();
-
-        telemetry[prefix + "R"]     = phaseA["general"].toObject()["current"].toDouble();
-        telemetry["PF_R" + QString::number(idx)] = phaseA["power"].toObject()["factor"].toDouble();
-
-        telemetry[prefix + "Y"]     = phaseB["general"].toObject()["current"].toDouble();
-        telemetry["PF_Y" + QString::number(idx)] = phaseB["power"].toObject()["factor"].toDouble();
-
-        telemetry[prefix + "B"]     = phaseC["general"].toObject()["current"].toDouble();
-        telemetry["PF_B" + QString::number(idx)] = phaseC["power"].toObject()["factor"].toDouble();
-
-        telemetry[prefix + "P"] = P_R + P_B + P_Y;
-        telemetry[prefix + "Q"] = Q_R + Q_B + Q_Y;
-        telemetry[prefix + "S"] = S_R + S_B + S_Y;
-
-        telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
-        telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
-        telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
-        telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
-    }
-    
-    QMutexLocker locker(&latestDataMutex);
-    latestData[channel] = telemetry;
 }

@@ -18,12 +18,12 @@
 #include "usbwatcher.h"
 #include "factsetting.h"
 #include "measurements.h"
-#include "dataexporter.h"
 #include "serialworker.h"
 #include "mqttManager.h"
 #include "awsmqttmanager.h"
 #include "sftpManager.h"
 #include "commonSetting.h"
+#include "systemexporter.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -63,7 +63,6 @@ private slots:
     void setupProgressBar();
 
     void onChannelDataWatchdogTimeout();
-    void processIncomingJson(int channel, const QJsonObject &payload);
 
 private:
     // Setup helpers
@@ -95,7 +94,7 @@ private:
     UsbWatcher *watcher = nullptr;
     FactSetting *factSettings = nullptr;
     Measurements *measure = nullptr;
-    UsbDataExporter *dataExporter = nullptr;
+    SystemDataExporter *dataExporter = nullptr;
 
     // managers (mostly singletons)
     settingsManager *settingsHandler = nullptr;
@@ -119,8 +118,6 @@ private:
     SerialWorker *worker = nullptr;
     QTimer *pollTimer = nullptr;
 
-    QMap<int, QJsonObject> latestData;
-    QMutex latestDataMutex;
     QTimer *channelDataWatchdog;
     const int WATCHDOG_TIMEOUT_MS = 30000;
 };

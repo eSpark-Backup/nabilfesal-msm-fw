@@ -46,6 +46,14 @@ private slots:
     void on_sftp_save_btn_clicked();
     void on_export_btn_clicked();
     
+    void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
+
+    void on_mqtts_load_btn_clicked();
+
+    void on_mqtts_save_btn_clicked();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     
