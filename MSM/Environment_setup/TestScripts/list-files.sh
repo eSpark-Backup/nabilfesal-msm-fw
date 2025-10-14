@@ -1,28 +1,53 @@
 #!/bin/sh
-# list_sftp_files.sh - List files from an SFTP server and save to JSON
-# Requires: sftp, jq (optional but recommended for proper JSON formatting)
+# list_sftp_files.sh - List files from an SFTP server using config.json
+# No jq required — JSON parsed with grep/sed/awk
+# Requires: sftp, sshpass
+
+CONFIG_FILE="/MSM/potential-pancake/MSM/bin/config/sftp_settings.json"
 
 # =============================
-# Config
+# Read config values
 # =============================
-SERVER="ap-southeast-1.sftpcloud.io"   # SFTP server address
-USER="ofp-msm"                         # Username
-PASS="root123456"                      # Password
-REMOTE_DIR="/ota-test"                 # Remote directory to list
-OUTPUT_FILE="/etc/available_files.json"  # Local JSON output file
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "Error: $CONFIG_FILE not found!"
+    exit 1
+fi
+
+get_json_value() {
+    key="$1"
+    grep "\"$key\"" "$CONFIG_FILE" | sed -E 's/.*: *"([^"]+)".*/\1/'
+}
+
+SERVER=$(get_json_value "ip")
+USER=$(get_json_value "username")
+PASS=$(get_json_value "password")
+REMOTE_DIR=$(get_json_value "remote_dir")
+OUTPUT_FILE=$(get_json_value "output_file")
+
+if [ -z "$SERVER" ] || [ -z "$USER" ] || [ -z "$PASS" ] || [ -z "$REMOTE_DIR" ]; then
+    echo "Error: Missing required fields in $CONFIG_FILE"
+    exit 1
+fi
 
 # =============================
-# Get file list from SFTP
+# Fetch file list
 # =============================
 echo "Fetching file list from $SERVER:$REMOTE_DIR..."
 
-# Create a temporary file for sftp batch commands
 TMP_BATCH=$(mktemp)
 echo "ls -1 $REMOTE_DIR" > "$TMP_BATCH"
 
-# Use sftp with password authentication through sshpass (if password login)
 FILE_LIST=$(sshpass -p "$PASS" sftp -oBatchMode=no -oStrictHostKeyChecking=no "$USER@$SERVER" < "$TMP_BATCH" 2>/dev/null)
 rm -f "$TMP_BATCH"
+
+# Clean output (remove junk, .zip, and empty lines)
+FILE_LIST=$(echo "$FILE_LIST" \
+    | grep -v '^sftp>' \
+    | grep -v '^Connected' \
+    | grep -v '^sftp:' \
+    | sed 's#.*/##' \
+    | sed 's/\.zip$//' \
+    | grep -v '^$')
 
 if [ -z "$FILE_LIST" ]; then
     echo "No files found or unable to connect."
@@ -30,21 +55,22 @@ if [ -z "$FILE_LIST" ]; then
 fi
 
 # =============================
-# Convert to JSON
+# Build JSON manually
 # =============================
-# Clean output:
-#  - remove "sftp>" prompts
-#  - strip directories
-#  - remove .zip extension
-#  - build JSON under key "versions"
-JSON_ARRAY=$(printf '%s\n' "$FILE_LIST" \
-    | grep -v '^sftp>' \
-    | sed 's#.*/##' \
-    | sed 's/\.zip$//' \
-    | awk 'BEGIN{print "{\"versions\": ["}{print "  \""$0"\","}END{print "]}"}' \
-    | sed '$s/,$//')
+JSON="{\"versions\": ["
+first=1
+for file in $FILE_LIST; do
+    if [ $first -eq 1 ]; then
+        JSON="$JSON\"$file\""
+        first=0
+    else
+        JSON="$JSON, \"$file\""
+    fi
+done
+JSON="$JSON]}"
 
+# =============================
 # Save to file
-echo "$JSON_ARRAY" > "$OUTPUT_FILE"
-
-echo "File list saved to $OUTPUT_FILE"
+# =============================
+echo "$JSON" > "$OUTPUT_FILE"
+echo "Available versions saved to $OUTPUT_FILE"
