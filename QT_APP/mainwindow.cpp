@@ -100,7 +100,7 @@ void MainWindow::initConfig()
         QJsonObject defaultSettings {
             {"uid", ""},
             {"admin", ""},
-            {"factory", "msm123"}
+            {"factory", "admin@441322@"}
         };
 
         if (file.open(QIODevice::WriteOnly)) {

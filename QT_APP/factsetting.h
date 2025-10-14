@@ -40,6 +40,8 @@ private slots:
     void on_sftp_save_btn_clicked();
     void on_pushButton_4_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::FactSetting *ui;
     MSMKeyboard *keyboard;

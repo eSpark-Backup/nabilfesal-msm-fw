@@ -316,4 +316,98 @@ void showImageFullscreenFor(const QString &imagePath, int milliseconds)
     });
 }
 
+QString getFirmwareVersion()
+{
+    QString softwareVersion;
+    QFile hwFile("version.json");
+    if (hwFile.open(QIODevice::ReadOnly)) {
+        const auto data = hwFile.readAll();
+        const auto doc = QJsonDocument::fromJson(data);
+        if (doc.isObject()) {
+            const auto obj = doc.object();
+            softwareVersion = obj.value("software_version").toString();
+        }
+        hwFile.close();
+    }
+
+    return softwareVersion;
+}
+
+QString getLastOTAInitiated()
+{
+    QString otaTime;
+    QFile hwFile("version.json");
+    if (hwFile.open(QIODevice::ReadOnly)) {
+        const auto data = hwFile.readAll();
+        const auto doc = QJsonDocument::fromJson(data);
+        if (doc.isObject()) {
+            const auto obj = doc.object();
+            otaTime = obj.value("ota_update").toString();
+        }
+        hwFile.close();
+    }
+
+    return otaTime;
+}
+
+void setLastOTAInitiated()
+{
+    QFile file("version.json");
+    QJsonObject obj;
+
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+        if (doc.isObject())
+            obj = doc.object();
+        file.close();
+    }
+
+    QString currentTime = QDateTime::currentDateTime().toString(Qt::ISODate);
+    obj["ota_update"] = currentTime;
+
+    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        QJsonDocument newDoc(obj);
+        file.write(newDoc.toJson(QJsonDocument::Indented));
+        file.close();
+    }
+}
+
+QStringList getAvailableVersions()
+{
+    QStringList versionList;
+    QFile versionsFile("/etc/ota_versions.json");
+
+    if (!versionsFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open version file:" << versionsFile.errorString();
+        return versionList;  // return empty list if file can't be opened
+    }
+
+    QByteArray data = versionsFile.readAll();
+    versionsFile.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error:" << parseError.errorString();
+        return versionList;
+    }
+
+    if (!doc.isObject()) {
+        qWarning() << "Invalid JSON format: expected an object at root.";
+        return versionList;
+    }
+
+    QJsonObject rootObj = doc.object();
+    QJsonArray versionsArray = rootObj.value("versions").toArray();
+
+    for (const QJsonValue &val : versionsArray) {
+        if (val.isString())
+            versionList.append(val.toString());
+    }
+
+    return versionList;
+}
+
 }

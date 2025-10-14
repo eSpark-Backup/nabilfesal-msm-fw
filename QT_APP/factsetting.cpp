@@ -8,6 +8,7 @@
 #include <QJsonParseError>
 #include <QMessageBox>
 #include <QDir>
+#include <QProcess>
 
 FactSetting::FactSetting(QWidget *parent)
     : settingsManager(parent)
@@ -16,7 +17,21 @@ FactSetting::FactSetting(QWidget *parent)
     ui->setupUi(this);
     ui->stackedWidget->setCurrentIndex(0);
 
-    ui->stackedWidget->setCurrentIndex(0);
+    auto firmware = Utils::getFirmwareVersion();
+    ui->ota_cur_version->setText(firmware);
+    auto otaInitiated = Utils::getLastOTAInitiated();
+    ui->ota_last_update->setText(otaInitiated);
+
+    auto versionList = Utils::getAvailableVersions();
+    ui->comboBox->clear();
+
+    for (const QString &version : versionList) {
+        QString cleanVersion = version;
+        if (cleanVersion.startsWith("MSM_"))
+            cleanVersion.remove(0, 4);
+        
+        ui->comboBox->addItem(cleanVersion);
+    }
 
     QLabel* label = new QLabel("MQTT_IP", ui->mqtt_ip);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
@@ -323,3 +338,63 @@ void FactSetting::on_pushButton_4_clicked()
     ui->stackedWidget->setCurrentIndex(0);
 }
 
+
+void FactSetting::on_pushButton_clicked()
+{
+    QString selectedVersion = ui->comboBox->currentText();
+    if (selectedVersion.isEmpty()) {
+        qWarning() << "No version selected.";
+        return;
+    }
+
+    QString otaFileName = QString("MSM_%1.zip").arg(selectedVersion);
+
+    QFile file("config/sftp_settings.json");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open SFTP config:" << file.errorString();
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error:" << parseError.errorString();
+        return;
+    }
+
+    if (!doc.isObject()) {
+        qWarning() << "Invalid SFTP JSON structure.";
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+    QString ip       = obj.value("ip").toString();
+    QString username = obj.value("username").toString();
+    QString password = obj.value("password").toString();
+
+    if (ip.isEmpty() || username.isEmpty() || password.isEmpty()) {
+        return;
+    }
+
+    QString scriptPath = "/MSM/potential-pancake/MSM/linux_configs/misc-scripts/ota.sh";
+    QStringList args;
+    args << otaFileName << ip << username << password;
+
+
+    Utils::setLastOTAInitiated();
+
+    QProcess *process = new QProcess(this);
+    process->setProgram(scriptPath);
+    process->setArguments(args);
+
+    process->start();
+
+    if (!process->waitForStarted()) {
+        qWarning() << "Failed to start OTA script.";
+        process->deleteLater();
+        return;
+    }
+}
