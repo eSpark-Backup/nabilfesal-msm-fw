@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QProcess>
+#include <QScreen>
 
 FactSetting::FactSetting(QWidget *parent)
     : settingsManager(parent)
@@ -110,11 +111,14 @@ FactSetting::FactSetting(QWidget *parent)
     label->move(60, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("SCHEDULE (24hr)", ui->sftp_sch);
+    label = new QLabel("SCHEDULE(24hr)", ui->sftp_sch);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    label->adjustSize();
-    label->move(35, 1);
+    QFont font = label->font();
+    font.setPointSize(5);
+    label->setFont(font);
+    label->adjustSize(); 
+    label->move(45, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTTs_ENDPOINT", ui->mqtts_endpoint);
@@ -278,6 +282,7 @@ void FactSetting::on_sftp_load_btn_clicked(bool msgBox)
         ui->sftp_pass->setText(sftpSettings.value("password").toString());
         ui->sftp_int->setText(sftpSettings.value("interval").toString());
         ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
+        ui->sftp_user->setText(sftpSettings.value("username").toString());
         if(msgBox) QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
     }
 }
@@ -347,6 +352,19 @@ void FactSetting::on_pushButton_clicked()
         return;
     }
 
+    QString updatingImagePath = "/MSM/potential-pancake/MSM/images/update/updating.bmp";
+    QPixmap pixmap(updatingImagePath);
+    if (!pixmap.isNull()) {
+        QLabel *updatingLabel = new QLabel();
+        updatingLabel->setPixmap(pixmap.scaled(qApp->primaryScreen()->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        updatingLabel->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+        updatingLabel->setAlignment(Qt::AlignCenter);
+        updatingLabel->showFullScreen();
+        qApp->processEvents(); // Force UI to update immediately
+    } else {
+        qWarning() << "Failed to load updating image:" << updatingImagePath;
+    }
+
     QString otaFileName = QString("MSM_%1.zip").arg(selectedVersion);
 
     QFile file("config/sftp_settings.json");
@@ -360,13 +378,8 @@ void FactSetting::on_pushButton_clicked()
 
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (parseError.error != QJsonParseError::NoError) {
-        qWarning() << "JSON parse error:" << parseError.errorString();
-        return;
-    }
-
-    if (!doc.isObject()) {
-        qWarning() << "Invalid SFTP JSON structure.";
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        qWarning() << "Invalid SFTP config JSON:" << parseError.errorString();
         return;
     }
 
@@ -376,24 +389,247 @@ void FactSetting::on_pushButton_clicked()
     QString password = obj.value("password").toString();
 
     if (ip.isEmpty() || username.isEmpty() || password.isEmpty()) {
+        qWarning() << "Incomplete SFTP configuration.";
         return;
     }
-
     QString scriptPath = "/MSM/potential-pancake/MSM/linux_configs/misc-scripts/ota.sh";
     QStringList args;
     args << otaFileName << ip << username << password;
-
-
-    Utils::setLastOTAInitiated();
 
     QProcess *process = new QProcess(this);
     process->setProgram(scriptPath);
     process->setArguments(args);
 
+    connect(process, &QProcess::readyReadStandardOutput, [process]() {
+        qDebug().noquote() << process->readAllStandardOutput();
+    });
+
+    connect(process, &QProcess::readyReadStandardError, [process]() {
+        qWarning().noquote() << process->readAllStandardError();
+    });
+
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this, [process, updatingImagePath](int exitCode, QProcess::ExitStatus status) {
+        Q_UNUSED(status);
+
+        // Remove OTA image overlay if shown
+        for (QWidget *w : QApplication::topLevelWidgets()) {
+            QLabel *label = qobject_cast<QLabel*>(w);
+            if (label && label->pixmap() && label->pixmap()->cacheKey() == QPixmap(updatingImagePath).cacheKey()) {
+                label->close();
+                label->deleteLater();
+            }
+        }
+
+        if (exitCode == 0) {
+            Utils::setLastOTAInitiated();
+            Utils::rebootSystem();
+        } else {
+
+            QMessageBox::information(nullptr, "OTA Update Failed", 
+                                     "The OTA update process failed. Please try again.");
+        }
+
+        process->deleteLater();
+    });
+
     process->start();
 
     if (!process->waitForStarted()) {
-        qWarning() << "Failed to start OTA script.";
+        QMessageBox::warning(nullptr, "Error", "Failed to start OTA update script.");
+        return;
+    }
+}
+
+
+void FactSetting::on_pushButton_5_clicked()
+{
+    auto versionList = Utils::getAvailableVersions();
+    ui->comboBox->clear();
+
+    for (const QString &version : versionList) {
+        QString cleanVersion = version;
+        if (cleanVersion.startsWith("MSM_"))
+            cleanVersion.remove(0, 4);
+
+        ui->comboBox->addItem(cleanVersion);
+    }
+}
+
+
+void FactSetting::on_mqtts_load_btn_clicked()
+{
+    QString filePath = "config/aws_mqtts_settings.json";
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Error", "Failed to open MQTT configuration file.");
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        QMessageBox::warning(this, "Error", "Invalid MQTT configuration file format.");
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+
+    // Fill UI fields (port skipped)
+    ui->mqtts_endpoint->setText(obj.value("endpoint").toString());
+    ui->mqtts_interval->setText(obj.value("interval").toString());
+    // Port is constant and not editable
+
+    // ---- Check for certificate files ----
+    QString basePath = "/MSM/potential-pancake/MSM/creds/prov_certs/";
+    QString caPath   = "/MSM/potential-pancake/MSM/creds/claim_certs/AmazonRootCA1.pem";
+    QString certPath = basePath + "deviceCert.pem";
+    QString keyPath  = basePath + "privateKey.pem";
+
+    ui->ca1->setChecked(QFile::exists(caPath));
+    ui->claim->setChecked(QFile::exists(certPath));
+    ui->key->setChecked(QFile::exists(keyPath));
+
+}
+
+
+
+void FactSetting::on_mqtts_save_btn_clicked()
+{
+    QString filePath = "config/aws_mqtts_settings.json";
+
+    // Ensure directory exists
+    QDir().mkpath(QFileInfo(filePath).absolutePath());
+
+    QFile file(filePath);
+    QJsonObject obj;
+
+    // Read existing JSON if available
+    if (file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QByteArray data = file.readAll();
+        file.close();
+
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+        if (parseError.error == QJsonParseError::NoError && doc.isObject())
+            obj = doc.object();
+    }
+
+    // Update relevant fields
+    obj["endpoint"] = ui->mqtts_endpoint->text();
+    obj["interval"] = ui->mqtts_interval->text();
+
+    // Keep or restore other fields
+    if (!obj.contains("port"))
+        obj["port"] = "8883";
+    if (!obj.contains("topic"))
+        obj["topic"] = "$aws/things/fleet_prov_shadow_test_1/shadow/update";
+
+    // Write updated JSON back
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        QMessageBox::warning(this, "Error", "Failed to save MQTT configuration.");
+        return;
+    }
+
+    QJsonDocument newDoc(obj);
+    file.write(newDoc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    QMessageBox::information(this, "Saved", "MQTTS configuration saved successfully.");
+}
+
+void FactSetting::on_pushButton_3_clicked()
+{
+        emit runFleetProvisioning();
+}
+
+
+void FactSetting::on_pushButton_2_clicked()
+{
+    QString claimDir = "/MSM/potential-pancake/MSM/creds/claim_certs/";
+    QString configPath = "config/sftp_settings.json";
+
+    QFile file(configPath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Error", "Failed to open SFTP config file.");
+        qWarning() << "Failed to open SFTP config:" << file.errorString();
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        QMessageBox::warning(this, "Error", "Invalid SFTP configuration file format.");
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+    QString ip       = obj.value("ip").toString();
+    QString username = obj.value("username").toString();
+    QString password = obj.value("password").toString();
+    QString port     = obj.value("port").toString();
+
+    if (ip.isEmpty() || username.isEmpty() || password.isEmpty() || port.isEmpty()) {
+        QMessageBox::warning(this, "Error", "Incomplete SFTP configuration.");
+        return;
+    }
+
+    QDir dir(claimDir);
+    if (!dir.exists()) {
+        dir.mkpath(claimDir);
+    } else {
+        QStringList files = dir.entryList(QDir::Files);
+        for (const QString &fileName : files) {
+            QFile::remove(claimDir + fileName);
+        }
+    }
+
+    QString remotePath = "/aws_iot_core/claim_certs/*";
+    QString localPath  = claimDir;
+
+    QString command = QString("sshpass -p '%1' scp -P %2 -o StrictHostKeyChecking=no %3@%4:%5 %6")
+                      .arg(password)
+                      .arg(port)
+                      .arg(username)
+                      .arg(ip)
+                      .arg(remotePath)
+                      .arg(localPath);
+
+
+    QProcess *process = new QProcess(this);
+    process->setProcessChannelMode(QProcess::MergedChannels);
+
+    connect(process, &QProcess::readyReadStandardOutput, [process]() {
+        qDebug().noquote() << process->readAllStandardOutput();
+    });
+
+    connect(process, &QProcess::readyReadStandardError, [process]() {
+        qWarning().noquote() << process->readAllStandardError();
+    });
+
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this, [process, claimDir](int exitCode, QProcess::ExitStatus status) {
+        Q_UNUSED(status);
+
+        if (exitCode == 0) {
+            QMessageBox::information(nullptr, "Success", "Claim certificates downloaded successfully!");
+        } else {
+            QMessageBox::warning(nullptr, "Error", "Failed to download claim certificates. Please check SFTP connection or credentials.");
+        }
+
+        process->deleteLater();
+    });
+
+    process->start("bash", QStringList() << "-c" << command);
+
+    if (!process->waitForStarted()) {
+        QMessageBox::warning(this, "Error", "Failed to start SFTP download process.");
         process->deleteLater();
         return;
     }

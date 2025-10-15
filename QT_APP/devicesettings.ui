@@ -191,7 +191,7 @@ QPushButton:focus {
       <enum>Qt::ClickFocus</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QVBoxLayout" name="verticalLayout_15">
@@ -2141,7 +2141,7 @@ QPushButton:focus {
                <item>
                 <widget class="QLineEdit" name="mqtts_endpoint">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
@@ -2152,8 +2152,8 @@ QPushButton:focus {
                  <property name="styleSheet">
                   <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
-    border-radius: 6px;
-    padding: 6px 12px;
+    border-radius: 4px;
+    padding: 6px 8px;
     font-size: 15px;
     color: black;</string>
                  </property>

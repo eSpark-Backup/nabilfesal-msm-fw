@@ -156,7 +156,7 @@ QPushButton:focus {
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page_2">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -643,14 +643,17 @@ QPushButton:focus {
                </item>
                <item>
                 <widget class="QLineEdit" name="mqtts_endpoint">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
                  <property name="styleSheet">
                   <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
-    border-radius: 6px;
-    padding: 6px 12px;
+    border-radius: 4px;
+    padding: 6px 8px;
     font-size: 15px;
     color: black;</string>
                  </property>
@@ -1678,6 +1681,61 @@ QPushButton:focus {
                     </property>
                     <property name="text">
                      <string>Start OTA</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_4">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="pushButton_5">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>80</width>
+                      <height>50</height>
+                     </size>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}
+QPushButton:focus {
+    outline: none;                 /* Remove dotted border */
+    background-color: #074475;     /* Brighter blue highlight */
+    border: 2px solid black;       /* White glow/border */
+}</string>
+                    </property>
+                    <property name="text">
+                     <string>Check Updates</string>
                     </property>
                    </widget>
                   </item>

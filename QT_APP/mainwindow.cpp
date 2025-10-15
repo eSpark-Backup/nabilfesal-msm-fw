@@ -232,6 +232,8 @@ void MainWindow::connectFactSettings(FactSetting *fs)
             fs->hide();
         }
     });
+
+    connect(fs, &FactSetting::runFleetProvisioning, this, [this]() { settings->loadAwsMqttsSettings(false); });
 }
 
 // -----------------------------
@@ -608,13 +610,15 @@ void MainWindow::handlePostProgress()
     // load preset settings into DeviceSettings and FactSetting (original behavior)
     settings->on_mqtt_load_btn_clicked(false);
     settings->on_sftp_load_btn_clicked(false);
-    settings->loadAwsMqttsSettings(false);
+    settings->on_mqtts_load_btn_clicked();
+    // settings->loadAwsMqttsSettings(false);
 
     if (!factSettings) {
         factSettings = new FactSetting;
     }
     factSettings->on_mqtt_load_btn_clicked(false);
     factSettings->on_sftp_load_btn_clicked(false);
+    factSettings->on_mqtts_load_btn_clicked();
 
     if (!channels)
         channels = new ChannelsHome(hardwareVersion, softwareVersion);

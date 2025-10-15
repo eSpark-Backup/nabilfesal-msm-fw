@@ -142,11 +142,14 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->move(72, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("SCHEDULE", ui->sftp_sch);
+    label = new QLabel("SCHEDULE(24hr)", ui->sftp_sch);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    label->adjustSize();
-    label->move(75, 1);
+    QFont font = label->font();
+    font.setPointSize(6);
+    label->setFont(font);
+    label->adjustSize(); 
+    label->move(45, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTTs_ENDPOINT", ui->mqtts_endpoint);
@@ -500,33 +503,6 @@ void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
     }
     else
         emit aws_mqtts_load();
-
-    // file("config/aws_mqtts_settings.json");
-    // if (!file.exists()) {
-    //     if (showMessages)
-    //         QMessageBox::warning(this, "AWS MQTTS Settings", "No saved settings found.");
-    //     return;
-    // }
-
-    // if (!file.open(QIODevice::ReadOnly)) {
-    //     if (showMessages)
-    //         QMessageBox::critical(this, "AWS MQTTS Settings", "Failed to open settings file.");
-    //     return;
-    // }
-
-    // QByteArray data = file.readAll();
-    // file.close();
-
-    // QJsonParseError parseError;
-    // QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    // if (doc.isNull() || !doc.isObject()) {
-    //     if (showMessages)
-    //         QMessageBox::critical(this, "AWS MQTTS Settings", "Invalid JSON format: " + parseError.errorString());
-    //     return;
-    // }
-
-    // QJsonObject mqttSettings = doc.object();
-    // emit aws_mqtts_load();
 }
 
 
@@ -690,12 +666,73 @@ void DeviceSettings::on_pushButton_2_clicked()
 
 void DeviceSettings::on_mqtts_load_btn_clicked()
 {
+    QString filePath = "config/aws_mqtts_settings.json";
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "Error", "Failed to open MQTT configuration file.");
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        QMessageBox::warning(this, "Error", "Invalid MQTT configuration file format.");
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+
+    ui->mqtts_endpoint->setText(obj.value("endpoint").toString());
+    ui->mqtts_interval->setText(obj.value("interval").toString());
+    ui->mqtts_client_id->setText(Utils::getUid());
 
 }
 
 
 void DeviceSettings::on_mqtts_save_btn_clicked()
 {
+    QString filePath = "config/aws_mqtts_settings.json";
 
+    // Ensure directory exists
+    QDir().mkpath(QFileInfo(filePath).absolutePath());
+
+    QFile file(filePath);
+    QJsonObject obj;
+
+    // Try reading existing file (if present)
+    if (file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QByteArray data = file.readAll();
+        file.close();
+
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+        if (parseError.error == QJsonParseError::NoError && doc.isObject())
+            obj = doc.object();
+    }
+
+    // Update relevant fields
+    obj["endpoint"] = ui->mqtts_endpoint->text();
+    obj["interval"] = ui->mqtts_interval->text();
+
+    // Keep or set defaults for other fields
+    if (!obj.contains("port"))
+        obj["port"] = "8883";  // constant, not editable in UI
+    if (!obj.contains("topic"))
+        obj["topic"] = "$aws/things/fleet_prov_shadow_test_1/shadow/update";
+
+    // Write updated JSON back
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        QMessageBox::warning(this, "Error", "Failed to save MQTT configuration.");
+        return;
+    }
+
+    QJsonDocument newDoc(obj);
+    file.write(newDoc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    QMessageBox::information(this, "Saved", "MQTTS configuration saved successfully.");
 }
 

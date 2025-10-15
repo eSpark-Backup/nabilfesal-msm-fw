@@ -336,15 +336,15 @@ QString getFirmwareVersion()
 QString getLastOTAInitiated()
 {
     QString otaTime;
-    QFile hwFile("version.json");
-    if (hwFile.open(QIODevice::ReadOnly)) {
-        const auto data = hwFile.readAll();
+    QFile otaFile("/etc/ota_update.json");
+    if (otaFile.open(QIODevice::ReadOnly)) {
+        const auto data = otaFile.readAll();
         const auto doc = QJsonDocument::fromJson(data);
         if (doc.isObject()) {
             const auto obj = doc.object();
             otaTime = obj.value("ota_update").toString();
         }
-        hwFile.close();
+        otaFile.close();
     }
 
     return otaTime;
@@ -352,7 +352,7 @@ QString getLastOTAInitiated()
 
 void setLastOTAInitiated()
 {
-    QFile file("version.json");
+    QFile file("/etc/ota_update.json");
     QJsonObject obj;
 
     if (file.open(QIODevice::ReadOnly)) {
