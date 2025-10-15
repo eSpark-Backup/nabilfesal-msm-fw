@@ -156,7 +156,7 @@ QPushButton:focus {
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page_2">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -231,13 +231,13 @@ QPushButton:focus {
                 <number>10</number>
                </property>
                <property name="leftMargin">
-                <number>20</number>
+                <number>10</number>
                </property>
                <property name="topMargin">
                 <number>0</number>
                </property>
                <property name="rightMargin">
-                <number>20</number>
+                <number>10</number>
                </property>
                <property name="bottomMargin">
                 <number>20</number>
@@ -611,13 +611,13 @@ QPushButton:focus {
                 <number>10</number>
                </property>
                <property name="leftMargin">
-                <number>20</number>
+                <number>10</number>
                </property>
                <property name="topMargin">
                 <number>0</number>
                </property>
                <property name="rightMargin">
-                <number>20</number>
+                <number>10</number>
                </property>
                <property name="bottomMargin">
                 <number>20</number>
