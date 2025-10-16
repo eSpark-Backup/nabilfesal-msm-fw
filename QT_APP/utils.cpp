@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include "mqttManager.h"
 #include "sftpManager.h"
+#include "awsmqttmanager.h"
 #include <cstdlib>
 #include <QLabel>
 #include <QPixmap>
@@ -66,10 +67,10 @@ QJsonObject getNtpStatus()
     if (process.waitForFinished(500)) { // timeout 500ms
         QString output = process.readAllStandardOutput();
         result["ntp_status"] = output.contains("SUCCESS", Qt::CaseInsensitive)
-                                   ? "running"
-                                   : "stopped";
+                                   ? "Running"
+                                   : "Stopped";
     } else {
-        result["ntp_status"] = "unknown";
+        result["ntp_status"] = "UNKNOWN";
     }
 
     return result;
@@ -228,6 +229,14 @@ QString getMqttStatus()
         return "Disconnected";
 }
 
+QString getMqttsStatus()
+{
+    AwsMqttManager &mqtts = AwsMqttManager::instance();
+    if (mqtts.awsMqttsState())
+        return "Connected";
+    else
+        return "Disconnected";
+}
 
 QString getSftpStatus()
 {

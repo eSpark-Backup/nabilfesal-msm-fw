@@ -30,6 +30,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     ui->mqtt->setText(mqttData);
     auto sftpData = Utils::getSftpStatus();
     ui->sftp->setText(sftpData);
+    ui->mqtts->setText(Utils::getMqttsStatus());
 
     QTimer *timer = new QTimer(this);
 
@@ -240,11 +241,13 @@ void DeviceSettings::on_channels_btn_clicked()
 void DeviceSettings::parseNtpJson(const QJsonObject& root)
 {
     QString signal = Utils::getSignalCategoryFromFile();
-    ui->ntp->setText(signal);
+    ui->gsm->setText(signal);
     QString date   = root.value("date").toString();
     QString time   = root.value("time").toString();
     ui->date_input->setText(date);
     ui->time_input->setText(time);
+    QString ntpStatus = root.value("ntp_status").toString();
+    ui->ntp->setText(ntpStatus);
 }
 
 void DeviceSettings::on_continue_btn_clicked()
@@ -578,18 +581,22 @@ void DeviceSettings::refreshInfo()
 
     auto ntpData = Utils::getNtpStatus();
     curDevInfo.date       = ntpData.value("date").toString();
-    curDevInfo.ntpStatus  = Utils::getSignalCategoryFromFile();
+    curDevInfo.gsmStatus  = Utils::getSignalCategoryFromFile();
 
     curDevInfo.mqttStatus = Utils::getMqttStatus();
     curDevInfo.sftpStatus = Utils::getSftpStatus();
+    curDevInfo.mqttsStatus =Utils::getMqttsStatus();
+    curDevInfo.ntpStatus = ntpData.value("ntp_status").toString();
 
     ui->uuid->setText(curDevInfo.uuid);
     ui->ip->setText(curDevInfo.ip);
     ui->imei->setText(curDevInfo.imei);
     ui->date_input->setText(curDevInfo.date);
-    ui->ntp->setText(curDevInfo.ntpStatus);
+    ui->gsm->setText(curDevInfo.gsmStatus);
     ui->mqtt->setText(curDevInfo.mqttStatus);
     ui->sftp->setText(curDevInfo.sftpStatus);
+    ui->mqtts->setText(curDevInfo.mqttsStatus);
+    ui->ntp->setText(curDevInfo.ntpStatus);
 
     if (isDifferent(curDevInfo, prvDevInfo)) {
         emit deviceInfoChanged(curDevInfo);
@@ -607,7 +614,9 @@ bool DeviceSettings::isDifferent(const DeviceInfo &a, const DeviceInfo &b)
         || a.date       != b.date
         || a.ntpStatus  != b.ntpStatus
         || a.mqttStatus != b.mqttStatus
-        || a.sftpStatus != b.sftpStatus;
+        || a.sftpStatus != b.sftpStatus
+        || a.mqttsStatus != b.mqttsStatus
+        || a.gsmStatus != b.gsmStatus;
 }
 
 
