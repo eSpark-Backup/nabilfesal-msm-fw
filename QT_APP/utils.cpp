@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include "mqttManager.h"
 #include "sftpManager.h"
+#include "awsmqttmanager.h"
 #include <cstdlib>
 #include <QLabel>
 #include <QPixmap>
@@ -241,6 +242,8 @@ QString getSftpStatus()
 
 void rebootSystem()
 {
+    AwsMqttManager &awsMqttsHandler = AwsMqttManager::instance();
+    awsMqttsHandler.disconnectAwsClient();
     QString imgPath = ":/icons/rebooting.png";
     showImageFullscreenFor(imgPath, 2000);
 }

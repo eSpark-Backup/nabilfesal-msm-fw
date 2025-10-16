@@ -233,7 +233,7 @@ void MainWindow::connectFactSettings(FactSetting *fs)
         }
     });
 
-    connect(fs, &FactSetting::runFleetProvisioning, this, [this]() { settings->loadAwsMqttsSettings(false); });
+    connect(fs, &FactSetting::runFleetProvisioning, this, [this]() { settings->runFleetProvisionerAsync(); });
 }
 
 // -----------------------------
@@ -611,7 +611,7 @@ void MainWindow::handlePostProgress()
     settings->on_mqtt_load_btn_clicked(false);
     settings->on_sftp_load_btn_clicked(false);
     settings->on_mqtts_load_btn_clicked();
-    // settings->loadAwsMqttsSettings(false);
+    settings->loadAwsMqttsSettings(false);
 
     if (!factSettings) {
         factSettings = new FactSetting;

@@ -484,8 +484,15 @@ void FactSetting::on_mqtts_load_btn_clicked()
     // Port is constant and not editable
 
     // ---- Check for certificate files ----
-    QString basePath = "/MSM/potential-pancake/MSM/creds/prov_certs/";
-    QString caPath   = "/MSM/potential-pancake/MSM/creds/claim_certs/AmazonRootCA1.pem";
+
+    #if defined(BUILD_X86)
+        QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
+        QString caPath   = basePath + "AmazonRootCA1.pem";
+    #elif defined(BUILD_V3S)
+        QString basePath = "/MSM/potential-pancake/MSM/creds/prov_certs/";
+        QString caPath = "/MSM/potential-pancake/MSM/creds/claim_certs/AmazonRootCA1.pem"; //v3s
+    #endif
+
     QString certPath = basePath + "deviceCert.pem";
     QString keyPath  = basePath + "privateKey.pem";
 
@@ -525,8 +532,6 @@ void FactSetting::on_mqtts_save_btn_clicked()
     // Keep or restore other fields
     if (!obj.contains("port"))
         obj["port"] = "8883";
-    if (!obj.contains("topic"))
-        obj["topic"] = "$aws/things/fleet_prov_shadow_test_1/shadow/update";
 
     // Write updated JSON back
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
@@ -550,6 +555,9 @@ void FactSetting::on_pushButton_3_clicked()
 void FactSetting::on_pushButton_2_clicked()
 {
     QString claimDir = "/MSM/potential-pancake/MSM/creds/claim_certs/";
+    #if defined(BUILD_X86)
+        claimDir = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/";
+    #endif
     QString configPath = "config/sftp_settings.json";
 
     QFile file(configPath);
@@ -590,10 +598,10 @@ void FactSetting::on_pushButton_2_clicked()
         }
     }
 
-    QString remotePath = "/aws_iot_core/claim_certs/*";
+    QString remotePath = "/aws_iot_core/claim_certs/";
     QString localPath  = claimDir;
 
-    QString command = QString("sshpass -p '%1' scp -P %2 -o StrictHostKeyChecking=no %3@%4:%5 %6")
+    QString command = QString("sshpass -p '%1' scp -r -P %2 -o StrictHostKeyChecking=no %3@%4:%5 %6")
                       .arg(password)
                       .arg(port)
                       .arg(username)

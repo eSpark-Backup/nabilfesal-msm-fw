@@ -495,11 +495,8 @@ void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
     if ((!QFile::exists(certPath) || !QFile::exists(keyPath)) && !Utils::getUid().isEmpty()) {
         qDebug() << "One or more certificate files are missing!";
         QFile::remove(certPath); QFile::remove(keyPath);
-        
-        if(Utils::updateSerialInConfig())
-        {
-            runFleetProvisionerAsync();
-        }
+        Utils::updateSerialInConfig();
+        return;
     }
     else
         emit aws_mqtts_load();
@@ -720,8 +717,6 @@ void DeviceSettings::on_mqtts_save_btn_clicked()
     // Keep or set defaults for other fields
     if (!obj.contains("port"))
         obj["port"] = "8883";  // constant, not editable in UI
-    if (!obj.contains("topic"))
-        obj["topic"] = "$aws/things/fleet_prov_shadow_test_1/shadow/update";
 
     // Write updated JSON back
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {

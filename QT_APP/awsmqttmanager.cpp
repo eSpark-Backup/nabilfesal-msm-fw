@@ -259,15 +259,13 @@ void AwsMqttManager::disconnectFromBroker()
     AWS_LOG("[MQTT] Disconnecting...");
 
     publishTimer->stop();
-
-    if (awsMqttsClient->state() != QMqttClient::Disconnected)
-        awsMqttsClient->disconnectFromHost();
+   
+        if (awsMqttsClient->state() != QMqttClient::Disconnected)
+            awsMqttsClient->disconnectFromHost();
 
     if (sslSocket) {
         sslSocket->disconnectFromHost();
         sslSocket->close();
-        sslSocket->deleteLater();
-        sslSocket = nullptr;
     }
 }
 

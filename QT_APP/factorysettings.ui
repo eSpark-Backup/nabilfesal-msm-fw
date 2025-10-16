@@ -254,12 +254,15 @@ QPushButton:focus {
       <widget class="QLabel" name="label_3">
        <property name="font">
         <font>
-         <family>Gilroy</family>
-         <pointsize>12</pointsize>
+         <family>Ubuntu</family>
+         <pointsize>11</pointsize>
+         <italic>false</italic>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: rgb(148, 214, 235);</string>
+        <string notr="true">color: rgb(52, 101, 164);
+font: 11pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
         <string>Ein Technology Labs Sdn Bhd</string>
@@ -270,12 +273,15 @@ QPushButton:focus {
       <widget class="QLabel" name="hf">
        <property name="font">
         <font>
-         <family>Gilroy</family>
-         <pointsize>12</pointsize>
+         <family>Ubuntu</family>
+         <pointsize>11</pointsize>
+         <italic>false</italic>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">
-        <string notr="true">color: rgb(148, 214, 235);</string>
+        <string notr="true">color: rgb(52, 101, 164);
+font: 11pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
         <string>HW: 1.5.0  FW: 1.2.0</string>
