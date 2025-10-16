@@ -35,12 +35,12 @@ protected:
         if (event->type() == QEvent::KeyPress) {
             auto *keyEvent = static_cast<QKeyEvent*>(event);
 
-            if (keyEvent->key() == Qt::Key_Right) {
+            if (keyEvent->key() == Qt::Key_Left) {
                 // simulate Shift+Tab
                 sendKeyEvent(Qt::Key_Tab, Qt::ShiftModifier);
                 return true; // swallow Left Arrow
             }
-            else if (keyEvent->key() == Qt::Key_Left) {
+            else if (keyEvent->key() == Qt::Key_Right) {
                 // simulate Tab
                 sendKeyEvent(Qt::Key_Tab, Qt::NoModifier);
                 return true; // swallow Right Arrow
