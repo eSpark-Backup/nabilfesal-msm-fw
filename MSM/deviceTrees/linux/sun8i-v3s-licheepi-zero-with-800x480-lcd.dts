@@ -1,0 +1,57 @@
+
+/*
+ * Copyright (C) 2018 Icenowy Zheng <icenowy@aosc.io>
+ *
+ * SPDX-License-Identifier: (GPL-2.0+ OR X11)
+ */
+
+ #include "sun8i-v3s-licheepi-zero-with-lcd.dtsi"
+ #include <dt-bindings/input/input.h>
+
+ &panel {
+	compatible = "urt,umsh-8596md-t", "simple-panel";
+};
+
+/ {
+	reg_avcc: regulator-avcc {
+		compatible = "regulator-fixed";
+		regulator-name = "avcc";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+	};
+};
+
+&lradc {
+        vref-supply = <&reg_avcc>;
+        wakeup-source;
+        status = "okay";
+        
+        button-1 {
+                label = "Home";
+                linux,code = <KEY_HOME>;
+                channel = <0>;
+                voltage = <222000>;
+        };
+
+        button-2 {
+                label = "Next";
+                linux,code = <KEY_TAB>;
+                channel = <0>;
+                voltage = <423000>;
+        };
+        
+        button-3 {
+                label = "Prev";
+                linux,code = <KEY_LEFT>;
+                channel = <0>;
+                voltage = <633000>;
+        };
+
+        button-4 {
+                label = "Enter";
+                linux,code = <KEY_SPACE>;
+                channel = <0>;
+                voltage = <826000>;
+        };
+};

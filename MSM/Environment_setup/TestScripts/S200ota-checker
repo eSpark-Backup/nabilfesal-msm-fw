@@ -1,0 +1,78 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          sftp_file_monitor
+# Required-Start:    $network $remote_fs
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Periodically fetch SFTP file list and save to JSON
+### END INIT INFO
+
+### CONFIG ###
+SCRIPT_DIR="/MSM/potential-pancake/MSM/linux_configs/misc-scripts"
+SCRIPT_NAME="list_sftp_files.sh"
+LOG_FILE="/var/log/sftp_file_monitor.log"
+PID_FILE="/var/run/sftp_file_monitor.pid"
+
+### FUNCTIONS ###
+start() {
+    echo "Starting sftp_file_monitor..."
+    if [ -f "$PID_FILE" ]; then
+        echo "Already running (PID $(cat $PID_FILE))"
+        return 1
+    fi
+
+    # Run in background loop
+    (
+        while true; do
+            echo "$(date): Fetching file list..." >> "$LOG_FILE"
+            sh "$SCRIPT_DIR/$SCRIPT_NAME" >> "$LOG_FILE" 2>&1
+            sleep 60  # 5 minutes
+        done
+    ) &
+    echo $! > "$PID_FILE"
+    echo "Started with PID $(cat $PID_FILE)"
+}
+
+stop() {
+    echo "Stopping sftp_file_monitor..."
+    if [ -f "$PID_FILE" ]; then
+        kill "$(cat "$PID_FILE")" 2>/dev/null
+        rm -f "$PID_FILE"
+        echo "Stopped."
+    else
+        echo "Not running."
+    fi
+}
+
+status() {
+    if [ -f "$PID_FILE" ]; then
+        if ps -p "$(cat "$PID_FILE")" > /dev/null 2>&1; then
+            echo "Running (PID $(cat "$PID_FILE"))"
+        else
+            echo "Stale PID file found; removing."
+            rm -f "$PID_FILE"
+        fi
+    else
+        echo "Not running."
+    fi
+}
+
+restart() {
+    stop
+    sleep 1
+    start
+}
+
+### MAIN ###
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) restart ;;
+    status) status ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+exit 0
