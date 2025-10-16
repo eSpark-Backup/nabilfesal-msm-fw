@@ -212,15 +212,6 @@ DeviceSettings::~DeviceSettings()
 
 bool DeviceSettings::eventFilter(QObject *obj, QEvent *event)
 {
-    // First: handle key events globally
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_Home) {
-            on_channels_btn_clicked();
-            return true;  // stop further processing
-        }
-    }
-
     // Then: handle QLineEdit focus/keyboard logic
     QLineEdit *lineEdit = qobject_cast<QLineEdit*>(obj);
     if (lineEdit) {

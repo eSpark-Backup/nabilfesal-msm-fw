@@ -156,7 +156,7 @@ QPushButton:focus {
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page_2">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -1710,6 +1710,9 @@ QPushButton:focus {
                       <width>80</width>
                       <height>50</height>
                      </size>
+                    </property>
+                    <property name="focusPolicy">
+                     <enum>Qt::TabFocus</enum>
                     </property>
                     <property name="styleSheet">
                      <string notr="true">QPushButton {
