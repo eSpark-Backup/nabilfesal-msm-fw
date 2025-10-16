@@ -115,7 +115,7 @@ void sftpManager::scheduleSftpUpload()
 
     QTimer::singleShot(msecToGo, this, [this]() {
         QString uid = Utils::getUid();
-        QString uploadFilePath = "/ToOFP/" + uid;
+        QString uploadFilePath = "/FromOFP/" + uid;
 
         uploadFile(m_filePath, uploadFilePath);
 
@@ -430,7 +430,7 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
     // ---- Write Header ----
     if (writeHeader) {
         QStringList header;
-        header << "\"Date\"" << "\"Time\"" << "\"IP\"" << "\"UUID\"";
+        header << "\"Date\"" << "\"Time\"" << "\"IP\"";
 
         // Channel 1 (incoming)
         for (const QString &k : baseKeysIncoming_Modified) {
@@ -456,7 +456,6 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
     row << "\"" + now.date().toString("dd/MM/yyyy") + "\"";
     row << "\"" + now.time().toString("HH:mm") + "\"";
     row << "\"" + Utils::getDeviceIp() + "\"";
-    row << "\"" + Utils::getUid() + "\"";
 
     {
         QReadLocker locker(&telemetryLock);

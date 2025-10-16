@@ -830,7 +830,7 @@ QPushButton:focus {
 }</string>
                  </property>
                  <property name="text">
-                  <string>SFTP Trigger</string>
+                  <string>Fetch Claim</string>
                  </property>
                 </widget>
                </item>
