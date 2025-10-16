@@ -156,7 +156,7 @@ QPushButton:focus {
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page_2">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -644,7 +644,7 @@ QPushButton:focus {
                <item>
                 <widget class="QLineEdit" name="mqtts_endpoint">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>

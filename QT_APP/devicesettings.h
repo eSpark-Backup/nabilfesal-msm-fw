@@ -34,7 +34,7 @@ public slots:
     void parse_load_store_sftp(const QJsonObject &payload);
     void parse_load_store_mqtt(const QJsonObject &payload);
     void send_aws_updated_data();
-    void on_mqtts_load_btn_clicked();
+    void on_mqtts_load_btn_clicked(bool msgBox = true);
     
 
 private slots:

@@ -615,7 +615,7 @@ void MainWindow::handlePostProgress()
     // load preset settings into DeviceSettings and FactSetting (original behavior)
     settings->on_mqtt_load_btn_clicked(false);
     settings->on_sftp_load_btn_clicked(false);
-    settings->on_mqtts_load_btn_clicked();
+    settings->on_mqtts_load_btn_clicked(false);
     // settings->loadAwsMqttsSettings(false);
 
     if (!factSettings) {
@@ -623,7 +623,7 @@ void MainWindow::handlePostProgress()
     }
     factSettings->on_mqtt_load_btn_clicked(false);
     factSettings->on_sftp_load_btn_clicked(false);
-    factSettings->on_mqtts_load_btn_clicked();
+    factSettings->on_mqtts_load_btn_clicked(false);
 
     if (!channels)
         channels = new ChannelsHome(hardwareVersion, softwareVersion);

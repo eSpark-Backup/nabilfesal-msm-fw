@@ -664,12 +664,13 @@ void DeviceSettings::on_pushButton_2_clicked()
 }
 
 
-void DeviceSettings::on_mqtts_load_btn_clicked()
+void DeviceSettings::on_mqtts_load_btn_clicked(bool msgBox)
 {
     QString filePath = "config/aws_mqtts_settings.json";
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Error", "Failed to open MQTT configuration file.");
+        if (msgBox)
+            QMessageBox::warning(this, "Error", "Failed to open MQTT configuration file.");
         return;
     }
 
@@ -679,7 +680,8 @@ void DeviceSettings::on_mqtts_load_btn_clicked()
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        QMessageBox::warning(this, "Error", "Invalid MQTT configuration file format.");
+        if (msgBox)
+            QMessageBox::warning(this, "Error", "Invalid MQTT configuration file format.");
         return;
     }
 
