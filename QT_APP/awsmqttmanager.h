@@ -15,6 +15,8 @@ struct DeviceInfo {
     QString ntpStatus;
     QString mqttStatus;
     QString sftpStatus;
+    QString mqttsStatus;
+    QString gsmStatus;
 };
 
 

@@ -21,7 +21,20 @@ FactSetting::FactSetting(QWidget *parent)
     auto firmware = Utils::getFirmwareVersion();
     ui->ota_cur_version->setText(firmware);
     auto otaInitiated = Utils::getLastOTAInitiated();
-    ui->ota_last_update->setText(otaInitiated);
+
+    if (!otaInitiated.isEmpty()) {
+        QDateTime dateTime = QDateTime::fromString(otaInitiated, Qt::ISODate);
+        if (dateTime.isValid()) {
+            ui->ota_last_date->setText(dateTime.date().toString("yyyy-MM-dd"));
+            ui->ota_last_time->setText(dateTime.time().toString("HH:mm:ss"));
+        } else {
+            ui->ota_last_date->setText("N/A");
+            ui->ota_last_time->setText("N/A");
+        }
+    } else {
+        ui->ota_last_date->setText("N/A");
+        ui->ota_last_time->setText("N/A");
+    }
 
     auto versionList = Utils::getAvailableVersions();
     ui->comboBox->clear();
@@ -80,28 +93,28 @@ FactSetting::FactSetting(QWidget *parent)
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(260, 1);
+    label->move(280, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_PORT", ui->sftp_port);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(237, 1);
+    label->move(250, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_USER", ui->sftp_user);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(237, 1);
+    label->move(250, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_PASSWORD", ui->sftp_pass);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(200, 1);
+    label->move(220, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("INTERVAL (s)", ui->sftp_int);
@@ -118,42 +131,49 @@ FactSetting::FactSetting(QWidget *parent)
     font.setPointSize(5);
     label->setFont(font);
     label->adjustSize(); 
-    label->move(45, 1);
+    label->move(50, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTTs_ENDPOINT", ui->mqtts_endpoint);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(185, 1);
+    label->move(215, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTTs_PORT", ui->mqtts_port);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(210, 1);
+    label->move(240, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTTs_INTERVAL", ui->mqtts_interval);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(190, 1);
+    label->move(220, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("CURRENT VERSION", ui->ota_cur_version);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(180, 1);
+    label->move(200, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("LAST UPDATE", ui->ota_last_update);
+    label = new QLabel("LAST UPDATE DATE", ui->ota_last_date);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(220, 1);
+    label->move(200, 1);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("LAST UPDATE TIME", ui->ota_last_time);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(200, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     keyboard = new MSMKeyboard(this);
@@ -457,12 +477,13 @@ void FactSetting::on_pushButton_5_clicked()
 }
 
 
-void FactSetting::on_mqtts_load_btn_clicked()
+void FactSetting::on_mqtts_load_btn_clicked(bool msgBox)
 {
     QString filePath = "config/aws_mqtts_settings.json";
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Error", "Failed to open MQTT configuration file.");
+        if (msgBox)
+            QMessageBox::warning(this, "Error", "Failed to open MQTTs configuration file.");
         return;
     }
 
@@ -472,7 +493,8 @@ void FactSetting::on_mqtts_load_btn_clicked()
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        QMessageBox::warning(this, "Error", "Invalid MQTT configuration file format.");
+        if (msgBox)
+            QMessageBox::warning(this, "Error", "Invalid MQTTs configuration file format.");
         return;
     }
 

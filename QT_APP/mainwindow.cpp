@@ -10,7 +10,8 @@
 #include <QFile>
 #include <QDebug>
 #include <QMessageBox>
-
+#include <QKeyEvent>
+#include <QApplication>
 #include "utils.h"
 #include "factdialog.h"
 
@@ -65,6 +66,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(channelDataWatchdog, &QTimer::timeout, this, &MainWindow::onChannelDataWatchdogTimeout);
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
 
+    connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
+
     Utils::mainSound();
     showFullScreen();
 
@@ -72,6 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
     startApp = true;
     sendRatioSettings();
     QTimer::singleShot(20000, this, [this]() { startApp = false; });
+
+    qApp->installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -618,7 +623,7 @@ void MainWindow::handlePostProgress()
     }
     factSettings->on_mqtt_load_btn_clicked(false);
     factSettings->on_sftp_load_btn_clicked(false);
-    factSettings->on_mqtts_load_btn_clicked();
+    factSettings->on_mqtts_load_btn_clicked(false);
 
     if (!channels)
         channels = new ChannelsHome(hardwareVersion, softwareVersion);
@@ -693,4 +698,38 @@ void MainWindow::onChannelDataWatchdogTimeout()
     });    
 
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
+}
+
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    // First: handle key events globally
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Home) {
+            emit homeDetected();
+            return true;
+        }
+    }
+
+    return QWidget::eventFilter(obj, event);
+}
+
+void MainWindow::showChannelsHome()
+{
+    // Hide all possible open windows
+    if (login && login->isVisible()) login->hide();
+    if (settings && settings->isVisible()) settings->hide();
+    if (factorySettings && factorySettings->isVisible()) factorySettings->hide();
+    if (factSettings && factSettings->isVisible()) factSettings->hide();
+    if (measure && measure->isVisible()) measure->hide();
+    if (registration && registration->isVisible()) registration->hide();
+    if (usbExporter && usbExporter->isVisible()) usbExporter->hide();
+
+    // Finally, show channels
+    if (!channels)
+        channels = new ChannelsHome(hardwareVersion, softwareVersion);
+
+    connectChannels(channels);
+    channels->showFullScreen();
 }

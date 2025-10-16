@@ -30,7 +30,7 @@ protected:
 public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = true);
     void on_sftp_load_btn_clicked(bool msgBox = true);
-    void on_mqtts_load_btn_clicked();
+    void on_mqtts_load_btn_clicked(bool msgBox = true);
 
 private slots:
     void on_next_btn_clicked();

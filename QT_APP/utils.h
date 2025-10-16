@@ -23,6 +23,7 @@ QString getFirmwareVersion();
 QString getLastOTAInitiated();
 QStringList getAvailableVersions();
 void setLastOTAInitiated();
+QString getMqttsStatus();
 }
 
 #endif // UTILS_H
