@@ -395,7 +395,7 @@ void DeviceSettings::parse_load_store_mqtt(const QJsonObject &payload)
     mqttSettings["topic"]    = mqttPayload.value("mqtt_topic").toString();
     mqttSettings["interval"] = QString::number(mqttPayload.value("data_interval").toInt());
 
-    saveMqttSettings(mqttSettings, false);
+    saveMqttSettings(mqttSettings);
     apply_mqtt_Settings(mqttSettings);
 }
 
@@ -466,7 +466,7 @@ void DeviceSettings::parse_load_store_sftp(const QJsonObject &payload)
     sftpSettings["interval"] = QString::number(sftpPayload.value("data_interval").toInt());
     sftpSettings["schedule"] = ui->sftp_sch->text().trimmed();
     
-    saveSftpSettings(sftpSettings, false);
+    saveSftpSettings(sftpSettings);
     apply_sftp_Settings(sftpSettings);
 }
 
@@ -669,6 +669,11 @@ void DeviceSettings::on_mqtts_save_btn_clicked(bool msgBox)
     
     if (hasEmptyField(obj)) {
         Toast::show("Please fill in all MQTTS fields before saving.", this, Toast::Warning);
+        return;
+    }
+
+    if (!jsonDifferent(obj, filePath)) {
+        if (!msgBox) Toast::show("[MQTTS] Settings unchanged, not saving into file.", this, Toast::Warning);
         return;
     }
 

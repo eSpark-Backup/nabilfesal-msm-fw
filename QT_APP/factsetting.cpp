@@ -570,6 +570,11 @@ void FactSetting::on_mqtts_save_btn_clicked(bool msgBox)
         return;
     }
 
+    if (!jsonDifferent(obj, filePath)) {
+        if (!msgBox) Toast::show("[MQTTS] Settings unchanged, not saving into file.", this, Toast::Warning);
+        return;
+    }
+
     // Write updated JSON back
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
         if (!msgBox) Toast::show("Failed to save MQTT configuration.", this, Toast::Warning);
