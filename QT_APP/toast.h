@@ -2,11 +2,10 @@
 #include <QLabel>
 #include <QTimer>
 #include <QHBoxLayout>
-#include <QApplication>
-#include <QDesktopWidget>
-#include <QPixmap>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QPropertyAnimation>
+#include <QVector>
 
 class Toast : public QWidget
 {
@@ -20,16 +19,19 @@ public:
 
     static void show(const QString &message, QWidget *parent = nullptr, Level level = Info, int timeoutMs = 3000)
     {
-        new Toast(message, parent, level, timeoutMs);
+        auto *toast = new Toast(message, parent, level, timeoutMs);
+        activeToasts.append(toast);
+        toast->repositionAllToasts();
     }
 
-    Toast(const QString &message, QWidget *parent = nullptr, Level level = Info, int timeoutMs = 3000)
+private:
+    explicit Toast(const QString &message, QWidget *parent = nullptr, Level level = Info, int timeoutMs = 3000)
         : QWidget(parent)
     {
         setWindowFlags(Qt::FramelessWindowHint | Qt::ToolTip);
         setAttribute(Qt::WA_ShowWithoutActivating);
 
-        // --- Color based on level ---
+        // --- Colors ---
         QString bgColor = "rgba(255, 255, 255, 255)";
         QString borderColor;
         QString textColor = "#000000";
@@ -39,32 +41,27 @@ public:
             case Info:
                 iconPath = ":/icons/information.png";
                 borderColor = "#2E8B57";   // green
-                textColor = "#000000";
                 break;
             case Warning:
                 iconPath = ":/icons/warning.png";
-                borderColor = "#DAA520";   // yellow-ish
-                textColor = "#000000";
+                borderColor = "#DAA520";   // yellow
                 break;
             case Error:
                 iconPath = ":/icons/error.png";
                 borderColor = "#B22222";   // red
-                textColor = "#000000";
                 break;
-            }
+        }
 
         // --- UI ---
         auto *layout = new QHBoxLayout(this);
         layout->setContentsMargins(10, 8, 10, 8);
         layout->setSpacing(10);
 
-        // Icon
         QLabel *iconLabel = new QLabel(this);
         QPixmap icon(iconPath);
         iconLabel->setPixmap(icon.scaled(24, 24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         layout->addWidget(iconLabel);
 
-        // Text
         QLabel *textLabel = new QLabel(message, this);
         textLabel->setStyleSheet(QString("QLabel { color: %1; font-size: 14px; }").arg(textColor));
         textLabel->setWordWrap(true);
@@ -84,14 +81,8 @@ public:
         adjustSize();
 
         // --- Position ---
-        QRect geom;
-        if (parent) {
-            geom = parent->geometry();
-        } else {
-            QScreen *screen = QGuiApplication::primaryScreen();
-            if (screen)
-                geom = screen->availableGeometry();
-        }
+        QRect geom = parent ? parent->geometry()
+                            : QGuiApplication::primaryScreen()->availableGeometry();
 
         int x = geom.x() + geom.width() - width() - 10;
         int y = geom.y() + 20;
@@ -99,6 +90,44 @@ public:
 
         QWidget::show();
 
-        QTimer::singleShot(timeoutMs, this, &QWidget::close);
+        // --- Auto close ---
+        QTimer::singleShot(timeoutMs, this, [this]() {
+            activeToasts.removeOne(this);
+            close();
+            repositionAllToasts();
+            deleteLater();
+        });
     }
+
+    // 🧭 Helper: reposition all toasts dynamically
+    void repositionAllToasts()
+    {
+        int margin = 10;
+        int offset = 20;
+        QRect geom = parentWidget()
+            ? parentWidget()->geometry()
+            : QGuiApplication::primaryScreen()->availableGeometry();
+
+        int maxWidth = 0;
+        for (auto *toast : activeToasts)
+            maxWidth = qMax(maxWidth, toast->width());
+
+        int anchorX = geom.x() + geom.width() - maxWidth - margin;
+
+        int currentY = geom.y() + offset;
+        for (Toast *toast : activeToasts) {
+            int toastX = anchorX + (maxWidth - toast->width());
+            QPropertyAnimation *anim = new QPropertyAnimation(toast, "pos");
+            anim->setDuration(200);
+            anim->setEasingCurve(QEasingCurve::OutCubic);
+            anim->setStartValue(toast->pos());
+            anim->setEndValue(QPoint(toastX, currentY));
+            anim->start(QAbstractAnimation::DeleteWhenStopped);
+
+            currentY += toast->height() + margin;
+        }
+
+    }
+
+    static inline QVector<Toast*> activeToasts;
 };

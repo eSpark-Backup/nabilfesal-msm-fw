@@ -454,7 +454,7 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
     QStringList row;
     QDateTime now = QDateTime::currentDateTime();
     row << "\"" + now.date().toString("dd/MM/yyyy") + "\"";
-    row << "\"" + now.time().toString("HH:mm") + "\"";
+    row << "\"" + now.time().toString("HH:mm:ss") + "\"";
     row << "\"" + Utils::getDeviceIp() + "\"";
 
     {

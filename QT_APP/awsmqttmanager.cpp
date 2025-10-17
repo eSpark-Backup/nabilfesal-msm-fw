@@ -44,7 +44,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);
 
-    reconnectTimer->setInterval(30 * 1000);  // 30 seconds
+    reconnectTimer->setInterval(5 * 1000);  // 5 seconds
     reconnectTimer->setSingleShot(false);    // repeat until success
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
@@ -240,7 +240,7 @@ void AwsMqttManager::connectToBroker()
 
     awsMqttsClient->setClientId(clientId);
     awsMqttsClient->setCleanSession(true);
-    awsMqttsClient->setKeepAlive(30);
+    awsMqttsClient->setKeepAlive(10);
     sslSocket->connectToHostEncrypted(host, port);
     AWS_LOG("[TLS] Initiating encrypted connect to" << host << ":" << port);
 }
