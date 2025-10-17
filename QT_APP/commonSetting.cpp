@@ -13,12 +13,12 @@ QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSett
 {
     QFile file(MQTT_CONFIG_PATH);
     if (!file.exists()) {
-        if(showMessages) Toast::show("No MQTT settings Found!", this, Toast::Warning);
+        if(!showMessages) Toast::show("No MQTT settings Found!", this, Toast::Warning);
         return {};
     }
 
     if (!file.open(QIODevice::ReadOnly)) {
-        if (showMessages) Toast::show("Failed to open MQTT setting file!", this, Toast::Error);
+        if (!showMessages) Toast::show("Failed to open MQTT setting file!", this, Toast::Error);
         return {};
     }
 
@@ -28,7 +28,7 @@ QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSett
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (doc.isNull() || !doc.isObject()) {
-        if (showMessages) Toast::show("[MQTT] Invalid JSON format: " + parseError.errorString(), this, Toast::Error);
+        if (!showMessages) Toast::show("[MQTT] Invalid JSON format: " + parseError.errorString(), this, Toast::Error);
         return {};
     }
 
@@ -42,7 +42,7 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessage
 {
     bool isJsonDiff = jsonDifferent(mqttSetting, MQTT_CONFIG_PATH);
     if (!isJsonDiff) {
-        qInfo() << "[MQTT] Settings unchanged, not rewriting file.";
+        if (showMessages) Toast::show("[MQTT] Settings unchanged, not saving into file.", this, Toast::Warning);
         return;
     }
 
@@ -74,7 +74,7 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
 {
     bool isJsonDiff = jsonDifferent(sftpSetting, SFTP_CONFIG_PATH);
     if (!isJsonDiff) {
-        qInfo() << "[SFTP] Settings unchanged, not rewriting file.";
+        if (showMessages) Toast::show("[SFTP] Settings unchanged, not saving into file.", this, Toast::Warning);
         return;
     }
     
@@ -106,12 +106,12 @@ QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSett
 {
     QFile file("config/sftp_settings.json");
     if (!file.exists()) {
-        if (showMessages) Toast::show("No SFTP settings found!", this, Toast::Warning);
+        if (!showMessages) Toast::show("No SFTP settings found!", this, Toast::Warning);
         return {};
     }
 
     if (!file.open(QIODevice::ReadOnly)) {
-        if (showMessages) Toast::show("Failed to open SFTP setting file!", this, Toast::Error);
+        if (!showMessages) Toast::show("Failed to open SFTP setting file!", this, Toast::Error);
         return {};
     }
 
@@ -121,7 +121,7 @@ QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSett
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (doc.isNull() || !doc.isObject()) {
-        if (showMessages) Toast::show("[SFTP] Invalid JSON format: " + parseError.errorString(), this, Toast::Error);
+        if (!showMessages) Toast::show("[SFTP] Invalid JSON format: " + parseError.errorString(), this, Toast::Error);
         return {};
     }
 

@@ -319,7 +319,7 @@ bool DeviceSettings::apply_ntp_Settings(bool msgBox)
     if (!server3.isEmpty()) newNtp.servers << server3;
 
     if (newNtp.servers.isEmpty()) {
-        if(msgBox) QMessageBox::warning(this, "NTP Settings", "Please enter at least one NTP server.");
+        if(msgBox) Toast::show("Please enter at least one NTP server.", this, Toast::Warning);
         return false;
     }
     
@@ -333,7 +333,7 @@ bool DeviceSettings::apply_ntp_Settings(bool msgBox)
             }
             previousNtp = newNtp;
         } else {
-            if(msgBox) QMessageBox::critical(this, "NTP Settings", "Failed to save NTP servers.\nMake sure the app has root permissions.");
+            if(msgBox) Toast::show("Failed to save NTP servers.Make sure the app has root permissions.", this, Toast::Warning);
         }
     } else {
         if (msgBox) Toast::show("No NTP changes detected, settings are already up-to-date.", this, Toast::Info);
@@ -403,7 +403,7 @@ void DeviceSettings::apply_mqtt_Settings(const QJsonObject &mqttSettings, bool m
     ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
     ui->mqtt_int->setText(mqttSettings.value("interval").toString());
     
-    if(msgBox)
+    if(!msgBox)
         Toast::show("MQTT settings loaded successfully!", this, Toast::Info);
 }
 
@@ -416,6 +416,12 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     QString sftpPass     = ui->sftp_pass->text().trimmed();
     QString sftpInterval = ui->sftp_int->text().trimmed();
     QString sftpSchedule = ui->sftp_sch->text().trimmed();
+
+    if (sftpIp.isEmpty() || sftpPort.isEmpty() || sftpUser.isEmpty() || 
+        sftpPass.isEmpty() || sftpInterval.isEmpty() || sftpSchedule.isEmpty()) {
+        QMessageBox::warning(this, "Missing Fields", "Please fill in all SFTP fields before saving.");
+        return;
+    }
 
     QJsonObject sftpSettings;
     sftpSettings["ip"]       = sftpIp;
@@ -469,7 +475,7 @@ void DeviceSettings::apply_sftp_Settings(const QJsonObject &sftpSettings, bool m
     ui->sftp_int->setText(sftpSettings.value("interval").toString());
     ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
     
-    if(msgBox)
+    if(!msgBox)
         Toast::show("SFTP settings loaded successfully!", this, Toast::Info);
 }
 
@@ -499,6 +505,7 @@ void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
 
 void DeviceSettings::runFleetProvisionerAsync()
 {
+    Utils::updateSerialInConfig();
     QString exe_path;
     #if defined(BUILD_X86)
         exe_path = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin";
@@ -541,21 +548,24 @@ void DeviceSettings::runFleetProvisionerAsync()
                  << "success:" << (demoSuccess && exitedNormally);
 
         if (demoSuccess && exitedNormally) {
+            Toast::show("[MQTTS] Fleet Provisioning Success!", this, Toast::Info);
             emit aws_mqtts_load();
         } else {
             qWarning() << "[Fleet] Provisioning failed.";
+            Toast::show("[MQTTS] Fleet Provisioning Failed!", this, Toast::Error);
         }
 
         delete logBuffer;
         process->deleteLater();
     });
-    qDebug() << "Process start called here";
+    Toast::show("[MQTTS] Fleet Provisioning Started", this, Toast::Info);
     process->start();
 
     // 🔹 immediate check
     if (!process->waitForStarted(3000)) {
         qWarning() << "[Fleet ERROR] Failed to start process:" << program
                    << "Reason:" << process->errorString();
+        Toast::show("[MQTTS] Failed to start Fleet Provisioning!", this, Toast::Error);
         delete logBuffer;
         process->deleteLater();
     }
@@ -666,8 +676,8 @@ void DeviceSettings::on_mqtts_load_btn_clicked(bool msgBox)
     QString filePath = "config/aws_mqtts_settings.json";
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (msgBox)
-            QMessageBox::warning(this, "Error", "Failed to open MQTT configuration file.");
+        if (!msgBox)
+            Toast::show("Failed to open MQTTS configuration file.", this, Toast::Error);
         return;
     }
 
@@ -677,8 +687,8 @@ void DeviceSettings::on_mqtts_load_btn_clicked(bool msgBox)
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        if (msgBox)
-            QMessageBox::warning(this, "Error", "Invalid MQTT configuration file format.");
+        if (!msgBox)
+            Toast::show("Invalid MQTTS configuration file format.", this, Toast::Warning);
         return;
     }
 
@@ -688,10 +698,11 @@ void DeviceSettings::on_mqtts_load_btn_clicked(bool msgBox)
     ui->mqtts_interval->setText(obj.value("interval").toString());
     ui->mqtts_client_id->setText(Utils::getUid());
 
+    if(!msgBox) Toast::show("MQTTS settings loaded successfully!", this, Toast::Info);
 }
 
 
-void DeviceSettings::on_mqtts_save_btn_clicked()
+void DeviceSettings::on_mqtts_save_btn_clicked(bool msgBox)
 {
     QString filePath = "config/aws_mqtts_settings.json";
 
@@ -722,7 +733,7 @@ void DeviceSettings::on_mqtts_save_btn_clicked()
 
     // Write updated JSON back
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        QMessageBox::warning(this, "Error", "Failed to save MQTT configuration.");
+        if(!msgBox) Toast::show("Failed to save MQTTS configuration.", this, Toast::Warning);
         return;
     }
 
@@ -730,6 +741,6 @@ void DeviceSettings::on_mqtts_save_btn_clicked()
     file.write(newDoc.toJson(QJsonDocument::Indented));
     file.close();
 
-    QMessageBox::information(this, "Saved", "MQTTS configuration saved successfully.");
+    if(!msgBox) Toast::show("MQTTS configuration saved successfully!", this, Toast::Info);
 }
 

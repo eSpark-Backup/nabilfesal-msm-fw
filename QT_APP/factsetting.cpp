@@ -10,6 +10,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QScreen>
+#include "toast.h"
 
 FactSetting::FactSetting(QWidget *parent)
     : settingsManager(parent)
@@ -266,7 +267,7 @@ void FactSetting::on_mqtt_load_btn_clicked(bool msgBox)
         ui->mqtt_pass->setText(mqttSettings.value("password").toString());
         ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
         ui->mqtt_int->setText(mqttSettings.value("interval").toString());
-        if(msgBox) QMessageBox::information(this, "MQTT Settings", "MQTT settings loaded successfully!");
+        if(!msgBox) Toast::show("MQTT settings loaded successfully!", this, Toast::Info);
     }
 }
 
@@ -303,7 +304,7 @@ void FactSetting::on_sftp_load_btn_clicked(bool msgBox)
         ui->sftp_int->setText(sftpSettings.value("interval").toString());
         ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
         ui->sftp_user->setText(sftpSettings.value("username").toString());
-        if(msgBox) QMessageBox::information(this, "SFTP Settings", "SFTP settings saved successfully!");
+        if(!msgBox) Toast::show("SFTP settings loaded successfully!", this, Toast::Info);
     }
 }
 
@@ -482,8 +483,8 @@ void FactSetting::on_mqtts_load_btn_clicked(bool msgBox)
     QString filePath = "config/aws_mqtts_settings.json";
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (msgBox)
-            QMessageBox::warning(this, "Error", "Failed to open MQTTs configuration file.");
+        if (!msgBox)
+            Toast::show("Failed to open MQTTs configuration file.", this, Toast::Warning);
         return;
     }
 
@@ -493,8 +494,8 @@ void FactSetting::on_mqtts_load_btn_clicked(bool msgBox)
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        if (msgBox)
-            QMessageBox::warning(this, "Error", "Invalid MQTTs configuration file format.");
+        if (!msgBox)
+            Toast::show("Invalid MQTTs configuration file format.", this, Toast::Error);
         return;
     }
 
@@ -521,12 +522,13 @@ void FactSetting::on_mqtts_load_btn_clicked(bool msgBox)
     ui->ca1->setChecked(QFile::exists(caPath));
     ui->claim->setChecked(QFile::exists(certPath));
     ui->key->setChecked(QFile::exists(keyPath));
-
+            
+    if (!msgBox) Toast::show("MQTT settings loaded successfully!", this, Toast::Info);
 }
 
 
 
-void FactSetting::on_mqtts_save_btn_clicked()
+void FactSetting::on_mqtts_save_btn_clicked(bool msgBox)
 {
     QString filePath = "config/aws_mqtts_settings.json";
 
@@ -557,7 +559,7 @@ void FactSetting::on_mqtts_save_btn_clicked()
 
     // Write updated JSON back
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        QMessageBox::warning(this, "Error", "Failed to save MQTT configuration.");
+        if (!msgBox) Toast::show("Failed to save MQTT configuration.", this, Toast::Warning);
         return;
     }
 
@@ -565,7 +567,7 @@ void FactSetting::on_mqtts_save_btn_clicked()
     file.write(newDoc.toJson(QJsonDocument::Indented));
     file.close();
 
-    QMessageBox::information(this, "Saved", "MQTTS configuration saved successfully.");
+    if (!msgBox) Toast::show("MQTTS settings saved successfully!", this, Toast::Info);
 }
 
 void FactSetting::on_pushButton_3_clicked()
@@ -574,17 +576,108 @@ void FactSetting::on_pushButton_3_clicked()
 }
 
 
+// void FactSetting::on_pushButton_2_clicked()
+// {
+//     QString claimDir = "/MSM/potential-pancake/MSM/creds/";
+//     #if defined(BUILD_X86)
+//         claimDir = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/";
+//     #endif
+//     QString configPath = "config/sftp_settings.json";
+
+//     QFile file(configPath);
+//     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+//         QMessageBox::warning(this, "Error", "Failed to open SFTP config file.");
+//         qWarning() << "Failed to open SFTP config:" << file.errorString();
+//         return;
+//     }
+
+//     QByteArray data = file.readAll();
+//     file.close();
+
+//     QJsonParseError parseError;
+//     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+//     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+//         QMessageBox::warning(this, "Error", "Invalid SFTP configuration file format.");
+//         return;
+//     }
+
+//     QJsonObject obj = doc.object();
+//     QString ip       = obj.value("ip").toString();
+//     QString username = obj.value("username").toString();
+//     QString password = obj.value("password").toString();
+//     QString port     = obj.value("port").toString();
+
+//     if (ip.isEmpty() || username.isEmpty() || password.isEmpty() || port.isEmpty()) {
+//         QMessageBox::warning(this, "Error", "Incomplete SFTP configuration.");
+//         return;
+//     }
+
+//     QDir dir(claimDir);
+//     if (!dir.exists()) {
+//         dir.mkpath(claimDir);
+//     } else {
+//         QStringList files = dir.entryList(QDir::Files);
+//         for (const QString &fileName : files) {
+//             QFile::remove(claimDir + fileName);
+//         }
+//     }
+
+//     QString remotePath = "/aws_iot_core/claim_certs/";
+//     QString localPath  = claimDir;
+
+//     QString command = QString("sshpass -p '%1' scp -r -P %2 -o StrictHostKeyChecking=no %3@%4:%5 %6")
+//                       .arg(password)
+//                       .arg(port)
+//                       .arg(username)
+//                       .arg(ip)
+//                       .arg(remotePath)
+//                       .arg(localPath);
+
+
+//     QProcess *process = new QProcess(this);
+//     process->setProcessChannelMode(QProcess::MergedChannels);
+
+//     connect(process, &QProcess::readyReadStandardOutput, [process]() {
+//         qDebug().noquote() << process->readAllStandardOutput();
+//     });
+
+//     connect(process, &QProcess::readyReadStandardError, [process]() {
+//         qWarning().noquote() << process->readAllStandardError();
+//     });
+
+//     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+//             this, [process, claimDir](int exitCode, QProcess::ExitStatus status) {
+//         Q_UNUSED(status);
+
+//         if (exitCode == 0) {
+//             QMessageBox::information(nullptr, "Success", "Claim certificates downloaded successfully!");
+//         } else {
+//             QMessageBox::warning(nullptr, "Error", "Failed to download claim certificates. Please check SFTP connection or credentials.");
+//         }
+
+//         process->deleteLater();
+//     });
+
+//     process->start("bash", QStringList() << "-c" << command);
+
+//     if (!process->waitForStarted()) {
+//         QMessageBox::warning(this, "Error", "Failed to start SFTP download process.");
+//         process->deleteLater();
+//         return;
+//     }
+// }
+
 void FactSetting::on_pushButton_2_clicked()
 {
-    QString claimDir = "/MSM/potential-pancake/MSM/creds/claim_certs/";
-    #if defined(BUILD_X86)
-        claimDir = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/";
-    #endif
+    QString claimDir = "/MSM/potential-pancake/MSM/creds/";
+#if defined(BUILD_X86)
+    claimDir = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/";
+#endif
     QString configPath = "config/sftp_settings.json";
 
     QFile file(configPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "Error", "Failed to open SFTP config file.");
+        Toast::show("Failed to open SFTP config file.", this, Toast::Warning);
         qWarning() << "Failed to open SFTP config:" << file.errorString();
         return;
     }
@@ -595,7 +688,7 @@ void FactSetting::on_pushButton_2_clicked()
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        QMessageBox::warning(this, "Error", "Invalid SFTP configuration file format.");
+        Toast::show("Invalid SFTP configuration file format.", this, Toast::Warning);
         return;
     }
 
@@ -606,7 +699,7 @@ void FactSetting::on_pushButton_2_clicked()
     QString port     = obj.value("port").toString();
 
     if (ip.isEmpty() || username.isEmpty() || password.isEmpty() || port.isEmpty()) {
-        QMessageBox::warning(this, "Error", "Incomplete SFTP configuration.");
+        Toast::show("Incomplete SFTP configuration.", this, Toast::Warning);
         return;
     }
 
@@ -623,14 +716,19 @@ void FactSetting::on_pushButton_2_clicked()
     QString remotePath = "/aws_iot_core/claim_certs/";
     QString localPath  = claimDir;
 
-    QString command = QString("sshpass -p '%1' scp -r -P %2 -o StrictHostKeyChecking=no %3@%4:%5 %6")
-                      .arg(password)
-                      .arg(port)
-                      .arg(username)
-                      .arg(ip)
-                      .arg(remotePath)
-                      .arg(localPath);
+    // Use full paths to binaries
+    QString sshpassPath = "/usr/bin/sshpass";
+    QString scpPath     = "/usr/bin/scp";
 
+    QStringList args = {
+        "-p", password,
+        scpPath,
+        "-r",
+        "-P", port,
+        "-o", "StrictHostKeyChecking=no",
+        QString("%1@%2:%3").arg(username, ip, remotePath),
+        localPath
+    };
 
     QProcess *process = new QProcess(this);
     process->setProcessChannelMode(QProcess::MergedChannels);
@@ -644,23 +742,25 @@ void FactSetting::on_pushButton_2_clicked()
     });
 
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [process, claimDir](int exitCode, QProcess::ExitStatus status) {
+            this, [this, process](int exitCode, QProcess::ExitStatus status) {
         Q_UNUSED(status);
-
         if (exitCode == 0) {
-            QMessageBox::information(nullptr, "Success", "Claim certificates downloaded successfully!");
+            Toast::show("Claim certificates downloaded successfully!", this, Toast::Info);
+            ui->ca1->setChecked(true);
+            ui->claim->setChecked(true);
+            ui->key->setChecked(true);
         } else {
-            QMessageBox::warning(nullptr, "Error", "Failed to download claim certificates. Please check SFTP connection or credentials.");
+            Toast::show("Failed to download claim certificates. Please check SFTP connection or credentials.", this, Toast::Error);
         }
-
         process->deleteLater();
     });
 
-    process->start("bash", QStringList() << "-c" << command);
+    process->start(sshpassPath, args);
 
     if (!process->waitForStarted()) {
-        QMessageBox::warning(this, "Error", "Failed to start SFTP download process.");
+        Toast::show("Failed to start SFTP download process.", this, Toast::Warning);
         process->deleteLater();
         return;
     }
 }
+

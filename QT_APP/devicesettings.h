@@ -29,13 +29,13 @@ signals:
     void ntpSettingsChanged(const NtpSettings &settings);
 
 public slots:
-    void on_mqtt_load_btn_clicked(bool msgBox = true);
-    void on_sftp_load_btn_clicked(bool msgBox = true);
+    void on_mqtt_load_btn_clicked(bool msgBox = false);
+    void on_sftp_load_btn_clicked(bool msgBox = false);
     void parse_load_store_ntp(const QJsonObject &payload);
     void parse_load_store_sftp(const QJsonObject &payload);
     void parse_load_store_mqtt(const QJsonObject &payload);
     void send_aws_updated_data();
-    void on_mqtts_load_btn_clicked(bool msgBox = true);
+    void on_mqtts_load_btn_clicked(bool msgBox = false);
     
 
 private slots:
@@ -52,7 +52,7 @@ private slots:
 
     void on_pushButton_2_clicked();
 
-    void on_mqtts_save_btn_clicked();
+    void on_mqtts_save_btn_clicked(bool msgBox = false);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
