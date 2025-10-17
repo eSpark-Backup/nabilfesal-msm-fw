@@ -507,76 +507,6 @@ void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
 }
 
 
-void DeviceSettings::runFleetProvisionerAsync()
-{
-    Utils::updateSerialInConfig();
-    QString exe_path;
-    #if defined(BUILD_X86)
-        exe_path = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin";
-    #elif defined(BUILD_V3S)
-        exe_path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner";
-    #endif
-
-    QString program = exe_path + "/msm_fleet_provisioner";
-
-    QProcess *process = new QProcess(this);
-    process->setProgram(program);
-    process->setWorkingDirectory(exe_path);
-
-    QString *logBuffer = new QString();
-
-    QObject::connect(process, &QProcess::errorOccurred, [process](QProcess::ProcessError err) {
-        qWarning() << "[Fleet ERROR] QProcess error:" << err
-                   << "Details:" << process->errorString();
-    });
-
-    QObject::connect(process, &QProcess::readyReadStandardOutput, [process, logBuffer]() {
-        QByteArray output = process->readAllStandardOutput();
-        logBuffer->append(QString::fromUtf8(output));
-        qDebug().noquote() << "[Fleet STDOUT]" << output;
-    });
-
-    QObject::connect(process, &QProcess::readyReadStandardError, [process]() {
-        QByteArray error = process->readAllStandardError();
-        qWarning().noquote() << "[Fleet STDERR]" << error;
-    });
-
-    QObject::connect(process,
-                     QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-                     [this, process, logBuffer](int exitCode, QProcess::ExitStatus exitStatus) {
-        bool exitedNormally = (exitStatus == QProcess::NormalExit && exitCode == 0);
-        bool demoSuccess = logBuffer->contains("Demo completed successfully.");
-
-        qDebug() << "[Fleet] Finished with code:" << exitCode
-                 << "status:" << (exitStatus == QProcess::NormalExit ? "Normal" : "Crashed")
-                 << "success:" << (demoSuccess && exitedNormally);
-
-        if (demoSuccess && exitedNormally) {
-            Toast::show("[MQTTS] Fleet Provisioning Success!", this, Toast::Info);
-            emit aws_mqtts_load();
-        } else {
-            qWarning() << "[Fleet] Provisioning failed.";
-            Toast::show("[MQTTS] Fleet Provisioning Failed!", this, Toast::Error);
-        }
-
-        delete logBuffer;
-        process->deleteLater();
-    });
-    Toast::show("[MQTTS] Fleet Provisioning Started", this, Toast::Info);
-    process->start();
-
-    // 🔹 immediate check
-    if (!process->waitForStarted(3000)) {
-        qWarning() << "[Fleet ERROR] Failed to start process:" << program
-                   << "Reason:" << process->errorString();
-        Toast::show("[MQTTS] Failed to start Fleet Provisioning!", this, Toast::Error);
-        delete logBuffer;
-        process->deleteLater();
-    }
-}
-
-
-
 void DeviceSettings::refreshInfo()
 {
     curDevInfo.uuid       = Utils::getUid();
@@ -702,6 +632,7 @@ void DeviceSettings::on_mqtts_load_btn_clicked(bool msgBox)
     ui->mqtts_interval->setText(obj.value("interval").toString());
     ui->mqtts_client_id->setText(Utils::getUid());
 
+    emit aws_mqtts_load();
     if(!msgBox) Toast::show("MQTTS settings loaded successfully!", this, Toast::Info);
 }
 
@@ -752,5 +683,6 @@ void DeviceSettings::on_mqtts_save_btn_clicked(bool msgBox)
     file.close();
 
     if(!msgBox) Toast::show("MQTTS configuration saved successfully!", this, Toast::Info);
+    emit aws_mqtts_load();
 }
 

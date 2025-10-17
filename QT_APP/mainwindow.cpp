@@ -224,8 +224,9 @@ void MainWindow::connectFactSettings(FactSetting *fs)
         mqttHandler->disconnectClient();
         QTimer::singleShot(1000, [this]() { mqttHandler->reloadSettings(); });
     });
-    connect(fs, &FactSetting::aws_mqtts_load, this, [this]() {
+    connect(fs, &FactSetting::aws_mqtts_load, this, [fs, this]() {
         awsMqttsHandler->disconnectAwsClient();
+        fs->checkCertificates();
         QTimer::singleShot(1000, [this]() { awsMqttsHandler->reloadAwsMqttsSettings(); });
     });
 
@@ -238,7 +239,7 @@ void MainWindow::connectFactSettings(FactSetting *fs)
         }
     });
 
-    connect(fs, &FactSetting::runFleetProvisioning, this, [this]() { settings->runFleetProvisionerAsync(); });
+    connect(fs, &FactSetting::runFleetProvisioning, this, [this]() { factSettings->runFleetProvisionerAsync(); });
 }
 
 // -----------------------------
@@ -266,6 +267,7 @@ void MainWindow::connectLoginSignals()
     // AWS MQTTS reload request
     connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
         awsMqttsHandler->disconnectAwsClient();
+        if(factSettings != nullptr) factSettings->checkCertificates();
         QTimer::singleShot(1000, [this]() { awsMqttsHandler->reloadAwsMqttsSettings(); });
     });
 
@@ -616,7 +618,6 @@ void MainWindow::handlePostProgress()
     settings->on_mqtt_load_btn_clicked(true);
     settings->on_sftp_load_btn_clicked(true);
     settings->on_mqtts_load_btn_clicked(true);
-    settings->loadAwsMqttsSettings(true);
 
     if (!factSettings) {
         factSettings = new FactSetting;

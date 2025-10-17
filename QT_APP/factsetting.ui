@@ -827,6 +827,10 @@ QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
     border: 2px solid black;       /* White glow/border */
+}
+QPushButton:disabled {
+    background-color: #A9A9A9;  /* Darkest blue when pressed */
+	color: #666666;
 }</string>
                  </property>
                  <property name="text">
@@ -873,6 +877,10 @@ QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
     border: 2px solid black;       /* White glow/border */
+}
+QPushButton:disabled {
+    background-color: #A9A9A9;  /* Darkest blue when pressed */
+	color: #666666;
 }</string>
                  </property>
                  <property name="text">

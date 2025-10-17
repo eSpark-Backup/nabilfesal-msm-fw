@@ -517,7 +517,6 @@ void FactSetting::on_mqtts_load_btn_clicked(bool msgBox)
     // Port is constant and not editable
 
     // ---- Check for certificate files ----
-
     #if defined(BUILD_X86)
         QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
         QString caPath   = basePath + "AmazonRootCA1.pem";
@@ -529,11 +528,10 @@ void FactSetting::on_mqtts_load_btn_clicked(bool msgBox)
     QString certPath = basePath + "deviceCert.pem";
     QString keyPath  = basePath + "privateKey.pem";
 
-    ui->ca1->setChecked(QFile::exists(caPath));
-    ui->claim->setChecked(QFile::exists(certPath));
-    ui->key->setChecked(QFile::exists(keyPath));
+    checkCertificates();
             
     if (!msgBox) Toast::show("MQTT settings loaded successfully!", this, Toast::Info);
+    emit aws_mqtts_load();
 }
 
 
@@ -583,16 +581,93 @@ void FactSetting::on_mqtts_save_btn_clicked(bool msgBox)
     file.close();
 
     if (!msgBox) Toast::show("MQTTS settings saved successfully!", this, Toast::Info);
+    emit aws_mqtts_load();
 }
 
 void FactSetting::on_pushButton_3_clicked()
 {
-        emit runFleetProvisioning();
+    ui->pushButton_3->setEnabled(false);
+    emit runFleetProvisioning();
+}
+
+
+void FactSetting::runFleetProvisionerAsync()
+{
+    Utils::updateSerialInConfig();
+    QString exe_path;
+    #if defined(BUILD_X86)
+        exe_path = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin";
+    #elif defined(BUILD_V3S)
+        exe_path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner";
+    #endif
+
+    QString program = exe_path + "/msm_fleet_provisioner";
+
+    QProcess *process = new QProcess(this);
+    process->setProgram(program);
+    process->setWorkingDirectory(exe_path);
+
+    QString *logBuffer = new QString();
+
+    QObject::connect(process, &QProcess::errorOccurred, [this, process](QProcess::ProcessError err) {
+        qWarning() << "[Fleet ERROR] QProcess error:" << err
+                   << "Details:" << process->errorString();
+        ui->pushButton_3->setEnabled(true);
+    });
+
+    QObject::connect(process, &QProcess::readyReadStandardOutput, [this, process, logBuffer]() {
+        QByteArray output = process->readAllStandardOutput();
+        logBuffer->append(QString::fromUtf8(output));
+        qDebug().noquote() << "[Fleet STDOUT]" << output;
+        ui->pushButton_3->setEnabled(true);
+    });
+
+    QObject::connect(process, &QProcess::readyReadStandardError, [this, process]() {
+        QByteArray error = process->readAllStandardError();
+        qWarning().noquote() << "[Fleet STDERR]" << error;
+        ui->pushButton_3->setEnabled(true);
+    });
+
+    QObject::connect(process,
+                     QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                     [this, process, logBuffer](int exitCode, QProcess::ExitStatus exitStatus) {
+        bool exitedNormally = (exitStatus == QProcess::NormalExit && exitCode == 0);
+        bool demoSuccess = logBuffer->contains("Demo completed successfully.");
+
+        qDebug() << "[Fleet] Finished with code:" << exitCode
+                 << "status:" << (exitStatus == QProcess::NormalExit ? "Normal" : "Crashed")
+                 << "success:" << (demoSuccess && exitedNormally);
+
+        if (demoSuccess && exitedNormally) {
+            Toast::show("[MQTTS] Fleet Provisioning Success!", this, Toast::Info);
+            emit aws_mqtts_load();
+        } else {
+            qWarning() << "[Fleet] Provisioning failed.";
+            Toast::show("[MQTTS] Fleet Provisioning Failed!", this, Toast::Error);
+        }
+        ui->pushButton_3->setEnabled(true);
+        delete logBuffer;
+        process->deleteLater();
+    });
+    Toast::show("[MQTTS] Fleet Provisioning Started", this, Toast::Info);
+    process->start();
+
+    // 🔹 immediate check
+    if (!process->waitForStarted(3000)) {
+        qWarning() << "[Fleet ERROR] Failed to start process:" << program
+                   << "Reason:" << process->errorString();
+        Toast::show("[MQTTS] Failed to start Fleet Provisioning!", this, Toast::Error);
+        ui->pushButton_3->setEnabled(true);
+        delete logBuffer;
+        process->deleteLater();
+    }
 }
 
 
 void FactSetting::on_pushButton_2_clicked()
 {
+    Toast::show("[MQTTS] Starting Fetching Claim credentials", this, Toast::Info);
+    ui->pushButton_2->setEnabled(false);
     QString claimDir = "/MSM/potential-pancake/MSM/creds/";
 #if defined(BUILD_X86)
     claimDir = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/";
@@ -603,6 +678,7 @@ void FactSetting::on_pushButton_2_clicked()
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         Toast::show("Failed to open SFTP config file.", this, Toast::Warning);
         qWarning() << "Failed to open SFTP config:" << file.errorString();
+        ui->pushButton_2->setEnabled(true);
         return;
     }
 
@@ -613,6 +689,7 @@ void FactSetting::on_pushButton_2_clicked()
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
         Toast::show("Invalid SFTP configuration file format.", this, Toast::Warning);
+        ui->pushButton_2->setEnabled(true);
         return;
     }
 
@@ -624,6 +701,7 @@ void FactSetting::on_pushButton_2_clicked()
 
     if (ip.isEmpty() || username.isEmpty() || password.isEmpty() || port.isEmpty()) {
         Toast::show("Incomplete SFTP configuration.", this, Toast::Warning);
+        ui->pushButton_2->setEnabled(true);
         return;
     }
 
@@ -670,12 +748,11 @@ void FactSetting::on_pushButton_2_clicked()
         Q_UNUSED(status);
         if (exitCode == 0) {
             Toast::show("Claim certificates downloaded successfully!", this, Toast::Info);
-            ui->ca1->setChecked(true);
-            ui->claim->setChecked(true);
-            ui->key->setChecked(true);
+            checkCertificates();
         } else {
             Toast::show("Failed to download claim certificates. Please check SFTP connection or credentials.", this, Toast::Error);
         }
+        ui->pushButton_2->setEnabled(true);
         process->deleteLater();
     });
 
@@ -684,7 +761,25 @@ void FactSetting::on_pushButton_2_clicked()
     if (!process->waitForStarted()) {
         Toast::show("Failed to start SFTP download process.", this, Toast::Warning);
         process->deleteLater();
+        ui->pushButton_2->setEnabled(true);
         return;
     }
+}
+
+void FactSetting::checkCertificates()
+{
+    #if defined(BUILD_X86)
+        QString claimBasePath = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/claim_certs/";
+    #elif defined(BUILD_V3S)
+        QString claimBasePath = "/MSM/potential-pancake/MSM/creds/claim_certs/";
+    #endif
+    
+    QString caPath   = claimBasePath + "AmazonRootCA1.pem";
+    QString certPath = claimBasePath + "claim_cert.pem";
+    QString keyPath  = claimBasePath + "claim_private.key";
+
+    ui->ca1->setChecked(QFile::exists(caPath));
+    ui->claim->setChecked(QFile::exists(certPath));
+    ui->key->setChecked(QFile::exists(keyPath));
 }
 

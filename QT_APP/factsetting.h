@@ -16,6 +16,8 @@ class FactSetting : public settingsManager
 public:
     explicit FactSetting(QWidget *parent = nullptr);
     void loadAwsMqttsSettings(bool showMessages);
+    void checkCertificates();
+    void runFleetProvisionerAsync();
     ~FactSetting();
 
 signals:
