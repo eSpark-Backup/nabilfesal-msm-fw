@@ -33,10 +33,14 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected) {
-            qWarning() << "Retrying SFTP connection...";
+            qWarning() << "[SFTP] Retrying connection...";
             connectToSftp();
         }
     });
+
+    if (!reconnectTimer->isActive()) {
+        reconnectTimer->start();  // retry every 1 min
+    }
 
     // Process connected
     connect(process, &QProcess::started, this, [this]() {

@@ -250,8 +250,6 @@ QString getSftpStatus()
 
 void rebootSystem()
 {
-    AwsMqttManager &awsMqttsHandler = AwsMqttManager::instance();
-    awsMqttsHandler.disconnectAwsClient();
     QString imgPath = ":/icons/rebooting.png";
     showImageFullscreenFor(imgPath, 2000);
 }
@@ -321,8 +319,8 @@ void showImageFullscreenFor(const QString &imagePath, int milliseconds)
 
 
     QTimer::singleShot(milliseconds, [label]() {
-        label->close();
-        label->deleteLater();
+        // label->close();
+        // label->deleteLater();
         QProcess::startDetached("sh", {"-c", "sync; reboot"});
     });
 }

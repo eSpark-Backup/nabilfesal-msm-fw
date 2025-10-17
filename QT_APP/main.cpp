@@ -79,6 +79,11 @@ private:
 
 int main(int argc, char *argv[])
 {
+    qDebug() << "===================================================================================================";
+    qDebug() << "Build date:" << BUILD_DATE << "time:" << BUILD_TIME;
+    qDebug() << "Author:" << BUILD_AUTHOR;
+    qDebug() << "Git commit:" << GIT_COMMIT_FULL;
+    qDebug() << "===================================================================================================";
 
     QApplication a(argc, argv);
 

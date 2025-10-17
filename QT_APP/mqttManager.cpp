@@ -33,10 +33,14 @@ mqttManager::mqttManager(QObject *parent) : QObject(parent)
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected) {
-            qWarning() << "Reconnection attempt...";
+            qWarning() << "[MQTT] Reconnection attempt...";
             connectToBroker();
         }
     });
+
+    if (!reconnectTimer->isActive()) {
+        reconnectTimer->start();  // retry every 1 min
+    }
 
     // Publish timer
     connect(publishTimer, &QTimer::timeout, this, [this]() {

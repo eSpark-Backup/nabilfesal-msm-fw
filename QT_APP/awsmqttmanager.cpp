@@ -49,10 +49,13 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected) {
-            qWarning() << "AWS Reconnection attempt...";
+            qWarning() << "[AWS] Reconnection attempt...";
             connectToBroker();
         }
     });
+    if (!reconnectTimer->isActive()) {
+        reconnectTimer->start();  // retry every 1 min
+    }
 
     // Timer: publish telemetry if connected
     connect(publishTimer, &QTimer::timeout, this, [this]() {
