@@ -289,6 +289,11 @@ void FactSetting::on_mqtt_save_btn_clicked()
     mqttSettings["password"] = mqttPass;
     mqttSettings["topic"]    = mqttTopic;
     mqttSettings["interval"] = mqttInterval;
+
+    if (hasEmptyField(mqttSettings)) {
+        Toast::show("Please fill in all MQTT fields before saving.", this, Toast::Warning);
+        return;
+    }
     saveMqttSettings(mqttSettings);
 }
 
@@ -326,6 +331,11 @@ void FactSetting::on_sftp_save_btn_clicked()
     sftpSettings["password"] = sftpPass;
     sftpSettings["interval"] = sftpInterval;
     sftpSettings["schedule"] = sftpSchedule;
+
+    if (hasEmptyField(sftpSettings)) {
+        Toast::show("Please fill in all SFTP fields before saving.", this, Toast::Warning);
+        return;
+    }
     saveSftpSettings(sftpSettings);
 }
 
@@ -556,6 +566,11 @@ void FactSetting::on_mqtts_save_btn_clicked(bool msgBox)
     // Keep or restore other fields
     if (!obj.contains("port"))
         obj["port"] = "8883";
+
+    if (hasEmptyField(obj)) {
+        Toast::show("Please fill in all MQTTS fields before saving.", this, Toast::Warning);
+        return;
+    }
 
     // Write updated JSON back
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {

@@ -153,3 +153,11 @@ bool settingsManager::jsonDifferent(const QJsonObject &a, const QString &path)
     }
     return false; // all fields same
 }
+
+bool settingsManager::hasEmptyField(const QJsonObject &obj) {
+    for (auto it = obj.begin(); it != obj.end(); ++it) {
+        if (it.value().toString().trimmed().isEmpty())
+            return true;
+    }
+    return false;
+}

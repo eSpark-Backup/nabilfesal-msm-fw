@@ -29,6 +29,7 @@ protected:
     void saveMqttSettings(QJsonObject sftpSetting, bool showMessages = true);
     void saveSftpSettings(QJsonObject sftpSetting, bool showMessages = true);
     bool jsonDifferent(const QJsonObject &a, const QString &path);
+    bool hasEmptyField(const QJsonObject &obj);
 };
 
 #endif // COMMONSETTING_H

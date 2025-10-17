@@ -358,6 +358,11 @@ void DeviceSettings::on_mqtt_save_btn_clicked()
     mqttSettings["password"] = mqttPass;
     mqttSettings["topic"]    = mqttTopic;
     mqttSettings["interval"] = mqttInterval;
+
+    if (hasEmptyField(mqttSettings)) {
+        Toast::show("Please fill in all MQTT fields before saving.", this, Toast::Warning);
+        return;
+    }
     saveMqttSettings(mqttSettings);
 }
 
@@ -417,12 +422,6 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     QString sftpInterval = ui->sftp_int->text().trimmed();
     QString sftpSchedule = ui->sftp_sch->text().trimmed();
 
-    if (sftpIp.isEmpty() || sftpPort.isEmpty() || sftpUser.isEmpty() || 
-        sftpPass.isEmpty() || sftpInterval.isEmpty() || sftpSchedule.isEmpty()) {
-        QMessageBox::warning(this, "Missing Fields", "Please fill in all SFTP fields before saving.");
-        return;
-    }
-
     QJsonObject sftpSettings;
     sftpSettings["ip"]       = sftpIp;
     sftpSettings["port"]     = sftpPort;
@@ -430,6 +429,11 @@ void DeviceSettings::on_sftp_save_btn_clicked()
     sftpSettings["password"] = sftpPass;
     sftpSettings["interval"] = sftpInterval;
     sftpSettings["schedule"] = sftpSchedule;
+
+    if (hasEmptyField(sftpSettings)) {
+        Toast::show("Please fill in all SFTP fields before saving.", this, Toast::Warning);
+        return;
+    }
     saveSftpSettings(sftpSettings);
 }
 
@@ -730,6 +734,12 @@ void DeviceSettings::on_mqtts_save_btn_clicked(bool msgBox)
     // Keep or set defaults for other fields
     if (!obj.contains("port"))
         obj["port"] = "8883";  // constant, not editable in UI
+
+    
+    if (hasEmptyField(obj)) {
+        Toast::show("Please fill in all MQTTS fields before saving.", this, Toast::Warning);
+        return;
+    }
 
     // Write updated JSON back
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
