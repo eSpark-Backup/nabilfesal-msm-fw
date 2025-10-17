@@ -274,8 +274,10 @@ void MainWindow::connectLoginSignals()
     // AWS manager may ask for reboot
     connect(awsMqttsHandler, &AwsMqttManager::rebootRequested, this, [this]() {
         this->close();
+        awsMqttsHandler->disconnectAwsClient();
+        qDebug() << "disconnect reboot called";
         Utils::rebootSystem();
-    });
+    },Qt::QueuedConnection);
 
     // If AWS sends back stored configs, populate DeviceSettings fields
     connect(awsMqttsHandler, &AwsMqttManager::ntpConfigReceived,
