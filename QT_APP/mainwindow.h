@@ -124,7 +124,10 @@ private:
     QTimer *pollTimer = nullptr;
 
     QTimer *channelDataWatchdog;
-    const int WATCHDOG_TIMEOUT_MS = 30000;
+    const int WATCHDOG_TIMEOUT_MS = 50000;
+
+    QTimer *responseWaitTimer = nullptr;
+    bool waitingForCalibrationResponse = false;
 };
 
 #endif // MAINWINDOW_H

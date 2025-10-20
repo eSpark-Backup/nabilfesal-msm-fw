@@ -66,6 +66,17 @@ MainWindow::MainWindow(QWidget *parent)
     connect(channelDataWatchdog, &QTimer::timeout, this, &MainWindow::onChannelDataWatchdogTimeout);
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
 
+    responseWaitTimer = new QTimer(this);
+    responseWaitTimer->setSingleShot(true);
+    connect(responseWaitTimer, &QTimer::timeout, this, [this]() {
+        if (waitingForCalibrationResponse) {
+            waitingForCalibrationResponse = false;
+            QMessageBox::critical(this, "Calibration Timeout",
+                                "No response from ATSAM received for calibration settings.");
+            if (pollTimer) pollTimer->start(200);
+        }
+    });
+
     connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
 
     Utils::mainSound();
@@ -165,7 +176,11 @@ void MainWindow::setupUsb()
 void MainWindow::setupSerial()
 {
     serialThread = new QThread(this);
-    worker = new SerialWorker("/dev/ttyS1", 115200);
+    #if defined(BUILD_X86)
+        worker = new SerialWorker("/dev/pts/1", 115200);
+    #elif defined(BUILD_V3S)
+        worker = new SerialWorker("/dev/ttyS1", 115200);
+    #endif
     worker->moveToThread(serialThread);
 
     connect(this, &MainWindow::requestChannelPoll, worker, &SerialWorker::requestChannel);
@@ -430,11 +445,19 @@ void MainWindow::onChannelDataReady(int ch, const QJsonObject &obj)
 
 void MainWindow::onGenericResponseReady(const QString &resp)
 {
+    if (waitingForCalibrationResponse) {
+        waitingForCalibrationResponse = false;
+        responseWaitTimer->stop();
+    }
+
     if (!startApp) {
         FactDialog dialog(this);
         dialog.setLabel(resp.toStdString());
         dialog.exec();
         dialog.deleteLater();
+        if (pollTimer) {
+            pollTimer->start(200);
+        }
     }
 }
 
@@ -512,7 +535,12 @@ void MainWindow::onFactoryLogin()
             measure->hide();
         });
         connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd) {
+            if (pollTimer && pollTimer->isActive()) {
+                pollTimer->stop();
+            }
             emit requestSerialCommand(cmd);
+            waitingForCalibrationResponse = true;
+            responseWaitTimer->start(500);
         });
 
         measure->showFullScreen();
