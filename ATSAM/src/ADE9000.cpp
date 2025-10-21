@@ -217,9 +217,9 @@ void ReadVoltageRMSOSRegs(VoltageRMSOSRegs *VRMS_OS, SPI_CSS_Pin css_pin)
 {
     if (css_pin)
     {
-        VRMS_OS->VoltageRMSOSValue_A = (float)(int32_t(SPI_Read(ADDR_AVRMSOS, true, css_pin))) / 1000;
-        VRMS_OS->VoltageRMSOSValue_B = (float)(int32_t(SPI_Read(ADDR_BVRMSOS, true, css_pin))) / 1000;
-        VRMS_OS->VoltageRMSOSValue_C = (float)(int32_t(SPI_Read(ADDR_CVRMSOS, true, css_pin))) / 1000;
+        VRMS_OS->VoltageRMSOSValue_A = (float)(int32_t(SPI_Read(ADDR_AVRMSOS, true, css_pin)));
+        VRMS_OS->VoltageRMSOSValue_B = (float)(int32_t(SPI_Read(ADDR_BVRMSOS, true, css_pin)));
+        VRMS_OS->VoltageRMSOSValue_C = (float)(int32_t(SPI_Read(ADDR_CVRMSOS, true, css_pin)));
     }
 }
 
@@ -384,14 +384,23 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
         if(CurrentData->CurrentRMSValue_A >= 2.99){
             
             Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;  
-        }  
+        } 
+        else{
+            Data1->PActiveEnergyValue_kWh_A = 0;
+        }
         if (CurrentData->CurrentRMSValue_B >= 2.99)
         {
             Data1->PActiveEnergyValue_kWh_B = Data1->ActiveEnergyReg_B * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
         }
+        else{
+            Data1->PActiveEnergyValue_kWh_B = 0;
+        }
         if (CurrentData->CurrentRMSValue_C >= 2.99)
         { 
             Data1->PActiveEnergyValue_kWh_C = Data1->ActiveEnergyReg_C * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
+        }
+        else{
+            Data1->PActiveEnergyValue_kWh_C = 0;
         }
         
         Data1->ReactiveEnergyValue_kWh_A = Data1->ReactiveEnergyReg_A * (float) (calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
@@ -729,14 +738,29 @@ void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin)
     float tmp;
     //    tmp = pow(Data->CurrentRMSValue_A,2) + (pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_A));
     //    tmp = pow(Data->CurrentRMSValue_A,2) + (pow(2,15)*(channelConfig[css_pin-1].setIOffset / 1000));
-    tmp = pow(Data->CurrentRMSValue_A, 2) + (channelConfig[css_pin - 1].setIOffset);
-    Data->CurrentRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
+//    tmp = pow(Data->CurrentRMSValue_A, 2) + (channelConfig[css_pin - 1].setIOffset);
+//    Data->CurrentRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
+//
+//    tmp = pow(Data->CurrentRMSValue_B, 2) + (channelConfig[css_pin - 1].setIOffset);
+//    Data->CurrentRMSValue_B = tmp > 0 ? sqrt(tmp) : 0;
+//
+//    tmp = pow(Data->CurrentRMSValue_C, 2) + (channelConfig[css_pin - 1].setIOffset);
+//    Data->CurrentRMSValue_C = tmp > 0 ? sqrt(tmp) : 0;
+    
+//        tmp = pow(Data->CurrentRMSValue_A, 2) + (channelConfig[css_pin - 1].setIOffset);
+    if(Data->CurrentRMSValue_A >= 2.99){
+        Data->CurrentRMSValue_A += (channelConfig[css_pin - 1].setIOffset);
+    }
+    if(Data->CurrentRMSValue_B >= 2.99){
+        Data->CurrentRMSValue_B += (channelConfig[css_pin - 1].setIOffset);
+    }
+    if(Data->CurrentRMSValue_C >= 2.99){
+        Data->CurrentRMSValue_C += (channelConfig[css_pin - 1].setIOffset);
+    }
 
-    tmp = pow(Data->CurrentRMSValue_B, 2) + (channelConfig[css_pin - 1].setIOffset);
-    Data->CurrentRMSValue_B = tmp > 0 ? sqrt(tmp) : 0;
-
-    tmp = pow(Data->CurrentRMSValue_C, 2) + (channelConfig[css_pin - 1].setIOffset);
-    Data->CurrentRMSValue_C = tmp > 0 ? sqrt(tmp) : 0;
+    //    Data->CurrentRMSValue_B += (channelConfig[css_pin - 1].setIOffset);
+    //
+    //    Data->CurrentRMSValue_C += (channelConfig[css_pin - 1].setIOffset);
 }
 
 void current_offset_write(int8_t channel, int32_t offset)
@@ -758,19 +782,35 @@ void voltage_offset_calibration(VoltageRMSRegs *Data, SPI_CSS_Pin css_pin)
 
     ReadVoltageRMSOSRegs(&voltage_RMS_OS, css_pin);
 
-    float tmp;
-    tmp = pow(Data->VoltageRMSValue_A, 2) + (pow(2, 15) * (voltage_RMS_OS.VoltageRMSOSValue_A));
-    Data->VoltageRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
+//    float tmp;
+//    tmp = pow(Data->VoltageRMSValue_A, 2) + (pow(2, 15) * (voltage_RMS_OS.VoltageRMSOSValue_A));
+//    Data->VoltageRMSValue_A = tmp > 0 ? sqrt(tmp) : 0;
+//
+//    tmp = pow(Data->VoltageRMSValue_B, 2) + pow(2, 15) * (voltage_RMS_OS.VoltageRMSOSValue_B);
+//    Data->VoltageRMSValue_B = tmp > 0 ? sqrt(tmp) : 0;
+//
+//    tmp = pow(Data->VoltageRMSValue_C, 2) + pow(2, 15) * (voltage_RMS_OS.VoltageRMSOSValue_C);
+//    Data->VoltageRMSValue_C = tmp > 0 ? sqrt(tmp) : 0;
+    
+//    float tmp;
+    if(Data->VoltageRMSValue_A >= NOMINAL_INPUT_VOLTAGE){
+        Data->VoltageRMSValue_A += (voltage_RMS_OS.VoltageRMSOSValue_A);
+    }
+    
+    if(Data->VoltageRMSValue_B >= NOMINAL_INPUT_VOLTAGE){
+        Data->VoltageRMSValue_B += (voltage_RMS_OS.VoltageRMSOSValue_B);
+    }
+    
+    if(Data->VoltageRMSValue_C >= NOMINAL_INPUT_VOLTAGE){
+        Data->VoltageRMSValue_C += (voltage_RMS_OS.VoltageRMSOSValue_C);
+    }
 
-    tmp = pow(Data->VoltageRMSValue_B, 2) + pow(2, 15) * (voltage_RMS_OS.VoltageRMSOSValue_B);
-    Data->VoltageRMSValue_B = tmp > 0 ? sqrt(tmp) : 0;
-
-    tmp = pow(Data->VoltageRMSValue_C, 2) + pow(2, 15) * (voltage_RMS_OS.VoltageRMSOSValue_C);
-    Data->VoltageRMSValue_C = tmp > 0 ? sqrt(tmp) : 0;
+//    Data->VoltageRMSValue_B += (voltage_RMS_OS.VoltageRMSOSValue_B);
+//
+//    Data->VoltageRMSValue_C += (voltage_RMS_OS.VoltageRMSOSValue_C);
 }
 void voltage_offset_write(int8_t channel, int32_t offset)
 {
-
     SPI_Write(ADDR_AVRMSOS, offset, true, get_css_pin(channel));
     SPI_Write(ADDR_BVRMSOS, offset, true, get_css_pin(channel));
     SPI_Write(ADDR_CVRMSOS, offset, true, get_css_pin(channel));
