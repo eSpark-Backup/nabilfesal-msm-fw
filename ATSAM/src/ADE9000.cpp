@@ -381,16 +381,16 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
         }
 
 
-        if(CurrentData->CurrentRMSValue_A >= 0.1){
+        if(CurrentData->CurrentRMSValue_A >= 2.99){
             
             Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;  
         }  
-        if (CurrentData->CurrentRMSValue_B >= 0.1)
+        if (CurrentData->CurrentRMSValue_B >= 2.99)
         {
             Data1->PActiveEnergyValue_kWh_B = Data1->ActiveEnergyReg_B * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
         }
-        if (CurrentData->CurrentRMSValue_C >= 0.1)
-        {
+        if (CurrentData->CurrentRMSValue_C >= 2.99)
+        { 
             Data1->PActiveEnergyValue_kWh_C = Data1->ActiveEnergyReg_C * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
         }
         
@@ -707,7 +707,7 @@ void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data)
     //    calibration_data.cal_irms_cc = (NOMINAL_INPUT_CURRENT)/(I_FSP * ADE9000_RMS_FULL_SCALE_CODES); // Current Conversion Constant
     calibration_data[channel].cal_power_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES);
 //    calibration_data[channel].cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES * 3600 * 8000 * 2 / 10000000000000);
-//    calibration_data[channel].cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * ADE9000_WATT_FULL_SCALE_CODES);
+//    calibration_data[channel].cal_energy_cc = (2 * current_transfer_func * VOLTAGE_TRANSFER_FUNCTION * AD E9000_WATT_FULL_SCALE_CODES);
     calibration_data[channel].cal_energy_cc = ((NOMINAL_INPUT_CURRENT * 220 * 1000000.0)/ (VOLTAGE_TRANSFER_FUNCTION * I_FSP * 3 * ADE9000_WATT_FULL_SCALE_CODES * accumulation_time * 8000.0f * 3600.0f * 0.0001220703125f)); // 2^(-13) = 0.0001220703125f
 
     
