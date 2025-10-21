@@ -177,7 +177,7 @@ void MainWindow::setupSerial()
 {
     serialThread = new QThread(this);
     #if defined(BUILD_X86)
-        worker = new SerialWorker("/dev/pts/1", 115200);
+        worker = new SerialWorker("/dev/pts/2", 115200);
     #elif defined(BUILD_V3S)
         worker = new SerialWorker("/dev/ttyS1", 115200);
     #endif
