@@ -17,6 +17,7 @@ class DeviceSettings : public settingsManager
 public:
     explicit DeviceSettings(QWidget *parent = nullptr);
     void loadAwsMqttsSettings(bool showMessages = true);
+    void refreshInfo();
     ~DeviceSettings();
     DeviceInfo curDevInfo, prvDevInfo;
 
@@ -62,11 +63,11 @@ private:
     void apply_sftp_Settings(const QJsonObject &sftpSetting, bool msgBox = true);
     void apply_mqtt_Settings(const QJsonObject &mqttSetting, bool msgBox = true);
     bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
-    void refreshInfo();
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;
     QString server1, server2, server3;
     NtpSettings newNtp, previousNtp;
+    QTimer *refreshTimer = nullptr;
 };
 
 #endif // DEVICESETTINGS_H

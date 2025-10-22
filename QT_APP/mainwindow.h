@@ -79,6 +79,7 @@ private:
     void startProgress();
     void handlePostProgress();
     void showChannelsHome();
+    void startPingTimer();
 
     // Utility connection helpers
     void connectChannels(ChannelsHome *ch);
@@ -125,6 +126,10 @@ private:
 
     QTimer *channelDataWatchdog;
     const int WATCHDOG_TIMEOUT_MS = 30000;
+
+    // Ping Timer declarations 
+    bool previousStatus = false;
+    QTcpSocket socket;
 };
 
 #endif // MAINWINDOW_H

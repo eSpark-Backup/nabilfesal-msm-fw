@@ -39,6 +39,7 @@ public:
     void reloadAwsMqttsSettings();
     void disconnectAwsClient();
     bool awsMqttsState();
+    bool isConnected = false;
 
 signals:
     //subscribe signals
@@ -79,7 +80,6 @@ private:
     int port = 8883;
     QString clientId;
     int intervalSec = 10;
-    bool isConnected = false;
     bool isFirstTime = true;
 
     #if defined(BUILD_X86)

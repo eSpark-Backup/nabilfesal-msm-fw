@@ -14,7 +14,6 @@
 
 #define AWS_MQTTS_PATH "config/aws_mqtts_settings.json"
 
-
 #define AWS_LOG(msg) \
     do { \
         if (AwsMqttManager::debugEnabled()) { qDebug() << msg; } \
@@ -243,7 +242,7 @@ void AwsMqttManager::connectToBroker()
 
     awsMqttsClient->setClientId(clientId);
     awsMqttsClient->setCleanSession(true);
-    awsMqttsClient->setKeepAlive(10);
+    awsMqttsClient->setKeepAlive(30);
     sslSocket->connectToHostEncrypted(host, port);
     AWS_LOG("[TLS] Initiating encrypted connect to" << host << ":" << port);
 }
@@ -263,8 +262,8 @@ void AwsMqttManager::disconnectFromBroker()
 
     publishTimer->stop();
    
-        if (awsMqttsClient->state() != QMqttClient::Disconnected)
-            awsMqttsClient->disconnectFromHost();
+    if (awsMqttsClient->state() != QMqttClient::Disconnected)
+        awsMqttsClient->disconnectFromHost();
 
     if (sslSocket) {
         sslSocket->disconnectFromHost();

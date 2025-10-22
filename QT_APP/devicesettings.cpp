@@ -543,6 +543,7 @@ void DeviceSettings::refreshInfo()
         emit deviceInfoChanged(curDevInfo);
         prvDevInfo = curDevInfo;
     }
+    if(refreshTimer != nullptr) refreshTimer->start(10 * 1000);
 }
 
 
