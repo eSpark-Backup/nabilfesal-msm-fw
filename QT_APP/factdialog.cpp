@@ -9,11 +9,6 @@ FactDialog::FactDialog(QWidget *parent)
     ui->setupUi(this);
 
     setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
-
-    // apply rounded corners
-    QPainterPath path;
-    path.addRoundedRect(rect(), 20, 20); // radius = 20
-    setMask(QRegion(path.toFillPolygon().toPolygon()));
 }
 
 FactDialog::~FactDialog()

@@ -11,7 +11,7 @@ NumKeyboard::NumKeyboard(QWidget *parent)
     numberButtons = {
         ui->n_, ui->n_1, ui->n_2, ui->n_3, ui->n_4,
         ui->n_5, ui->n_6, ui->n_7, ui->n_8, ui->n_9,
-        ui->n_dot
+        ui->n_dot, ui->n_minus
     };
 
     for (QPushButton *button : numberButtons) {

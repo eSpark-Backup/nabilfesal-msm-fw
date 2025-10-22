@@ -9,6 +9,8 @@
 #include <QTimer>
 #include <QMap>
 #include <QJsonObject>
+#include <QPoint>
+#include <QSwipeGesture>
 
 namespace Ui {
 class ChannelsHome;
@@ -26,6 +28,9 @@ public:
 signals:
     void channelsExit();
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private slots:
     void on_exit_clicked();
 
@@ -35,6 +40,9 @@ private:
     void onAnyHomeButtonClicked();
     void updateChannelUI(int channel, const QJsonObject &data);
     void cacheChannelLabels();
+    void handleSwipeGesture(QSwipeGesture *gesture);
+    void handleManualSwipe(const QPoint &startPos, const QPoint &endPos);
+    void navigateToChannel(int newChannel);
 
 private:
     Ui::ChannelsHome *ui;
@@ -54,6 +62,10 @@ private:
 
     int m_channel;
     int energyCounter = 0;
+
+    QPoint m_swipeStartPos;
+    bool m_isSwipeInProgress = false;
+    int m_minSwipeDistance;
 
 };
 

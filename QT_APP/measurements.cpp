@@ -165,9 +165,8 @@ void Measurements::on_load_btn_clicked()
         }
         QFile file("config/ct_ratio_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
-            for (QLineEdit *edit : edits) {
+            for (QLineEdit *edit : edits)
                 edit->setText("0");
-            }
             return;
         }
 
@@ -190,7 +189,8 @@ void Measurements::on_load_btn_clicked()
         for (int i = 1; i <= 12; ++i) {
             QString key = QString("channel-%1").arg(i);
             if (QLineEdit *edit = this->findChild<QLineEdit*>(QString("ch%1").arg(i))) {
-                edit->setText(QString::number(ratioSettings[key].toInt()));
+                double val = ratioSettings[key].toDouble();
+                edit->setText(QString::number(val, 'f', 2));
             }
         }
     }
@@ -201,9 +201,8 @@ void Measurements::on_load_btn_clicked()
         }
         QFile file("config/i_offset_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
-            for (QLineEdit *edit : edits) {
+            for (QLineEdit *edit : edits)
                 edit->setText("0");
-            }
             return;
         }
 
@@ -226,7 +225,8 @@ void Measurements::on_load_btn_clicked()
         for (int i = 1; i <= 12; ++i) {
             QString key = QString("channel-%1").arg(i);
             if (QLineEdit *edit = this->findChild<QLineEdit*>(QString("ch%1").arg(i))) {
-                edit->setText(QString::number(iOffsetSettings[key].toInt()));
+                double val = iOffsetSettings[key].toDouble();
+                edit->setText(QString::number(val, 'f', 2));
             }
         }
     }
@@ -237,9 +237,8 @@ void Measurements::on_load_btn_clicked()
         }
         QFile file("config/v_offset_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
-            for (QLineEdit *edit : edits) {
+            for (QLineEdit *edit : edits)
                 edit->setText("0");
-            }
             return;
         }
 
@@ -262,11 +261,11 @@ void Measurements::on_load_btn_clicked()
         for (int i = 1; i <= 12; ++i) {
             QString key = QString("channel-%1").arg(i);
             if (QLineEdit *edit = this->findChild<QLineEdit*>(QString("ch%1").arg(i))) {
-                edit->setText(QString::number(vOffsetSettings[key].toInt()));
+                double val = vOffsetSettings[key].toDouble();
+                edit->setText(QString::number(val, 'f', 2));
             }
         }
     }
-
 }
 
 
@@ -281,11 +280,17 @@ void Measurements::on_save_btn_clicked()
         ui->ch11->text().trimmed(), ui->ch12->text().trimmed()
     };
 
+    auto parseDoubleSafe = [](const QString &str) -> double {
+        bool ok = false;
+        double val = str.toDouble(&ok);
+        return ok ? val : 0.0;
+    };
+
     if (isRatioActivated)
     {
         QJsonObject ratioSettings;
         for (int i = 0; i < channels.size(); ++i) {
-            ratioSettings[QString("channel-%1").arg(i+1)] = channels[i].toInt();
+            ratioSettings[QString("channel-%1").arg(i + 1)] = parseDoubleSafe(channels[i]);
         }
 
         QJsonObject data;
@@ -293,9 +298,7 @@ void Measurements::on_save_btn_clicked()
         data["command"]  = "set-ct-ratio";
 
         QDir dir("config");
-        if (!dir.exists()) {
-            dir.mkpath(".");
-        }
+        if (!dir.exists()) dir.mkpath(".");
 
         QFile file("config/ct_ratio_settings.json");
         if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -313,7 +316,7 @@ void Measurements::on_save_btn_clicked()
     {
         QJsonObject iOffsetSettings;
         for (int i = 0; i < channels.size(); ++i) {
-            iOffsetSettings[QString("channel-%1").arg(i+1)] = channels[i].toInt();
+            iOffsetSettings[QString("channel-%1").arg(i + 1)] = parseDoubleSafe(channels[i]);
         }
 
         QJsonObject data;
@@ -321,9 +324,7 @@ void Measurements::on_save_btn_clicked()
         data["command"]  = "set-i-offset";
 
         QDir dir("config");
-        if (!dir.exists()) {
-            dir.mkpath(".");
-        }
+        if (!dir.exists()) dir.mkpath(".");
 
         QFile file("config/i_offset_settings.json");
         if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -341,7 +342,7 @@ void Measurements::on_save_btn_clicked()
     {
         QJsonObject vOffsetSettings;
         for (int i = 0; i < channels.size(); ++i) {
-            vOffsetSettings[QString("channel-%1").arg(i+1)] = channels[i].toInt();
+            vOffsetSettings[QString("channel-%1").arg(i + 1)] = parseDoubleSafe(channels[i]);
         }
 
         QJsonObject data;
@@ -349,9 +350,7 @@ void Measurements::on_save_btn_clicked()
         data["command"]  = "set-v-offset";
 
         QDir dir("config");
-        if (!dir.exists()) {
-            dir.mkpath(".");
-        }
+        if (!dir.exists()) dir.mkpath(".");
 
         QFile file("config/v_offset_settings.json");
         if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {

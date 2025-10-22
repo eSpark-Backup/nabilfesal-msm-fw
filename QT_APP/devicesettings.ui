@@ -191,7 +191,7 @@ QPushButton:focus {
       <enum>Qt::ClickFocus</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QVBoxLayout" name="verticalLayout_15">
@@ -2252,10 +2252,10 @@ QPushButton:focus {
                <item>
                 <widget class="QLineEdit" name="mqtts_endpoint">
                  <property name="enabled">
-                  <bool>true</bool>
+                  <bool>false</bool>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::ClickFocus</enum>
+                  <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -2274,6 +2274,9 @@ QPushButton:focus {
                  <property name="text">
                   <string/>
                  </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
                  <property name="placeholderText">
                   <string/>
                  </property>
@@ -2285,7 +2288,7 @@ QPushButton:focus {
                   <bool>false</bool>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::ClickFocus</enum>
+                  <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="styleSheet">
                   <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
@@ -2301,6 +2304,9 @@ QPushButton:focus {
                  <property name="text">
                   <string/>
                  </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
                  <property name="placeholderText">
                   <string/>
                  </property>
@@ -2312,7 +2318,7 @@ QPushButton:focus {
                   <bool>false</bool>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::ClickFocus</enum>
+                  <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="styleSheet">
                   <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */

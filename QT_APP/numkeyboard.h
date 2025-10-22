@@ -23,6 +23,7 @@ private slots:
     void on_enter_clicked();
 
     void on_back_clicked();
+
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
