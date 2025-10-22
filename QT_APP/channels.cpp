@@ -2,15 +2,23 @@
 #include "ui_channels.h"
 #include <QJsonDocument>
 #include <QDebug>
+#include <QGestureEvent>
+#include <QSwipeGesture>
 
 ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ChannelsHome)
-    ,m_channel(1)
+    , m_channel(1)
+    , m_swipeStartPos(0, 0)
+    , m_minSwipeDistance(100)
 {
     ui->setupUi(this);
 
     ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
+
+    ui->stackedWidget->widget(1)->grabGesture(Qt::SwipeGesture);
+    ui->stackedWidget->widget(1)->installEventFilter(this);
+    ui->stackedWidget->widget(1)->setMouseTracking(true);
 
     connect(ui->ch_home_bt, &QPushButton::clicked, this, &ChannelsHome::onAnyHomeButtonClicked);
 
@@ -29,12 +37,9 @@ ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWi
         handleSubButtonClick(1, "gn");
     });
 
-
     connect(ui->en_bt_1, &QPushButton::clicked, this, [=]() {
         handleSubButtonClick(1, "en");
     });
-
-
 
     connect(ui->pw_bt_1, &QPushButton::clicked, this, [=]() {
         handleSubButtonClick(1, "pw");
@@ -49,6 +54,71 @@ ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWi
 ChannelsHome::~ChannelsHome()
 {
     delete ui;
+}
+
+bool ChannelsHome::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::Gesture) {
+        QGestureEvent *gestureEvent = static_cast<QGestureEvent*>(event);
+        if (QGesture *swipe = gestureEvent->gesture(Qt::SwipeGesture)) {
+            handleSwipeGesture(static_cast<QSwipeGesture*>(swipe));
+            return true;
+        }
+    }
+    
+    if (obj == ui->stackedWidget->widget(1)) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+            m_swipeStartPos = mouseEvent->pos();
+            m_isSwipeInProgress = true;
+        }
+        else if (event->type() == QEvent::MouseMove && m_isSwipeInProgress) {
+        }
+        else if (event->type() == QEvent::MouseButtonRelease && m_isSwipeInProgress) {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+            handleManualSwipe(m_swipeStartPos, mouseEvent->pos());
+            m_isSwipeInProgress = false;
+        }
+    }
+    
+    return QWidget::eventFilter(obj, event);
+}
+
+void ChannelsHome::handleSwipeGesture(QSwipeGesture *gesture)
+{
+    if (gesture->state() == Qt::GestureFinished) {
+        if (gesture->horizontalDirection() == QSwipeGesture::Right) {
+            navigateToChannel(m_channel - 1);
+        }
+        else if (gesture->horizontalDirection() == QSwipeGesture::Left) {
+            navigateToChannel(m_channel + 1);
+        }
+    }
+}
+
+void ChannelsHome::handleManualSwipe(const QPoint &startPos, const QPoint &endPos)
+{
+    int deltaX = endPos.x() - startPos.x();
+    int deltaY = endPos.y() - startPos.y();
+    
+    if (qAbs(deltaX) > qAbs(deltaY) && qAbs(deltaX) > m_minSwipeDistance) {
+        if (deltaX > 0) {
+            navigateToChannel(m_channel - 1);
+        } else {
+            navigateToChannel(m_channel + 1);
+        }
+    }
+}
+
+void ChannelsHome::navigateToChannel(int newChannel)
+{
+    if (newChannel < 1) {
+        newChannel = 12;
+    } else if (newChannel > 12) {
+        newChannel = 1;
+    }
+    
+    handleChannelClick(newChannel);
 }
 
 void ChannelsHome::handleChannelClick(int channelIndex)
