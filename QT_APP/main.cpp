@@ -4,7 +4,8 @@
 #include <QInputMethod>
 #include "buttonSound.h"
 #include <QScreen>
-
+#include "buildinfo.h"
+#define BUILD_VERSION "2.2.7"
 
 class InactivityWatcher : public QObject {
     Q_OBJECT
@@ -79,11 +80,15 @@ private:
 
 int main(int argc, char *argv[])
 {
-    qDebug() << "===================================================================================================";
-    qDebug() << "Build date:" << BUILD_DATE << "time:" << BUILD_TIME;
-    qDebug() << "Author:" << BUILD_AUTHOR;
-    qDebug() << "Git commit:" << GIT_COMMIT_FULL;
-    qDebug() << "===================================================================================================";
+    qDebug().noquote() << "===================================================================================================";
+    qDebug().noquote() << "                                         Build Information";
+    qDebug().noquote() << "===================================================================================================";
+    qDebug().noquote() << "Version:         " << BUILD_VERSION;
+    qDebug().noquote() << "Build date:      " << BUILD_DATE << "time:" << BUILD_TIME;
+    qDebug().noquote() << "Developer:       " << BUILD_AUTHOR;
+    qDebug().noquote() << "Branch:          " << GIT_BRANCH;
+    qDebug().noquote() << "Commit Hash:     " << GIT_COMMIT_HASH;
+    qDebug().noquote() << "===================================================================================================";
 
     QApplication a(argc, argv);
 
