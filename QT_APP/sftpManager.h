@@ -17,6 +17,7 @@ public:
     void disconnectClient();
     bool sftpState();
     void uploadFile(const QString &localFile, const QString &remotePath);
+    bool isConnected = false;
     
 public slots:
     void processIncomingJson(int channel, const QJsonObject &payload);
@@ -42,7 +43,6 @@ private:
     int intervalSec = 0;
     QString schedule = "0100";
     QString configPath;
-    bool isConnected = false;
     QTimer *publishTimer = nullptr;
     QString m_filePath;
 

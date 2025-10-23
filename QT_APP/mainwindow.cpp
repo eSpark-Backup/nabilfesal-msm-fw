@@ -326,6 +326,7 @@ void MainWindow::connectLoginSignals()
     // Navigation-related connections (showing/hiding settings/channels/usbExport)
     // are handled where UI is shown (onAdminLogin / onFactoryLogin) to avoid double
     // connecting repeated lambdas.
+    startPingTimer();
 }
 
 // -----------------------------
@@ -764,3 +765,51 @@ void MainWindow::showChannelsHome()
     connectChannels(channels);
     channels->showFullScreen();
 }
+
+
+void MainWindow::startPingTimer()
+{
+    auto handlePingResult = [this](bool reachable) {
+        if (reachable != previousStatus) {
+            previousStatus = reachable;
+            QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+            if (reachable){
+                //qDebug() << timestamp << "✅ Internet Connected";
+                // Reconnect clients
+                sftpHandler->reloadSettings();
+                mqttHandler->reloadSettings();
+                awsMqttsHandler->reloadAwsMqttsSettings();
+            } else {
+                //qDebug() << timestamp << "❌ Internet Disconnected";
+
+                sftpHandler->isConnected = false;
+                mqttHandler->isConnected = false;
+                awsMqttsHandler->isConnected = false;
+                sftpHandler->disconnectClient();
+                mqttHandler->disconnectClient();
+                awsMqttsHandler->disconnectAwsClient();
+            }
+            settings->refreshInfo();
+        }
+    };
+
+    // Connect socket signals to handlePingResult
+    connect(&socket, &QTcpSocket::connected, this, [this, handlePingResult]() {
+        handlePingResult(true);
+        socket.abort(); // close connection after success
+    });
+
+    connect(&socket, &QTcpSocket::errorOccurred, this, [this, handlePingResult](QAbstractSocket::SocketError) {
+        handlePingResult(false);
+        socket.abort(); // ensure socket is reset after failure
+    });
+
+    // Timer to trigger periodic pings
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, [this]() {
+        socket.abort(); // reset any previous connection
+        socket.connectToHost("8.8.8.8", 53); // start async connection
+    });
+    timer->start(5000);
+}
+

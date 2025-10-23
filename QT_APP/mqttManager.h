@@ -16,6 +16,7 @@ public:
     void publishMessage(const QString &payload);
     void subscribeToTopic();
     bool mqttState();
+    bool isConnected = false;
 
 public slots:
     void processIncomingJson(int channel, const QJsonObject &payload);
@@ -41,7 +42,6 @@ private:
     QString clientId;
     QString topic;
     int intervalSec = 0;
-    bool isConnected = false;
 
     // System certificate paths (fixed)
     QString caPath = "/etc/certs/AmazonRootCA1.pem";

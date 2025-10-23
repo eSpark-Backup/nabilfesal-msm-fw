@@ -79,6 +79,7 @@ private:
     void startProgress();
     void handlePostProgress();
     void showChannelsHome();
+    void startPingTimer();
 
     // Utility connection helpers
     void connectChannels(ChannelsHome *ch);
@@ -128,6 +129,10 @@ private:
 
     QTimer *responseWaitTimer = nullptr;
     bool waitingForCalibrationResponse = false;
+
+    // Ping Timer declarations 
+    bool previousStatus = false;
+    QTcpSocket socket;
 };
 
 #endif // MAINWINDOW_H

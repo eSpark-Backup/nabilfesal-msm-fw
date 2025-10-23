@@ -166,7 +166,7 @@ void mqttManager::connectToBroker()
     if (!password.isEmpty()) mqttClient->setPassword(password);
     mqttClient->setProtocolVersion(QMqttClient::MQTT_3_1_1);
     mqttClient->setCleanSession(true);
-    mqttClient->setKeepAlive(10);
+    mqttClient->setKeepAlive(30);
 
     // Use the transport socket set in loadCertificates()
     mqttClient->connectToHost();
