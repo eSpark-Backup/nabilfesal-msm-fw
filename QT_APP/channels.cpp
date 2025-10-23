@@ -112,13 +112,12 @@ void ChannelsHome::handleManualSwipe(const QPoint &startPos, const QPoint &endPo
 
 void ChannelsHome::navigateToChannel(int newChannel)
 {
-    if (newChannel < 1) {
-        newChannel = 12;
-    } else if (newChannel > 12) {
-        newChannel = 1;
+    int direction = (newChannel > m_channel) ? 1 : -1;
+    int activeChannel = findNextActiveChannel(m_channel, direction);
+
+    if (activeChannel != m_channel) {
+        handleChannelClick(activeChannel);
     }
-    
-    handleChannelClick(newChannel);
 }
 
 void ChannelsHome::handleChannelClick(int channelIndex)
@@ -272,4 +271,22 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
 void ChannelsHome::on_exit_clicked()
 {
     emit channelsExit();
+}
+
+int ChannelsHome::findNextActiveChannel(int startChannel, int direction)
+{
+    int newChannel = startChannel;
+
+    for (int i = 0; i < 12; ++i) {
+        newChannel += direction;
+        if (newChannel < 1) newChannel = 12;
+        else if (newChannel > 12) newChannel = 1;
+
+        QPushButton* chBtn = findChild<QPushButton*>("channel_bt_" + QString::number(newChannel));
+        if (chBtn && chBtn->isEnabled()) {
+            return newChannel;
+        }
+    }
+
+    return startChannel;
 }

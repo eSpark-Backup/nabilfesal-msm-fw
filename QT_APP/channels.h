@@ -43,6 +43,7 @@ private:
     void handleSwipeGesture(QSwipeGesture *gesture);
     void handleManualSwipe(const QPoint &startPos, const QPoint &endPos);
     void navigateToChannel(int newChannel);
+    int findNextActiveChannel(int startChannel, int direction);
 
 private:
     Ui::ChannelsHome *ui;
