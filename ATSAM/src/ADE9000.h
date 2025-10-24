@@ -43,8 +43,8 @@
 //#define ADE9000_EGY_TIME 0x77359 				/*Accumulate 8000 samples*/
 //#define ADE9000_EP_CFG 0xE001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
 
-#define ADE9000_EGY_TIME 0x77359 				/*Accumulate 8000 samples*/
-#define ADE9000_EP_CFG 0xE001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
+#define ADE9000_EGY_TIME 0x1FFF 				/*Accumulate 8000 samples*/
+#define ADE9000_EP_CFG 0x0001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
 
 /*Waveform buffer Settings*/
 #define ADE9000_WFB_CFG 0x1000			/*Neutral current samples enabled, Resampled data enabled*/
@@ -224,12 +224,13 @@ extern ChannelConfig channelConfig[12];
 void SPI_CSS_Control(SPI_CSS_Pin pin, bool set) ;
 void SPI_Write(uint16_t address, uint32_t data, bool is32Bit, SPI_CSS_Pin css_pin);
 uint32_t SPI_Read(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin);
+uint32_t SPI_Read_Energy(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin);
 
 bool IsADE9000(SPI_CSS_Pin css_pin);
 void ADE9000_Initialize(SPI_CSS_Pin css_pin);
 
 //void ct_ratio_calibration(uint16_t ratio);
-void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data);
+void ct_ratio_calibration(uint16_t ratio, uint8_t channel);
 
 void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin);
 void current_offset_write(int8_t channel, int32_t offset);
@@ -244,9 +245,9 @@ void ReadLineVoltages(VoltageRMSRegs *rmsData, LineVoltageRegs *lineData);
 void ReadCurrentRMSRegs(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin);
 void ReadPeriodRegsnValues(PeriodRegs *Data, VoltageRMSRegs *RMSData, SPI_CSS_Pin css_pin);
 
-void ReadActivePowerRegs(ActivePowerRegs *Data, SPI_CSS_Pin css_pin);
-void ReadReactivePowerRegs(ReactivePowerRegs *Data1,ApparentPowerRegs *Data2,PowerFactorRegs *Data3, SPI_CSS_Pin css_pin);
-void ReadApparentPowerRegs(ApparentPowerRegs *Data, SPI_CSS_Pin css_pin);
+void ReadActivePowerRegs(ActivePowerRegs *Data, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin);
+void ReadReactivePowerRegs(ReactivePowerRegs *Data1, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin);
+void ReadApparentPowerRegs(ApparentPowerRegs *Data, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin);
 void ReadPowerFactorRegsnValues(PowerFactorRegs *Data, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin);
 
 void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *CurrentData, SPI_CSS_Pin css_pin);

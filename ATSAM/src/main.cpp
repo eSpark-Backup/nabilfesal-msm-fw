@@ -239,12 +239,12 @@ void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
     current_offset_calibration(&unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     ReadPeriodRegsnValues(&unitMeasurements[unitIndex - 1].periodFrequency, &unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
     
-    ReadActivePowerRegs(&unitMeasurements[unitIndex - 1].activePower, cssPin);
-    ReadReactivePowerRegs(&unitMeasurements[unitIndex - 1].reactivePower,&unitMeasurements[unitIndex - 1].apparentPower,&unitMeasurements[unitIndex - 1].powerFactor, cssPin);
-    ReadApparentPowerRegs(&unitMeasurements[unitIndex - 1].apparentPower, cssPin);
+    ReadActivePowerRegs(&unitMeasurements[unitIndex - 1].activePower, &unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
+    ReadReactivePowerRegs(&unitMeasurements[unitIndex - 1].reactivePower, &unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
+    ReadApparentPowerRegs(&unitMeasurements[unitIndex - 1].apparentPower, &unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     ReadPowerFactorRegsnValues(&unitMeasurements[unitIndex - 1].powerFactor, &unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     
-    ReadEnergyRegs(&unitMeasurements[unitIndex - 1].activeEnergy,&unitMeasurements[unitIndex - 1].activePower,&unitMeasurements[unitIndex - 1].currentRMS, cssPin);
+    ReadEnergyRegs(&unitMeasurements[unitIndex - 1].activeEnergy,&unitMeasurements[unitIndex - 1].activePower, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     
     ReadVoltageTHDRegsnValues(&unitMeasurements[unitIndex - 1].voltageTHD, cssPin);
     ReadCurrentTHDRegsnValues(&unitMeasurements[unitIndex - 1].currentTHD, cssPin);
@@ -401,7 +401,8 @@ void ADE9000SetupForUnit(SPI_CSS_Pin cssPin)
         // printf("ADE9000 Setup Successful\n");
         ADE9000_status[cssPin - 1] = 1;
         ADE9000_hotplug[cssPin - 1] = 1;
-        ADE9000_Initialize(cssPin); 
+        ADE9000_Initialize(cssPin);
+        // ct_ratio_calibration(100, cssPin-1);
     }
     else
     {
@@ -427,6 +428,7 @@ void ADE9000Setup()
     ADE9000SetupForUnit(SPI_CSS12);
     ADE9000Status_Check();
     memset(ADE9000_arrayBuffer, 0, TOTAL_ARRAYSIZE);
+    memset(unitMeasurements, 0, sizeof(unitMeasurements));
 }
 
 void ADE9000ForUnitCheck(SPI_CSS_Pin cssPin)
@@ -611,10 +613,10 @@ void parse_ct_ratio_json(){
     if(ch != NULL){
 //        strcpy(txBuffer,"");
         char key[20];
-        for (int8_t j = 1; j < 13; j++){
+        for (uint8_t j = 1; j < 13; j++){
             sprintf(key, "channel-%d",j);
             channelConfig[j-1].ctRatio = extract_channel_values(key);
-            ct_ratio_calibration(channelConfig[j-1].ctRatio, j-1, unitMeasurements[j-1].currentRMS);
+            ct_ratio_calibration(channelConfig[j-1].ctRatio, j-1);
         }
         strcpy(txBuffer, "\nCT Ratio updated successfully!");
     }
