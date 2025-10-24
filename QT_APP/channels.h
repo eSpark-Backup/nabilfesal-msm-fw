@@ -35,7 +35,7 @@ private slots:
     void on_exit_clicked();
 
 private:
-    void handleChannelClick(int channelIndex);
+    void handleChannelClick(int channelIndex, bool preserveSubTab = false);
     void handleSubButtonClick(int channelIndex, const QString &buttonType);
     void onAnyHomeButtonClicked();
     void updateChannelUI(int channel, const QJsonObject &data);
@@ -44,6 +44,8 @@ private:
     void handleManualSwipe(const QPoint &startPos, const QPoint &endPos);
     void navigateToChannel(int newChannel);
     int findNextActiveChannel(int startChannel, int direction);
+    void loadEnergyData();
+    void saveEnergyData();
 
 private:
     Ui::ChannelsHome *ui;
@@ -67,6 +69,15 @@ private:
     QPoint m_swipeStartPos;
     bool m_isSwipeInProgress = false;
     int m_minSwipeDistance;
+
+    struct EnergyData {
+        double activePositive = 0.0;
+        double activeNegative = 0.0;
+        double reactivePositive = 0.0;
+        double reactiveNegative = 0.0;
+    };
+
+    QMap<int, QMap<QString, EnergyData>> accumulatedEnergy; 
 
 };
 
