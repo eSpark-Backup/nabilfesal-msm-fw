@@ -168,10 +168,28 @@ void ChannelsHome::handleSubButtonClick(int channelIndex, const QString &buttonT
         if (energyCounter == 1)
         {
             en->setText("Active\nEnergy");
+            ui->label_159->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
+            ui->label_162->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
+            ui->label_165->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
+            ui->label_168->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
+            ui->label_171->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
+            ui->label_174->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
+            ui->label_177->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
+            ui->label_180->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
+            ui->label_183->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
         }
         else if (energyCounter == 2)
         {
             en->setText("Reactive\nEnergy");
+            ui->label_159->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
+            ui->label_162->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
+            ui->label_165->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
+            ui->label_168->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
+            ui->label_171->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
+            ui->label_174->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
+            ui->label_177->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
+            ui->label_180->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
+            ui->label_183->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
             energyCounter = 0;
         }
         en->setStyleSheet(buttonClickedStyle);

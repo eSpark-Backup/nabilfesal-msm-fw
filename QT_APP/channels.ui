@@ -2613,7 +2613,7 @@ image: url(:/icons/V.jpg);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -3274,7 +3274,7 @@ image: url(:/icons/V.jpg);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -3936,7 +3936,7 @@ image: url(:/icons/I.jpg);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -4603,7 +4603,7 @@ image: url(:/icons/frq.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -5283,7 +5283,7 @@ image: url(:/icons/power.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -5848,7 +5848,7 @@ image: url(:/icons/power.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -6401,7 +6401,7 @@ image: url(:/icons/power.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -6960,7 +6960,7 @@ image: url(:/icons/pf.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>1.0</string>
@@ -7586,7 +7586,7 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -8175,7 +8175,7 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
@@ -8764,7 +8764,7 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-color: rgb(237, 212, 0);</string>
+color: rgb(218, 165, 32);</string>
                           </property>
                           <property name="text">
                            <string>0.0</string>
