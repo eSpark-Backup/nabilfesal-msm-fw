@@ -79,6 +79,11 @@ private:
 
     QMap<int, QMap<QString, EnergyData>> accumulatedEnergy; 
 
+    QWidget *leftShadowOverlay = nullptr;
+    QWidget *rightShadowOverlay = nullptr;
+    
+    void setupShadowOverlay(QWidget* overlay, bool isLeft);
+    void resizeEvent(QResizeEvent *event);
 };
 
 #endif // CHANNELS_H

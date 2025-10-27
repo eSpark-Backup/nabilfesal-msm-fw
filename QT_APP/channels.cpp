@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QGestureEvent>
 #include <QSwipeGesture>
+#include <QPainter>
+#include <QPainterPath>
 
 ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
@@ -15,6 +17,12 @@ ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWi
     ui->setupUi(this);
 
     ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
+    
+    // Create and configure shadow overlays once
+    leftShadowOverlay = new QWidget(ui->stackedWidget->currentWidget());
+    rightShadowOverlay = new QWidget(ui->stackedWidget->currentWidget());
+    setupShadowOverlay(leftShadowOverlay, true);
+    setupShadowOverlay(rightShadowOverlay, false);
 
     ui->stackedWidget->widget(1)->grabGesture(Qt::SwipeGesture);
     ui->stackedWidget->widget(1)->installEventFilter(this);
@@ -57,14 +65,147 @@ ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWi
     saveTimer->start(5 * 60 * 1000); // Save every 5 minutes
 }
 
+
 ChannelsHome::~ChannelsHome()
 {
     saveEnergyData();
     delete ui;
 }
 
+
+void ChannelsHome::setupShadowOverlay(QWidget* overlay, bool isLeft)
+{
+    overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+    overlay->setAttribute(Qt::WA_NoSystemBackground);
+    overlay->setAttribute(Qt::WA_TranslucentBackground);
+    overlay->setGeometry(0, 0, ui->stackedWidget->width(), ui->stackedWidget->height());
+    overlay->hide();
+
+    // Store direction flag
+    overlay->setProperty("isLeftShadow", isLeft);
+
+    // Important: tell ChannelsHome to filter paint events for this overlay
+    overlay->installEventFilter(this);
+}
+
+
+bool paintShadowEventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() != QEvent::Paint)
+        return false;
+
+    QWidget *overlay = static_cast<QWidget*>(obj);
+    bool isLeft = overlay->property("isLeftShadow").toBool();
+    int shadowWidth = overlay->property("shadowWidth").toInt();
+    int shadowAlpha = overlay->property("shadowAlpha").toInt();
+
+    if (shadowWidth <= 0) shadowWidth = 60;
+    if (shadowAlpha <= 0) shadowAlpha = 70;
+
+    QPainter p(overlay);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+    const int h = overlay->height();
+    const int w = overlay->width();
+
+    QColor baseColor(90, 90, 90, shadowAlpha);  // RGB 90–90–90 gives a soft gray
+    p.setBrush(baseColor);
+    p.setPen(Qt::NoPen);
+
+    QPainterPath path;
+
+    // Shift the semicircle down (10% from the top)
+    const int topOffset = h * 0.10;
+    const int effectiveHeight = h - topOffset;
+
+    if (isLeft) {
+        QRectF arcRect(-shadowWidth, topOffset, shadowWidth * 2, effectiveHeight);
+        path.moveTo(0, topOffset);
+        path.arcTo(arcRect, 270, 180);
+        path.lineTo(0, h);
+        path.closeSubpath();
+    } else {
+        QRectF arcRect(w - shadowWidth, topOffset, shadowWidth * 2, effectiveHeight);
+        path.moveTo(w, topOffset);
+        path.arcTo(arcRect, 90, 180);
+        path.lineTo(w, h);
+        path.closeSubpath();
+    }
+
+    p.drawPath(path);
+    return true;
+}
+
+
 bool ChannelsHome::eventFilter(QObject *obj, QEvent *event)
 {
+    // Handle shadow overlay painting
+    if (obj == leftShadowOverlay || obj == rightShadowOverlay) {
+        if (event->type() == QEvent::Paint) {
+            paintShadowEventFilter(obj, event);
+            return true;
+        }
+    }
+
+    QWidget *current = ui->stackedWidget->currentWidget();
+    if (obj != current)
+        return QWidget::eventFilter(obj, event);
+
+    // Initialize overlays once per current page
+    if (!leftShadowOverlay || !rightShadowOverlay) {
+        leftShadowOverlay = new QWidget(current);
+        rightShadowOverlay = new QWidget(current);
+        setupShadowOverlay(leftShadowOverlay, true);
+        setupShadowOverlay(rightShadowOverlay, false);
+    }
+
+    if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        m_swipeStartPos = mouseEvent->pos();
+        m_isSwipeInProgress = true;
+    }
+    else if (event->type() == QEvent::MouseMove && m_isSwipeInProgress) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        int deltaX = mouseEvent->pos().x() - m_swipeStartPos.x();
+
+        // Calculate intensity and width dynamically
+        double intensity = qMin(1.0, qAbs(deltaX) / 250.0);
+        int maxWidth = 120; // max expansion of the curved shadow
+        int dynamicWidth = qBound(30, int(maxWidth * intensity), maxWidth);
+        int alpha = int(100 * intensity); // dynamic transparency
+
+        if (deltaX > 0) { // Swiping right
+            leftShadowOverlay->show();
+            rightShadowOverlay->hide();
+
+            leftShadowOverlay->update();
+            leftShadowOverlay->setProperty("shadowWidth", dynamicWidth);
+            leftShadowOverlay->setProperty("shadowAlpha", alpha);
+        }
+        else if (deltaX < 0) { // Swiping left
+            rightShadowOverlay->show();
+            leftShadowOverlay->hide();
+
+            rightShadowOverlay->update();
+            rightShadowOverlay->setProperty("shadowWidth", dynamicWidth);
+            rightShadowOverlay->setProperty("shadowAlpha", alpha);
+        }
+
+        // Trigger repaint
+        leftShadowOverlay->update();
+        rightShadowOverlay->update();
+    }
+    else if (event->type() == QEvent::MouseButtonRelease && m_isSwipeInProgress) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        handleManualSwipe(m_swipeStartPos, mouseEvent->pos());
+        m_isSwipeInProgress = false;
+
+        leftShadowOverlay->hide();
+        rightShadowOverlay->hide();
+    }
+
+    // Still handle swipe gestures if available
     if (event->type() == QEvent::Gesture) {
         QGestureEvent *gestureEvent = static_cast<QGestureEvent*>(event);
         if (QGesture *swipe = gestureEvent->gesture(Qt::SwipeGesture)) {
@@ -72,24 +213,20 @@ bool ChannelsHome::eventFilter(QObject *obj, QEvent *event)
             return true;
         }
     }
-    
-    if (obj == ui->stackedWidget->widget(1)) {
-        if (event->type() == QEvent::MouseButtonPress) {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-            m_swipeStartPos = mouseEvent->pos();
-            m_isSwipeInProgress = true;
-        }
-        else if (event->type() == QEvent::MouseMove && m_isSwipeInProgress) {
-        }
-        else if (event->type() == QEvent::MouseButtonRelease && m_isSwipeInProgress) {
-            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-            handleManualSwipe(m_swipeStartPos, mouseEvent->pos());
-            m_isSwipeInProgress = false;
-        }
-    }
-    
+
     return QWidget::eventFilter(obj, event);
 }
+
+
+void ChannelsHome::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    if (leftShadowOverlay && rightShadowOverlay) {
+        leftShadowOverlay->setGeometry(0, 0, ui->stackedWidget->width(), ui->stackedWidget->height());
+        rightShadowOverlay->setGeometry(0, 0, ui->stackedWidget->width(), ui->stackedWidget->height());
+    }
+}
+
 
 void ChannelsHome::handleSwipeGesture(QSwipeGesture *gesture)
 {
