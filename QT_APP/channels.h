@@ -33,6 +33,7 @@ protected:
 
 private slots:
     void on_exit_clicked();
+    void on_tempBtn_clicked(bool updateTrue = false, double val = 0.00);
 
 private:
     void handleChannelClick(int channelIndex, bool preserveSubTab = false);

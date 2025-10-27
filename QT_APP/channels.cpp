@@ -392,7 +392,7 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
     if (channel == m_channel)
     {
         double temp = json.value("temperature").toDouble();
-        ui->temp->setText(QString::number(temp, 'f', 2));
+        on_tempBtn_clicked(true, temp);
         QString suffix = QString::number(1);
         QJsonObject data = json.value("data").toObject();
         for (const QString &phase : {"phase_a", "phase_b", "phase_c"}) {
@@ -457,6 +457,7 @@ void ChannelsHome::on_exit_clicked()
 {
     emit channelsExit();
 }
+
 
 int ChannelsHome::findNextActiveChannel(int startChannel, int direction)
 {
@@ -524,4 +525,44 @@ void ChannelsHome::saveEnergyData()
     QFile file("energy_data.json");
     if (file.open(QIODevice::WriteOnly))
         file.write(QJsonDocument(root).toJson());
+}
+
+
+void ChannelsHome::on_tempBtn_clicked(bool updateTrue, double val)
+{
+    QString text = ui->tempBtn->text(); // e.g., "30.73 °C"
+
+    // Split number and unit
+    QStringList parts = text.split(' '); // ["30.73", "°C"]
+    if (parts.size() != 2)
+        return; // unexpected format
+
+    bool ok;
+    double value = parts[0].toDouble(&ok);
+    if (!ok)
+        return; // parsing failed
+
+    QString unit = parts[1];
+
+    if(updateTrue == false)
+    {
+        if (unit == "°C") {
+            value = value * 9.0/5.0 + 32;
+            unit = "°F";
+        } else if (unit == "°F") {
+            value = (value - 32) * 5.0/9.0;
+            unit = "°C";
+        } else {
+            return; // unknown unit
+        }
+    }
+    else
+    {
+        if (unit == "°C") {
+            value = val;
+        } else if (unit == "°F") {
+            value = val * 9.0/5.0 + 32;
+        }
+    }
+    ui->tempBtn->setText(QString::number(value, 'f', 2) + " " + unit);
 }
