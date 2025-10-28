@@ -2202,11 +2202,14 @@ QPushButton:hover {
 }
 
 QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
+    background-color: #0D47A1;    
+    color: white;  
 }
+
 QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
+    color: white;
     border: 2px solid black;       /* White glow/border */
 }</string>
         </property>
@@ -2248,10 +2251,12 @@ QPushButton:hover {
 
 QPushButton:pressed {
     background-color: #0D47A1;  /* Darkest blue when pressed */
+	color: white;
 }
 QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
+	color: white;
     border: 2px solid black;       /* White glow/border */
 }</string>
         </property>
@@ -2293,10 +2298,12 @@ QPushButton:hover {
 
 QPushButton:pressed {
     background-color: #0D47A1;  /* Darkest blue when pressed */
+	color: white;
 }
 QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
+	color: white;
     border: 2px solid black;       /* White glow/border */
 }</string>
         </property>
@@ -2338,10 +2345,12 @@ QPushButton:hover {
 
 QPushButton:pressed {
     background-color: #0D47A1;  /* Darkest blue when pressed */
+	color: white;
 }
 QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
+	color: white;
     border: 2px solid black;       /* White glow/border */
 }</string>
         </property>
@@ -2383,10 +2392,12 @@ QPushButton:hover {
 
 QPushButton:pressed {
     background-color: #0D47A1;  /* Darkest blue when pressed */
+    color: white;
 }
 QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
+	color: white;
     border: 2px solid black;       /* White glow/border */
 }</string>
         </property>
