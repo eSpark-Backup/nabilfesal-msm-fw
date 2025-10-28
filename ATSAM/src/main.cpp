@@ -174,6 +174,40 @@ void sendChannelJsonData(uint8_t channel)
     float apparentPower[3]= { m.apparentPower.ApparentPowerValue_A, m.apparentPower.ApparentPowerValue_B, m.apparentPower.ApparentPowerValue_C };
     float posEnergy[3] = { m.activeEnergy.PActiveEnergyValue_kWh_A, m.activeEnergy.PActiveEnergyValue_kWh_B, m.activeEnergy.PActiveEnergyValue_kWh_C };
     float negEnergy[3] = { m.activeEnergy.NActiveEnergyValue_kWh_A, m.activeEnergy.NActiveEnergyValue_kWh_B, m.activeEnergy.NActiveEnergyValue_kWh_C };
+    
+    float reactiveposEnergy[3];
+    float reactivenegEnergy[3];
+    if(m.activeEnergy.ReactiveEnergyValue_kWh_A > 0){
+        reactiveposEnergy[0] = m.activeEnergy.ReactiveEnergyValue_kWh_A;
+        reactivenegEnergy[0] = 0;
+    }
+    else{
+        reactivenegEnergy[0] = m.activeEnergy.ReactiveEnergyValue_kWh_A;
+        reactiveposEnergy[0] = 0;
+    }
+    
+    if(m.activeEnergy.ReactiveEnergyValue_kWh_B > 0){
+        reactiveposEnergy[1] = m.activeEnergy.ReactiveEnergyValue_kWh_B;
+        reactivenegEnergy[1] = 0;
+    }
+    else{
+        reactivenegEnergy[1] = m.activeEnergy.ReactiveEnergyValue_kWh_B;
+        reactiveposEnergy[1] = 0;
+    }
+    
+    if(m.activeEnergy.ReactiveEnergyValue_kWh_C > 0){
+        reactiveposEnergy[2] = m.activeEnergy.ReactiveEnergyValue_kWh_C;
+        reactivenegEnergy[2] = 0;
+    }
+    else{
+        reactivenegEnergy[2] = m.activeEnergy.ReactiveEnergyValue_kWh_C;
+        reactiveposEnergy[2] = 0;
+    }
+    
+    
+//    float reactiveEnergy[3] = { m.activeEnergy.ReactiveEnergyValue_kWh_A, m.activeEnergy.ReactiveEnergyValue_kWh_B, m.activeEnergy.ReactiveEnergyValue_kWh_C };
+    
+    
     float currentTHD[3] = { m.currentTHD.CurrentTHDValue_A, m.currentTHD.CurrentTHDValue_B, m.currentTHD.CurrentTHDValue_C };
     float voltageTHD[3] = { m.voltageTHD.VoltageTHDValue_A, m.voltageTHD.VoltageTHDValue_B, m.voltageTHD.VoltageTHDValue_C };
     float angle[3] = { m.angleDegree.AngleValue_VA_IA, m.angleDegree.AngleValue_VB_IB, m.angleDegree.AngleValue_VC_IC };
@@ -198,8 +232,8 @@ void sendChannelJsonData(uint8_t channel)
                         "\"negative\":%.2f"
                     "},"
                     "\"reactive\":{"
-                        "\"positive\":0,"
-                        "\"negative\":0"
+                        "\"positive\":%.2f,"
+                        "\"negative\":%.2f"
                     "}"
                 "},"
                 "\"thd\":{"
@@ -211,7 +245,7 @@ void sendChannelJsonData(uint8_t channel)
             phases[i],
             cleanFloat(lineVoltage[i]), cleanFloat(rmsVoltage[i]), cleanFloat(frequency[i]), cleanFloat(current[i]),
             cleanFloat(powerFactor[i]), cleanFloat(activePower[i]), cleanFloat(reactivePower[i]), cleanFloat(apparentPower[i]),
-            cleanFloat(posEnergy[i]), cleanFloat(negEnergy[i]),
+            cleanFloat(posEnergy[i]), cleanFloat(negEnergy[i]), cleanFloat(reactiveposEnergy[i]),cleanFloat(reactivenegEnergy[i]),
             cleanFloat(currentTHD[i]), cleanFloat(voltageTHD[i]), cleanFloat(angle[i]),
             (i < 2) ? "," : ""
         );
@@ -402,7 +436,7 @@ void ADE9000SetupForUnit(SPI_CSS_Pin cssPin)
         ADE9000_status[cssPin - 1] = 1;
         ADE9000_hotplug[cssPin - 1] = 1;
         ADE9000_Initialize(cssPin);
-        // ct_ratio_calibration(100, cssPin-1);
+        ct_ratio_calibration(100, cssPin-1);
     }
     else
     {

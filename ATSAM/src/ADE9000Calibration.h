@@ -2,10 +2,11 @@
 #define ADE9000CALIBRATION_H
 
 #define PI 3.14159
-#define NOMINAL_INPUT_VOLTAGE 50       //Nominal Calibrating RMS Voltage on all phases (Vrms)
+#define NOMINAL_INPUT_VOLTAGE 230       //Nominal Calibrating RMS Voltage on all phases (Vrms)
 #define NOMINAL_INPUT_CURRENT 5         //Nominal Calibrating RMS Current on all phases (Irms)
 #define INPUT_FREQUENCY 	  50              //Nominal Calibrating frequency. Used to calculate Omega for phase calibration.Ensure ACCMODE register is set to correct frequency
 #define CALIBRATION_ANGLE_DEGREES 60	//Calibration Angle in Degrees.Used for phase calibration
+#define RMS_VOLTAGE_LIMIT 50       // Limit of RMS Voltage on all phases (Vrms)
 /*Transfer function*/
 
 /*Full scale Codes referred from Datasheet.Respective digital codes are produced when ADC inputs are at full scale. Donot Change. */
@@ -40,7 +41,8 @@ Voltage transfer function = 1/801= 0.001248 ~=0.00125
 ****************************************************************************************************************/ 
 #define R_HIGH 801500.0f
 #define R_LOW 1000.0f
-#define VOLTAGE_TRANSFER_FUNCTION  ((1.0f / (R_HIGH + R_LOW)) * R_LOW) //The RMS voltage at the ADC input pins per input RMS voltage (V/V) 
+#define VOLTAGE_TRANSFER_FUNCTION  (R_LOW / (R_HIGH + R_LOW)) //The RMS voltage at the ADC input pins per input RMS voltage (V/V)
+//#define VOLTAGE_TRANSFER_FUNCTION  ((1.0f / (R_HIGH + R_LOW)) * R_LOW) //The RMS voltage at the ADC input pins per input RMS voltage (V/V) 
 // #define VOLTAGE_TRANSFER_FUNCTION  0.001248439f
 /****************************************************************************************************************
 									Constants: Do not change 
