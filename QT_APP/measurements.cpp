@@ -11,6 +11,7 @@
 #include <QDir>
 #include <QFile>
 #include <QKeyEvent>
+#include "calibrationdialog.h"
 
 Measurements::Measurements(QWidget *parent)
     : QWidget(parent)
@@ -472,5 +473,14 @@ void Measurements::on_toolButton_12_clicked()
     keyboard->setTarget(ui->ch12);
     Utils::keySound();
     keyboard->show();
+}
+
+
+void Measurements::on_pushButton_clicked()
+{
+    CalibrationDialog calDialog(this);
+    connect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
+    calDialog.exec();
+    disconnect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
 }
 

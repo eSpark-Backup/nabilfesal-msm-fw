@@ -66,6 +66,8 @@ private slots:
 
     void on_toolButton_12_clicked();
 
+    void on_pushButton_clicked();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     
