@@ -77,8 +77,6 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
-
     Utils::mainSound();
     showFullScreen();
 
@@ -629,6 +627,7 @@ void MainWindow::handlePostProgress()
             connect(registration, &Registration::registrationComplete, this, [this]() {
                 if (!channels)
                     channels = new ChannelsHome(hardwareVersion, softwareVersion);
+                connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
                 connectChannels(channels);
                 channels->showFullScreen();
                 registration->hide();
@@ -640,6 +639,8 @@ void MainWindow::handlePostProgress()
         return;
     }
 
+    connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
+    
     // Normal flow when system already configured
     if (!settings) {
         settings = new DeviceSettings();
