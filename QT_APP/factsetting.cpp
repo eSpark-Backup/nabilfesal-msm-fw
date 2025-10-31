@@ -645,6 +645,7 @@ void FactSetting::runFleetProvisionerAsync()
 
         if (demoSuccess && exitedNormally) {
             Toast::show("[MQTTS] Fleet Provisioning Success!", this, Toast::Info);
+            checkCertificates();
             emit aws_mqtts_load();
         } else {
             qWarning() << "[Fleet] Provisioning failed.";
@@ -775,16 +776,22 @@ void FactSetting::checkCertificates()
 {
     #if defined(BUILD_X86)
         QString claimBasePath = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/claim_certs/";
+        QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
     #elif defined(BUILD_V3S)
         QString claimBasePath = "/MSM/potential-pancake/MSM/creds/claim_certs/";
+        QString basePath = "/MSM/potential-pancake/MSM/creds/prov_certs/";
     #endif
     
-    QString caPath   = claimBasePath + "AmazonRootCA1.pem";
-    QString certPath = claimBasePath + "claim_cert.pem";
-    QString keyPath  = claimBasePath + "claim_private.key";
+    QString caPath      = claimBasePath + "AmazonRootCA1.pem";
+    QString certPath    = claimBasePath + "claim_cert.pem";
+    QString keyPath     = claimBasePath + "claim_private.key";
+    QString prvCertPath = basePath + "deviceCert.pem";
+    QString prvkeyPath  = basePath + "privateKey.pem";
 
     ui->ca1->setChecked(QFile::exists(caPath));
     ui->claim->setChecked(QFile::exists(certPath));
     ui->key->setChecked(QFile::exists(keyPath));
+    ui->devCertChkBox->setChecked(QFile::exists(prvCertPath));
+    ui->devKeyChkBox->setChecked(QFile::exists(prvkeyPath));
 }
 
