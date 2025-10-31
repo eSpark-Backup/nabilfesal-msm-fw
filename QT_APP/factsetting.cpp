@@ -94,21 +94,21 @@ FactSetting::FactSetting(QWidget *parent)
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(280, 1);
+    label->move(285, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_PORT", ui->sftp_port);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(250, 1);
+    label->move(260, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_USER", ui->sftp_user);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(250, 1);
+    label->move(260, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SFTP_PASSWORD", ui->sftp_pass);
@@ -513,6 +513,7 @@ void FactSetting::on_mqtts_load_btn_clicked(bool msgBox)
 
     // Fill UI fields (port skipped)
     ui->mqtts_endpoint->setText(obj.value("endpoint").toString());
+    ui->mqtts_endpoint->setCursorPosition(0);
     ui->mqtts_interval->setText(obj.value("interval").toString());
     // Port is constant and not editable
 
