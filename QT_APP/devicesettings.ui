@@ -1031,7 +1031,7 @@ QPushButton:focus {
                   <item>
                    <widget class="QFrame" name="horizontalFrame_14">
                     <property name="styleSheet">
-                     <string notr="true">background: #f2f2f2;
+                     <string notr="true">background: #e6e6e6;
     border: 1px solid #CCC;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 2px;
@@ -1099,7 +1099,7 @@ QPushButton:focus {
                   <item>
                    <widget class="QFrame" name="horizontalFrame_15">
                     <property name="styleSheet">
-                     <string notr="true">background: #f2f2f2;
+                     <string notr="true">background: #e6e6e6;
     border: 1px solid #CCC;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 2px;
@@ -1433,7 +1433,7 @@ QPushButton:focus {
                   <enum>Qt::ClickFocus</enum>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">background: #F2F2F2;
+                  <string notr="true">background: #e6e6e6;
     border: 1px solid #CCC;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
@@ -1999,7 +1999,7 @@ QPushButton:focus {
                     <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
-                    <string notr="true">background: #f2f2f2;
+                    <string notr="true">background: #e6e6e6;
     border: 1px solid #CCC;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
@@ -2251,7 +2251,7 @@ QPushButton:focus {
                 <number>10</number>
                </property>
                <property name="topMargin">
-                <number>10</number>
+                <number>0</number>
                </property>
                <property name="rightMargin">
                 <number>10</number>
@@ -2293,7 +2293,7 @@ QPushButton:focus {
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">background: #f2f2f2;
+                  <string notr="true">background: #e6e6e6;
     border: 1px solid #CCC;        /* Blue thin border */
     border-radius: 4px;
     padding: 6px 8px;
@@ -2323,7 +2323,7 @@ QPushButton:focus {
                   <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">background: #f2f2f2;
+                  <string notr="true">background: #e6e6e6;
     border: 1px solid #CCC;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
@@ -2353,7 +2353,7 @@ QPushButton:focus {
                   <enum>Qt::NoFocus</enum>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">background: #f2f2f2;
+                  <string notr="true">background: #e6e6e6;
     border: 1px solid #CCC;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
