@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include "utils.h"
+#include <QRegularExpressionValidator>
 
 CalibrationDialog::CalibrationDialog(QWidget *parent)
     : QDialog(parent)
@@ -19,6 +20,11 @@ CalibrationDialog::CalibrationDialog(QWidget *parent)
 
     ui->v_input->installEventFilter(this);
     ui->a_input->installEventFilter(this);
+
+    QRegularExpression rx(R"(^-?\d+(\.\d+)?$)");
+    QValidator *validator = new QRegularExpressionValidator(rx, this);
+    ui->v_input->setValidator(validator);
+    ui->a_input->setValidator(validator);
 
     connect(ui->v_input, &QLineEdit::editingFinished, this, [=]() {
         ui->v_input->clearFocus();

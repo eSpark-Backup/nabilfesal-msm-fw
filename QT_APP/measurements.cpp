@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QKeyEvent>
 #include "calibrationdialog.h"
+#include <QRegularExpressionValidator>
 
 Measurements::Measurements(QWidget *parent)
     : QWidget(parent)
@@ -39,7 +40,11 @@ Measurements::Measurements(QWidget *parent)
         label->setText("%");
     }
 
+    QRegularExpression rx(R"(^-?\d+(\.\d+)?$)");
+    QValidator *validator = new QRegularExpressionValidator(rx, this);
+
     for (QLineEdit *edit : edits) {
+        edit->setValidator(validator);
         edit->installEventFilter(this);
         connect(edit, &QLineEdit::editingFinished, this, [=]() {
             edit->clearFocus();
