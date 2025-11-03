@@ -10,7 +10,7 @@
   "channels": [
     {
       "ID": 1,
-      "status": true,
+      "status": <boolean>,
       "temperature": 27.5,
       "data": {
         "phase_a": {
@@ -100,7 +100,7 @@
     "device_uuid": "ESP90000005",
     "data":[
         {
-            "command": true
+            "command": <boolean>
         }
     ]
 }
@@ -116,8 +116,10 @@
         {
             "device_imei": "865788062388016",
             "device_ip": "10.99.72.185",
-            "mqtt_status": true,
-            "sftp_status": false
+            "mqtt_status": <boolean>,
+            "sftp_status": <boolean>,
+            "ntp_status": <string>,
+            "gsm_status": <string>,
         }
     ]
 }
@@ -139,27 +141,27 @@
     ]
 }
 ```
-## MQTT Info (Existing but needs to be changed as per MQTTs)
+## MQTT Info
 ### Method
 - Publish
 - Subscribe
 ### Structure
 ```
 {
-    "device_uuid": "ESP90000005",
-    "data":[
-        {
-            "broker_ip": "thingsboard.cloud",
-            "broker_port": 1883
-            "broker_user": "OFP-INDKOM",
-            "broker_pass": "IND10",
-            "data_interval" : 900,
-            "mqtt_topic": "v1/devices/me/telemetry"
-        }
-    ]
+  "device_uuid": "ESP90000005",
+  "data":[
+    {
+        "broker_ip": "thingsboard.cloud",
+        "broker_port": 1883
+        "broker_user": "OFP-INDKOM",
+        "broker_pass": "IND10",
+        "data_interval" : 900,
+        "mqtt_topic": "v1/devices/me/telemetry"
+    }
+  ]
 }
 ```
-## SFTP Info (Existing but needs to be changed)
+## SFTP Info
 ### Method
 - Publish
 - Subscribe
@@ -168,13 +170,65 @@
 {
     "device_uuid": "ESP90000005",
     "data": [
-        {
-            "server_ip": "ap-southeast-1.sftpcloud.io",
-            "server_port": 22,
-            "username": "ofp-msm",
-            "password": "root123456",
-            "data_interval": 900
+      {
+          "server_ip": "ap-southeast-1.sftpcloud.io",
+          "server_port": 22,
+          "username": "ofp-msm",
+          "password": "root123456",
+          "data_interval": 900
+      }
+    ]
+}
+```
+## MQTTs Info
+### Method
+- Publish
+- Subscribe
+### Structure
+```
+{
+    "device_uuid": "ESP90000005",
+    "data": [
+      {
+        "broker_ip": "a1dxcxg260l7m-ats.iot.eu-north-1.amazonaws.com",
+        "broker_port": 8883,
+        "data_interval": 10,
+        "credentials": {
+            "root_ca": <boolean>,
+            "claim_cert": <boolean>,
+            "claim_key": <boolean>
         }
+      }
+    ]
+}
+```
+## OTA Info
+### Method
+- Publish
+### Structure
+```
+{
+    "device_uuid": "ESP90000005",
+    "data": [  
+      {
+        "current_version": "2.0.7",
+        "last_update": {
+            "date": "2025-10-28",
+            "time": "16:02:37"
+        }
+      }
+    ]
+}
+```
+- Subscribe
+### Structure
+```
+{
+    "device_uuid": "ESP90000005",
+    "data": [  
+      {
+        "ota_version": "2.0.8",
+      }
     ]
 }
 ```
