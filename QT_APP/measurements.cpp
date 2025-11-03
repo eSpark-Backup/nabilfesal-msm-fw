@@ -1,7 +1,6 @@
 #include "measurements.h"
 #include "ui_measurements.h"
 #include "factdialog.h"
-#include "rebootdialog.h"
 #include "utils.h"
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -19,7 +18,6 @@ Measurements::Measurements(QWidget *parent)
 {
     ui->setupUi(this);
     ui->header_label->setText("CT RATIO SETTINGS");
-    ui->ration_btn->setFocus();
     ui->verticalStackedWidget->setCurrentIndex(0);
     isRatioActivated = true;
 
@@ -104,56 +102,6 @@ void Measurements::on_pushButton_14_clicked()
     FactDialog dialog(this);
     dialog.setLabel(std::string("Please make sure to input the correct \n nominal current and reboot the system."));
     dialog.exec();
-}
-
-
-void Measurements::on_reboot_btn_clicked()
-{
-    RebootDialog reboot(this);
-    reboot.exec();
-}
-
-
-void Measurements::on_ration_btn_clicked()
-{
-    ui->header_label->setText("CT RATIO SETTINGS");
-    ui->verticalStackedWidget->setCurrentIndex(0);
-    ui->ration_btn->setFocus();
-    isRatioActivated = true;
-    isVOffsetActivated = false;
-    isIOffsetActivated = false;
-    on_load_btn_clicked();
-}
-
-
-void Measurements::on_i_off_btn_clicked()
-{
-    ui->header_label->setText("I-OFFSET SETTINGS");
-    ui->verticalStackedWidget->setCurrentIndex(0);
-    ui->i_off_btn->setFocus();
-    isRatioActivated = false;
-    isVOffsetActivated = false;
-    isIOffsetActivated = true;
-    on_load_btn_clicked();
-}
-
-
-void Measurements::on_v_off_btn_clicked()
-{
-    ui->header_label->setText("V-OFFSET SETTINGS");
-    ui->verticalStackedWidget->setCurrentIndex(0);
-    ui->v_off_btn->setFocus();
-    isRatioActivated = false;
-    isVOffsetActivated = true;
-    isIOffsetActivated = false;
-    on_load_btn_clicked();
-}
-
-
-void Measurements::on_cal_btn_clicked()
-{
-    ui->verticalStackedWidget->setCurrentIndex(1);
-    ui->cal_btn->setFocus();
 }
 
 
@@ -474,13 +422,3 @@ void Measurements::on_toolButton_12_clicked()
     Utils::keySound();
     keyboard->show();
 }
-
-
-void Measurements::on_pushButton_clicked()
-{
-    CalibrationDialog calDialog(this);
-    connect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
-    calDialog.exec();
-    disconnect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
-}
-

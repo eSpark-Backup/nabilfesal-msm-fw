@@ -75,3 +75,18 @@ void CalibrationDialog::on_pushButton_clicked()
     this->close();
 }
 
+
+void CalibrationDialog::on_sendpushBtn_clicked()
+{
+    CalibrationDialog calDialog(this);
+    connect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
+    calDialog.exec();
+    disconnect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
+}
+
+
+void CalibrationDialog::on_backPushBtn_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(0);
+}
+

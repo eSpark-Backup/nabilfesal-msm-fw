@@ -41,6 +41,9 @@
        </property>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <property name="rightMargin">
+          <number>120</number>
+         </property>
          <item>
           <widget class="QPushButton" name="back_1">
            <property name="sizePolicy">
@@ -95,7 +98,7 @@ QPushButton:focus {
             </font>
            </property>
            <property name="text">
-            <string>CT RATIO SETTINGS</string>
+            <string>CT-RATIO SETTINGS</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -181,8 +184,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 01</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -212,7 +215,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -231,7 +234,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -240,6 +243,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s1">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -311,8 +326,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 02</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -342,7 +357,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -361,7 +376,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -370,6 +385,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s2">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -441,8 +468,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 03</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -472,7 +499,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -491,7 +518,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -500,6 +527,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s3">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -532,7 +571,7 @@ color: rgb(239, 41, 41);</string>
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>0</height>
+                <height>80</height>
                </size>
               </property>
               <property name="maximumSize">
@@ -578,8 +617,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 04</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -609,7 +648,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -628,7 +667,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -637,6 +676,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s4">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -708,8 +759,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 05</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -739,7 +790,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -758,7 +809,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -767,6 +818,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s5">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -838,8 +901,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 06</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -869,7 +932,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -888,7 +951,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -897,6 +960,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s6">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -975,8 +1050,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 07</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -1006,7 +1081,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -1025,7 +1100,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1034,6 +1109,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s7">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1105,8 +1192,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 08</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -1136,7 +1223,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -1155,7 +1242,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1164,6 +1251,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s8">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1235,8 +1334,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 09</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -1266,7 +1365,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -1285,7 +1384,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1294,6 +1393,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s9">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1372,8 +1483,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 10</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -1403,7 +1514,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -1422,7 +1533,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1431,6 +1542,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s10">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1502,8 +1625,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 11</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -1533,7 +1656,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -1552,7 +1675,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1561,6 +1684,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s11">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1632,8 +1767,8 @@ border-radius: 20px;</string>
                     <string>CHANNEL 12</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/icons/V.jpg</normaloff>:/icons/V.jpg</iconset>
+                    <iconset>
+                     <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -1663,7 +1798,7 @@ border-radius: 20px;</string>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>100</width>
+                     <width>140</width>
                      <height>16777215</height>
                     </size>
                    </property>
@@ -1682,7 +1817,7 @@ color: rgb(239, 41, 41);
 border: none</string>
                    </property>
                    <property name="text">
-                    <string>0</string>
+                    <string>0.00</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1691,6 +1826,18 @@ border: none</string>
                  </item>
                  <item>
                   <widget class="QLabel" name="s12">
+                   <property name="minimumSize">
+                    <size>
+                     <width>70</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>70</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
                    <property name="font">
                     <font>
                      <family>Gilroy</family>
@@ -1719,6 +1866,9 @@ color: rgb(239, 41, 41);</string>
        <item>
         <widget class="QFrame" name="frame">
          <layout class="QHBoxLayout" name="horizontalLayout_36">
+          <property name="spacing">
+           <number>500</number>
+          </property>
           <item>
            <widget class="QPushButton" name="load_btn">
             <property name="sizePolicy">
@@ -1729,8 +1879,8 @@ color: rgb(239, 41, 41);</string>
             </property>
             <property name="minimumSize">
              <size>
-              <width>0</width>
-              <height>40</height>
+              <width>120</width>
+              <height>60</height>
              </size>
             </property>
             <property name="focusPolicy">
@@ -1774,8 +1924,8 @@ QPushButton:focus {
             </property>
             <property name="minimumSize">
              <size>
-              <width>0</width>
-              <height>40</height>
+              <width>120</width>
+              <height>60</height>
              </size>
             </property>
             <property name="focusPolicy">
@@ -1815,658 +1965,12 @@ QPushButton:focus {
       </layout>
      </widget>
      <widget class="QWidget" name="page_3">
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QFrame" name="horizontalFrame">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QPushButton" name="back_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>120</width>
-              <height>60</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <family>Gilroy</family>
-              <pointsize>-1</pointsize>
-             </font>
-            </property>
-            <property name="focusPolicy">
-             <enum>Qt::TabFocus</enum>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    background-color: #1E88E5;   /* Blue */
-    color: white;               /* White text */
-    border: none;               /* No border line */
-    border-radius: 10px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-}
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-    border: 2px solid black;       /* White glow/border */
-}</string>
-            </property>
-            <property name="text">
-             <string>Back</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="font">
-             <font>
-              <family>Gilroy</family>
-              <pointsize>16</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>MEASUREMENT CALIBRATION</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QFrame" name="horizontalFrame">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QLabel" name="label_14">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>250</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">
-image: url(:/icons/Calibration.png);</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QFrame" name="DeviceInfoFrame_5">
-            <property name="minimumSize">
-             <size>
-              <width>350</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">background: white;                /* White background */
-    border: 1px solid #dcdcdc;        /* Light grey border */
-    border-radius: 6px;</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_12">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_12">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="focusPolicy">
-                <enum>Qt::StrongFocus</enum>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">background-color: #1E88E5;        /* Blue strip at the top */
-    color: white;                     /* White text */
-    font-size: 16px;
-    font-weight: bold;
-    padding: 6px;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="verticalFrame_5">
-               <property name="styleSheet">
-                <string notr="true">background: white;                /* White background */
-    border: 1px solid #ffffff;        /* Light grey border */
-    border-radius: 6px; </string>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayout_13">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>10</number>
-                </property>
-                <property name="topMargin">
-                 <number>10</number>
-                </property>
-                <property name="rightMargin">
-                 <number>10</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>20</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_13">
-                  <property name="font">
-                   <font>
-                    <family>Gilroy</family>
-                    <pointsize>13</pointsize>
-                   </font>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(255, 255, 255);</string>
-                  </property>
-                  <property name="text">
-                   <string>MEASUREMENT CALIBRATION</string>
-                  </property>
-                  <property name="alignment">
-                   <set>Qt::AlignHCenter|Qt::AlignTop</set>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_5">
-                  <property name="spacing">
-                   <number>20</number>
-                  </property>
-                  <item>
-                   <widget class="QPushButton" name="pushButton_13">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>80</height>
-                     </size>
-                    </property>
-                    <property name="focusPolicy">
-                     <enum>Qt::TabFocus</enum>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">QPushButton {
-    background-color: #D9D9D9;   /* Grey */
-    color: black;               /* White text */
-    border: 1px solid #147FCC;               /* No border line */
-    border-radius: 8px;        /* Rounded corners */
-    padding: 4px 16px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-}
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-    border: 2px solid black;       /* White glow/border */
-}</string>
-                    </property>
-                    <property name="text">
-                     <string>V-CALIBRATION</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="pushButton_14">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>16777215</width>
-                      <height>80</height>
-                     </size>
-                    </property>
-                    <property name="focusPolicy">
-                     <enum>Qt::TabFocus</enum>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">QPushButton {
-    background-color: #D9D9D9;   /* Grey */
-    color: black;               /* White text */
-    border: 1px solid #147FCC;               /* No border line */
-    border-radius: 8px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-}
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-    border: 2px solid black;       /* White glow/border */
-}</string>
-                    </property>
-                    <property name="text">
-                     <string>I-CALIBRATION</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item>
-                 <spacer name="verticalSpacer_2">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>70</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QFrame" name="horizontalFrame">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_34">
-                   <item>
-                    <widget class="QPushButton" name="pushButton">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>0</width>
-                       <height>60</height>
-                      </size>
-                     </property>
-                     <property name="styleSheet">
-                      <string notr="true">QPushButton {
-    background-color: #D9D9D9;   /* Grey */
-    color: black;               /* White text */
-    border: 1px solid #147FCC;               /* No border line */
-    border-radius: 8px;        /* Rounded corners */
-    padding: 4px 16px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-}
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-    border: 2px solid black;       /* White glow/border */
-}</string>
-                     </property>
-                     <property name="text">
-                      <string>Perform Calibration</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
+      <layout class="QVBoxLayout" name="verticalLayout_2"/>
      </widget>
-    </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="verticalFrame">
-     <property name="minimumSize">
-      <size>
-       <width>150</width>
-       <height>0</height>
-      </size>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="spacing">
-       <number>5</number>
-      </property>
-      <property name="leftMargin">
-       <number>1</number>
-      </property>
-      <property name="topMargin">
-       <number>50</number>
-      </property>
-      <item>
-       <widget class="QPushButton" name="ration_btn">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="focusPolicy">
-         <enum>Qt::TabFocus</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
-    background-color: #D9D9D9;   /* Grey */
-    color: black;               /* White text */
-    border: 1px solid #147FCC;               /* No border line */
-    border-radius: 30px;        /* Rounded corners */
-      padding: 6px 20px;        /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;    
-    color: white;  
-}
-
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-    color: white;
-    border: 2px solid black;       /* White glow/border */
-}</string>
-        </property>
-        <property name="text">
-         <string>Ratio</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="v_off_btn">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="focusPolicy">
-         <enum>Qt::TabFocus</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
-    background-color: #D9D9D9;   /* Grey */
-    color: black;               /* White text */
-    border: 1px solid #147FCC;               /* No border line */
-    border-radius: 30px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-	color: white;
-}
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-	color: white;
-    border: 2px solid black;       /* White glow/border */
-}</string>
-        </property>
-        <property name="text">
-         <string>V-Offset</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="i_off_btn">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="focusPolicy">
-         <enum>Qt::TabFocus</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
-    background-color: #D9D9D9;   /* Grey */
-    color: black;               /* White text */
-    border: 1px solid #147FCC;               /* No border line */
-    border-radius: 30px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-	color: white;
-}
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-	color: white;
-    border: 2px solid black;       /* White glow/border */
-}</string>
-        </property>
-        <property name="text">
-         <string>I-Offset</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="cal_btn">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="focusPolicy">
-         <enum>Qt::TabFocus</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
-    background-color: #D9D9D9;   /* Grey */
-    color: black;               /* White text */
-    border: 1px solid #147FCC;               /* No border line */
-    border-radius: 30px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-	color: white;
-}
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-	color: white;
-    border: 2px solid black;       /* White glow/border */
-}</string>
-        </property>
-        <property name="text">
-         <string>Calibration</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="reboot_btn">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="focusPolicy">
-         <enum>Qt::TabFocus</enum>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
-    background-color: #59E43415;   /* Grey */
-    color: black;               /* White text */
-    border: 1px solid #147FCC;               /* No border line */
-    border-radius: 30px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-    color: white;
-}
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-	color: white;
-    border: 2px solid black;       /* White glow/border */
-}</string>
-        </property>
-        <property name="text">
-         <string>REBOOT</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

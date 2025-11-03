@@ -27,6 +27,18 @@ private slots:
 
     void on_system_clicked();
 
+    void on_v_cal_btn_clicked();
+
+    void on_ration_btn_clicked();
+
+    void on_v_off_btn_clicked();
+
+    void on_i_off_btn_clicked();
+
+    void on_i_cal_btn_clicked();
+
+    void on_reboot_btn_clicked();
+
 private:
     Ui::FactorySettings *ui;
 };

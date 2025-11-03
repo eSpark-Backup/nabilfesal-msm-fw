@@ -28,16 +28,6 @@ private slots:
 
     void on_pushButton_14_clicked();
 
-    void on_reboot_btn_clicked();
-
-    void on_ration_btn_clicked();
-
-    void on_i_off_btn_clicked();
-
-    void on_v_off_btn_clicked();
-
-    void on_cal_btn_clicked();
-
     void on_load_btn_clicked();
 
     void on_save_btn_clicked();

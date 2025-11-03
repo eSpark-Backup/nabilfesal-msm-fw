@@ -117,7 +117,7 @@ QPushButton:focus {
     </layout>
    </item>
    <item>
-    <widget class="QFrame" name="horizontalFrame">
+    <widget class="QFrame" name="horizontalFrame1">
      <property name="minimumSize">
       <size>
        <width>700</width>
@@ -213,7 +213,7 @@ QPushButton:focus {
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="horizontalFrame">
+    <widget class="QFrame" name="horizontalFrame2">
      <property name="minimumSize">
       <size>
        <width>700</width>
@@ -415,7 +415,7 @@ QPushButton:focus {
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="horizontalFrame">
+    <widget class="QFrame" name="horizontalFrame3">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
        <horstretch>0</horstretch>

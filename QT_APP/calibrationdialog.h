@@ -22,6 +22,8 @@ signals:
 private slots:
     void on_pushButton_clicked();
 
+    void on_backPushBtn_clicked();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
