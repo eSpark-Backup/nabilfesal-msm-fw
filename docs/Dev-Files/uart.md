@@ -177,3 +177,72 @@ channel-N\n
 ```
 "Voltage Offset updated successfully!"
 ```
+## Voltage Calibration
+### Transmitting
+```
+{
+  "command": "v-calibration",
+  "voltage": {
+    "phase_a": <float>,
+    "phase_b": <float>,
+    "phase_c": <float>
+  }
+}
+```
+### Receiving
+```
+{
+  "command": "v-calibration",
+  "voltage": {
+    "channels": [
+      {
+        "ID": <unsigned int>,
+        "phase_a": <hex>,
+        "phase_b": <hex>,
+        "phase_c": <hex>
+      },
+      {
+        "ID": <unsigned int>,
+        "phase_a": <hex>,
+        "phase_b": <hex>,
+        "phase_c": <hex>
+      },
+    ]
+  }
+}
+```
+## Current Calibration
+### Transmitting
+```
+{
+  "command": "i-calibration",
+  "current": {
+    "ID": <unsigned int>,
+    "phase_a": <float>,
+    "phase_b": <float>,
+    "phase_c": <float>
+  }
+}
+```
+### Receiving
+```
+{
+  "command": "i-calibration",
+  "current": {
+    "channels": [
+      {
+        "ID": <unsigned int>,
+        "phase_a": <hex>,
+        "phase_b": <hex>,
+        "phase_c": <hex>
+      },
+      {
+        "ID": <unsigned int>,
+        "phase_a": <hex>,
+        "phase_b": <hex>,
+        "phase_c": <hex>
+      },
+    ]
+  }
+}
+```
