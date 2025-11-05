@@ -20,12 +20,13 @@ signals:
     void adminLoginSuccess();
     void factoryLoginSuccess();
     void loadChannels();
+
 private slots:
     void on_loginButton_clicked();
-
     void on_pushButton_clicked();
 
 protected:
+    void showEvent(QShowEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:

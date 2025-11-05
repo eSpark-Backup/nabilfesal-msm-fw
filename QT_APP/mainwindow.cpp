@@ -532,6 +532,8 @@ void MainWindow::onFactoryLogin()
 
     // exit back to login
     connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
         isLogin = false;
         login->showFullScreen();
         factorySettings->hide();
@@ -580,6 +582,8 @@ void MainWindow::onFactoryLogin()
 
     // load fact settings (factory -> factSettings)
     connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
         if (!factSettings)
             factSettings = new FactSetting;
         connectFactSettings(factSettings);

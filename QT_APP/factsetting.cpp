@@ -199,6 +199,16 @@ FactSetting::FactSetting(QWidget *parent)
     }
 }
 
+void FactSetting::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    ui->exit_btn->setFocusPolicy(Qt::NoFocus);
+    setFocus(Qt::OtherFocusReason);
+    if (keyboard && keyboard->isVisible()) {
+        keyboard->hide();
+    }
+}
+
 bool FactSetting::eventFilter(QObject *obj, QEvent *event)
 {
     // Then: handle QLineEdit focus/keyboard logic

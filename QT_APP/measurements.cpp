@@ -90,6 +90,8 @@ void Measurements::on_back_1_clicked()
 
 void Measurements::on_load_btn_clicked()
 {
+    ui->back_1->setFocusPolicy(Qt::NoFocus);
+    setFocus(Qt::OtherFocusReason);
     if (isRatioActivated)
     {
         for (QLabel *label : signEdits) {

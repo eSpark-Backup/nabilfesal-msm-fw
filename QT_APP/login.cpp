@@ -70,6 +70,16 @@ LoginWidget::~LoginWidget()
     delete ui;
 }
 
+void LoginWidget::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    ui->pushButton->setFocusPolicy(Qt::NoFocus);
+    setFocus(Qt::OtherFocusReason);
+    if (keyboard && keyboard->isVisible()) {
+        keyboard->hide();
+    }
+}
+
 bool LoginWidget::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == ui->passwordLineEdit) {

@@ -27,6 +27,7 @@ signals:
     void runFleetProvisioning();
 
 protected:
+    void showEvent(QShowEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 public slots:
