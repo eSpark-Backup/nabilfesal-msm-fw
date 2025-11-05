@@ -449,6 +449,21 @@ void MainWindow::onGenericResponseReady(const QString &resp)
         responseWaitTimer->stop();
     }
 
+     // Check if response is valid JSON
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(resp.toUtf8(), &parseError);
+
+    if (parseError.error == QJsonParseError::NoError) {
+        qDebug() << "Valid JSON received:" << resp;
+        QJsonObject obj = doc.object();
+        if(gainCalibrator)
+            gainCalibrator->parse_and_save_response(obj);
+   
+    } else {
+        qDebug() << "Invalid JSON response:" << resp;
+        qDebug() << "Parse error:" << parseError.errorString();
+    }
+
     if (!startApp) {
         FactDialog dialog(this);
         dialog.setLabel(resp.toStdString());
@@ -523,6 +538,8 @@ void MainWindow::onFactoryLogin()
     });
 
     connect(factorySettings, &FactorySettings::calibrate, this, [this](bool current) {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
         gainCalibrator->loadCalibrationScreen(current);
         gainCalibrator->showFullScreen();
         factorySettings->hide();
@@ -531,23 +548,31 @@ void MainWindow::onFactoryLogin()
     connect(gainCalibrator, &CalibrationDialog::requestSerialCommand, measure, &Measurements::requestSerialCommand);
 
     connect(gainCalibrator, &CalibrationDialog::exitScreen, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
         gainCalibrator->hide();
         factorySettings->showFullScreen();
     });
 
     connect(factorySettings, &FactorySettings::ctRatio, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
         factorySettings->hide();
         measure->showFullScreen();
         measure->ration_btn_clicked();
     });
 
     connect(factorySettings, &FactorySettings::i_offset, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
         factorySettings->hide();
         measure->showFullScreen();
         measure->i_off_btn_clicked();
     });
 
     connect(factorySettings, &FactorySettings::v_offset, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
         factorySettings->hide();
         measure->showFullScreen();
         measure->v_off_btn_clicked();
@@ -563,6 +588,8 @@ void MainWindow::onFactoryLogin()
     });
 
     connect(measure, &Measurements::measureExit, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
         factorySettings->showFullScreen();
         measure->hide();
     });

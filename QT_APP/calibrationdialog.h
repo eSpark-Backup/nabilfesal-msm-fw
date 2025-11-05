@@ -15,6 +15,7 @@ class CalibrationDialog : public QWidget
 public:
     explicit CalibrationDialog(QWidget *parent = nullptr);
     void loadCalibrationScreen(bool isEnable);
+    void parse_and_save_response(const QJsonObject &response);
     ~CalibrationDialog();
 
 signals:
