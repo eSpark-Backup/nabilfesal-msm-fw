@@ -449,7 +449,6 @@ void MainWindow::onGenericResponseReady(const QString &resp)
         responseWaitTimer->stop();
     }
 
-     // Check if response is valid JSON
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(resp.toUtf8(), &parseError);
 
