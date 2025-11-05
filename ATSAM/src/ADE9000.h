@@ -44,10 +44,19 @@
 //#define ADE9000_EP_CFG 0xE001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
 
 #define ADE9000_EGY_TIME 0x1FFF 				/*Accumulate 8000 samples*/
-#define ADE9000_EP_CFG 0x0001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
+#define ADE9000_EP_CFG 0x0001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/    // EGY_LD_ACCUM
 
 /*Waveform buffer Settings*/
 #define ADE9000_WFB_CFG 0x1000			/*Neutral current samples enabled, Resampled data enabled*/
+
+
+#define ADE9000_OFFSET_CALIBRATION   0x20
+#define ADE9000_OFFSET_RMS_POWER     0x20
+#define ADE9000_OFFSET_ENERGY        0x3C
+#define ADE9000_OFFSET_PERIOD        0x01
+#define ADE9000_OFFSET_WAVEFORM      0x02
+
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Data Types
@@ -65,12 +74,29 @@ typedef enum {
     SPI_CSS9,
     SPI_CSS10,
     SPI_CSS11,
-    SPI_CSS12
+    SPI_CSS12,
 } SPI_CSS_Pin;
 
+typedef enum {
+    PHASE_A,
+    PHASE_B,
+    PHASE_C,
+    TOTAL_PHASES
+} ADE9000_phase;
+
+typedef enum {
+    VOLTAGE_PARAMETER,
+    CURRENT_PARAMETER,
+    POWER_PARAMETER,
+    ENERGY_PARAMETER,
+    PERIOD_PARAMETER,
+    WAVEFORM_PARAMETER,
+    CALIBRATION_PARAMETER,
+} ADE9000_parameter_type;
+
 typedef struct {
-    float cal_irms_cc;
     float cal_vrms_cc;
+    float cal_irms_cc;
     float cal_power_cc;
     float cal_energy_cc;
 } Calibration_regs;
@@ -214,14 +240,20 @@ typedef struct{
     float setIOffset;
     int32_t setVOffset;
 } ChannelConfig;
-extern ChannelConfig channelConfig[12];
+extern ChannelConfig channelConfig[TOTAL_ADE9000_UNITS];
+
+extern uint32_t reg_values[TOTAL_ADE9000_UNITS][TOTAL_PHASES];            // for storing register values during calibration, can be used elsewhere if needed
 
 // *****************************************************************************
 // *****************************************************************************
 // Section: System Functions
 // *****************************************************************************
 // *****************************************************************************
+SPI_CSS_Pin get_css_pin(uint8_t channel);
 void SPI_CSS_Control(SPI_CSS_Pin pin, bool set) ;
+uint32_t ade9000_get_phase_register(uint32_t base_addr, ADE9000_phase phase, ADE9000_parameter_type parameter);
+
+
 void SPI_Write(uint16_t address, uint32_t data, bool is32Bit, SPI_CSS_Pin css_pin);
 uint32_t SPI_Read(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin);
 uint32_t SPI_Read_Energy(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin);
@@ -229,6 +261,9 @@ uint32_t SPI_Read_Energy(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin);
 bool IsADE9000(SPI_CSS_Pin css_pin);
 void ADE9000_Initialize(SPI_CSS_Pin css_pin);
 
+int32_t calculate_gain_reg_value(ADE9000_parameter_type parameter, ADE9000_phase phase, uint32_t expected_reg_value, uint8_t channel);
+void current_gain_calibration(float current, uint8_t channel, ADE9000_phase phase);
+void voltage_gain_calibration(float voltage, ADE9000_phase phase);
 //void ct_ratio_calibration(uint16_t ratio);
 void ct_ratio_calibration(uint16_t ratio, uint8_t channel);
 
@@ -258,7 +293,6 @@ void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin);
 
 void ReadTempRegnValue(TemperatureRegs *Data, SPI_CSS_Pin css_pin);
 
-SPI_CSS_Pin get_css_pin(uint8_t channel);
 #endif
 
 /* *************************************************************************** */

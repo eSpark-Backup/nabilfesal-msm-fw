@@ -5,6 +5,7 @@
 // *****************************************************************************
 
 #include "main.h"
+#include "ADE9000.h" 
 #include <string>
 #include <math.h>
 
@@ -88,6 +89,8 @@ uint8_t ADE9000_status[TOTAL_ADE9000_UNITS];
 uint8_t ADE9000_currentGain[TOTAL_ADE9000_UNITS];
 uint8_t ADE9000_voltageGain[TOTAL_ADE9000_UNITS];
 uint8_t ADE9000_arrayBuffer[TOTAL_ARRAYSIZE];
+
+uint32_t reg_values[TOTAL_ADE9000_UNITS][TOTAL_PHASES];
 
 char rxBuffer[UART_RX_BUFFER_SIZE];
 char txBuffer[UART_TX_BUFFER_SIZE];
@@ -468,25 +471,6 @@ void ADE9000SetupForUnit(SPI_CSS_Pin cssPin)
     }
 }
 
-void ADE9000Setup()
-{
-    ADE9000SetupForUnit(SPI_CSS1);
-    ADE9000SetupForUnit(SPI_CSS2);
-    ADE9000SetupForUnit(SPI_CSS3);
-    ADE9000SetupForUnit(SPI_CSS4);
-    ADE9000SetupForUnit(SPI_CSS5);
-    ADE9000SetupForUnit(SPI_CSS6);
-    ADE9000SetupForUnit(SPI_CSS7);
-    ADE9000SetupForUnit(SPI_CSS8);
-    ADE9000SetupForUnit(SPI_CSS9);
-    ADE9000SetupForUnit(SPI_CSS10);
-    ADE9000SetupForUnit(SPI_CSS11);
-    ADE9000SetupForUnit(SPI_CSS12);
-    ADE9000Status_Check();
-    memset(ADE9000_arrayBuffer, 0, TOTAL_ARRAYSIZE);
-    memset(unitMeasurements, 0, sizeof(unitMeasurements));
-}
-
 void ADE9000ForUnitCheck(SPI_CSS_Pin cssPin)
 {
     if (IsADE9000(cssPin))
@@ -503,19 +487,23 @@ void ADE9000ForUnitCheck(SPI_CSS_Pin cssPin)
 
 void ADE9000_Checking()
 {
-    ADE9000ForUnitCheck(SPI_CSS1);
-    ADE9000ForUnitCheck(SPI_CSS2);
-    ADE9000ForUnitCheck(SPI_CSS3);
-    ADE9000ForUnitCheck(SPI_CSS4);
-    ADE9000ForUnitCheck(SPI_CSS5);
-    ADE9000ForUnitCheck(SPI_CSS6);
-    ADE9000ForUnitCheck(SPI_CSS7);
-    ADE9000ForUnitCheck(SPI_CSS8);
-    ADE9000ForUnitCheck(SPI_CSS9);
-    ADE9000ForUnitCheck(SPI_CSS10);
-    ADE9000ForUnitCheck(SPI_CSS11);
-    ADE9000ForUnitCheck(SPI_CSS12);
+    for(int i = SPI_CSS1; i <= SPI_CSS12; i++)
+    {
+        ADE9000ForUnitCheck((SPI_CSS_Pin)i);
+    }
     ADE9000Status_Check();
+}
+
+void ADE9000Setup()
+{
+    for(int i = SPI_CSS1; i <= SPI_CSS12; i++)
+    {
+        ADE9000SetupForUnit((SPI_CSS_Pin)i);
+    }
+    ADE9000_Checking();
+
+    memset(ADE9000_arrayBuffer, 0, TOTAL_ARRAYSIZE);
+    memset(unitMeasurements, 0, sizeof(unitMeasurements));
 }
 
 // *****************************************************************************
@@ -612,6 +600,8 @@ void USART_ReadCallback(uintptr_t context)
 
 void resetEnergyValues(void)
 {
+    // change this to also reset energy values in ade9000 registers?
+    // energy accumulation ot be maintained on v3s, so no need to reset here?
     for (int i = 0; i < TOTAL_ADE9000_UNITS; i++)
     {
         unitMeasurements[i].activeEnergy.ACC_NActiveEnergyValue_kWh_A = 0;
@@ -819,6 +809,36 @@ void parse_i_calibration_json()
     }
 }
 
+void parse_i_gain_json(){
+    char *ch;
+    ch = strstr(rxBuffer, "ct-ratio");
+    if(ch != NULL){
+//        strcpy(txBuffer,"");
+        char key[20];
+        for (uint8_t j = 1; j < 13; j++){
+            sprintf(key, "channel-%d",j);
+            // channelConfig[j-1].ctRatio = extract_channel_values(key);
+            ct_ratio_calibration(channelConfig[j-1].ctRatio, j-1);
+        }
+        strcpy(txBuffer, "\nCT Ratio updated successfully!");
+    }
+}
+
+void parse_v_gain_json(){
+    char *ch;
+    ch = strstr(rxBuffer, "ct-ratio");
+    if(ch != NULL){
+//        strcpy(txBuffer,"");
+        char key[20];
+        for (uint8_t j = 1; j < 13; j++){
+            sprintf(key, "channel-%d",j);
+            // channelConfig[j-1].ctRatio = extract_channel_values(key);
+            ct_ratio_calibration(channelConfig[j-1].ctRatio, j-1);
+        }
+        strcpy(txBuffer, "\nCT Ratio updated successfully!");
+    }
+}
+
 void ProcessCommand(void)
 {
     rxBuffer[rxSize] = '\0';
@@ -1010,12 +1030,13 @@ int main(void)
     while (true)
     {
         ADE9000_Checking();
+
         if (ADE9000_status[SPI_CSS1 - 1] == 1)
         {
             if (ADE9000_hotplug[SPI_CSS1 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS1);
-                ADE9000_hotplug[SPI_CSS1 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS1 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS1, 1);
         }
@@ -1029,7 +1050,7 @@ int main(void)
             if (ADE9000_hotplug[SPI_CSS2 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS2);
-                ADE9000_hotplug[SPI_CSS2 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS2 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS2, 2);
         }
@@ -1043,7 +1064,7 @@ int main(void)
             if (ADE9000_hotplug[SPI_CSS3 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS3);
-                ADE9000_hotplug[SPI_CSS3 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS3 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS3, 3);
         }
@@ -1057,7 +1078,7 @@ int main(void)
             if (ADE9000_hotplug[SPI_CSS4 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS4);
-                ADE9000_hotplug[SPI_CSS4 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS4 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS4, 4);
         }
@@ -1071,7 +1092,7 @@ int main(void)
             if (ADE9000_hotplug[SPI_CSS5 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS5);
-                ADE9000_hotplug[SPI_CSS5 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS5 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS5, 5);
         }
@@ -1085,7 +1106,7 @@ int main(void)
             if (ADE9000_hotplug[SPI_CSS6 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS6);
-                ADE9000_hotplug[SPI_CSS6 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS6 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS6, 6);
         }
@@ -1094,26 +1115,26 @@ int main(void)
             ADE9000_hotplug[SPI_CSS6 - 1] = 0;
             ADE9000MeasurementsForUnit_NON(SPI_CSS6, 6);
         }
-        if (ADE9000_status[SPI_CSS7 - 1] == 1)
-        {
-            if (ADE9000_hotplug[SPI_CSS7 - 1] == 0)
-            {
-                ADE9000SetupForUnit(SPI_CSS7);
-                ADE9000_hotplug[SPI_CSS7 - 1] = 1;
-            }
-            ADE9000MeasurementsForUnit(SPI_CSS7, 7);
-        }
-        else
-        {
-            ADE9000_hotplug[SPI_CSS7 - 1] = 0;
-            ADE9000MeasurementsForUnit_NON(SPI_CSS7, 7);
-        }
+         if (ADE9000_status[SPI_CSS7 - 1] == 1)
+         {
+             if (ADE9000_hotplug[SPI_CSS7 - 1] == 0)
+             {
+                 ADE9000SetupForUnit(SPI_CSS7);
+                //  ADE9000_hotplug[SPI_CSS7 - 1] = 1;
+             }
+             ADE9000MeasurementsForUnit(SPI_CSS7, 7);
+         }
+         else
+         {
+             ADE9000_hotplug[SPI_CSS7 - 1] = 0;
+             ADE9000MeasurementsForUnit_NON(SPI_CSS7, 7);
+         }
         if (ADE9000_status[SPI_CSS8 - 1] == 1)
         {
             if (ADE9000_hotplug[SPI_CSS8 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS8);
-                ADE9000_hotplug[SPI_CSS8 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS8 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS8, 8);
         }
@@ -1127,7 +1148,7 @@ int main(void)
             if (ADE9000_hotplug[SPI_CSS9 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS9);
-                ADE9000_hotplug[SPI_CSS9 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS9 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS9, 9);
         }
@@ -1136,26 +1157,26 @@ int main(void)
             ADE9000_hotplug[SPI_CSS9 - 1] = 0;
             ADE9000MeasurementsForUnit_NON(SPI_CSS9, 9);
         }
-        if (ADE9000_status[SPI_CSS10 - 1] == 1)
-        {
-            if (ADE9000_hotplug[SPI_CSS10 - 1] == 0)
-            {
-                ADE9000SetupForUnit(SPI_CSS10);
-                ADE9000_hotplug[SPI_CSS10 - 1] = 1;
-            }
-            ADE9000MeasurementsForUnit(SPI_CSS10, 10);
-        }
-        else
-        {
-            ADE9000_hotplug[SPI_CSS10 - 1] = 0;
-            ADE9000MeasurementsForUnit_NON(SPI_CSS10, 10);
-        }
+       if (ADE9000_status[SPI_CSS10 - 1] == 1)
+       {
+           if (ADE9000_hotplug[SPI_CSS10 - 1] == 0)
+           {
+               ADE9000SetupForUnit(SPI_CSS10);
+            //    ADE9000_hotplug[SPI_CSS10 - 1] = 1;
+           }
+           ADE9000MeasurementsForUnit(SPI_CSS10, 10);
+       }
+       else
+       {
+           ADE9000_hotplug[SPI_CSS10 - 1] = 0;
+           ADE9000MeasurementsForUnit_NON(SPI_CSS10, 10);
+       }
         if (ADE9000_status[SPI_CSS11 - 1] == 1)
         {
             if (ADE9000_hotplug[SPI_CSS11 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS11);
-                ADE9000_hotplug[SPI_CSS11 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS11 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS11, 11);
         }
@@ -1169,7 +1190,7 @@ int main(void)
             if (ADE9000_hotplug[SPI_CSS12 - 1] == 0)
             {
                 ADE9000SetupForUnit(SPI_CSS12);
-                ADE9000_hotplug[SPI_CSS12 - 1] = 1;
+                // ADE9000_hotplug[SPI_CSS12 - 1] = 1;
             }
             ADE9000MeasurementsForUnit(SPI_CSS12, 12);
         }
