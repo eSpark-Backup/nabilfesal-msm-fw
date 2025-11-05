@@ -24,6 +24,7 @@
 #include "sftpManager.h"
 #include "commonSetting.h"
 #include "systemexporter.h"
+#include "calibrationdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -101,6 +102,7 @@ private:
     FactSetting *factSettings = nullptr;
     Measurements *measure = nullptr;
     SystemDataExporter *dataExporter = nullptr;
+    CalibrationDialog *gainCalibrator = nullptr;
 
     // managers (mostly singletons)
     settingsManager *settingsHandler = nullptr;

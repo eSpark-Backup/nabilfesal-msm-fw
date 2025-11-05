@@ -35,7 +35,7 @@ void FactorySettings::on_system_clicked()
 
 void FactorySettings::on_v_cal_btn_clicked()
 {
-
+    emit calibrate(false);
 }
 
 
@@ -64,14 +64,8 @@ void FactorySettings::on_v_off_btn_clicked()
 }
 
 
-// void FactorySettings::on_cal_btn_clicked()
-// {
-//     measure->cal_btn_clicked();
-// }
-
-
 void FactorySettings::on_i_cal_btn_clicked()
 {
-
+    emit calibrate(true);
 }
 

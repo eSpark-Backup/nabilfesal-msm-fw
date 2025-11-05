@@ -8,13 +8,10 @@
 #include "measurements.h"
 
 CalibrationDialog::CalibrationDialog(QWidget *parent)
-    : QDialog(parent)
+    : QWidget(parent)
     , ui(new Ui::CalibrationDialog)
 {
     ui->setupUi(this);
-
-    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
-
     keyboard = new NumKeyboard(this);
     keyboard->move(100, 100);
     keyboard->hide();
@@ -85,9 +82,20 @@ void CalibrationDialog::on_sendpushBtn_clicked()
     gain["phase_c"] = phaseC;
 
     QJsonObject rootObj;
-    rootObj["command"] = "i-calibration";
-    rootObj["current"] = gain;
+    if(isCurrentData)
+    {
+        gain["ID"] = ui->comboBox->currentIndex() + 1;
+        rootObj["command"] = "i-calibration";
+        rootObj["current"] = gain;
+    }
+    else
+    {
+        rootObj["command"] = "v-calibration";
+        rootObj["voltage"] = gain;
+    }
 
+    QString jsonString = QString::fromUtf8(QJsonDocument(rootObj).toJson(QJsonDocument::Compact));
+    qDebug().noquote() << "Calibration JSON:" << jsonString;
     // emit requestSerialCommand(QString::fromUtf8(QJsonDocument(rootObj).toJson(QJsonDocument::Compact)));
     // // this->close();
 
@@ -100,6 +108,12 @@ void CalibrationDialog::on_sendpushBtn_clicked()
 
 void CalibrationDialog::on_backPushBtn_clicked()
 {
-    // ui->stackedWidget->setCurrentIndex(0);
+    emit exitScreen();
 }
 
+
+void CalibrationDialog::loadCalibrationScreen(bool isEnable)
+{
+   ui->comboBox->setEnabled(isEnable);
+   isCurrentData = isEnable;
+}

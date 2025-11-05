@@ -509,6 +509,9 @@ void MainWindow::onFactoryLogin()
     if (!measure)
         measure = new Measurements;
 
+    if(!gainCalibrator)
+        gainCalibrator = new CalibrationDialog;
+
     if (!factorySettings)
         factorySettings = new FactorySettings(hardwareVersion, softwareVersion);
 
@@ -517,6 +520,17 @@ void MainWindow::onFactoryLogin()
         isLogin = false;
         login->showFullScreen();
         factorySettings->hide();
+    });
+
+    connect(factorySettings, &FactorySettings::calibrate, this, [this](bool current) {
+        gainCalibrator->loadCalibrationScreen(current);
+        gainCalibrator->showFullScreen();
+        factorySettings->hide();
+    });
+
+    connect(gainCalibrator, &CalibrationDialog::exitScreen, this, [this]() {
+        gainCalibrator->hide();
+        factorySettings->showFullScreen();
     });
 
     connect(factorySettings, &FactorySettings::ctRatio, this, [this]() {

@@ -1,22 +1,24 @@
 #ifndef CALIBRATIONDIALOG_H
 #define CALIBRATIONDIALOG_H
 
-#include <QDialog>
+#include <QWidget>
 #include "numkeyboard.h"
 
 namespace Ui {
 class CalibrationDialog;
 }
 
-class CalibrationDialog : public QDialog
+class CalibrationDialog : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit CalibrationDialog(QWidget *parent = nullptr);
+    void loadCalibrationScreen(bool isEnable);
     ~CalibrationDialog();
 
 signals:
+    void exitScreen();
     void requestSerialCommand(const QString &cmd);
 
 private slots:
@@ -29,6 +31,8 @@ protected:
 private:
     Ui::CalibrationDialog *ui;
     NumKeyboard *keyboard;
+
+    bool isCurrentData;
 };
 
 #endif // CALIBRATIONDIALOG_H

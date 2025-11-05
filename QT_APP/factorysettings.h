@@ -23,6 +23,7 @@ signals:
     void ctRatio();
     void i_offset();
     void v_offset();
+    void calibrate(bool current);
 
 private slots:
     void on_pushButton_clicked();
