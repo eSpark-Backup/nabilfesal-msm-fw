@@ -10,7 +10,7 @@
 #include <QDir>
 #include <QFile>
 #include <QKeyEvent>
-#include "calibrationdialog.h"
+// #include "calibrationdialog.h"
 #include <QRegularExpressionValidator>
 
 Measurements::Measurements(QWidget *parent)
@@ -427,3 +427,42 @@ void Measurements::on_toolButton_12_clicked()
     Utils::keySound();
     keyboard->show();
 }
+
+void Measurements::ration_btn_clicked()
+{
+    ui->header_label->setText("CT RATIO SETTINGS");
+    ui->verticalStackedWidget->setCurrentIndex(0);
+    // ui->ration_btn->setFocus();
+    isRatioActivated = true;
+    isVOffsetActivated = false;
+    isIOffsetActivated = false;
+    on_load_btn_clicked();
+}
+
+void Measurements::i_off_btn_clicked()
+{
+    ui->header_label->setText("I-OFFSET SETTINGS");
+    ui->verticalStackedWidget->setCurrentIndex(0);
+    // ui->i_off_btn->setFocus();
+    isRatioActivated = false;
+    isVOffsetActivated = false;
+    isIOffsetActivated = true;
+    on_load_btn_clicked();
+}
+
+void Measurements::v_off_btn_clicked()
+{
+    ui->header_label->setText("V-OFFSET SETTINGS");
+    ui->verticalStackedWidget->setCurrentIndex(0);
+    // ui->v_off_btn->setFocus();
+    isRatioActivated = false;
+    isVOffsetActivated = true;
+    isIOffsetActivated = false;
+    on_load_btn_clicked();
+}
+
+// void Measurements::cal_btn_clicked()
+// {
+//     ui->verticalStackedWidget->setCurrentIndex(1);
+//     // ui->cal_btn->setFocus();
+// }

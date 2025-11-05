@@ -2,6 +2,7 @@
 #define FACTORYSETTINGS_H
 
 #include <QWidget>
+#include "measurements.h"
 
 namespace Ui {
 class FactorySettings;
@@ -41,6 +42,7 @@ private slots:
 
 private:
     Ui::FactorySettings *ui;
+    Measurements *measure = nullptr;
 };
 
 #endif // FACTORYSETTINGS_H

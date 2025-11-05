@@ -15,6 +15,9 @@ class Measurements : public QWidget
 
 public:
     explicit Measurements(QWidget *parent = nullptr);
+    void ration_btn_clicked();
+    void i_off_btn_clicked();
+    void v_off_btn_clicked();
     ~Measurements();
 signals:
     void measureExit();
@@ -55,8 +58,6 @@ private slots:
     void on_toolButton_11_clicked();
 
     void on_toolButton_12_clicked();
-
-    void on_pushButton_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

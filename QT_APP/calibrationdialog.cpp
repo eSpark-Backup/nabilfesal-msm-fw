@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include "utils.h"
 #include <QRegularExpressionValidator>
+#include "measurements.h"
 
 CalibrationDialog::CalibrationDialog(QWidget *parent)
     : QDialog(parent)
@@ -18,21 +19,28 @@ CalibrationDialog::CalibrationDialog(QWidget *parent)
     keyboard->move(100, 100);
     keyboard->hide();
 
-    ui->v_input->installEventFilter(this);
-    ui->a_input->installEventFilter(this);
+    ui->phase_A_input->installEventFilter(this);
+    ui->phase_B_input->installEventFilter(this);
+    ui->phase_C_input->installEventFilter(this);
 
     QRegularExpression rx(R"(^-?\d+(\.\d+)?$)");
     QValidator *validator = new QRegularExpressionValidator(rx, this);
-    ui->v_input->setValidator(validator);
-    ui->a_input->setValidator(validator);
+    ui->phase_A_input->setValidator(validator);
+    ui->phase_B_input->setValidator(validator);
+    ui->phase_C_input->setValidator(validator);
 
-    connect(ui->v_input, &QLineEdit::editingFinished, this, [=]() {
-        ui->v_input->clearFocus();
+    connect(ui->phase_A_input, &QLineEdit::editingFinished, this, [=]() {
+        ui->phase_A_input->clearFocus();
         keyboard->hide();
     });
 
-    connect(ui->a_input, &QLineEdit::editingFinished, this, [=]() {
-        ui->a_input->clearFocus();
+    connect(ui->phase_B_input, &QLineEdit::editingFinished, this, [=]() {
+        ui->phase_B_input->clearFocus();
+        keyboard->hide();
+    });
+
+    connect(ui->phase_C_input, &QLineEdit::editingFinished, this, [=]() {
+        ui->phase_C_input->clearFocus();
         keyboard->hide();
     });
 
@@ -64,35 +72,34 @@ bool CalibrationDialog::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
-void CalibrationDialog::on_pushButton_clicked()
-{
-    auto voltage = ui->v_input->text().toDouble();
-    auto current = ui->a_input->text().toDouble();
-
-    QJsonObject gain;
-    gain["voltage"] = voltage;
-    gain["current"] = current;
-
-    QJsonObject rootObj;
-    rootObj["gain"] = gain;
-    rootObj["command"] = "set-gain";
-
-    emit requestSerialCommand(QString::fromUtf8(QJsonDocument(rootObj).toJson(QJsonDocument::Compact)));
-    this->close();
-}
-
 
 void CalibrationDialog::on_sendpushBtn_clicked()
 {
-    CalibrationDialog calDialog(this);
-    connect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
-    calDialog.exec();
-    disconnect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
+    auto phaseA = ui->phase_A_input->text().toDouble();
+    auto phaseB = ui->phase_B_input->text().toDouble();
+    auto phaseC = ui->phase_C_input->text().toDouble();
+
+    QJsonObject gain;
+    gain["phase_a"] = phaseA;
+    gain["phase_b"] = phaseB;
+    gain["phase_c"] = phaseC;
+
+    QJsonObject rootObj;
+    rootObj["command"] = "i-calibration";
+    rootObj["current"] = gain;
+
+    // emit requestSerialCommand(QString::fromUtf8(QJsonDocument(rootObj).toJson(QJsonDocument::Compact)));
+    // // this->close();
+
+    // CalibrationDialog calDialog(this);
+    // connect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
+    // calDialog.exec();
+    // disconnect(&calDialog, &CalibrationDialog::requestSerialCommand, this, &Measurements::requestSerialCommand);
 }
 
 
 void CalibrationDialog::on_backPushBtn_clicked()
 {
-    ui->stackedWidget->setCurrentIndex(0);
+    // ui->stackedWidget->setCurrentIndex(0);
 }
 

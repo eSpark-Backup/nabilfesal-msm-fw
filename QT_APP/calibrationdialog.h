@@ -20,8 +20,7 @@ signals:
     void requestSerialCommand(const QString &cmd);
 
 private slots:
-    void on_pushButton_clicked();
-
+    void on_sendpushBtn_clicked();
     void on_backPushBtn_clicked();
 
 protected:
