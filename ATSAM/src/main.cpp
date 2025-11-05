@@ -8,7 +8,6 @@
 #include <string>
 #include <math.h>
 
-
 // *****************************************************************************
 // *****************************************************************************
 // Section: Variables
@@ -19,52 +18,71 @@
 #define ENUM_STEP 4
 
 #define X(name, index) name = (ENUM_BASE + (index * ENUM_STEP))
- 
-enum MyEnum {
-    X(RMS_Voltage_A,             0),
-    X(RMS_Voltage_B,             1),
-    X(RMS_Voltage_C,             2),
-    X(Line_Voltage_A,            3),
-    X(Line_Voltage_B,            4),
-    X(Line_Voltage_C,            5),
-    X(RMS_Current_A,             6),
-    X(RMS_Current_B,             7),
-    X(RMS_Current_C,             8),
-    X(Freq_A,                    9),
-    X(Freq_B,                   10),
-    X(Freq_C,                   11), 
-    X(Active_Power_A,           12),
-    X(Active_Power_B,           13),
-    X(Active_Power_C,           14),
-    X(Reactive_Power_A,         15),
-    X(Reactive_Power_B,         16),
-    X(Reactive_Power_C,         17),
-    X(Apparent_Power_A,         18),
-    X(Apparent_Power_B,         19),
-    X(Apparent_Power_C,         20),
-    X(Power_Factor_A,           21),
-    X(Power_Factor_B,           22),
-    X(Power_Factor_C,           23), 
-    X(Pos_Active_Energy_A,      24),
-    X(Pos_Active_Energy_B,      25),
-    X(Pos_Active_Energy_C,      26),
-    X(Neg_Active_Energy_A,      27),
-    X(Neg_Active_Energy_B,      28),
-    X(Neg_Active_Energy_C,      29),
-    X(Voltage_THD_A,            30),
-    X(Voltage_THD_B,            31),
-    X(Voltage_THD_C,            32),
-    X(Current_THD_A,            33),
-    X(Current_THD_B,            34),
-    X(Current_THD_C,            35),
-    X(Temperature,              36),
-    X(Angle_A,                  37),
-    X(Angle_B,                  38),
-    X(Angle_C,                  39),
+
+enum MyEnum
+{
+    X(RMS_Voltage_A, 0),
+    X(RMS_Voltage_B, 1),
+    X(RMS_Voltage_C, 2),
+    X(Line_Voltage_A, 3),
+    X(Line_Voltage_B, 4),
+    X(Line_Voltage_C, 5),
+    X(RMS_Current_A, 6),
+    X(RMS_Current_B, 7),
+    X(RMS_Current_C, 8),
+    X(Freq_A, 9),
+    X(Freq_B, 10),
+    X(Freq_C, 11),
+    X(Active_Power_A, 12),
+    X(Active_Power_B, 13),
+    X(Active_Power_C, 14),
+    X(Reactive_Power_A, 15),
+    X(Reactive_Power_B, 16),
+    X(Reactive_Power_C, 17),
+    X(Apparent_Power_A, 18),
+    X(Apparent_Power_B, 19),
+    X(Apparent_Power_C, 20),
+    X(Power_Factor_A, 21),
+    X(Power_Factor_B, 22),
+    X(Power_Factor_C, 23),
+    X(Pos_Active_Energy_A, 24),
+    X(Pos_Active_Energy_B, 25),
+    X(Pos_Active_Energy_C, 26),
+    X(Neg_Active_Energy_A, 27),
+    X(Neg_Active_Energy_B, 28),
+    X(Neg_Active_Energy_C, 29),
+    X(Voltage_THD_A, 30),
+    X(Voltage_THD_B, 31),
+    X(Voltage_THD_C, 32),
+    X(Current_THD_A, 33),
+    X(Current_THD_B, 34),
+    X(Current_THD_C, 35),
+    X(Temperature, 36),
+    X(Angle_A, 37),
+    X(Angle_B, 38),
+    X(Angle_C, 39),
 };
+
+typedef struct
+{
+    uint32_t phase_a;
+    uint32_t phase_b;
+    uint32_t phase_c;
+} VoltageCalibration;
+
+typedef struct
+{
+    uint16_t channelID;
+    uint32_t phase_a;
+    uint32_t phase_b;
+    uint32_t phase_c;
+} CurrentCalibration;
 
 ADE9000UnitMeasurements unitMeasurements[TOTAL_ADE9000_UNITS];
 ChannelConfig channelConfig[TOTAL_ADE9000_UNITS];
+VoltageCalibration voltageCalibration;
+CurrentCalibration currentCalibration;
+
 uint8_t ADE9000_hotplug[TOTAL_ADE9000_UNITS];
 uint8_t ADE9000_status[TOTAL_ADE9000_UNITS];
 uint8_t ADE9000_currentGain[TOTAL_ADE9000_UNITS];
@@ -81,7 +99,8 @@ volatile bool rxComplete = false;
 // Section: Functions
 // *****************************************************************************
 // *****************************************************************************
-static inline float cleanFloat(float x) {
+static inline float cleanFloat(float x)
+{
     return (isnan(x) || isinf(x)) ? 0.0f : x;
 }
 
@@ -147,108 +166,111 @@ void sendChannelJsonData(uint8_t channel)
 {
     if (channel == 0 || channel > 12)
         return;
-    ADE9000UnitMeasurements& m = unitMeasurements[channel - 1];
-    char jsonBuffer[2048];  // Increase if needed
+    ADE9000UnitMeasurements &m = unitMeasurements[channel - 1];
+    char jsonBuffer[2048]; // Increase if needed
     char *ptr = jsonBuffer;
     size_t remaining = sizeof(jsonBuffer);
     int written = snprintf(ptr, remaining,
-        "{"
-        "\"ID\":%d,"
-        "\"status\":%d,"
-        "\"temperature\":%.2f,"
-        "\"data\":{",
-        channel,
-        ADE9000_status[channel - 1],
-        cleanFloat(m.temperature.Temperature)
-    );
+                           "{"
+                           "\"ID\":%d,"
+                           "\"status\":%d,"
+                           "\"temperature\":%.2f,"
+                           "\"data\":{",
+                           channel,
+                           ADE9000_status[channel - 1],
+                           cleanFloat(m.temperature.Temperature));
     ptr += written;
     remaining -= written;
-    const char* phases[3] = { "phase_a", "phase_b", "phase_c" };
-    float rmsVoltage[3]   = { m.voltageRMS.VoltageRMSValue_A, m.voltageRMS.VoltageRMSValue_B, m.voltageRMS.VoltageRMSValue_C };
-    float lineVoltage[3]  = { m.lineVoltage.LineVoltage_AB, m.lineVoltage.LineVoltage_BC, m.lineVoltage.LineVoltage_CA };
-    float frequency[3]    = { m.periodFrequency.FrequencyValue_A, m.periodFrequency.FrequencyValue_B, m.periodFrequency.FrequencyValue_C };
-    float current[3]      = { m.currentRMS.CurrentRMSValue_A, m.currentRMS.CurrentRMSValue_B, m.currentRMS.CurrentRMSValue_C };
-    float powerFactor[3]  = { m.powerFactor.PowerFactorValue_A, m.powerFactor.PowerFactorValue_B, m.powerFactor.PowerFactorValue_C };
-    float activePower[3]  = { m.activePower.ActivePowerValue_A, m.activePower.ActivePowerValue_B, m.activePower.ActivePowerValue_C };
-    float reactivePower[3]= { m.reactivePower.ReactivePowerValue_A, m.reactivePower.ReactivePowerValue_B, m.reactivePower.ReactivePowerValue_C };
-    float apparentPower[3]= { m.apparentPower.ApparentPowerValue_A, m.apparentPower.ApparentPowerValue_B, m.apparentPower.ApparentPowerValue_C };
-    float posEnergy[3] = { m.activeEnergy.PActiveEnergyValue_kWh_A, m.activeEnergy.PActiveEnergyValue_kWh_B, m.activeEnergy.PActiveEnergyValue_kWh_C };
-    float negEnergy[3] = { m.activeEnergy.NActiveEnergyValue_kWh_A, m.activeEnergy.NActiveEnergyValue_kWh_B, m.activeEnergy.NActiveEnergyValue_kWh_C };
-    
+    const char *phases[3] = {"phase_a", "phase_b", "phase_c"};
+    float rmsVoltage[3] = {m.voltageRMS.VoltageRMSValue_A, m.voltageRMS.VoltageRMSValue_B, m.voltageRMS.VoltageRMSValue_C};
+    float lineVoltage[3] = {m.lineVoltage.LineVoltage_AB, m.lineVoltage.LineVoltage_BC, m.lineVoltage.LineVoltage_CA};
+    float frequency[3] = {m.periodFrequency.FrequencyValue_A, m.periodFrequency.FrequencyValue_B, m.periodFrequency.FrequencyValue_C};
+    float current[3] = {m.currentRMS.CurrentRMSValue_A, m.currentRMS.CurrentRMSValue_B, m.currentRMS.CurrentRMSValue_C};
+    float powerFactor[3] = {m.powerFactor.PowerFactorValue_A, m.powerFactor.PowerFactorValue_B, m.powerFactor.PowerFactorValue_C};
+    float activePower[3] = {m.activePower.ActivePowerValue_A, m.activePower.ActivePowerValue_B, m.activePower.ActivePowerValue_C};
+    float reactivePower[3] = {m.reactivePower.ReactivePowerValue_A, m.reactivePower.ReactivePowerValue_B, m.reactivePower.ReactivePowerValue_C};
+    float apparentPower[3] = {m.apparentPower.ApparentPowerValue_A, m.apparentPower.ApparentPowerValue_B, m.apparentPower.ApparentPowerValue_C};
+    float posEnergy[3] = {m.activeEnergy.PActiveEnergyValue_kWh_A, m.activeEnergy.PActiveEnergyValue_kWh_B, m.activeEnergy.PActiveEnergyValue_kWh_C};
+    float negEnergy[3] = {m.activeEnergy.NActiveEnergyValue_kWh_A, m.activeEnergy.NActiveEnergyValue_kWh_B, m.activeEnergy.NActiveEnergyValue_kWh_C};
+
     float reactiveposEnergy[3];
     float reactivenegEnergy[3];
-    if(m.activeEnergy.ReactiveEnergyValue_kWh_A > 0){
+    if (m.activeEnergy.ReactiveEnergyValue_kWh_A > 0)
+    {
         reactiveposEnergy[0] = m.activeEnergy.ReactiveEnergyValue_kWh_A;
         reactivenegEnergy[0] = 0;
     }
-    else{
+    else
+    {
         reactivenegEnergy[0] = m.activeEnergy.ReactiveEnergyValue_kWh_A;
         reactiveposEnergy[0] = 0;
     }
-    
-    if(m.activeEnergy.ReactiveEnergyValue_kWh_B > 0){
+
+    if (m.activeEnergy.ReactiveEnergyValue_kWh_B > 0)
+    {
         reactiveposEnergy[1] = m.activeEnergy.ReactiveEnergyValue_kWh_B;
         reactivenegEnergy[1] = 0;
     }
-    else{
+    else
+    {
         reactivenegEnergy[1] = m.activeEnergy.ReactiveEnergyValue_kWh_B;
         reactiveposEnergy[1] = 0;
     }
-    
-    if(m.activeEnergy.ReactiveEnergyValue_kWh_C > 0){
+
+    if (m.activeEnergy.ReactiveEnergyValue_kWh_C > 0)
+    {
         reactiveposEnergy[2] = m.activeEnergy.ReactiveEnergyValue_kWh_C;
         reactivenegEnergy[2] = 0;
     }
-    else{
+    else
+    {
         reactivenegEnergy[2] = m.activeEnergy.ReactiveEnergyValue_kWh_C;
         reactiveposEnergy[2] = 0;
     }
-    
-    
-//    float reactiveEnergy[3] = { m.activeEnergy.ReactiveEnergyValue_kWh_A, m.activeEnergy.ReactiveEnergyValue_kWh_B, m.activeEnergy.ReactiveEnergyValue_kWh_C };
-    
-    
-    float currentTHD[3] = { m.currentTHD.CurrentTHDValue_A, m.currentTHD.CurrentTHDValue_B, m.currentTHD.CurrentTHDValue_C };
-    float voltageTHD[3] = { m.voltageTHD.VoltageTHDValue_A, m.voltageTHD.VoltageTHDValue_B, m.voltageTHD.VoltageTHDValue_C };
-    float angle[3] = { m.angleDegree.AngleValue_VA_IA, m.angleDegree.AngleValue_VB_IB, m.angleDegree.AngleValue_VC_IC };
-    for (int i = 0; i < 3; i++) {
+
+    //    float reactiveEnergy[3] = { m.activeEnergy.ReactiveEnergyValue_kWh_A, m.activeEnergy.ReactiveEnergyValue_kWh_B, m.activeEnergy.ReactiveEnergyValue_kWh_C };
+
+    float currentTHD[3] = {m.currentTHD.CurrentTHDValue_A, m.currentTHD.CurrentTHDValue_B, m.currentTHD.CurrentTHDValue_C};
+    float voltageTHD[3] = {m.voltageTHD.VoltageTHDValue_A, m.voltageTHD.VoltageTHDValue_B, m.voltageTHD.VoltageTHDValue_C};
+    float angle[3] = {m.angleDegree.AngleValue_VA_IA, m.angleDegree.AngleValue_VB_IB, m.angleDegree.AngleValue_VC_IC};
+    for (int i = 0; i < 3; i++)
+    {
         written = snprintf(ptr, remaining,
-            "\"%s\":{"
-                "\"general\":{"
-                    "\"line_voltage\":%.2f,"
-                    "\"rms_voltage\":%.2f,"
-                    "\"frequency\":%.2f,"
-                    "\"current\":%.2f"
-                "},"
-                "\"power\":{"
-                    "\"factor\":%.2f,"
-                    "\"active\":%.2f,"
-                    "\"reactive\":%.2f,"
-                    "\"apparent\":%.2f"
-                "},"
-                "\"energy\":{"
-                    "\"active\":{"
-                        "\"positive\":%.2f,"
-                        "\"negative\":%.2f"
-                    "},"
-                    "\"reactive\":{"
-                        "\"positive\":%.2f,"
-                        "\"negative\":%.2f"
-                    "}"
-                "},"
-                "\"thd\":{"
-                    "\"current\":%.2f,"
-                    "\"voltage\":%.2f,"
-                    "\"angle\":%.2f"
-                "}"
-            "}%s",
-            phases[i],
-            cleanFloat(lineVoltage[i]), cleanFloat(rmsVoltage[i]), cleanFloat(frequency[i]), cleanFloat(current[i]),
-            cleanFloat(powerFactor[i]), cleanFloat(activePower[i]), cleanFloat(reactivePower[i]), cleanFloat(apparentPower[i]),
-            cleanFloat(posEnergy[i]), cleanFloat(negEnergy[i]), cleanFloat(reactiveposEnergy[i]),cleanFloat(reactivenegEnergy[i]),
-            cleanFloat(currentTHD[i]), cleanFloat(voltageTHD[i]), cleanFloat(angle[i]),
-            (i < 2) ? "," : ""
-        );
+                           "\"%s\":{"
+                           "\"general\":{"
+                           "\"line_voltage\":%.2f,"
+                           "\"rms_voltage\":%.2f,"
+                           "\"frequency\":%.2f,"
+                           "\"current\":%.2f"
+                           "},"
+                           "\"power\":{"
+                           "\"factor\":%.2f,"
+                           "\"active\":%.2f,"
+                           "\"reactive\":%.2f,"
+                           "\"apparent\":%.2f"
+                           "},"
+                           "\"energy\":{"
+                           "\"active\":{"
+                           "\"positive\":%.2f,"
+                           "\"negative\":%.2f"
+                           "},"
+                           "\"reactive\":{"
+                           "\"positive\":%.2f,"
+                           "\"negative\":%.2f"
+                           "}"
+                           "},"
+                           "\"thd\":{"
+                           "\"current\":%.2f,"
+                           "\"voltage\":%.2f,"
+                           "\"angle\":%.2f"
+                           "}"
+                           "}%s",
+                           phases[i],
+                           cleanFloat(lineVoltage[i]), cleanFloat(rmsVoltage[i]), cleanFloat(frequency[i]), cleanFloat(current[i]),
+                           cleanFloat(powerFactor[i]), cleanFloat(activePower[i]), cleanFloat(reactivePower[i]), cleanFloat(apparentPower[i]),
+                           cleanFloat(posEnergy[i]), cleanFloat(negEnergy[i]), cleanFloat(reactiveposEnergy[i]), cleanFloat(reactivenegEnergy[i]),
+                           cleanFloat(currentTHD[i]), cleanFloat(voltageTHD[i]), cleanFloat(angle[i]),
+                           (i < 2) ? "," : "");
         ptr += written;
         remaining -= written;
     }
@@ -266,26 +288,26 @@ void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
 
     ReadVoltageRMSRegs(&unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
     voltage_offset_calibration(&unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
-//    ReadVoltageRMSOSRegs(&voltageRMSOS[unitIndex - 1], cssPin);
-    
+    //    ReadVoltageRMSOSRegs(&voltageRMSOS[unitIndex - 1], cssPin);
+
     ReadLineVoltages(&unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[cssPin - 1].lineVoltage);
     ReadCurrentRMSRegs(&unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     current_offset_calibration(&unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     ReadPeriodRegsnValues(&unitMeasurements[unitIndex - 1].periodFrequency, &unitMeasurements[unitIndex - 1].voltageRMS, cssPin);
-    
+
     ReadActivePowerRegs(&unitMeasurements[unitIndex - 1].activePower, &unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     ReadReactivePowerRegs(&unitMeasurements[unitIndex - 1].reactivePower, &unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     ReadApparentPowerRegs(&unitMeasurements[unitIndex - 1].apparentPower, &unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
     ReadPowerFactorRegsnValues(&unitMeasurements[unitIndex - 1].powerFactor, &unitMeasurements[unitIndex - 1].voltageRMS, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
-    
-    ReadEnergyRegs(&unitMeasurements[unitIndex - 1].activeEnergy,&unitMeasurements[unitIndex - 1].activePower, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
-    
+
+    ReadEnergyRegs(&unitMeasurements[unitIndex - 1].activeEnergy, &unitMeasurements[unitIndex - 1].activePower, &unitMeasurements[unitIndex - 1].currentRMS, cssPin);
+
     ReadVoltageTHDRegsnValues(&unitMeasurements[unitIndex - 1].voltageTHD, cssPin);
     ReadCurrentTHDRegsnValues(&unitMeasurements[unitIndex - 1].currentTHD, cssPin);
     ReadAngleRegsnValues(&unitMeasurements[unitIndex - 1].angleDegree, cssPin);
-    
+
     ReadTempRegnValue(&unitMeasurements[unitIndex - 1].temperature, cssPin);
-    
+
     uint16_t crcIndex = ((unitIndex - 1) * ARRAYSIZE_PER_UNIT) + ARRAYSIZE_PER_UNIT - 1;
     uint8_t crc = calculateCRC8(&ADE9000_arrayBuffer[(unitIndex - 1) * ARRAYSIZE_PER_UNIT], ARRAYSIZE_PER_UNIT - 1);
     ADE9000_arrayBuffer[crcIndex] = crc;
@@ -436,7 +458,7 @@ void ADE9000SetupForUnit(SPI_CSS_Pin cssPin)
         ADE9000_status[cssPin - 1] = 1;
         ADE9000_hotplug[cssPin - 1] = 1;
         ADE9000_Initialize(cssPin);
-        ct_ratio_calibration(100, cssPin-1);
+        ct_ratio_calibration(100, cssPin - 1);
     }
     else
     {
@@ -516,20 +538,22 @@ void SendDataAsASCII(const uint8_t *data, size_t size, uint8_t index)
 void send_response_ct_ratio()
 {
     char buffer_2[600]; // Buffer for sending response of command ct_ratio
-    for (int i = 0; i < 600; i++){
+    for (int i = 0; i < 600; i++)
+    {
         buffer_2[i] = '\0';
     }
-    int count = snprintf(buffer_2, sizeof(buffer_2), 
-            "{"
-            "\"status\":true,"
-            "\"message\":\"Response\""
-            "}\n");
-    
-     if (count > 0 && count < sizeof(buffer_2)) {
+    int count = snprintf(buffer_2, sizeof(buffer_2),
+                         "{"
+                         "\"status\":true,"
+                         "\"message\":\"Response\""
+                         "}\n");
+
+    if (count > 0 && count < sizeof(buffer_2))
+    {
         SERCOM2_USART_Write((uint16_t *)buffer_2, count);
     }
-//}
-//    SERCOM2_USART_Write((uint8_t *)buffer, count);
+    //}
+    //    SERCOM2_USART_Write((uint8_t *)buffer, count);
 }
 
 void ConvertDataToHexAndSend(const uint8_t *data, size_t size)
@@ -616,79 +640,182 @@ void resetEnergyValues(void)
 //  }
 //}
 
-float extract_channel_values(const char* channel){
+float extract_channel_values(const char *channel)
+{
     char *ch;
-    if(strstr(rxBuffer, channel) != NULL){
+    if (strstr(rxBuffer, channel) != NULL)
+    {
         ch = strstr(rxBuffer, channel);
-        ch = strchr(ch,':');
-        if(ch){
+        ch = strchr(ch, ':');
+        if (ch)
+        {
             ch++;
-            while(*ch == ' ' || *ch == '\"') ch++;
+            while (*ch == ' ' || *ch == '\"')
+                ch++;
             char value[16];
             int i = 0;
-            while(*ch && *ch != '\"' && *ch != ',' && *ch != ' '){
+            while (*ch && *ch != '\"' && *ch != ',' && *ch != ' ')
+            {
                 value[i++] = *ch++;
             }
             value[i] = '\0';
             /* For Debugging*/
-//            strcat(txBuffer, "\n");
-//            strcat(txBuffer, channel);
-//            strcat(txBuffer, " Value received: ");
-//            strcat(txBuffer, value);
+            //            strcat(txBuffer, "\n");
+            //            strcat(txBuffer, channel);
+            //            strcat(txBuffer, " Value received: ");
+            //            strcat(txBuffer, value);
             return atof(value); // atoi(ASCII TO Int) function is used to convert value from character to integer
         }
     }
     return 0.0f;
 }
 
-void parse_ct_ratio_json(){
+float extract_phase_value(const char *key)
+{
+    char *ptr = strstr(rxBuffer, key);
+    if (ptr)
+    {
+        ptr = strchr(ptr, ':');
+        if (ptr)
+        {
+            float val = 0.0f;
+            sscanf(ptr + 1, "%f", &val);
+            return val;
+        }
+    }
+    return 0.0f;
+}
+
+int extract_int_value(const char *key)
+{
+    char *ptr = strstr(rxBuffer, key);
+    if (ptr)
+    {
+        ptr = strchr(ptr, ':');
+        if (ptr)
+        {
+            int val = 0;
+            // Skip colon and whitespace
+            while (*(++ptr) == ' ' || *ptr == '\t');
+            sscanf(ptr, "%d", &val);
+            return val;
+        }
+    }
+    return 0;
+}
+
+void parse_ct_ratio_json()
+{
     char *ch;
     ch = strstr(rxBuffer, "ct-ratio");
-    if(ch != NULL){
-//        strcpy(txBuffer,"");
+    if (ch != NULL)
+    {
         char key[20];
-        for (uint8_t j = 1; j < 13; j++){
-            sprintf(key, "channel-%d",j);
-            channelConfig[j-1].ctRatio = extract_channel_values(key);
-            ct_ratio_calibration(channelConfig[j-1].ctRatio, j-1);
+        for (uint8_t j = 1; j < 13; j++)
+        {
+            sprintf(key, "channel-%d", j);
+            channelConfig[j - 1].ctRatio = extract_channel_values(key);
+            ct_ratio_calibration(channelConfig[j - 1].ctRatio, j - 1);
         }
         strcpy(txBuffer, "\nCT Ratio updated successfully!");
     }
 }
 
-void parse_i_offset_json(){
+void parse_v_offset_json()
+{
+    char *ch;
+    ch = strstr(rxBuffer, "v_offset");
+    if (ch != NULL)
+    {
+        char key[20];
+        for (uint8_t j = 1; j < 13; j++)
+        {
+            sprintf(key, "channel-%d", j);
+            channelConfig[j].setVOffset = extract_channel_values(key);
+
+            // Write offset values to ADE9000 registers
+            voltage_offset_write(j, channelConfig[j].setVOffset);
+        }
+        strcpy(txBuffer, "\nVoltage Offset updated successfully!");
+    }
+}
+
+void parse_i_offset_json()
+{
     char *ch;
     ch = strstr(rxBuffer, "i_offset");
-    if(ch != NULL){
-//        strcpy(txBuffer,"");
+    if (ch != NULL)
+    {
         char key[20];
-        for (int8_t j = 1; j < 13; j++){
-            sprintf(key, "channel-%d",j);
-            channelConfig[j-1].setIOffset = extract_channel_values(key);
+        for (uint8_t j = 1; j < 13; j++)
+        {
+            sprintf(key, "channel-%d", j);
+            channelConfig[j - 1].setIOffset = extract_channel_values(key);
             //  Write offset Values to ADE9000 registers
-            
-//            current_offset_write(j, channelConfig[j].setIOffset);
+            //            current_offset_write(j, channelConfig[j].setIOffset);
         }
         strcpy(txBuffer, "\nCurrent Offset updated successfully!");
     }
 }
 
-void parse_v_offset_json(){
+void parse_v_calibration_json()
+{
     char *ch;
-    ch = strstr(rxBuffer, "v_offset");
-    if(ch != NULL){
-//        strcpy(txBuffer,"");
-        char key[20];
-        for (int8_t j = 1; j < 13; j++){
-            sprintf(key, "channel-%d",j);
-            channelConfig[j].setVOffset = extract_channel_values(key);
-            
-            // Write offset values to ADE9000 registers
-            
-            voltage_offset_write(j, channelConfig[j].setVOffset);
-            
+    ch = strstr(rxBuffer, "voltage");
+    if (ch != NULL)
+    {
+        char key[10];
+        // voltage_gain_calibration(extract_phase_value("phase_a"), PHASE_A);
+        // voltage_gain_calibration(extract_phase_value("phase_b"), PHASE_B);
+        // voltage_gain_calibration(extract_phase_value("phase_c"), PHASE_C);
+        
+        // Start building JSON
+        strcpy(txBuffer, "{\n  \"command\": \"v-calibration\",\n  \"voltage\": {\n    \"channels\": [\n");
+
+        for (int i = 1; i <= 12; i++)
+        {
+            char temp[128];
+            sprintf(temp,
+                    "      {\n"
+                    "        \"ID\": %d,\n"
+                    "        \"phase_a\": \"0x%08X\",\n"
+                    "        \"phase_b\": \"0x%08X\",\n"
+                    "        \"phase_c\": \"0x%08X\"\n"
+                    "      }%s\n",
+                    i,
+                    voltageCalibration.phase_a, voltageCalibration.phase_b, voltageCalibration.phase_c,
+                    (i < 12) ? "," : "");
+
+            strcat(txBuffer, temp);
         }
-        strcpy(txBuffer, "\nVoltage Offset updated successfully!");
+        strcat(txBuffer, "    ]\n  }\n}");
+    }
+}
+
+void parse_i_calibration_json()
+{
+    char *ch = strstr(rxBuffer, "\"current\"");
+    if (ch != NULL)
+    {
+        currentCalibration.channelID = extract_int_value("\"ID\"");
+        currentCalibration.phase_a   = extract_phase_value("phase_a");
+        currentCalibration.phase_b   = extract_phase_value("phase_b");
+        currentCalibration.phase_c   = extract_phase_value("phase_c");
+
+        memset(txBuffer, 0, sizeof(txBuffer));
+        sprintf(txBuffer,
+                "{\n  \"command\": \"i-calibration\",\n"
+                "  \"current\": {\n"
+                "    \"ID\": %d,\n"
+                "    \"phase_a\": \"0x%08X\",\n"
+                "    \"phase_b\": \"0x%08X\",\n"
+                "    \"phase_c\": \"0x%08X\"\n"
+                "  }\n"
+                "}",
+                currentCalibration.channelID,
+                currentCalibration.phase_a,
+                currentCalibration.phase_b,
+                currentCalibration.phase_c);
     }
 }
 
@@ -696,36 +823,54 @@ void ProcessCommand(void)
 {
     rxBuffer[rxSize] = '\0';
     char *ch;
-    
-    
-    if(rxBuffer[0] == '{' && rxBuffer[rxSize - 1] == '}'){ // check for JSON of calibration
+
+    if (rxBuffer[0] == '{' && rxBuffer[rxSize - 1] == '}')
+    {
+        // check for JSON of calibration
         ch = strstr(rxBuffer, "command");
-        if(ch != NULL){
-            ch = strchr(ch,':');
-            if(ch){
+        if (ch != NULL)
+        {
+            ch = strchr(ch, ':');
+            if (ch)
+            {
                 ch++;
-                while(*ch == ' ' || *ch == '\"') ch++;
+                while (*ch == ' ' || *ch == '\"')
+                    ch++;
                 char value[32];
                 int i = 0;
-                while(*ch && *ch != '\"'){
+                while (*ch && *ch != '\"')
+                {
                     value[i++] = *ch++;
                 }
                 value[i] = '\0';
-                if(strcmp(value,"set-ct-ratio") == 0){
+                if (strcmp(value, "set-ct-ratio") == 0)
+                {
                     parse_ct_ratio_json();
                 }
-                else if(strcmp(value,"set-i-offset") == 0){
-                    parse_i_offset_json();
-                }
-                else if(strcmp(value,"set-v-offset") == 0){
+                else if (strcmp(value, "set-v-offset") == 0)
+                {
                     parse_v_offset_json();
                 }
-                else{
+                else if (strcmp(value, "set-i-offset") == 0)
+                {
+                    parse_i_offset_json();
+                }
+                else if (strcmp(value, "v-calibration") == 0)
+                {
+                    parse_v_calibration_json();
+                }
+                else if (strcmp(value, "i-calibration") == 0)
+                {
+                    parse_i_calibration_json();
+                }
+                else
+                {
                     strcpy(txBuffer, "None Of The Three Calibration Parameter Values Found In JSON!");
                 }
             }
         }
-        else{
+        else
+        {
             strcpy(txBuffer, "JSON does not contain command key!");
         }
     }
@@ -789,23 +934,23 @@ void ProcessCommand(void)
         ConvertStatusToHexAndSend();
     }
     /* These calibration have been received in first if condition */
-    
-//    else if (strcmp(rxBuffer, "ct-ratio") == 0)
-//    {
-////        strcpy(txBuffer, "Calibration 1: Step 1 settings");
-//        strcpy(txBuffer, "CT Ratio updated successfully!");
-//        
-////        ct_ratio_calibration(100);
-////        send_response_ct_ratio();
-//    }
-//    else if (strcmp(rxBuffer, "cal-2") == 0)
-//    {
-//        strcpy(txBuffer, "Calibration 2: Step 2 settings");
-//    }
-//    else if (strcmp(rxBuffer, "cal-3") == 0)
-//    {d
-//        strcpy(txBuffer, "Calibration 3: Step 3 settings");
-//    }
+
+    //    else if (strcmp(rxBuffer, "ct-ratio") == 0)
+    //    {
+    ////        strcpy(txBuffer, "Calibration 1: Step 1 settings");
+    //        strcpy(txBuffer, "CT Ratio updated successfully!");
+    //
+    ////        ct_ratio_calibration(100);
+    ////        send_response_ct_ratio();
+    //    }
+    //    else if (strcmp(rxBuffer, "cal-2") == 0)
+    //    {
+    //        strcpy(txBuffer, "Calibration 2: Step 2 settings");
+    //    }
+    //    else if (strcmp(rxBuffer, "cal-3") == 0)
+    //    {d
+    //        strcpy(txBuffer, "Calibration 3: Step 3 settings");
+    //    }
     else if (strcmp(rxBuffer, "cal-4") == 0)
     {
         strcpy(txBuffer, "Calibration 4: Step 4 settings");
@@ -832,14 +977,33 @@ void SetupUSART(void)
     SERCOM2_USART_Read((void *)rxBuffer, 1);
 }
 
+void flash_check()
+{
+    for (uint8_t j = 0; j < 3; j++)
+    {
+        for(uint8_t i=1; i<=4; i++)
+        {
+            LED_Set(i);
+            delay_ms(3000);
+        }
+        for(uint8_t i=4; i>0; i--)
+        {
+            LED_Clear(i);
+            delay_ms(3000);
+        }
+    }
+    
+}
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Main Entry Point
 // *****************************************************************************
- int main(void)
+int main(void)
 {
     SYS_Initialize(NULL);
     TC0_TimerStart();
+    flash_check();
     ADE9000Setup();
     SetupUSART();
 
@@ -930,20 +1094,20 @@ void SetupUSART(void)
             ADE9000_hotplug[SPI_CSS6 - 1] = 0;
             ADE9000MeasurementsForUnit_NON(SPI_CSS6, 6);
         }
-         if (ADE9000_status[SPI_CSS7 - 1] == 1)
-         {
-             if (ADE9000_hotplug[SPI_CSS7 - 1] == 0)
-             {
-                 ADE9000SetupForUnit(SPI_CSS7);
-                 ADE9000_hotplug[SPI_CSS7 - 1] = 1;
-             }
-             ADE9000MeasurementsForUnit(SPI_CSS7, 7);
-         }
-         else
-         {
-             ADE9000_hotplug[SPI_CSS7 - 1] = 0;
-             ADE9000MeasurementsForUnit_NON(SPI_CSS7, 7);
-         }
+        if (ADE9000_status[SPI_CSS7 - 1] == 1)
+        {
+            if (ADE9000_hotplug[SPI_CSS7 - 1] == 0)
+            {
+                ADE9000SetupForUnit(SPI_CSS7);
+                ADE9000_hotplug[SPI_CSS7 - 1] = 1;
+            }
+            ADE9000MeasurementsForUnit(SPI_CSS7, 7);
+        }
+        else
+        {
+            ADE9000_hotplug[SPI_CSS7 - 1] = 0;
+            ADE9000MeasurementsForUnit_NON(SPI_CSS7, 7);
+        }
         if (ADE9000_status[SPI_CSS8 - 1] == 1)
         {
             if (ADE9000_hotplug[SPI_CSS8 - 1] == 0)
@@ -972,20 +1136,20 @@ void SetupUSART(void)
             ADE9000_hotplug[SPI_CSS9 - 1] = 0;
             ADE9000MeasurementsForUnit_NON(SPI_CSS9, 9);
         }
-       if (ADE9000_status[SPI_CSS10 - 1] == 1)
-       {
-           if (ADE9000_hotplug[SPI_CSS10 - 1] == 0)
-           {
-               ADE9000SetupForUnit(SPI_CSS10);
-               ADE9000_hotplug[SPI_CSS10 - 1] = 1;
-           }
-           ADE9000MeasurementsForUnit(SPI_CSS10, 10);
-       }
-       else
-       {
-           ADE9000_hotplug[SPI_CSS10 - 1] = 0;
-           ADE9000MeasurementsForUnit_NON(SPI_CSS10, 10);
-       }
+        if (ADE9000_status[SPI_CSS10 - 1] == 1)
+        {
+            if (ADE9000_hotplug[SPI_CSS10 - 1] == 0)
+            {
+                ADE9000SetupForUnit(SPI_CSS10);
+                ADE9000_hotplug[SPI_CSS10 - 1] = 1;
+            }
+            ADE9000MeasurementsForUnit(SPI_CSS10, 10);
+        }
+        else
+        {
+            ADE9000_hotplug[SPI_CSS10 - 1] = 0;
+            ADE9000MeasurementsForUnit_NON(SPI_CSS10, 10);
+        }
         if (ADE9000_status[SPI_CSS11 - 1] == 1)
         {
             if (ADE9000_hotplug[SPI_CSS11 - 1] == 0)
