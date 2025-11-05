@@ -22,14 +22,9 @@ public:
 signals:
     void measureExit();
     void requestSerialCommand(const QString &cmd);
+
 private slots:
     void on_back_1_clicked();
-
-    void on_back_2_clicked();
-
-    void on_pushButton_13_clicked();
-
-    void on_pushButton_14_clicked();
 
     void on_load_btn_clicked();
 

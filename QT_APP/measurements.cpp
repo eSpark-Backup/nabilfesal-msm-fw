@@ -88,28 +88,6 @@ void Measurements::on_back_1_clicked()
 }
 
 
-void Measurements::on_back_2_clicked()
-{
-    emit measureExit();
-}
-
-
-void Measurements::on_pushButton_13_clicked()
-{
-    FactDialog dialog(this);
-    dialog.setLabel(std::string("Please make sure to input the correct \n nominal voltage and reboot the system."));
-    dialog.exec();
-}
-
-
-void Measurements::on_pushButton_14_clicked()
-{
-    FactDialog dialog(this);
-    dialog.setLabel(std::string("Please make sure to input the correct \n nominal current and reboot the system."));
-    dialog.exec();
-}
-
-
 void Measurements::on_load_btn_clicked()
 {
     if (isRatioActivated)

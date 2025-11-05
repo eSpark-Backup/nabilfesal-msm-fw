@@ -506,6 +506,9 @@ void MainWindow::onAdminLogin()
 void MainWindow::onFactoryLogin()
 {
     isLogin = true;
+    if (!measure)
+        measure = new Measurements;
+
     if (!factorySettings)
         factorySettings = new FactorySettings(hardwareVersion, softwareVersion);
 
@@ -514,6 +517,24 @@ void MainWindow::onFactoryLogin()
         isLogin = false;
         login->showFullScreen();
         factorySettings->hide();
+    });
+
+    connect(factorySettings, &FactorySettings::ctRatio, this, [this]() {
+        factorySettings->hide();
+        measure->showFullScreen();
+        measure->ration_btn_clicked();
+    });
+
+    connect(factorySettings, &FactorySettings::i_offset, this, [this]() {
+        factorySettings->hide();
+        measure->showFullScreen();
+        measure->i_off_btn_clicked();
+    });
+
+    connect(factorySettings, &FactorySettings::v_offset, this, [this]() {
+        factorySettings->hide();
+        measure->showFullScreen();
+        measure->v_off_btn_clicked();
     });
 
     // load fact settings (factory -> factSettings)
@@ -525,14 +546,14 @@ void MainWindow::onFactoryLogin()
         factorySettings->hide();
     });
 
+    connect(measure, &Measurements::measureExit, this, [this]() {
+        factorySettings->showFullScreen();
+        measure->hide();
+    });
+
     // load measurements
     connect(factorySettings, &FactorySettings::loadMeasurements, this, [this]() {
-        if (!measure)
-            measure = new Measurements;
-        connect(measure, &Measurements::measureExit, this, [this]() {
-            factorySettings->showFullScreen();
-            measure->hide();
-        });
+
         connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd) {
             if (pollTimer && pollTimer->isActive()) {
                 pollTimer->stop();

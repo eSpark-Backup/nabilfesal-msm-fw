@@ -8,7 +8,6 @@ FactorySettings::FactorySettings(QString hardwareVersion, QString softwareVersio
 {
     ui->setupUi(this);
     ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
-    measure = new Measurements;
 }
 
 FactorySettings::~FactorySettings()
@@ -22,10 +21,10 @@ void FactorySettings::on_pushButton_clicked()
 }
 
 
-void FactorySettings::on_measurement_clicked()
-{
-    emit loadMeasurements();
-}
+// void FactorySettings::on_measurement_clicked()
+// {
+//     emit loadMeasurements();
+// }
 
 
 void FactorySettings::on_system_clicked()
@@ -49,19 +48,19 @@ void FactorySettings::on_reboot_btn_clicked()
 
 void FactorySettings::on_ration_btn_clicked()
 {
-    measure->ration_btn_clicked();
+    emit ctRatio();
 }
 
 
 void FactorySettings::on_i_off_btn_clicked()
 {
-    measure->i_off_btn_clicked();
+    emit i_offset();
 }
 
 
 void FactorySettings::on_v_off_btn_clicked()
 {
-    measure->v_off_btn_clicked();
+    emit v_offset();
 }
 
 

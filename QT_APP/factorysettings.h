@@ -20,11 +20,14 @@ signals:
     void factoryExit();
     void loadMeasurements();
     void loadFactSettings();
+    void ctRatio();
+    void i_offset();
+    void v_offset();
 
 private slots:
     void on_pushButton_clicked();
 
-    void on_measurement_clicked();
+    // void on_measurement_clicked();
 
     void on_system_clicked();
 
