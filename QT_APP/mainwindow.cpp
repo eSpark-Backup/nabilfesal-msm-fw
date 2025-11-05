@@ -528,6 +528,8 @@ void MainWindow::onFactoryLogin()
         factorySettings->hide();
     });
 
+    connect(gainCalibrator, &CalibrationDialog::requestSerialCommand, measure, &Measurements::requestSerialCommand);
+
     connect(gainCalibrator, &CalibrationDialog::exitScreen, this, [this]() {
         gainCalibrator->hide();
         factorySettings->showFullScreen();
@@ -565,20 +567,13 @@ void MainWindow::onFactoryLogin()
         measure->hide();
     });
 
-    // load measurements
-    connect(factorySettings, &FactorySettings::loadMeasurements, this, [this]() {
-
-        connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd) {
-            if (pollTimer && pollTimer->isActive()) {
-                pollTimer->stop();
-            }
-            emit requestSerialCommand(cmd);
-            waitingForCalibrationResponse = true;
-            responseWaitTimer->start(500);
-        });
-
-        measure->showFullScreen();
-        factorySettings->hide();
+    connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd) {
+        if (pollTimer && pollTimer->isActive()) {
+            pollTimer->stop();
+        }
+        emit requestSerialCommand(cmd);
+        waitingForCalibrationResponse = true;
+        responseWaitTimer->start(500);
     });
 
     factorySettings->showFullScreen();

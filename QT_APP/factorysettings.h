@@ -18,7 +18,6 @@ public:
 
 signals:
     void factoryExit();
-    void loadMeasurements();
     void loadFactSettings();
     void ctRatio();
     void i_offset();

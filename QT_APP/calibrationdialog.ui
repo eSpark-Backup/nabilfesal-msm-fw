@@ -249,6 +249,12 @@ QPushButton:focus {
     font-size: 15px;
     color: black;</string>
          </property>
+         <property name="text">
+          <string>0.0</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
         </widget>
        </item>
       </layout>
@@ -315,6 +321,9 @@ QPushButton:focus {
     padding: 6px 8px;
     font-size: 15px;
     color: black;</string>
+         </property>
+         <property name="text">
+          <string>0.0</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -385,6 +394,12 @@ QPushButton:focus {
     padding: 6px 8px;
     font-size: 15px;
     color: black;</string>
+         </property>
+         <property name="text">
+          <string>0.0</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
