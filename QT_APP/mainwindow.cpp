@@ -764,6 +764,28 @@ void MainWindow::sendRatioSettings()
             emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
         }
     }
+
+    QFile vOffsetRespFile("config/_offset_response.json");
+    if (vOffsetRespFile.open(QIODevice::ReadOnly)) {
+        QByteArray jsonData = vOffsetRespFile.readAll();
+        vOffsetRespFile.close();
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        if (!doc.isNull() && doc.isObject()) {
+            QJsonObject obj = doc.object();
+            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
+        }
+    }
+
+    QFile iOffsetRespFile("config/i_offset_response.json");
+    if (iOffsetRespFile.open(QIODevice::ReadOnly)) {
+        QByteArray jsonData = iOffsetRespFile.readAll();
+        iOffsetRespFile.close();
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        if (!doc.isNull() && doc.isObject()) {
+            QJsonObject obj = doc.object();
+            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
+        }
+    }
 }
 
 void MainWindow::onChannelDataWatchdogTimeout()
