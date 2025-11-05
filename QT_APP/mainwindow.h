@@ -43,6 +43,7 @@ signals:
     void receivedChannelData(int channel, const QJsonObject &data);
     void requestSerialCommand(const QString &cmd);
     void homeDetected();
+    void enableSendButton();
 
 private slots:
     // USB handling

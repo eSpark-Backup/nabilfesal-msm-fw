@@ -74,6 +74,20 @@ bool CalibrationDialog::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
+void CalibrationDialog::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    ui->backPushBtn->setFocusPolicy(Qt::NoFocus);
+    setFocus(Qt::OtherFocusReason);
+    if (keyboard && keyboard->isVisible()) {
+        keyboard->hide();
+    }
+
+    ui->phase_A_input->setText("0.0");
+    ui->phase_B_input->setText("0.0");
+    ui->phase_C_input->setText("0.0");
+}
+
 
 void CalibrationDialog::on_sendpushBtn_clicked()
 {
@@ -102,12 +116,21 @@ void CalibrationDialog::on_sendpushBtn_clicked()
     QString jsonString = QString::fromUtf8(QJsonDocument(rootObj).toJson(QJsonDocument::Compact));
     qDebug().noquote() << "Calibration JSON:" << jsonString;
     emit requestSerialCommand(jsonString);
+    ui->sendpushBtn->setEnabled(false);
+    ui->backPushBtn->setEnabled(false);
 }
 
 
 void CalibrationDialog::on_backPushBtn_clicked()
 {
     emit exitScreen();
+}
+
+
+void CalibrationDialog::enableButton()
+{
+    ui->sendpushBtn->setEnabled(true);
+    ui->backPushBtn->setEnabled(true);
 }
 
 

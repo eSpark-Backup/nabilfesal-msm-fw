@@ -71,9 +71,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(responseWaitTimer, &QTimer::timeout, this, [this]() {
         if (waitingForCalibrationResponse) {
             waitingForCalibrationResponse = false;
+            emit enableSendButton();
             QMessageBox::critical(this, "Calibration Timeout",
                                 "No response from ATSAM received for calibration settings.");
             if (pollTimer) pollTimer->start(200);
+            
         }
     });
 
@@ -446,6 +448,7 @@ void MainWindow::onGenericResponseReady(const QString &resp)
 {
     if (waitingForCalibrationResponse) {
         waitingForCalibrationResponse = false;
+        emit enableSendButton();
         responseWaitTimer->stop();
     }
 
@@ -546,6 +549,7 @@ void MainWindow::onFactoryLogin()
         factorySettings->hide();
     });
 
+    connect(this, &MainWindow::enableSendButton, gainCalibrator, &CalibrationDialog::enableButton);
     connect(gainCalibrator, &CalibrationDialog::requestSerialCommand, measure, &Measurements::requestSerialCommand);
 
     connect(gainCalibrator, &CalibrationDialog::exitScreen, this, [this]() {
@@ -603,7 +607,7 @@ void MainWindow::onFactoryLogin()
         }
         emit requestSerialCommand(cmd);
         waitingForCalibrationResponse = true;
-        responseWaitTimer->start(500);
+        responseWaitTimer->start(7000);
     });
 
     factorySettings->showFullScreen();

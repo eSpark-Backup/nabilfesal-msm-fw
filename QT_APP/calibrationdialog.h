@@ -16,6 +16,7 @@ public:
     explicit CalibrationDialog(QWidget *parent = nullptr);
     void loadCalibrationScreen(bool isEnable);
     void parse_and_save_response(const QJsonObject &response);
+    void enableButton();
     ~CalibrationDialog();
 
 signals:
@@ -27,6 +28,7 @@ private slots:
     void on_backPushBtn_clicked();
 
 protected:
+    void showEvent(QShowEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
