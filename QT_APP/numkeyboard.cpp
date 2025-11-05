@@ -17,56 +17,98 @@ NumKeyboard::NumKeyboard(QWidget *parent)
     for (QPushButton *button : numberButtons) {
         connect(button, &QPushButton::clicked, this, &NumKeyboard::numberClicked);
     }
+
+     // Sync key_input <-> targetLineEdit
+    connect(ui->numpad_input, &QLineEdit::textChanged, this, [this](const QString &text) {
+        if (targetLineEdit) {
+            targetLineEdit->blockSignals(true);
+            targetLineEdit->setText(text);
+            targetLineEdit->setCursorPosition(ui->numpad_input->cursorPosition());
+            targetLineEdit->blockSignals(false);
+        }
+    });
+
+    connect(ui->numpad_input, &QLineEdit::cursorPositionChanged, this, [this](int, int) {
+        if (targetLineEdit) {
+            targetLineEdit->setCursorPosition(ui->numpad_input->cursorPosition());
+        }
+    });
+
     setAttribute(Qt::WA_TranslucentBackground);
+}
+
+void NumKeyboard::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    if (parentWidget()) {
+        int x = (parentWidget()->width() - width()) / 2;
+        int y = parentWidget()->height() - height();
+        move(x, y);
+    }
 }
 
 void NumKeyboard::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton) {
-        dragStartPos = event->globalPos() - frameGeometry().topLeft();
-        event->accept();
-    }
+    QWidget::mousePressEvent(event);  // do nothing special
 }
 
 void NumKeyboard::mouseMoveEvent(QMouseEvent *event)
 {
-    if (event->buttons() & Qt::LeftButton) {
-        move(event->globalPos() - dragStartPos);
-        event->accept();
-    }
+    QWidget::mouseMoveEvent(event);   // do nothing special
 }
+
 
 NumKeyboard::~NumKeyboard()
 {
     delete ui;
 }
 
+
 void NumKeyboard::setTarget(QLineEdit *lineEdit)
 {
     targetLineEdit = lineEdit;
+
+    if (targetLineEdit) {
+        // ① Copy text from target into keyboard preview
+        ui->numpad_input->setText(targetLineEdit->text());
+        ui->numpad_input->setEchoMode(targetLineEdit->echoMode());
+        ui->numpad_input->setCursorPosition(targetLineEdit->cursorPosition());
+
+        // ② Keep preview in sync when target changes externally
+        connect(targetLineEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
+            ui->numpad_input->blockSignals(true);
+            ui->numpad_input->setText(text);
+            ui->numpad_input->setCursorPosition(targetLineEdit->cursorPosition());
+            ui->numpad_input->blockSignals(false);
+        });
+    } else {
+        ui->numpad_input->clear();
+    }
 }
+
 
 void NumKeyboard::numberClicked()
 {
-    if (!targetLineEdit) return;
-
     QPushButton *clickedButton = qobject_cast<QPushButton*>(sender());
     if (!clickedButton) return;
 
     QString text = clickedButton->text();
-    targetLineEdit->insert(text);
-
+    ui->numpad_input->insert(text);  // now inserts into preview, not directly into the target
 }
 
-void NumKeyboard::on_enter_clicked()
-{
-    emit targetLineEdit->editingFinished();
-}
 
 void NumKeyboard::on_back_clicked()
 {
-    QString text = targetLineEdit->text();
+    QString text = ui->numpad_input->text();
     text.chop(1);
-    targetLineEdit->setText(text);
+    ui->numpad_input->setText(text);
 }
+
+
+void NumKeyboard::on_enter_clicked()
+{
+    if (targetLineEdit)
+        emit targetLineEdit->editingFinished();
+}
+
 
