@@ -26,6 +26,7 @@
 #define UART_RX_BUFFER_SIZE 512
 #define UART_TX_BUFFER_SIZE (TOTAL_ARRAYSIZE * 2 + 1)
 
+void timer_callback(TC_TIMER_STATUS status, uintptr_t context);
 void delay_ms(uint32_t milliseconds);
 float extract_channel_values(const char* channel);
 void parse_ct_ratio_json();

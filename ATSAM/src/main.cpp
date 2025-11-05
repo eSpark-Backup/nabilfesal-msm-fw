@@ -66,22 +66,14 @@ enum MyEnum
 
 typedef struct
 {
-    uint32_t phase_a;
-    uint32_t phase_b;
-    uint32_t phase_c;
-} VoltageCalibration;
-
-typedef struct
-{
-    uint16_t channelID;
-    uint32_t phase_a;
-    uint32_t phase_b;
-    uint32_t phase_c;
+    uint8_t channelID;
+    float phase_a;
+    float phase_b;
+    float phase_c;
 } CurrentCalibration;
 
 ADE9000UnitMeasurements unitMeasurements[TOTAL_ADE9000_UNITS];
 ChannelConfig channelConfig[TOTAL_ADE9000_UNITS];
-VoltageCalibration voltageCalibration;
 CurrentCalibration currentCalibration;
 
 uint8_t ADE9000_hotplug[TOTAL_ADE9000_UNITS];
@@ -97,6 +89,8 @@ char txBuffer[UART_TX_BUFFER_SIZE];
 size_t rxSize = 0;
 volatile bool rxComplete = false;
 
+volatile uint32_t msCounter = 0;            // ticks count from tc0
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Functions
@@ -107,17 +101,15 @@ static inline float cleanFloat(float x)
     return (isnan(x) || isinf(x)) ? 0.0f : x;
 }
 
+void timer_callback(TC_TIMER_STATUS status, uintptr_t context)
+{
+    msCounter++;
+}
+
 void delay_ms(uint32_t milliseconds)
 {
-    TC0_TimerStart();
-    for (uint32_t ms = 0; ms < milliseconds; ms++)
-    {
-        TC0_Timer16bitCounterSet(0);
-        while (TC0_Timer16bitCounterGet() < 2000)
-        {
-        }
-    }
-    TC0_TimerStop();
+    uint32_t start = msCounter;
+    while ((msCounter - start) < milliseconds);
 }
 
 void storeIEEE754InBuffer(float floatValue, uint8_t *buffer, uint16_t index)
@@ -755,14 +747,17 @@ void parse_v_calibration_json()
     if (ch != NULL)
     {
         char key[10];
-        // voltage_gain_calibration(extract_phase_value("phase_a"), PHASE_A);
-        // voltage_gain_calibration(extract_phase_value("phase_b"), PHASE_B);
-        // voltage_gain_calibration(extract_phase_value("phase_c"), PHASE_C);
+        memset(reg_values, 0, sizeof(reg_values));
+
+        voltage_gain_calibration(extract_phase_value("phase_a"), PHASE_A);
+        voltage_gain_calibration(extract_phase_value("phase_b"), PHASE_B);
+        voltage_gain_calibration(extract_phase_value("phase_c"), PHASE_C);
         
         // Start building JSON
+        // memset(txBuffer, 0, sizeof(txBuffer));
         strcpy(txBuffer, "{\n  \"command\": \"v-calibration\",\n  \"voltage\": {\n    \"channels\": [\n");
 
-        for (int i = 1; i <= 12; i++)
+        for (int i = 0; i < TOTAL_ADE9000_UNITS; i++)
         {
             char temp[128];
             sprintf(temp,
@@ -773,8 +768,8 @@ void parse_v_calibration_json()
                     "        \"phase_c\": \"0x%08X\"\n"
                     "      }%s\n",
                     i,
-                    voltageCalibration.phase_a, voltageCalibration.phase_b, voltageCalibration.phase_c,
-                    (i < 12) ? "," : "");
+                    reg_values[i][PHASE_A], reg_values[i][PHASE_B], reg_values[i][PHASE_C],
+                    (i < TOTAL_ADE9000_UNITS) ? "," : "");
 
             strcat(txBuffer, temp);
         }
@@ -792,20 +787,41 @@ void parse_i_calibration_json()
         currentCalibration.phase_b   = extract_phase_value("phase_b");
         currentCalibration.phase_c   = extract_phase_value("phase_c");
 
+        uint8_t channel_id_absolute = currentCalibration.channelID - 1;
+
         memset(txBuffer, 0, sizeof(txBuffer));
+
+        // Start JSON
         sprintf(txBuffer,
                 "{\n  \"command\": \"i-calibration\",\n"
                 "  \"current\": {\n"
-                "    \"ID\": %d,\n"
-                "    \"phase_a\": \"0x%08X\",\n"
-                "    \"phase_b\": \"0x%08X\",\n"
-                "    \"phase_c\": \"0x%08X\"\n"
-                "  }\n"
-                "}",
-                currentCalibration.channelID,
-                currentCalibration.phase_a,
-                currentCalibration.phase_b,
-                currentCalibration.phase_c);
+                "    \"ID\": %d,\n",
+                currentCalibration.channelID);
+
+        char temp[128];
+        bool first = true; // to manage commas properly
+
+        // Process and append only non-zero phases
+        if (currentCalibration.phase_a != 0) {
+            current_gain_calibration(currentCalibration.phase_a, channel_id_absolute, PHASE_A);
+            sprintf(temp, "    \"phase_a\": \"0x%08X\"", reg_values[currentCalibration.channelID][PHASE_A]);
+            strcat(txBuffer, temp);
+            first = false;
+        }
+        if (currentCalibration.phase_b != 0) {
+            current_gain_calibration(currentCalibration.phase_b, channel_id_absolute, PHASE_B);
+            sprintf(temp, "%s\n    \"phase_b\": \"0x%08X\"", first ? "" : ",", reg_values[currentCalibration.channelID][PHASE_B]);
+            strcat(txBuffer, temp);
+            first = false;
+        }
+        if (currentCalibration.phase_c != 0) {
+            current_gain_calibration(currentCalibration.phase_c, channel_id_absolute, PHASE_C);
+            sprintf(temp, "%s\n    \"phase_c\": \"0x%08X\"", first ? "" : ",", reg_values[currentCalibration.channelID][PHASE_C]);
+            strcat(txBuffer, temp);
+        }
+
+        // Close JSON
+        strcat(txBuffer, "\n  }\n}");
     }
 }
 
@@ -1004,12 +1020,12 @@ void flash_check()
         for(uint8_t i=1; i<=4; i++)
         {
             LED_Set(i);
-            delay_ms(3000);
+            delay_ms(100);
         }
         for(uint8_t i=4; i>0; i--)
         {
             LED_Clear(i);
-            delay_ms(3000);
+            delay_ms(100);
         }
     }
     
@@ -1023,6 +1039,7 @@ int main(void)
 {
     SYS_Initialize(NULL);
     TC0_TimerStart();
+    TC0_TimerCallbackRegister(timer_callback, NULL);
     flash_check();
     ADE9000Setup();
     SetupUSART();

@@ -123,7 +123,8 @@ uint32_t ade9000_get_phase_register(uint32_t base_addr, ADE9000_phase phase, ADE
     if (phase >= TOTAL_PHASES)
         return base_addr;           // fallback to base address if invalid phase
 
-    return base_addr + (phase * phase_offset_table[parameter]);
+    uint32_t reg_addr = base_addr + (phase * phase_offset_table[parameter]);
+    return reg_addr;
 }
 
 void SPI_Write(uint16_t address, uint32_t data, bool is32Bit, SPI_CSS_Pin css_pin)
@@ -764,26 +765,27 @@ void ReadTempRegnValue(TemperatureRegs *Data, SPI_CSS_Pin css_pin)
 // Section: ADE9000 Calibration Functions
 // *****************************************************************************
 // *****************************************************************************
-int32_t calculate_gain_reg_value(ADE9000_parameter_type parameter, ADE9000_phase phase, uint32_t expected_reg_value, uint8_t channel)
+int32_t calculate_gain_reg_value(ADE9000_parameter_type parameter, ADE9000_phase phase, uint32_t expected_reg_value, uint8_t channel_id)
 {   // helper function for calculating gain register value
 
     uint32_t reg_addr = ade9000_get_phase_register(((parameter == CURRENT_PARAMETER) ? ADDR_AIRMS : ((parameter == VOLTAGE_PARAMETER) ? ADDR_AVRMS : 0)),
                                                      phase, parameter);
 
-    uint32_t measured_reg_value = SPI_Read(reg_addr, true, get_css_pin(channel));
+    uint32_t measured_reg_value = SPI_Read(reg_addr, true, get_css_pin(channel_id));
     double ratio = ((double)expected_reg_value / (double)measured_reg_value) - 1.0;
     int32_t gain_value = (int32_t)(ratio * CONST_2_27);
 
     return gain_value;
 }
 
-void current_gain_calibration(float current, uint8_t channel, ADE9000_phase phase)
+void current_gain_calibration(float current, uint8_t channel_id, ADE9000_phase phase)
 {
 
     // NOMINAL_INPUT_CURRENT and NOMINAL_INPUT_VOLTAGE are also supposed to be received from host controller (V3S)
     float i_nominal = current;
 
-    float current_transfer_func = (float)(R_BURDEN / (float)(channelConfig[channel].ctRatio));
+    // float current_transfer_func = (float)(R_BURDEN / (float)100.0);
+    float current_transfer_func = (float)(R_BURDEN / (float)(channelConfig[channel_id].ctRatio));
     float input_current_ADC = (i_nominal * current_transfer_func);
     float i_fsp = (input_current_ADC) / 0.707; // @ gain 1      (ideally fetch the set gain value from the register)
 
@@ -791,21 +793,21 @@ void current_gain_calibration(float current, uint8_t channel, ADE9000_phase phas
     uint32_t expected_irms_value = (i_fsp * ADE9000_RMS_FULL_SCALE_CODES);
 
     // Reset gain registers to 0 first
-    SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, phase, CALIBRATION_PARAMETER), (uint32_t)0x00, true, get_css_pin(channel));
-    // SPI_Write(ADDR_BIGAIN, (uint32_t)0x00, true, get_css_pin(channel));
-    // SPI_Write(ADDR_CIGAIN, (uint32_t)0x00, true, get_css_pin(channel));
+    SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, phase, CALIBRATION_PARAMETER), (uint32_t)0x00, true, get_css_pin(channel_id));
+    // SPI_Write(ADDR_BIGAIN, (uint32_t)0x00, true, get_css_pin(channel_id));
+    // SPI_Write(ADDR_CIGAIN, (uint32_t)0x00, true, get_css_pin(channel_id));
 
-    delay_ms(1); // wait for some time after resetting gain registers to 0
+    delay_ms(5000); // wait for some time after resetting gain registers to 0
 
-    reg_values[channel][phase] = (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, phase, expected_irms_value, channel);
+    reg_values[channel_id][phase] = (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, phase, expected_irms_value, channel_id);
 
-    SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, phase, CALIBRATION_PARAMETER), reg_values[channel][phase], true, get_css_pin(channel));
-    // SPI_Write(ADDR_BIGAIN, (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, PHASE_B, expected_irms_value, channel), true, get_css_pin(channel));
-    // SPI_Write(ADDR_CIGAIN, (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, PHASE_C, expected_irms_value, channel), true, get_css_pin(channel));
+    SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, phase, CALIBRATION_PARAMETER), reg_values[channel_id][phase], true, get_css_pin(channel_id));
+    // SPI_Write(ADDR_BIGAIN, (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, PHASE_B, expected_irms_value, channel_id), true, get_css_pin(channel_id));
+    // SPI_Write(ADDR_CIGAIN, (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, PHASE_C, expected_irms_value, channel_id), true, get_css_pin(channel_id));
     
     /* Conversion Constants */
     // Current Conversion Constant = (I nominal * 10^6)/(Ifsp*full_scale_rms_codes);
-    // calibration_data[channel].cal_irms_cc = (i_nominal * 1000000.0) / (expected_irms_value);         // only dependant on CT-ratio
+    // calibration_data[channel_id].cal_irms_cc = (i_nominal * 1000000.0) / (expected_irms_value);         // only dependant on CT-ratio
 
 }
 
@@ -821,31 +823,41 @@ void voltage_gain_calibration(float voltage, ADE9000_phase phase)
     // // Now calibrate the register values
     uint32_t expected_vrms_value = (v_fsp * ADE9000_RMS_FULL_SCALE_CODES);
     
-    for(uint8_t channel=0; channel<TOTAL_ADE9000_UNITS; channel++)
+    // for(uint8_t channel_id=0; channel_id<1; channel_id++)
+    for(uint8_t channel_id=0; channel_id<TOTAL_ADE9000_UNITS; channel_id++)
     {
-        SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER), 0x00000000, true, get_css_pin(channel));
-        delay_ms(1); // wait for some time after resetting gain registers to 0
-        reg_values[channel][phase] = (uint32_t)calculate_gain_reg_value(VOLTAGE_PARAMETER, phase, expected_vrms_value, channel);
+        SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER), 0x00000000, true, get_css_pin(channel_id));
+        // delay_ms(100); // wait for some time after resetting gain registers to 0
+    }
+    
+    delay_ms(5000); // wait for some time after resetting gain registers to 0
+    
+    // for(uint8_t channel_id=0; channel_id<1; channel_id++)
+    for(uint8_t channel_id=0; channel_id<TOTAL_ADE9000_UNITS; channel_id++)
+    {
+        uint32_t gain_reg = SPI_Read(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER), true, get_css_pin(channel_id));
+        reg_values[channel_id][phase] = (uint32_t)calculate_gain_reg_value(VOLTAGE_PARAMETER, phase, expected_vrms_value, channel_id);
         SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER),
-                  reg_values[channel][phase],
-                  true, get_css_pin(channel)
-                 );
+                reg_values[channel_id][phase],
+                true, get_css_pin(channel_id)
+            );
+        // delay_ms(100); // wait for some time after resetting gain registers to 0
     }
 
     /* Conversion Constants */          // no need to calculate here, all phases and channels have same voltage conversion constant
     // Current Conversion Constant = (V nominal * 10^6)/(Vfsp*full_scale_rms_codes);
-    // calibration_data[channel].cal_vrms_cc = (v_nominal * 1000000.0) / (v_fsp * ADE9000_RMS_FULL_SCALE_CODES);
-    // calibration_data[channel].cal_vrms_cc = (1000000.0 * 0.707) / (voltage_transfer_func * ADE9000_RMS_FULL_SCALE_CODES);
+    // calibration_data[channel_id].cal_vrms_cc = (v_nominal * 1000000.0) / (v_fsp * ADE9000_RMS_FULL_SCALE_CODES);
+    // calibration_data[channel_id].cal_vrms_cc = (1000000.0 * 0.707) / (voltage_transfer_func * ADE9000_RMS_FULL_SCALE_CODES);
 }
 
-void ct_ratio_calibration(uint16_t ratio, uint8_t channel)
+void ct_ratio_calibration(uint16_t ratio, uint8_t channel_id)
 {
 
     /* Conversion Constants */
     // calibration_data[channel].cal_irms_cc = (SQRT_2 * current_transfer_func * ADE9000_RMS_FULL_SCALE_CODES);
-    calibration_data[channel].cal_irms_cc = (1000000.0 * 0.707 * ratio) / (R_BURDEN * (float)ADE9000_RMS_FULL_SCALE_CODES);
-    calibration_data[channel].cal_power_cc = (1000.0 * 0.707 * 0.707 * ratio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION);
-    calibration_data[channel].cal_energy_cc = (1000000.0 * 0.707 * 0.707 * ratio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION * 3600.0f * 8000.0f * 0.0001220703125f); // 2^(-13) = 0.0001220703125f
+    calibration_data[channel_id].cal_irms_cc = (1000000.0 * 0.707 * ratio) / (R_BURDEN * (float)ADE9000_RMS_FULL_SCALE_CODES);
+    calibration_data[channel_id].cal_power_cc = (1000.0 * 0.707 * 0.707 * ratio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION);
+    calibration_data[channel_id].cal_energy_cc = (1000000.0 * 0.707 * 0.707 * ratio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION * 3600.0f * 8000.0f * 0.0001220703125f); // 2^(-13) = 0.0001220703125f
     // need to use accumulation time here instead of 8000
 
 }
