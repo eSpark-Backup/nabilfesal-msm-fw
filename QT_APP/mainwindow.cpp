@@ -14,6 +14,7 @@
 #include <QApplication>
 #include "utils.h"
 #include "factdialog.h"
+#include "toast.h"
 
 // -----------------------------
 // Constructor / Destructor
@@ -84,8 +85,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Send CT/I/V ratio and offsets at startup (if config present)
     startApp = true;
-    sendRatioSettings();
-    QTimer::singleShot(20000, this, [this]() { startApp = false; });
+    // sendRatioSettings();
+    if (pollTimer) pollTimer->stop();
+
+    QStringList files = {
+        "config/ct_ratio_settings.json",
+        "config/i_offset_settings.json",
+        "config/v_offset_settings.json",
+        "config/v_offset_response.json",
+        "config/i_offset_response.json"
+    };
+    sendFileWithDelay(files);
+
+    QTimer::singleShot(30000, this, [this]() { startApp = false; if (pollTimer) pollTimer->start(200);});
 
     qApp->installEventFilter(this);
 }
@@ -444,6 +456,7 @@ void MainWindow::onChannelDataReady(int ch, const QJsonObject &obj)
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);
 }
 
+
 void MainWindow::onGenericResponseReady(const QString &resp)
 {
     if (waitingForCalibrationResponse) {
@@ -452,30 +465,27 @@ void MainWindow::onGenericResponseReady(const QString &resp)
         responseWaitTimer->stop();
     }
 
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(resp.toUtf8(), &parseError);
+    if (resp.trimmed().startsWith("{") || resp.trimmed().startsWith("[")) {
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(resp.toUtf8(), &parseError);
 
-    if (parseError.error == QJsonParseError::NoError) {
-        qDebug() << "Valid JSON received:" << resp;
-        QJsonObject obj = doc.object();
-        if(gainCalibrator)
-            gainCalibrator->parse_and_save_response(obj);
-   
-    } else {
-        qDebug() << "Invalid JSON response:" << resp;
-        qDebug() << "Parse error:" << parseError.errorString();
-    }
-
-    if (!startApp) {
-        FactDialog dialog(this);
-        dialog.setLabel(resp.toStdString());
-        dialog.exec();
-        dialog.deleteLater();
-        if (pollTimer) {
-            pollTimer->start(200);
+        if (parseError.error == QJsonParseError::NoError) {
+            qDebug() << "Valid JSON received:" << resp;
+            QJsonObject obj = doc.object();
+            if (gainCalibrator)
+                gainCalibrator->parse_and_save_response(obj);
+        } else {
+            qDebug() << "Invalid JSON response:" << resp;
+            qDebug() << "Parse error:" << parseError.errorString();
         }
     }
+
+    if (pollTimer) {
+        pollTimer->start(200);
+    }
+
 }
+
 
 // -----------------------------
 // Login / Navigation slots
@@ -607,7 +617,7 @@ void MainWindow::onFactoryLogin()
         }
         emit requestSerialCommand(cmd);
         waitingForCalibrationResponse = true;
-        responseWaitTimer->start(7000);
+        responseWaitTimer->start(20000);
     });
 
     factorySettings->showFullScreen();
@@ -730,65 +740,29 @@ void MainWindow::handlePostProgress()
     hide();
 }
 
-// -----------------------------
-// File-based ratio/offset send
-// -----------------------------
-void MainWindow::sendRatioSettings()
+void MainWindow::sendFileWithDelay(const QStringList &files, int index)
 {
-    QFile ratioFile("config/ct_ratio_settings.json");
-    if (ratioFile.open(QIODevice::ReadOnly)) {
-        QByteArray jsonData = ratioFile.readAll();
-        ratioFile.close();
+    if (index >= files.size()) {
+        return;
+    }
+
+    QString filePath = files[index];
+    QFile file(filePath);
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray jsonData = file.readAll();
+        file.close();
         QJsonDocument doc = QJsonDocument::fromJson(jsonData);
         if (!doc.isNull() && doc.isObject()) {
-            QJsonObject obj = doc.object();
-            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
+            QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+            qDebug() << "Sending file:" << filePath;
+            emit requestSerialCommand(jsonString);
         }
     }
 
-    QFile iOffsetFile("config/i_offset_settings.json");
-    if (iOffsetFile.open(QIODevice::ReadOnly)) {
-        QByteArray jsonData = iOffsetFile.readAll();
-        iOffsetFile.close();
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-        if (!doc.isNull() && doc.isObject()) {
-            QJsonObject obj = doc.object();
-            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
-        }
-    }
-
-    QFile vOffsetFile("config/v_offset_settings.json");
-    if (vOffsetFile.open(QIODevice::ReadOnly)) {
-        QByteArray jsonData = vOffsetFile.readAll();
-        vOffsetFile.close();
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-        if (!doc.isNull() && doc.isObject()) {
-            QJsonObject obj = doc.object();
-            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
-        }
-    }
-
-    QFile vOffsetRespFile("config/_offset_response.json");
-    if (vOffsetRespFile.open(QIODevice::ReadOnly)) {
-        QByteArray jsonData = vOffsetRespFile.readAll();
-        vOffsetRespFile.close();
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-        if (!doc.isNull() && doc.isObject()) {
-            QJsonObject obj = doc.object();
-            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
-        }
-    }
-
-    QFile iOffsetRespFile("config/i_offset_response.json");
-    if (iOffsetRespFile.open(QIODevice::ReadOnly)) {
-        QByteArray jsonData = iOffsetRespFile.readAll();
-        iOffsetRespFile.close();
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-        if (!doc.isNull() && doc.isObject()) {
-            QJsonObject obj = doc.object();
-            emit requestSerialCommand(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
-        }
-    }
+    // Schedule next file 3 seconds later
+    QTimer::singleShot(3000, this, [this, files, index]() {
+        sendFileWithDelay(files, index + 1);
+    });
 }
 
 void MainWindow::onChannelDataWatchdogTimeout()
@@ -803,16 +777,23 @@ void MainWindow::onChannelDataWatchdogTimeout()
     QThread::sleep(1);
     QProcess::execute("sh", QStringList() << "-c" << "echo 1 > /sys/class/gpio/gpio37/value");
 
-
-    if (pollTimer) {
-        pollTimer->start(200);
-    }
-
     QTimer::singleShot(5000, this, [this](){
         startApp = true;
-        sendRatioSettings();
-        QTimer::singleShot(20000, this, [this]() { 
+
+        QStringList files = {
+            "config/ct_ratio_settings.json",
+            "config/i_offset_settings.json",
+            "config/v_offset_settings.json",
+            "config/v_offset_response.json",
+            "config/i_offset_response.json"
+        };
+        sendFileWithDelay(files);
+
+        QTimer::singleShot(25000, this, [this]() { 
             startApp = false; 
+             if (pollTimer) {
+                pollTimer->start(200);
+            }
         });
     });    
 

@@ -7,6 +7,7 @@
 #include <QRegularExpressionValidator>
 #include "measurements.h"
 #include <QDir>
+#include "toast.h"
 
 #define V_OFFSET_RESPONSE_PATH "config/v_offset_response.json"
 #define I_OFFSET_RESPONSE_PATH "config/i_offset_response.json"
@@ -151,15 +152,22 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
 
     QFile file(filePath);
 
-    // Voltage: save directly
-    if (command == "v-calibration") {
-        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            file.write(QJsonDocument(response).toJson(QJsonDocument::Indented));
-            qDebug() << "Voltage calibration saved to" << filePath;
-        }
+    if (command == "ct-ratio") {
+        Toast::show("CT-Ratio Updated Successfully", this, Toast::Info);
         return;
     }
 
+    // Voltage: save directly
+    if (command == "v-calibration") {
+        QJsonObject modifiedResponse = response;
+        modifiedResponse["command"] = "reboot-calibration";
+
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            file.write(QJsonDocument(modifiedResponse).toJson(QJsonDocument::Indented));
+            Toast::show("Voltage Calibrated successfully", this, Toast::Info);
+        }
+        return;
+    }
     // Current: load + merge by ID
     QJsonArray channels;
     if (file.exists() && file.open(QIODevice::ReadOnly)) {
@@ -187,12 +195,12 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
         channels.append(newCh);
 
     QJsonObject finalObj{
-        {"command", "i-calibration"},
+        {"command", "reboot-calibration"},
         {"current", QJsonObject{{"channels", channels}}}
     };
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         file.write(QJsonDocument(finalObj).toJson(QJsonDocument::Indented));
-        qDebug() << "Current calibration saved/updated for ID" << id << "→" << filePath;
+        Toast::show("Current Calibrated successfully",  this, Toast::Info);
     }
 }

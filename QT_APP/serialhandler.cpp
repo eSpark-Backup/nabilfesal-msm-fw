@@ -19,9 +19,13 @@ bool SerialHandler::open(const QString &portName, qint32 baudRate) {
 
 void SerialHandler::sendCommand(const QString &command, int channel) {
     currentChannel = channel;
+    if(channel == -1){
+        serial.clear(QSerialPort::AllDirections); // Clears both input & output buffers
+    }
     buffer.clear();
     serial.write((command + "\n").toUtf8());
 }
+
 
 void SerialHandler::handleReadyRead() {
     buffer.append(serial.readAll());
@@ -41,12 +45,18 @@ void SerialHandler::handleReadyRead() {
         buffer.clear();
 
         if (err.error == QJsonParseError::NoError && doc.isObject()) {
-            emit jsonResponseReady(currentChannel, doc.object());
+            QJsonObject obj = doc.object();
+
+            // Handle calibration/CT JSONs as string responses
+            if (obj.contains("command")) {
+                QString cmd = obj.value("command").toString();
+                if (cmd == "i-calibration" || cmd == "v-calibration" || cmd == "ct-ratio") {
+                    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+                    emit stringResponseReady(jsonString);
+                    return;
+                }
+            }
+            emit jsonResponseReady(currentChannel, obj);
         }
-    }
-    else if (buffer.endsWith("!\n") || buffer.endsWith("!")) {
-        QString resp = QString::fromUtf8(buffer.trimmed());
-        buffer.clear();
-        emit stringResponseReady(resp);
     }
 }
