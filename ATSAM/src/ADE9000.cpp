@@ -286,9 +286,18 @@ void ADE9000_Set_Calibration(ADE9000_parameter_type parameter, uint8_t channel_i
         default:
             break;
     }
-    SPI_Write(ade9000_get_phase_register(baseReg_addr, PHASE_A, CALIBRATION_PARAMETER), reg_values[channel_id][PHASE_A], true, get_css_pin(channel_id));
-    SPI_Write(ade9000_get_phase_register(baseReg_addr, PHASE_B, CALIBRATION_PARAMETER), reg_values[channel_id][PHASE_B], true, get_css_pin(channel_id));
-    SPI_Write(ade9000_get_phase_register(baseReg_addr, PHASE_C, CALIBRATION_PARAMETER), reg_values[channel_id][PHASE_C], true, get_css_pin(channel_id));
+    if(reg_values[channel_id][PHASE_A] != 0)
+    {
+        SPI_Write(ade9000_get_phase_register(baseReg_addr, PHASE_A, CALIBRATION_PARAMETER), reg_values[channel_id][PHASE_A], true, get_css_pin(channel_id));
+    }
+    if(reg_values[channel_id][PHASE_B] != 0)
+    {
+        SPI_Write(ade9000_get_phase_register(baseReg_addr, PHASE_B, CALIBRATION_PARAMETER), reg_values[channel_id][PHASE_B], true, get_css_pin(channel_id));
+    }
+    if(reg_values[channel_id][PHASE_C] != 0)
+    {
+        SPI_Write(ade9000_get_phase_register(baseReg_addr, PHASE_C, CALIBRATION_PARAMETER), reg_values[channel_id][PHASE_C], true, get_css_pin(channel_id));
+    }
 }
 
 // *****************************************************************************
@@ -392,7 +401,7 @@ void ReadActivePowerRegs(ActivePowerRegs *Data, VoltageRMSRegs *rmsData, Current
 
     if (rmsData->VoltageRMSValue_A > RMS_VOLTAGE_LIMIT && currentData->CurrentRMSValue_A > MIN_CURRENT_CAP)
     {
-        Data->ActivePowerValue_A = (float)((int32_t)(SPI_Read(ADDR_AWATT, true, css_pin)) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f));
+        Data->ActivePowerValue_A = (float)(((int32_t)(SPI_Read(ADDR_AWATT, true, css_pin)) * (calibration_data[css_pin - 1].cal_power_cc) / 1000000.0f));
     }
     else
     {
@@ -401,7 +410,7 @@ void ReadActivePowerRegs(ActivePowerRegs *Data, VoltageRMSRegs *rmsData, Current
 
     if (rmsData->VoltageRMSValue_B > RMS_VOLTAGE_LIMIT && currentData->CurrentRMSValue_B > MIN_CURRENT_CAP)
     {
-        Data->ActivePowerValue_B = (float)((int32_t)(SPI_Read(ADDR_BWATT, true, css_pin)) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f));
+        Data->ActivePowerValue_B = (float)(((int32_t)(SPI_Read(ADDR_BWATT, true, css_pin)) * (calibration_data[css_pin - 1].cal_power_cc) / 1000000.0f));
     }
     else
     {
@@ -410,7 +419,7 @@ void ReadActivePowerRegs(ActivePowerRegs *Data, VoltageRMSRegs *rmsData, Current
 
     if (rmsData->VoltageRMSValue_C > RMS_VOLTAGE_LIMIT && currentData->CurrentRMSValue_C > MIN_CURRENT_CAP)
     {
-        Data->ActivePowerValue_C = (float)((int32_t)(SPI_Read(ADDR_CWATT, true, css_pin)) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f));
+        Data->ActivePowerValue_C = (float)(((int32_t)(SPI_Read(ADDR_CWATT, true, css_pin)) * (calibration_data[css_pin - 1].cal_power_cc) / 1000000.0f));
     }
     else
     {
@@ -427,7 +436,7 @@ void ReadReactivePowerRegs(ReactivePowerRegs *Data1, VoltageRMSRegs *rmsData, Cu
 
     if (rmsData->VoltageRMSValue_A > RMS_VOLTAGE_LIMIT && currentData->CurrentRMSValue_A > MIN_CURRENT_CAP)
     {
-        Data1->ReactivePowerValue_A = (float)((int32_t)(SPI_Read(ADDR_AVAR, true, css_pin)) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f));
+        Data1->ReactivePowerValue_A = (float)(((int32_t)(SPI_Read(ADDR_AVAR, true, css_pin)) * (calibration_data[css_pin - 1].cal_power_cc) / 1000000.0f));
     }
     else
     {
@@ -436,7 +445,7 @@ void ReadReactivePowerRegs(ReactivePowerRegs *Data1, VoltageRMSRegs *rmsData, Cu
 
     if (rmsData->VoltageRMSValue_B > RMS_VOLTAGE_LIMIT && currentData->CurrentRMSValue_B > MIN_CURRENT_CAP)
     {
-        Data1->ReactivePowerValue_B = (float)((int32_t)(SPI_Read(ADDR_BVAR, true, css_pin)) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f));
+        Data1->ReactivePowerValue_B = (float)(((int32_t)(SPI_Read(ADDR_BVAR, true, css_pin)) * (calibration_data[css_pin - 1].cal_power_cc) / 1000000.0f));
     }
     else
     {
@@ -445,7 +454,7 @@ void ReadReactivePowerRegs(ReactivePowerRegs *Data1, VoltageRMSRegs *rmsData, Cu
 
     if (rmsData->VoltageRMSValue_C > RMS_VOLTAGE_LIMIT && currentData->CurrentRMSValue_C > MIN_CURRENT_CAP)
     {
-        Data1->ReactivePowerValue_C = (float)((int32_t)(SPI_Read(ADDR_CVAR, true, css_pin)) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f));
+        Data1->ReactivePowerValue_C = (float)(((int32_t)(SPI_Read(ADDR_CVAR, true, css_pin)) * (calibration_data[css_pin - 1].cal_power_cc) / 1000000.0f));
     }
     else
     {
@@ -459,7 +468,7 @@ void ReadApparentPowerRegs(ApparentPowerRegs *Data, VoltageRMSRegs *rmsData, Cur
 
     if (rmsData->VoltageRMSValue_A > RMS_VOLTAGE_LIMIT && currentData->CurrentRMSValue_A > MIN_CURRENT_CAP)
     {
-        Data->ApparentPowerValue_A = (float)((int32_t)(SPI_Read(ADDR_AVA, true, css_pin)) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f));
+        Data->ApparentPowerValue_A = (float)(((int32_t)(SPI_Read(ADDR_AVA, true, css_pin)) * (calibration_data[css_pin - 1].cal_power_cc)) / 1000000.0f);
     }
     else
     {
@@ -468,7 +477,7 @@ void ReadApparentPowerRegs(ApparentPowerRegs *Data, VoltageRMSRegs *rmsData, Cur
 
     if (rmsData->VoltageRMSValue_B > RMS_VOLTAGE_LIMIT && currentData->CurrentRMSValue_B > MIN_CURRENT_CAP)
     {
-        Data->ApparentPowerValue_B = (float)((int32_t)(SPI_Read(ADDR_BVA, true, css_pin)) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f));
+        Data->ApparentPowerValue_B = (float)(((int32_t)(SPI_Read(ADDR_BVA, true, css_pin)) * (calibration_data[css_pin - 1].cal_power_cc)) / 1000000.0f);
     }
     else
     {
@@ -477,7 +486,7 @@ void ReadApparentPowerRegs(ApparentPowerRegs *Data, VoltageRMSRegs *rmsData, Cur
 
     if (rmsData->VoltageRMSValue_C > RMS_VOLTAGE_LIMIT && currentData->CurrentRMSValue_C > MIN_CURRENT_CAP)
     {
-        Data->ApparentPowerValue_C = (float)((int32_t)(SPI_Read(ADDR_CVA, true, css_pin)) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f));
+        Data->ApparentPowerValue_C = (float)(((int32_t)(SPI_Read(ADDR_CVA, true, css_pin)) * (calibration_data[css_pin - 1].cal_power_cc)) / 1000000.0f);
     }
     else
     {

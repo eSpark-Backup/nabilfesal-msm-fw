@@ -772,7 +772,7 @@ void parse_ct_ratio_json()
 void parse_reboot_calibration_json()
 {
     // Detect type (voltage or current)
-    char* ch = NULL;
+    char* ch = rxBuffer;
     ADE9000_parameter_type data_type;
 
     static const ADE9000_param_map_t param_map[] = {
@@ -808,7 +808,7 @@ void parse_reboot_calibration_json()
 
         // Extract the ID for this object
         int id = extract_int_value_from_pos("ID", pos);
-        if (id < 0 || id >= TOTAL_ADE9000_UNITS)
+        if (id < 1 || id > TOTAL_ADE9000_UNITS)
         {
             // Invalid ID, skip this object
             pos++;
@@ -850,7 +850,6 @@ void parse_v_offset_json()
             // Write offset values to ADE9000 registers
             voltage_offset_write(j, channelConfig[j].setVOffset);
         }
-        strcpy(txBuffer, "\nVoltage Offset updated successfully!");
         strcpy(txBuffer, "{\"command\": \"v_offset\", \"message\": \"Voltage Offset updated successfully!\"}");
     }
 }
@@ -869,7 +868,6 @@ void parse_i_offset_json()
             //  Write offset Values to ADE9000 registers
             //            current_offset_write(j, channelConfig[j].setIOffset);
         }
-        strcpy(txBuffer, "\nCurrent Offset updated successfully!");
         strcpy(txBuffer, "{\"command\": \"i_offset\", \"message\": \"Current Offset updated successfully!\"}");
     }
 }
@@ -940,19 +938,19 @@ void parse_i_calibration_json()
         // Process and append only non-zero phases
         if (currentCalibration.phase_a != 0) {
             current_gain_calibration(currentCalibration.phase_a, channel_id_absolute, PHASE_A);
-            sprintf(temp, "\"phase_a\":\"0x%08X\"", reg_values[currentCalibration.channelID][PHASE_A]);
+            sprintf(temp, "\"phase_a\":\"0x%08X\"", reg_values[channel_id_absolute][PHASE_A]);
             strcat(txBuffer, temp);
             first = false;
         }
         if (currentCalibration.phase_b != 0) {
             current_gain_calibration(currentCalibration.phase_b, channel_id_absolute, PHASE_B);
-            sprintf(temp, "%s\"phase_b\":\"0x%08X\"", first ? "" : ",", reg_values[currentCalibration.channelID][PHASE_B]);
+            sprintf(temp, "%s\"phase_b\":\"0x%08X\"", first ? "" : ",", reg_values[channel_id_absolute][PHASE_B]);
             strcat(txBuffer, temp);
             first = false;
         }
         if (currentCalibration.phase_c != 0) {
             current_gain_calibration(currentCalibration.phase_c, channel_id_absolute, PHASE_C);
-            sprintf(temp, "%s\"phase_c\":\"0x%08X\"", first ? "" : ",", reg_values[currentCalibration.channelID][PHASE_C]);
+            sprintf(temp, "%s\"phase_c\":\"0x%08X\"", first ? "" : ",", reg_values[channel_id_absolute][PHASE_C]);
             strcat(txBuffer, temp);
         }
 
@@ -985,7 +983,7 @@ void ProcessCommand(void)
                     value[i++] = *ch++;
                 }
                 value[i] = '\0';
-                if (strcmp(value, "set-ct-ratio") == 0)
+               if (strcmp(value, "set-ct-ratio") == 0)
                 {
                     parse_ct_ratio_json();
                 }
@@ -1011,7 +1009,7 @@ void ProcessCommand(void)
                 }
                 else
                 {
-                    strcpy(txBuffer, "None Of The Three Calibration Parameter Values Found In JSON!");
+                    strcpy(txBuffer, "None Of The Calibration Parameter Values Found In JSON!");
                 }
             }
         }
@@ -1097,10 +1095,10 @@ void ProcessCommand(void)
     //    {d
     //        strcpy(txBuffer, "Calibration 3: Step 3 settings");
     //    }
-    else if (strcmp(rxBuffer, "cal-4") == 0)
-    {
-        strcpy(txBuffer, "Calibration 4: Step 4 settings");
-    }
+    // else if (strcmp(rxBuffer, "cal-4") == 0)
+    // {
+    //     strcpy(txBuffer, "Calibration 4: Step 4 settings");
+    // }
     else
     {
         strcpy(txBuffer, "again");
