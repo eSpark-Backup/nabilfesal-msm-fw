@@ -989,6 +989,10 @@ void ProcessCommand(void)
                 {
                     parse_ct_ratio_json();
                 }
+                else if (strcmp(value, "reboot-calibration") == 0)
+                {
+                    parse_reboot_calibration_json();
+                }
                 else if (strcmp(value, "set-v-offset") == 0)
                 {
                     parse_v_offset_json();
