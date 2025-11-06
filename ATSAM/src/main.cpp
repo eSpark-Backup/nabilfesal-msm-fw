@@ -700,7 +700,7 @@ void parse_ct_ratio_json()
             channelConfig[j].ctRatio = extract_channel_values(key);
             ct_ratio_calibration(j);
         }
-        strcpy(txBuffer, "\nCT Ratio updated successfully!");
+        strcpy(txBuffer, "{\"command\": \"ct-ratio\", \"message\": \"CT Ratio updated successfully!\"}");
     }
 }
 
@@ -720,6 +720,7 @@ void parse_v_offset_json()
             voltage_offset_write(j, channelConfig[j].setVOffset);
         }
         strcpy(txBuffer, "\nVoltage Offset updated successfully!");
+        strcpy(txBuffer, "{\"command\": \"v_offset\", \"message\": \"Voltage Offset updated successfully!\"}");
     }
 }
 
@@ -738,6 +739,7 @@ void parse_i_offset_json()
             //            current_offset_write(j, channelConfig[j].setIOffset);
         }
         strcpy(txBuffer, "\nCurrent Offset updated successfully!");
+        strcpy(txBuffer, "{\"command\": \"i_offset\", \"message\": \"Current Offset updated successfully!\"}");
     }
 }
 
@@ -757,25 +759,25 @@ void parse_v_calibration_json()
         
         // Start building JSON
         // memset(txBuffer, 0, sizeof(txBuffer));
-        strcpy(txBuffer, "{\n  \"command\": \"v-calibration\",\n  \"voltage\": {\n    \"channels\": [\n");
+        strcpy(txBuffer, "{\"command\":\"v-calibration\",\"voltage\":{\"channels\":[");
 
         for (int i = 0; i < TOTAL_ADE9000_UNITS; i++)
         {
             char temp[128];
             sprintf(temp,
-                    "      {\n"
-                    "        \"ID\": %d,\n"
-                    "        \"phase_a\": \"0x%08X\",\n"
-                    "        \"phase_b\": \"0x%08X\",\n"
-                    "        \"phase_c\": \"0x%08X\"\n"
-                    "      }%s\n",
-                    i,
+                    "{"
+                    "\"ID\": %d,"
+                    "\"phase_a\": \"0x%08X\","
+                    "\"phase_b\": \"0x%08X\","
+                    "\"phase_c\": \"0x%08X\""
+                    "}%s",
+                    i+1,
                     reg_values[i][PHASE_A], reg_values[i][PHASE_B], reg_values[i][PHASE_C],
-                    (i < TOTAL_ADE9000_UNITS) ? "," : "");
+                    (i < (TOTAL_ADE9000_UNITS-1)) ? "," : "");
 
             strcat(txBuffer, temp);
         }
-        strcat(txBuffer, "    ]\n  }\n}");
+        strcat(txBuffer, "]}}");
     }
 }
 
@@ -796,9 +798,9 @@ void parse_i_calibration_json()
 
         // Start JSON
         sprintf(txBuffer,
-                "{\n  \"command\": \"i-calibration\",\n"
-                "  \"current\": {\n"
-                "    \"ID\": %d,\n",
+                "{\"command\": \"i-calibration\","
+                "\"current\": {"
+                "\"ID\": %d,",
                 currentCalibration.channelID);
 
         char temp[128];
@@ -807,24 +809,24 @@ void parse_i_calibration_json()
         // Process and append only non-zero phases
         if (currentCalibration.phase_a != 0) {
             current_gain_calibration(currentCalibration.phase_a, channel_id_absolute, PHASE_A);
-            sprintf(temp, "    \"phase_a\": \"0x%08X\"", reg_values[currentCalibration.channelID][PHASE_A]);
+            sprintf(temp, "\"phase_a\":\"0x%08X\"", reg_values[currentCalibration.channelID][PHASE_A]);
             strcat(txBuffer, temp);
             first = false;
         }
         if (currentCalibration.phase_b != 0) {
             current_gain_calibration(currentCalibration.phase_b, channel_id_absolute, PHASE_B);
-            sprintf(temp, "%s\n    \"phase_b\": \"0x%08X\"", first ? "" : ",", reg_values[currentCalibration.channelID][PHASE_B]);
+            sprintf(temp, "%s\"phase_b\":\"0x%08X\"", first ? "" : ",", reg_values[currentCalibration.channelID][PHASE_B]);
             strcat(txBuffer, temp);
             first = false;
         }
         if (currentCalibration.phase_c != 0) {
             current_gain_calibration(currentCalibration.phase_c, channel_id_absolute, PHASE_C);
-            sprintf(temp, "%s\n    \"phase_c\": \"0x%08X\"", first ? "" : ",", reg_values[currentCalibration.channelID][PHASE_C]);
+            sprintf(temp, "%s\"phase_c\":\"0x%08X\"", first ? "" : ",", reg_values[currentCalibration.channelID][PHASE_C]);
             strcat(txBuffer, temp);
         }
 
         // Close JSON
-        strcat(txBuffer, "\n  }\n}");
+        strcat(txBuffer, "}}");
     }
 }
 

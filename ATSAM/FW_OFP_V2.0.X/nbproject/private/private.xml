@@ -22,8 +22,6 @@
         <group>
             <file>file:/C:/Users/eSpark/Documents/GitHub/nabilfesal-msm-fw/ATSAM/src/main.cpp</file>
             <file>file:/C:/Users/eSpark/Documents/GitHub/nabilfesal-msm-fw/ATSAM/src/ADE9000.cpp</file>
-            <file>file:/C:/Users/eSpark/Documents/GitHub/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/sercom/spi_master/plib_sercom0_spi_master.c</file>
-            <file>file:/C:/Users/eSpark/Documents/GitHub/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/nvic/plib_nvic.c</file>
         </group>
     </open-files>
 </project-private>
