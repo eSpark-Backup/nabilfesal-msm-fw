@@ -453,7 +453,8 @@ void ADE9000SetupForUnit(SPI_CSS_Pin cssPin)
         ADE9000_status[cssPin - 1] = 1;
         ADE9000_hotplug[cssPin - 1] = 1;
         ADE9000_Initialize(cssPin);
-        ct_ratio_calibration(100, cssPin - 1);
+        channelConfig[cssPin - 1].ctRatio = 100;
+        ct_ratio_calibration(cssPin - 1);
     }
     else
     {
@@ -693,11 +694,11 @@ void parse_ct_ratio_json()
     if (ch != NULL)
     {
         char key[20];
-        for (uint8_t j = 1; j < 13; j++)
+        for (uint8_t j = 0; j < TOTAL_ADE9000_UNITS; j++)
         {
-            sprintf(key, "channel-%d", j);
-            channelConfig[j - 1].ctRatio = extract_channel_values(key);
-            ct_ratio_calibration(channelConfig[j - 1].ctRatio, j - 1);
+            sprintf(key, "channel-%d", j+1);
+            channelConfig[j].ctRatio = extract_channel_values(key);
+            ct_ratio_calibration(j);
         }
         strcpy(txBuffer, "\nCT Ratio updated successfully!");
     }
@@ -740,6 +741,7 @@ void parse_i_offset_json()
     }
 }
 
+// for voltage gain register calibration
 void parse_v_calibration_json()
 {
     char *ch;
@@ -777,6 +779,7 @@ void parse_v_calibration_json()
     }
 }
 
+// for current gain register calibration
 void parse_i_calibration_json()
 {
     char *ch = strstr(rxBuffer, "\"current\"");
@@ -822,36 +825,6 @@ void parse_i_calibration_json()
 
         // Close JSON
         strcat(txBuffer, "\n  }\n}");
-    }
-}
-
-void parse_i_gain_json(){
-    char *ch;
-    ch = strstr(rxBuffer, "ct-ratio");
-    if(ch != NULL){
-//        strcpy(txBuffer,"");
-        char key[20];
-        for (uint8_t j = 1; j < 13; j++){
-            sprintf(key, "channel-%d",j);
-            // channelConfig[j-1].ctRatio = extract_channel_values(key);
-            ct_ratio_calibration(channelConfig[j-1].ctRatio, j-1);
-        }
-        strcpy(txBuffer, "\nCT Ratio updated successfully!");
-    }
-}
-
-void parse_v_gain_json(){
-    char *ch;
-    ch = strstr(rxBuffer, "ct-ratio");
-    if(ch != NULL){
-//        strcpy(txBuffer,"");
-        char key[20];
-        for (uint8_t j = 1; j < 13; j++){
-            sprintf(key, "channel-%d",j);
-            // channelConfig[j-1].ctRatio = extract_channel_values(key);
-            ct_ratio_calibration(channelConfig[j-1].ctRatio, j-1);
-        }
-        strcpy(txBuffer, "\nCT Ratio updated successfully!");
     }
 }
 

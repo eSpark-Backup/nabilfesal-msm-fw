@@ -266,6 +266,31 @@ void ADE9000_Initialize(SPI_CSS_Pin css_pin)
     calibration_data[css_pin-1].cal_vrms_cc = (1000000.0 * 0.707) / (VOLTAGE_TRANSFER_FUNCTION * ADE9000_RMS_FULL_SCALE_CODES);
 }
 
+void ADE9000_Set_Calibration(ADE9000_parameter_type parameter, uint8_t channel_id)
+{
+    uint8_t baseReg_addr = 0;
+    switch(parameter)
+    {
+        case VOLTAGE_PARAMETER:
+            baseReg_addr = ADDR_AVGAIN;
+            break;
+        case CURRENT_PARAMETER:
+            baseReg_addr = ADDR_AIGAIN;
+            break;
+        case POWER_PARAMETER:
+            baseReg_addr = ADDR_APGAIN;
+            break;
+        case PERIOD_PARAMETER:
+            baseReg_addr = ADDR_APHCAL0;
+            break;
+        default:
+            break;
+    }
+    SPI_Write(ade9000_get_phase_register(baseReg_addr, PHASE_A, CALIBRATION_PARAMETER), reg_values[channel_id][PHASE_A], true, get_css_pin(channel_id));
+    SPI_Write(ade9000_get_phase_register(baseReg_addr, PHASE_B, CALIBRATION_PARAMETER), reg_values[channel_id][PHASE_B], true, get_css_pin(channel_id));
+    SPI_Write(ade9000_get_phase_register(baseReg_addr, PHASE_C, CALIBRATION_PARAMETER), reg_values[channel_id][PHASE_C], true, get_css_pin(channel_id));
+}
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: ADE9000 Measurement Functions
@@ -784,7 +809,6 @@ void current_gain_calibration(float current, uint8_t channel_id, ADE9000_phase p
     // NOMINAL_INPUT_CURRENT and NOMINAL_INPUT_VOLTAGE are also supposed to be received from host controller (V3S)
     float i_nominal = current;
 
-    // float current_transfer_func = (float)(R_BURDEN / (float)100.0);
     float current_transfer_func = (float)(R_BURDEN / (float)(channelConfig[channel_id].ctRatio));
     float input_current_ADC = (i_nominal * current_transfer_func);
     float i_fsp = (input_current_ADC) / 0.707; // @ gain 1      (ideally fetch the set gain value from the register)
@@ -794,16 +818,12 @@ void current_gain_calibration(float current, uint8_t channel_id, ADE9000_phase p
 
     // Reset gain registers to 0 first
     SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, phase, CALIBRATION_PARAMETER), (uint32_t)0x00, true, get_css_pin(channel_id));
-    // SPI_Write(ADDR_BIGAIN, (uint32_t)0x00, true, get_css_pin(channel_id));
-    // SPI_Write(ADDR_CIGAIN, (uint32_t)0x00, true, get_css_pin(channel_id));
 
     delay_ms(5000); // wait for some time after resetting gain registers to 0
 
     reg_values[channel_id][phase] = (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, phase, expected_irms_value, channel_id);
 
     SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, phase, CALIBRATION_PARAMETER), reg_values[channel_id][phase], true, get_css_pin(channel_id));
-    // SPI_Write(ADDR_BIGAIN, (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, PHASE_B, expected_irms_value, channel_id), true, get_css_pin(channel_id));
-    // SPI_Write(ADDR_CIGAIN, (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, PHASE_C, expected_irms_value, channel_id), true, get_css_pin(channel_id));
     
     /* Conversion Constants */
     // Current Conversion Constant = (I nominal * 10^6)/(Ifsp*full_scale_rms_codes);
@@ -823,16 +843,13 @@ void voltage_gain_calibration(float voltage, ADE9000_phase phase)
     // // Now calibrate the register values
     uint32_t expected_vrms_value = (v_fsp * ADE9000_RMS_FULL_SCALE_CODES);
     
-    // for(uint8_t channel_id=0; channel_id<1; channel_id++)
     for(uint8_t channel_id=0; channel_id<TOTAL_ADE9000_UNITS; channel_id++)
     {
         SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER), 0x00000000, true, get_css_pin(channel_id));
-        // delay_ms(100); // wait for some time after resetting gain registers to 0
     }
     
     delay_ms(5000); // wait for some time after resetting gain registers to 0
     
-    // for(uint8_t channel_id=0; channel_id<1; channel_id++)
     for(uint8_t channel_id=0; channel_id<TOTAL_ADE9000_UNITS; channel_id++)
     {
         uint32_t gain_reg = SPI_Read(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER), true, get_css_pin(channel_id));
@@ -841,7 +858,6 @@ void voltage_gain_calibration(float voltage, ADE9000_phase phase)
                 reg_values[channel_id][phase],
                 true, get_css_pin(channel_id)
             );
-        // delay_ms(100); // wait for some time after resetting gain registers to 0
     }
 
     /* Conversion Constants */          // no need to calculate here, all phases and channels have same voltage conversion constant
@@ -850,14 +866,14 @@ void voltage_gain_calibration(float voltage, ADE9000_phase phase)
     // calibration_data[channel_id].cal_vrms_cc = (1000000.0 * 0.707) / (voltage_transfer_func * ADE9000_RMS_FULL_SCALE_CODES);
 }
 
-void ct_ratio_calibration(uint16_t ratio, uint8_t channel_id)
+void ct_ratio_calibration(uint8_t channel_id)
 {
 
     /* Conversion Constants */
     // calibration_data[channel].cal_irms_cc = (SQRT_2 * current_transfer_func * ADE9000_RMS_FULL_SCALE_CODES);
-    calibration_data[channel_id].cal_irms_cc = (1000000.0 * 0.707 * ratio) / (R_BURDEN * (float)ADE9000_RMS_FULL_SCALE_CODES);
-    calibration_data[channel_id].cal_power_cc = (1000.0 * 0.707 * 0.707 * ratio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION);
-    calibration_data[channel_id].cal_energy_cc = (1000000.0 * 0.707 * 0.707 * ratio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION * 3600.0f * 8000.0f * 0.0001220703125f); // 2^(-13) = 0.0001220703125f
+    calibration_data[channel_id].cal_irms_cc = (1000000.0 * 0.707 * channelConfig[channel_id].ctRatio) / (R_BURDEN * (float)ADE9000_RMS_FULL_SCALE_CODES);
+    calibration_data[channel_id].cal_power_cc = (1000.0 * 0.707 * 0.707 * channelConfig[channel_id].ctRatio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION);
+    calibration_data[channel_id].cal_energy_cc = (1000000.0 * 0.707 * 0.707 * channelConfig[channel_id].ctRatio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION * 3600.0f * 8000.0f * 0.0001220703125f); // 2^(-13) = 0.0001220703125f
     // need to use accumulation time here instead of 8000
 
 }
