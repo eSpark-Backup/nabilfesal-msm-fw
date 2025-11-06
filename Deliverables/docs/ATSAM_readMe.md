@@ -25,4 +25,5 @@ This guide explains how to flash firmware into ATSAMS20G17 using **SEGGER J-Link
 - Once connection is successful, type `loadfile <path of the .elf file>` and `Enter`
 - Once complete, type `reset` and press `Enter`
 - And type `go` and press `Enter`
+- If the four leds make an increasing/decreasing pattern three times, your ATSAM has been flashed successfully
 - Now you're good to use!
