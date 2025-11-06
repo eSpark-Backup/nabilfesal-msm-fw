@@ -64,6 +64,11 @@ enum MyEnum
     X(Angle_C, 39),
 };
 
+typedef struct {
+    const char *key;
+    ADE9000_parameter_type type;
+} ADE9000_param_map_t;
+
 typedef struct
 {
     uint8_t channelID;
@@ -687,6 +692,66 @@ int extract_int_value(const char *key)
     return 0;
 }
 
+int extract_int_value_from_pos(const char *key, const char *pos)
+{
+    if (!key || !pos)
+        return -1;  // invalid input
+
+    // Find the key in the string
+    const char *key_pos = strstr(pos, key);
+    if (!key_pos)
+        return -1;  // key not found
+
+    // Move pointer to the character after the key
+    key_pos += strlen(key);
+
+    // Skip whitespace, colon, or quotes if present
+    while (*key_pos && (*key_pos == ' ' || *key_pos == ':' || *key_pos == '\"'))
+        key_pos++;
+
+    // Read integer value
+    int value = 0;
+    if (sscanf(key_pos, "%d", &value) != 1)
+    {
+        return -1;  // failed to parse integer
+    }
+
+    return value;
+}
+
+uint32_t extract_hex_value_from_pos(const char *key, char *start)
+{
+    char *ptr = strstr(start, key);
+    if (!ptr) return 0;
+
+    ptr = strchr(ptr, ':');
+    if (!ptr) return 0;
+    ptr++; // skip ':'
+
+    // Skip whitespace and quotes
+    while (*ptr == ' ' || *ptr == '"' || *ptr == '\t')
+        ptr++;
+
+    char value_str[32];
+    int i = 0;
+    while (*ptr && *ptr != '"' && *ptr != ',' && *ptr != ' ' && *ptr != '}')
+    {
+        value_str[i++] = *ptr++;
+        if (i >= (int)(sizeof(value_str) - 1)) break;
+    }
+    value_str[i] = '\0';
+
+    // Convert hex or decimal string to uint32_t
+    return (uint32_t)strtoul(value_str, NULL, 0);
+}
+
+char *find_next_object(char *start)
+{
+    // Find the next '{' after the current one
+    char *ptr = strchr(start, '{');
+    return ptr;
+}
+
 void parse_ct_ratio_json()
 {
     char *ch;
@@ -701,6 +766,72 @@ void parse_ct_ratio_json()
             ct_ratio_calibration(j);
         }
         strcpy(txBuffer, "{\"command\": \"ct-ratio\", \"message\": \"CT Ratio updated successfully!\"}");
+    }
+}
+
+void parse_reboot_calibration_json()
+{
+    // Detect type (voltage or current)
+    char* ch = NULL;
+    ADE9000_parameter_type data_type;
+
+    static const ADE9000_param_map_t param_map[] = {
+        {"\"voltage\"", VOLTAGE_PARAMETER},
+        {"\"current\"", CURRENT_PARAMETER},
+        {"\"power\"",   POWER_PARAMETER},
+        {"\"phase\"",   PERIOD_PARAMETER}, // or PHASE_PARAMETER if defined
+    };
+
+    for (int i = 0; i < sizeof(param_map) / sizeof(param_map[0]); i++)
+    {
+        if (strstr(rxBuffer, param_map[i].key))
+        {
+            data_type = param_map[i].type;
+        }
+    }
+
+    // Move to first object after the array name
+    char *pos = strchr(ch, '[');
+    if (!pos)
+    {
+        // printf("Error: invalid JSON array.\n");
+        return;
+    }
+
+    // Parse up to 12 objects
+    int channel_index = 0;
+    while (channel_index < TOTAL_ADE9000_UNITS)
+    {
+        pos = find_next_object(pos);
+        if (!pos)
+            break;
+
+        // Extract the ID for this object
+        int id = extract_int_value_from_pos("ID", pos);
+        if (id < 0 || id >= TOTAL_ADE9000_UNITS)
+        {
+            // Invalid ID, skip this object
+            pos++;
+            continue;
+        }
+
+        // Extract each phase from this object
+        reg_values[id-1][PHASE_A] = extract_hex_value_from_pos("phase_a", pos);
+        reg_values[id-1][PHASE_B] = extract_hex_value_from_pos("phase_b", pos);
+        reg_values[id-1][PHASE_C] = extract_hex_value_from_pos("phase_c", pos);
+
+        channel_index++;
+
+        pos++;      // Move ahead to avoid reprocessing the same object
+    }
+
+    // handle ADE9000 register writes based on parsed data
+    for(int i = 0; i < TOTAL_ADE9000_UNITS; i++)
+    {
+        if(ADE9000_status[i])
+        {
+            ADE9000_Set_Calibration(data_type, i);
+        }
     }
 }
 
