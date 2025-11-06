@@ -154,7 +154,7 @@ QPushButton:focus {
         <font>
          <family>Gilroy-Regular</family>
          <pointsize>16</pointsize>
-         <bold>true</bold>
+         <bold>false</bold>
          <kerning>false</kerning>
         </font>
        </property>
@@ -218,7 +218,7 @@ QPushButton:focus {
         <font>
          <family>Gilroy-Regular</family>
          <pointsize>16</pointsize>
-         <bold>true</bold>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">
@@ -275,7 +275,7 @@ QPushButton:focus {
         <font>
          <family>Gilroy-Regular</family>
          <pointsize>16</pointsize>
-         <bold>true</bold>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">
@@ -332,7 +332,7 @@ QPushButton:focus {
         <font>
          <family>Gilroy-Regular</family>
          <pointsize>16</pointsize>
-         <bold>true</bold>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">
@@ -389,7 +389,7 @@ QPushButton:focus {
         <font>
          <family>Gilroy-Regular</family>
          <pointsize>16</pointsize>
-         <bold>true</bold>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">
@@ -446,7 +446,7 @@ QPushButton:focus {
         <font>
          <family>Gilroy-Regular</family>
          <pointsize>16</pointsize>
-         <bold>true</bold>
+         <bold>false</bold>
         </font>
        </property>
        <property name="styleSheet">

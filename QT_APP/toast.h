@@ -6,6 +6,7 @@
 #include <QScreen>
 #include <QPropertyAnimation>
 #include <QVector>
+#include "utils.h"
 
 class Toast : public QWidget
 {
@@ -22,6 +23,7 @@ public:
         auto *toast = new Toast(message, parent, level, timeoutMs);
         activeToasts.append(toast);
         toast->repositionAllToasts();
+        Utils::keySound();
     }
 
 private:

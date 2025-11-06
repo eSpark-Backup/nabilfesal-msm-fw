@@ -18,6 +18,7 @@ CalibrationDialog::CalibrationDialog(QWidget *parent)
     , ui(new Ui::CalibrationDialog)
 {
     ui->setupUi(this);
+    setupTouchSpin();
     keyboard = new NumKeyboard(this);
     keyboard->move(100, 100);
     keyboard->hide();
@@ -60,6 +61,8 @@ bool CalibrationDialog::eventFilter(QObject *obj, QEvent *event)
     QLineEdit *lineEdit = qobject_cast<QLineEdit*>(obj);
     if (lineEdit) {
         if (event->type() == QEvent::FocusIn) {
+            if (lineEdit->text() == "0.0")
+                lineEdit->clear();
             keyboard->setTarget(lineEdit);
             Utils::keySound();
             keyboard->show();
@@ -68,6 +71,8 @@ bool CalibrationDialog::eventFilter(QObject *obj, QEvent *event)
         else if (event->type() == QEvent::FocusOut) {
             if (!keyboard->isAncestorOf(QApplication::focusWidget())) {
                 keyboard->hide();
+            if (lineEdit->text().isEmpty())
+                lineEdit->setText("0.0");
             }
         }
     }
@@ -90,6 +95,26 @@ void CalibrationDialog::showEvent(QShowEvent *event)
 }
 
 
+void CalibrationDialog::setupTouchSpin()
+{
+    int minValue = 1;
+    int maxValue = 12;
+    int value = 1;
+
+    ui->valueDisplay->setText(QString::number(value));
+
+    connect(ui->plusBtn, &QPushButton::clicked, this, [=]() mutable {
+        value = (value >= maxValue) ? minValue : value + 1;
+        ui->valueDisplay->setText(QString::number(value));
+    });
+
+    connect(ui->minusBtn, &QPushButton::clicked, this, [=]() mutable {
+        value = (value <= minValue) ? maxValue : value - 1;
+        ui->valueDisplay->setText(QString::number(value));
+    });
+}
+
+
 void CalibrationDialog::on_sendpushBtn_clicked()
 {
     auto phaseA = ui->phase_A_input->text().toDouble();
@@ -104,7 +129,7 @@ void CalibrationDialog::on_sendpushBtn_clicked()
     QJsonObject rootObj;
     if(isCurrentData)
     {
-        gain["ID"] = ui->comboBox->currentIndex() + 1;
+        gain["ID"] = ui->valueDisplay->text().toInt();
         rootObj["command"] = "i-calibration";
         rootObj["current"] = gain;
     }
@@ -137,7 +162,10 @@ void CalibrationDialog::enableButton()
 
 void CalibrationDialog::loadCalibrationScreen(bool isEnable)
 {
-   ui->comboBox->setEnabled(isEnable);
+   ui->touchSpinWidget->setVisible(isEnable);
+   ui->channelLabel->setText(isEnable ? "Channel":"For All Channels");
+   QString label = QString("Perform %1 Calibration").arg(isEnable ? "Current" : "Voltage");
+   ui->mainLabel->setText(label);
    isCurrentData = isEnable;
 }
 

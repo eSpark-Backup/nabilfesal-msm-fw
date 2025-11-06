@@ -30,6 +30,7 @@ private slots:
 protected:
     void showEvent(QShowEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
+    void setupTouchSpin();
 
 private:
     Ui::CalibrationDialog *ui;
