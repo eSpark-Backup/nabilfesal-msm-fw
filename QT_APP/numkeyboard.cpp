@@ -42,7 +42,7 @@ void NumKeyboard::showEvent(QShowEvent *event)
     QWidget::showEvent(event);
     if (parentWidget()) {
         int x = (parentWidget()->width() - width()) / 2;
-        int y = parentWidget()->height() - height();
+        int y = parentWidget()->height() - height() - 20;
         move(x, y);
     }
 }
