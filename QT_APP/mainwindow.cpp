@@ -73,10 +73,16 @@ MainWindow::MainWindow(QWidget *parent)
         if (waitingForCalibrationResponse) {
             waitingForCalibrationResponse = false;
             emit enableSendButton();
-            QMessageBox::critical(this, "Calibration Timeout",
-                                "No response from ATSAM received for calibration settings.");
-            if (pollTimer) pollTimer->start(200);
-            
+            Toast::show("No response from ATSAM received for calibration settings.", this, Toast::Error);
+            if (!BootUpSync){
+                if (pollTimer) pollTimer->start(200);
+            }
+            else
+            {
+                QTimer::singleShot(1000, this, [this](){
+                    sendFileWithDelay(bootFiles, bootFileIndex + 1);
+                });
+            }
         }
     });
 
@@ -96,9 +102,6 @@ MainWindow::MainWindow(QWidget *parent)
         "config/i_offset_settings.json"
     };
     sendFileWithDelay(files);
-
-    QTimer::singleShot(30000, this, [this]() { startApp = false; if (pollTimer) pollTimer->start(200);});
-
     qApp->installEventFilter(this);
 }
 
@@ -472,15 +475,23 @@ void MainWindow::onGenericResponseReady(const QString &resp)
         if (parseError.error == QJsonParseError::NoError) {
             qDebug() << "Valid JSON received:" << resp;
             QJsonObject obj = doc.object();
-            if (gainCalibrator)
+            if (!BootUpSync && gainCalibrator)
                 gainCalibrator->parse_and_save_response(obj);
+            else
+            {
+                QString msg = obj.value("message").toString();
+                Toast::show(msg, this, Toast::Info);
+                QTimer::singleShot(1000, this, [this](){
+                    sendFileWithDelay(bootFiles, bootFileIndex + 1);
+                });
+            }
         } else {
             qDebug() << "Invalid JSON response:" << resp;
             qDebug() << "Parse error:" << parseError.errorString();
         }
     }
 
-    if (pollTimer) {
+    if (!BootUpSync && pollTimer) {
         pollTimer->start(200);
     }
 
@@ -742,7 +753,14 @@ void MainWindow::handlePostProgress()
 
 void MainWindow::sendFileWithDelay(const QStringList &files, int index)
 {
+    BootUpSync = true;
+    bootFiles = files;
+    bootFileIndex = index;
     if (index >= files.size()) {
+        BootUpSync = false;
+        startApp = false; 
+        responseWaitTimer->stop();
+        pollTimer->start(200);
         return;
     }
 
@@ -754,15 +772,15 @@ void MainWindow::sendFileWithDelay(const QStringList &files, int index)
         QJsonDocument doc = QJsonDocument::fromJson(jsonData);
         if (!doc.isNull() && doc.isObject()) {
             QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
-            qDebug() << "Sending file:" << filePath;
+            qDebug() << "Sending content from file:" << filePath;
+             if (pollTimer && pollTimer->isActive()) {
+            pollTimer->stop();
+            }
             emit requestSerialCommand(jsonString);
+            waitingForCalibrationResponse = true;
+            responseWaitTimer->start(20000);
         }
     }
-
-    // Schedule next file 3 seconds later
-    QTimer::singleShot(3000, this, [this, files, index]() {
-        sendFileWithDelay(files, index + 1);
-    });
 }
 
 void MainWindow::onChannelDataWatchdogTimeout()
@@ -788,13 +806,6 @@ void MainWindow::onChannelDataWatchdogTimeout()
             "config/i_offset_response.json"
         };
         sendFileWithDelay(files);
-
-        QTimer::singleShot(25000, this, [this]() { 
-            startApp = false; 
-             if (pollTimer) {
-                pollTimer->start(200);
-            }
-        });
     });    
 
     channelDataWatchdog->start(WATCHDOG_TIMEOUT_MS);

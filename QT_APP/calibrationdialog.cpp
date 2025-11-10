@@ -186,8 +186,18 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
         return;
     }
 
+    else if (command == "v_offset") {
+        Toast::show("V-Offset Updated Successfully", this, Toast::Info);
+        return;
+    }
+
+    else if (command == "i_offset") {
+        Toast::show("I-Offset Updated Successfully", this, Toast::Info);
+        return;
+    }
+
     // Voltage: save directly
-    if (command == "v-calibration") {
+    else if (command == "v-calibration") {
         QJsonObject modifiedResponse = response;
         modifiedResponse["command"] = "reboot-calibration";
 
@@ -197,39 +207,51 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
         }
         return;
     }
-    // Current: load + merge by ID
-    QJsonArray channels;
-    if (file.exists() && file.open(QIODevice::ReadOnly)) {
-        QJsonParseError err;
-        auto doc = QJsonDocument::fromJson(file.readAll(), &err);
-        if (err.error == QJsonParseError::NoError)
-            channels = doc["current"].toObject()["channels"].toArray();
-        file.close();
-    }
+    
+    else if (command == "i-calibration") {
+        QJsonArray channels;
 
-    QJsonObject newCh = response["current"].toObject();
-    int id = newCh["ID"].toInt();
-    bool found = false;
-
-    // ✅ iterate by index to safely replace entries
-    for (int i = 0; i < channels.size(); ++i) {
-        QJsonObject ch = channels[i].toObject();
-        if (ch["ID"].toInt() == id) {
-            channels[i] = newCh;  // replace safely
-            found = true;
-            break;
+        // 1 Load existing channels if file exists
+        if (file.exists() && file.open(QIODevice::ReadOnly)) {
+            QJsonParseError err;
+            QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &err);
+            if (err.error == QJsonParseError::NoError) {
+                QJsonObject currentObj = doc.object()["current"].toObject();
+                if (currentObj.contains("channels") && currentObj["channels"].isArray()) {
+                    channels = currentObj["channels"].toArray();
+                }
+            }
+            file.close();
         }
-    }
-    if (!found)
-        channels.append(newCh);
 
-    QJsonObject finalObj{
-        {"command", "reboot-calibration"},
-        {"current", QJsonObject{{"channels", channels}}}
-    };
+        // 2 Extract the new current object from response
+        QJsonObject newCurrent = response["current"].toObject();
+        int id = newCurrent["ID"].toInt();
+        bool found = false;
 
-    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        file.write(QJsonDocument(finalObj).toJson(QJsonDocument::Indented));
-        Toast::show("Current Calibrated successfully",  this, Toast::Info);
+        // 3 Merge or append
+        for (int i = 0; i < channels.size(); ++i) {
+            QJsonObject ch = channels[i].toObject();
+            if (ch["ID"].toInt() == id) {
+                channels[i] = newCurrent;  // replace existing
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            channels.append(newCurrent);  // append new ID
+        }
+
+        // 4 Save back to file with channels array
+        QJsonObject finalObj{
+            {"command", "reboot-calibration"},
+            {"current", QJsonObject{{"channels", channels}}}
+        };
+
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            file.write(QJsonDocument(finalObj).toJson(QJsonDocument::Indented));
+            file.close();
+            Toast::show("Current Calibrated successfully", this, Toast::Info);
+        }
     }
 }

@@ -137,6 +137,11 @@ private:
     // Ping Timer declarations 
     bool previousStatus = false;
     QTcpSocket socket;
+
+    // Boot calibration declarations 
+    bool BootUpSync = true;
+    QStringList bootFiles;
+    int bootFileIndex;
 };
 
 #endif // MAINWINDOW_H

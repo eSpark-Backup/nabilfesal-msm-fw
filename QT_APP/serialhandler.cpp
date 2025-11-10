@@ -50,7 +50,7 @@ void SerialHandler::handleReadyRead() {
             // Handle calibration/CT JSONs as string responses
             if (obj.contains("command")) {
                 QString cmd = obj.value("command").toString();
-                if (cmd == "i-calibration" || cmd == "v-calibration" || cmd == "ct-ratio") {
+                if (cmd == "reboot-calibration" || cmd == "v_offset" || cmd == "i_offset" || cmd == "i-calibration" || cmd == "v-calibration" || cmd == "ct-ratio") {
                     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
                     emit stringResponseReady(jsonString);
                     return;
