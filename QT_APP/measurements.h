@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "numkeyboard.h"
 #include <QLabel>
+#include <QRegularExpressionValidator>
 
 namespace Ui {
 class Measurements;
@@ -65,6 +66,7 @@ private:
     NumKeyboard *keyboard;
     QList<QLabel*> signEdits;
     QList<QLineEdit*> edits;
+    QDoubleValidator *validator = nullptr;
 };
 
 #endif // MEASUREMENTS_H

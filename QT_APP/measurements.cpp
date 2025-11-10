@@ -10,8 +10,6 @@
 #include <QDir>
 #include <QFile>
 #include <QKeyEvent>
-// #include "calibrationdialog.h"
-#include <QRegularExpressionValidator>
 
 Measurements::Measurements(QWidget *parent)
     : QWidget(parent)
@@ -40,8 +38,9 @@ Measurements::Measurements(QWidget *parent)
         label->setText("%");
     }
 
-    QRegularExpression rx(R"(^-?\d+(\.\d+)?$)");
-    QValidator *validator = new QRegularExpressionValidator(rx, this);
+    validator = new QDoubleValidator(0.00, 2000.00, 2, this);
+    validator->setNotation(QDoubleValidator::StandardNotation);
+    validator->setLocale(QLocale::C);
 
     for (QLineEdit *edit : edits) {
         edit->setValidator(validator);
@@ -67,14 +66,25 @@ bool Measurements::eventFilter(QObject *obj, QEvent *event)
     QLineEdit *lineEdit = qobject_cast<QLineEdit*>(obj);
     if (lineEdit) {
         if (event->type() == QEvent::FocusIn) {
+            if (lineEdit->text() == "0.00")
+            lineEdit->clear();
             keyboard->setTarget(lineEdit);
             Utils::keySound();
             keyboard->show();
             lineEdit->setFocus();
         }
         else if (event->type() == QEvent::FocusOut) {
-            if (!keyboard->isAncestorOf(QApplication::focusWidget())) {
-                keyboard->hide();
+            QString text = lineEdit->text();
+            if (text.isEmpty()) {
+                lineEdit->setText("0.00");
+            } else {
+                bool ok;
+                double value = text.toDouble(&ok);
+                if (ok) {
+                    lineEdit->setText(QString::number(value, 'f', 1)); // 1 decimal
+                } else {
+                    lineEdit->setText("0.00");
+                }
             }
         }
     }
@@ -412,6 +422,8 @@ void Measurements::ration_btn_clicked()
 {
     ui->header_label->setText("CT RATIO SETTINGS");
     ui->verticalStackedWidget->setCurrentIndex(0);
+    validator->setBottom(0.00);
+    validator->setTop(2000.00);
     // ui->ration_btn->setFocus();
     isRatioActivated = true;
     isVOffsetActivated = false;
@@ -423,7 +435,8 @@ void Measurements::i_off_btn_clicked()
 {
     ui->header_label->setText("I-OFFSET SETTINGS");
     ui->verticalStackedWidget->setCurrentIndex(0);
-    // ui->i_off_btn->setFocus();
+    validator->setBottom(-2000.00);
+    validator->setTop(2000.00);
     isRatioActivated = false;
     isVOffsetActivated = false;
     isIOffsetActivated = true;
@@ -434,15 +447,10 @@ void Measurements::v_off_btn_clicked()
 {
     ui->header_label->setText("V-OFFSET SETTINGS");
     ui->verticalStackedWidget->setCurrentIndex(0);
-    // ui->v_off_btn->setFocus();
+    validator->setBottom(-2000.00);
+    validator->setTop(2000.00);
     isRatioActivated = false;
     isVOffsetActivated = true;
     isIOffsetActivated = false;
     on_load_btn_clicked();
 }
-
-// void Measurements::cal_btn_clicked()
-// {
-//     ui->verticalStackedWidget->setCurrentIndex(1);
-//     // ui->cal_btn->setFocus();
-// }

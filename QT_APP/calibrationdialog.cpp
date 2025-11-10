@@ -27,8 +27,9 @@ CalibrationDialog::CalibrationDialog(QWidget *parent)
     ui->phase_B_input->installEventFilter(this);
     ui->phase_C_input->installEventFilter(this);
 
-    QRegularExpression rx(R"(^-?\d+(\.\d+)?$)");
-    QValidator *validator = new QRegularExpressionValidator(rx, this);
+    QDoubleValidator *validator = new QDoubleValidator(0.00, 2000.00, 2, this);
+    validator->setNotation(QDoubleValidator::StandardNotation);
+    validator->setLocale(QLocale::C);
     ui->phase_A_input->setValidator(validator);
     ui->phase_B_input->setValidator(validator);
     ui->phase_C_input->setValidator(validator);

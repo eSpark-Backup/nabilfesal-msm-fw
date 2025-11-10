@@ -1,6 +1,8 @@
 #include "numkeyboard.h"
 #include "ui_numkeyboard.h"
 #include <QMouseEvent>
+#include <QValidator>
+#include <QApplication>
 
 NumKeyboard::NumKeyboard(QWidget *parent)
     : QWidget(parent)
@@ -92,15 +94,61 @@ void NumKeyboard::numberClicked()
     QPushButton *clickedButton = qobject_cast<QPushButton*>(sender());
     if (!clickedButton) return;
 
-    QString text = clickedButton->text();
-    ui->numpad_input->insert(text);  // now inserts into preview, not directly into the target
+    QString key = clickedButton->text();
+    QString current = ui->numpad_input->text();
+
+    // Preview next text at cursor position
+    QString next = current;
+    int cursorPos = ui->numpad_input->cursorPosition();
+    next.insert(cursorPos, key);
+
+    if (targetLineEdit && targetLineEdit->validator()) {
+        int pos = cursorPos;
+        QValidator::State state = targetLineEdit->validator()->validate(next, pos);
+
+        if (state == QValidator::Invalid) {
+            QApplication::beep();
+            return;
+        }
+
+        if (auto doubleValidator = qobject_cast<const QDoubleValidator*>(targetLineEdit->validator())) {
+            bool ok;
+            double value = next.toDouble(&ok);
+            if (ok) {
+                if (value < doubleValidator->bottom() || value > doubleValidator->top()) {
+                    QApplication::beep();
+                    return;
+                }
+            }
+        }
+    }
+
+
+    // Apply valid input
+    ui->numpad_input->insert(key);
 }
 
 
 void NumKeyboard::on_back_clicked()
 {
     QString text = ui->numpad_input->text();
+    if (text.isEmpty()) return;
+
     text.chop(1);
+
+    // Revalidate (optional visual feedback)
+    if (targetLineEdit && targetLineEdit->validator()) {
+        QString temp = text;
+        int pos = 0;
+        QValidator::State state = targetLineEdit->validator()->validate(temp, pos);
+
+        // Optionally change color in preview
+        if (state == QValidator::Invalid)
+            ui->numpad_input->setStyleSheet("background-color: #ffdddd;");
+        else
+            ui->numpad_input->setStyleSheet("");
+    }
+
     ui->numpad_input->setText(text);
 }
 
