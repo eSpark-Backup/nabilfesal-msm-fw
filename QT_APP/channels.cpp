@@ -6,6 +6,10 @@
 #include <QSwipeGesture>
 #include <QPainter>
 #include <QPainterPath>
+#include "toast.h"
+
+
+#define EnergyFilePath "data/energy_data.json"
 
 ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
@@ -479,7 +483,7 @@ int ChannelsHome::findNextActiveChannel(int startChannel, int direction)
 
 void ChannelsHome::loadEnergyData()
 {
-    QFile file("energy_data.json");
+    QFile file(EnergyFilePath);
     if (!file.open(QIODevice::ReadOnly))
         return;
 
@@ -522,7 +526,7 @@ void ChannelsHome::saveEnergyData()
         root[QString::number(chIt.key())] = chObj;
     }
 
-    QFile file("energy_data.json");
+    QFile file(EnergyFilePath);
     if (file.open(QIODevice::WriteOnly))
         file.write(QJsonDocument(root).toJson());
 }
@@ -566,3 +570,21 @@ void ChannelsHome::on_tempBtn_clicked(bool updateTrue, double val)
     }
     ui->tempBtn->setText(QString::number(value, 'f', 2) + " " + unit);
 }
+
+
+void ChannelsHome::on_resetEnergy_Btn_clicked()
+{
+    ui->resetEnergy_Btn->clearFocus();
+    QString filePath = EnergyFilePath;
+
+    if (QFile::exists(filePath)) {
+        if (QFile::remove(filePath)) {
+            Toast::show("Energy Reset successfully.", this, Toast::Info);
+        } else {
+            Toast::show("Unable to reset energy data", this, Toast::Error);
+        }
+    } else {
+        Toast::show("No Energy Data available to reset.", this, Toast::Warning);
+    }
+}
+

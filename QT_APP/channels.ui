@@ -74,7 +74,7 @@
       <enum>QFrame::Raised</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="channels">
       <property name="sizePolicy">
@@ -147,26 +147,59 @@
              <number>0</number>
             </property>
             <property name="leftMargin">
-             <number>60</number>
+             <number>30</number>
             </property>
             <property name="rightMargin">
              <number>30</number>
             </property>
             <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+             <widget class="QPushButton" name="resetEnergy_Btn">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
+              <property name="minimumSize">
                <size>
-                <width>90</width>
-                <height>20</height>
+                <width>120</width>
+                <height>60</height>
                </size>
               </property>
-             </spacer>
+              <property name="maximumSize">
+               <size>
+                <width>120</width>
+                <height>60</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}
+QPushButton:focus {
+    outline: none;                 /* Remove dotted border */
+    background-color: #074475;     /* Brighter blue highlight */
+    border: 2px solid black;       /* White glow/border */
+}</string>
+              </property>
+              <property name="text">
+               <string>Reset
+Energy</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QLabel" name="label_11">
@@ -2111,7 +2144,7 @@ background-color: #D9D9D9;</string>
              </size>
             </property>
             <property name="currentIndex">
-             <number>2</number>
+             <number>1</number>
             </property>
             <widget class="QWidget" name="general">
              <property name="sizePolicy">
