@@ -89,6 +89,10 @@ private:
     void resizeEvent(QResizeEvent *event);
 
     bool firstTimeEnergy = true;
+    double activePos = 0;
+    double activeNeg = 0;
+    double reactivePos = 0;
+    double reactiveNeg = 0;
 };
 
 #endif // CHANNELS_H

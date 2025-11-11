@@ -110,7 +110,7 @@ void Measurements::on_load_btn_clicked()
         QFile file("config/ct_ratio_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
-                edit->setText("0");
+                edit->setText("0.00");
             return;
         }
 
@@ -146,7 +146,7 @@ void Measurements::on_load_btn_clicked()
         QFile file("config/i_offset_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
-                edit->setText("0");
+                edit->setText("0.00");
             return;
         }
 
@@ -182,7 +182,7 @@ void Measurements::on_load_btn_clicked()
         QFile file("config/v_offset_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
-                edit->setText("0");
+                edit->setText("0.00");
             return;
         }
 
