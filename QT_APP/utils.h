@@ -3,6 +3,7 @@
 
 #include <QJsonObject>
 #include <QString>
+#include <QLabel>
 
 namespace Utils {
 void keySound();
@@ -18,7 +19,7 @@ void rebootSystem();
 void mainSound();
 bool updateSerialInConfig();
 QString getSignalCategoryFromFile(const QString &filePath = "/MSM/potential-pancake/MSM/bin/at_axec/responses.txt");
-void showImageFullscreenFor(const QString &imagePath, int milliseconds);
+QLabel *showImageFullscreenFor(const QString &imagePath, int milliseconds);
 QString getFirmwareVersion();
 QString getLastOTAInitiated();
 QStringList getAvailableVersions();

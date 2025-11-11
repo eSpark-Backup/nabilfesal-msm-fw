@@ -389,22 +389,12 @@ void FactSetting::on_pushButton_clicked()
 {
     QString selectedVersion = ui->comboBox->currentText();
     if (selectedVersion.isEmpty()) {
-        qWarning() << "No version selected.";
+        Toast::show("No OTA version selected.", this, Toast::Warning);
         return;
     }
 
-    QString updatingImagePath = "/MSM/potential-pancake/MSM/images/update/updating.bmp";
-    QPixmap pixmap(updatingImagePath);
-    if (!pixmap.isNull()) {
-        QLabel *updatingLabel = new QLabel();
-        updatingLabel->setPixmap(pixmap.scaled(qApp->primaryScreen()->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        updatingLabel->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-        updatingLabel->setAlignment(Qt::AlignCenter);
-        updatingLabel->showFullScreen();
-        qApp->processEvents(); // Force UI to update immediately
-    } else {
-        qWarning() << "Failed to load updating image:" << updatingImagePath;
-    }
+    QString updatingImagePath = ":/icons/updating.png";
+    updatingLabel = Utils::showImageFullscreenFor(updatingImagePath, -1);
 
     QString otaFileName = QString("MSM_%1.zip").arg(selectedVersion);
 
@@ -433,7 +423,13 @@ void FactSetting::on_pushButton_clicked()
         qWarning() << "Incomplete SFTP configuration.";
         return;
     }
+
     QString scriptPath = "/MSM/potential-pancake/MSM/linux_configs/misc-scripts/ota.sh";
+
+    #if defined(BUILD_X86)
+    scriptPath = "/etc/ota.sh";
+    #endif
+
     QStringList args;
     args << otaFileName << ip << username << password;
 
@@ -450,17 +446,14 @@ void FactSetting::on_pushButton_clicked()
     });
 
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [process, updatingImagePath](int exitCode, QProcess::ExitStatus status) {
+            this, [this, process](int exitCode, QProcess::ExitStatus status) {
         Q_UNUSED(status);
 
-        // Remove OTA image overlay if shown
-        for (QWidget *w : QApplication::topLevelWidgets()) {
-            QLabel *label = qobject_cast<QLabel*>(w);
-            if (label && label->pixmap() && label->pixmap()->cacheKey() == QPixmap(updatingImagePath).cacheKey()) {
-                label->close();
-                label->deleteLater();
+         if (updatingLabel) {
+                updatingLabel->close();   // hides and deletes the window
+                delete updatingLabel;
+                updatingLabel = nullptr;
             }
-        }
 
         if (exitCode == 0) {
             Utils::setLastOTAInitiated();
@@ -478,6 +471,11 @@ void FactSetting::on_pushButton_clicked()
 
     if (!process->waitForStarted()) {
         QMessageBox::warning(nullptr, "Error", "Failed to start OTA update script.");
+        if (updatingLabel) {
+            updatingLabel->close();   // hides and deletes the window
+            delete updatingLabel;
+            updatingLabel = nullptr;
+        }
         return;
     }
 }
