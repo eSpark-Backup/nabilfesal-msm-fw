@@ -305,7 +305,6 @@ void MainWindow::connectLoginSignals()
     connect(awsMqttsHandler, &AwsMqttManager::rebootRequested, this, [this]() {
         this->close();
         awsMqttsHandler->disconnectAwsClient();
-        qDebug() << "disconnect reboot called";
         Utils::rebootSystem();
     },Qt::QueuedConnection);
 

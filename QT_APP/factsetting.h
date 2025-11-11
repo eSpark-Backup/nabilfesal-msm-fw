@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "msmkeyboard.h"
 #include "commonSetting.h"
+#include <QLabel>
 
 namespace Ui {
 class FactSetting;
@@ -53,6 +54,7 @@ private slots:
 private:
     Ui::FactSetting *ui;
     MSMKeyboard *keyboard;
+    QLabel *updatingLabel = nullptr;
 };
 
 #endif // FACTSETTING_H

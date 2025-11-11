@@ -251,7 +251,12 @@ QString getSftpStatus()
 void rebootSystem()
 {
     QString imgPath = ":/icons/rebooting.png";
-    showImageFullscreenFor(imgPath, 2000);
+    QLabel *label = showImageFullscreenFor(imgPath, 2000);
+    QTimer::singleShot(2000, [label]() {
+    #if defined(BUILD_V3S)
+        QProcess::startDetached("sh", {"-c", "sync; reboot"});
+    #endif
+    });
 }
 
 
@@ -300,14 +305,15 @@ bool updateSerialInConfig()
 }
 
 
-void showImageFullscreenFor(const QString &imagePath, int milliseconds)
+QLabel *showImageFullscreenFor(const QString &imagePath, int milliseconds)
 {
     QLabel *label = new QLabel;
     QPixmap pixmap(imagePath);
 
     if (pixmap.isNull()) {
         qWarning("Failed to load image");
-        return;
+        delete label;
+        return nullptr;
     }
 
     label->setPixmap(pixmap);
@@ -317,12 +323,15 @@ void showImageFullscreenFor(const QString &imagePath, int milliseconds)
     label->move(0, 0);
     label->show();
 
+    if(milliseconds != -1)
+    {
+        QTimer::singleShot(milliseconds, [label]() {
+            label->close();
+            label->deleteLater();
+        });
+    }
 
-    QTimer::singleShot(milliseconds, [label]() {
-        // label->close();
-        // label->deleteLater();
-        QProcess::startDetached("sh", {"-c", "sync; reboot"});
-    });
+    return label;
 }
 
 QString getFirmwareVersion()
