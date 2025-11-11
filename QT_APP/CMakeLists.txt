@@ -47,6 +47,8 @@ target_link_libraries(MSM PRIVATE Qt5::Core Qt5::Widgets Qt5::SerialPort Qt5::Ne
 file(COPY ${CMAKE_SOURCE_DIR}/config DESTINATION ${CMAKE_BINARY_DIR})
 
 
-add_custom_target(generate_build_info DEPENDS ${BUILD_INFO_HEADER})
+add_custom_target(generate_build_info ALL
+    COMMAND ${CMAKE_COMMAND} -DOUTPUT_FILE=${BUILD_INFO_HEADER} -P ${CMAKE_SOURCE_DIR}/GenerateBuildInfo.cmake
+    COMMENT "Generating build info...")
 add_dependencies(MSM generate_build_info)
 target_include_directories(MSM PRIVATE ${CMAKE_BINARY_DIR})
