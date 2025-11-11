@@ -165,14 +165,14 @@ void SYS_Initialize ( void* data )
 
 
 
+    NVMCTRL_Initialize();
+    
     SERCOM2_USART_Initialize();
-
-    NVMCTRL_Initialize( );
 
     SERCOM0_SPI_Initialize();
 
 
-	SYSTICK_TimerInitialize();
+	  SYSTICK_TimerInitialize();
     TC0_TimerInitialize();
 
 

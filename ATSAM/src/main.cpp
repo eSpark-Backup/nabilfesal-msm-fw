@@ -193,6 +193,15 @@ void sendChannelJsonData(uint8_t channel)
     float posEnergy[3] = {m.activeEnergy.PActiveEnergyValue_kWh_A, m.activeEnergy.PActiveEnergyValue_kWh_B, m.activeEnergy.PActiveEnergyValue_kWh_C};
     float negEnergy[3] = {m.activeEnergy.NActiveEnergyValue_kWh_A, m.activeEnergy.NActiveEnergyValue_kWh_B, m.activeEnergy.NActiveEnergyValue_kWh_C};
 
+    // reset energy values
+    m.activeEnergy.PActiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.PActiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.PActiveEnergyValue_kWh_C = 0;
+    m.activeEnergy.NActiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.NActiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.NActiveEnergyValue_kWh_C = 0;
+
+
     float reactiveposEnergy[3];
     float reactivenegEnergy[3];
     if (m.activeEnergy.ReactiveEnergyValue_kWh_A > 0)
@@ -1121,6 +1130,7 @@ void SetupUSART(void)
     SERCOM2_USART_Read((void *)rxBuffer, 1);
 }
 
+// startup indication using onboard LEDs
 void flash_check()
 {
     for (uint8_t j = 0; j < 3; j++)

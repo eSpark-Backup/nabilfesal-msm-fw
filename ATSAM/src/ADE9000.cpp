@@ -537,67 +537,17 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
 
     if (status0 & 0x01)
     {
-        if (discardInitialReadingsCount < INITIAL_READINGS_TO_DISCARD)
-        {
-            discardInitialReadingsCount++;
-            return;
-        }
+        // check wether it is required to ignore first few readings
+        // if (discardInitialReadingsCount < INITIAL_READINGS_TO_DISCARD)
+        // {
+        //     discardInitialReadingsCount++;
+        //     return;
+        // }
 
         if (css_pin)
         {
-            // rawValue = SPI_Read(ADDR_AFWATTHR_HI, true, css_pin);
-            // Data1->ActiveEnergyReg_A = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
-            // rawValue = SPI_Read(ADDR_BFWATTHR_HI, true, css_pin);
-            // Data1->ActiveEnergyReg_B = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
-            // rawValue = SPI_Read(ADDR_CFWATTHR_HI, true, css_pin);
-            // Data1->ActiveEnergyReg_C = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
-            // rawValue = SPI_Read(ADDR_AFVARHR_HI, true, css_pin);
-            // Data1->ReactiveEnergyReg_A = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
-            // rawValue = SPI_Read(ADDR_BFVARHR_HI, true, css_pin);
-            // Data1->ReactiveEnergyReg_B = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
-            // rawValue = SPI_Read(ADDR_CFVARHR_HI, true, css_pin);
-            // Data1->ReactiveEnergyReg_C = (rawValue & 0x80000000) ? -((int32_t)(~rawValue + 1)) : (int32_t)rawValue;
             uint32_t rawActive;
-//            uint32_t rawActive = SPI_Read(ADDR_AWATTHR_HI, true, css_pin);
-//            Data1->ActiveEnergyReg_A = (rawActive & 0x80000000) ? ((int32_t)(~rawActive + 1)) : (int32_t)rawActive;
-//            Data1->PActiveEnergyValue_kWh_A = ((float) Data1->ActiveEnergyReg_A * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
             uint32_t rawReactive;
-//            uint32_t rawReactive = SPI_Read_Energy(ADDR_AFVARHR_HI, true, css_pin);
-
-            
-//            rawActive = SPI_Read(ADDR_BWATTHR_HI, true, css_pin);
-//            Data1->ActiveEnergyReg_B = (rawActive & 0x80000000) ? ((int32_t)(~rawActive + 1)) : (int32_t)rawActive;
-//            Data1->PActiveEnergyValue_kWh_B = ((float) Data1->ActiveEnergyReg_B * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
-//            rawReactive = SPI_Read_Energy(ADDR_BFVARHR_HI, true, css_pin);
-            
-            
-//             rawActive = SPI_Read(ADDR_AWATTHR_HI, true, css_pin);
-////            Data1->ActiveEnergyReg_C = (rawActive & 0x80000000) ? ((int32_t)(~rawActive + 1)) : (int32_t)rawActive;
-//            if(rawActive & 0x80000000){
-//                Data1->ActiveEnergyReg_A = ((int32_t)(~rawActive + 1));
-//                Data1->NActiveEnergyValue_kWh_A = ((float) Data1->ActiveEnergyReg_A * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
-//
-//            }
-//            else{
-//                Data1->ActiveEnergyReg_A = (int32_t)rawActive;
-//            Data1->PActiveEnergyValue_kWh_A = ((float) Data1->ActiveEnergyReg_A * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
-//
-//            }
-//             
-//             
-//            
-//            rawActive = SPI_Read(ADDR_BWATTHR_HI, true, css_pin);
-////            Data1->ActiveEnergyReg_C = (rawActive & 0x80000000) ? ((int32_t)(~rawActive + 1)) : (int32_t)rawActive;
-//            if(rawActive & 0x80000000){
-//                Data1->ActiveEnergyReg_B = ((int32_t)(~rawActive + 1));
-//                Data1->NActiveEnergyValue_kWh_B = ((float) Data1->ActiveEnergyReg_B * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
-//
-//            }
-//            else{
-//                Data1->ActiveEnergyReg_B = (int32_t)rawActive;
-//            Data1->PActiveEnergyValue_kWh_B = ((float) Data1->ActiveEnergyReg_B * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
-//
-//            }
             
             //----------------------------------------------------------------------
             // Reading Active Energy
@@ -608,11 +558,13 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
                 Data1->ActiveEnergyReg_A = (int32_t)rawActive; // Converting to in32_t for signed check
 
                 if (Data1->ActiveEnergyReg_A < 0) {
-                    Data1->NActiveEnergyValue_kWh_A = ((float) Data1->ActiveEnergyReg_A *
-                        calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                    Data1->NActiveEnergyValue_kWh_A += ((float) Data1->ActiveEnergyReg_A *
+                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
                 } else {
-                    Data1->PActiveEnergyValue_kWh_A = ((float) Data1->ActiveEnergyReg_A *
-                        calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                    Data1->PActiveEnergyValue_kWh_A += ((float) Data1->ActiveEnergyReg_A *
+                    // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
                 }   
             }
             
@@ -621,11 +573,13 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
                 Data1->ActiveEnergyReg_B = (int32_t)rawActive;
 
                 if (Data1->ActiveEnergyReg_B < 0) {
-                    Data1->NActiveEnergyValue_kWh_B = ((float) Data1->ActiveEnergyReg_B *
-                        calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                    Data1->NActiveEnergyValue_kWh_B += ((float) Data1->ActiveEnergyReg_B *
+                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
                 } else {
-                    Data1->PActiveEnergyValue_kWh_B = ((float) Data1->ActiveEnergyReg_B *
-                        calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                    Data1->PActiveEnergyValue_kWh_B += ((float) Data1->ActiveEnergyReg_B *
+                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
                 }
             }
             
@@ -635,13 +589,14 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
                 Data1->ActiveEnergyReg_C = (int32_t)rawActive;
 
                 if (Data1->ActiveEnergyReg_C < 0) {
-                    Data1->NActiveEnergyValue_kWh_C = ((float) Data1->ActiveEnergyReg_C *
-                        calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                    Data1->NActiveEnergyValue_kWh_C += ((float) Data1->ActiveEnergyReg_C *
+                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
                 } else {
-                    Data1->PActiveEnergyValue_kWh_C = ((float) Data1->ActiveEnergyReg_C *
-                        calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                    Data1->PActiveEnergyValue_kWh_C += ((float) Data1->ActiveEnergyReg_C *
+                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
+                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
                 }
-                Data1->PActiveEnergyValue_kWh_C = ((float) Data1->ActiveEnergyReg_C * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
             }
             //----------------------------------------------------------------------
             
@@ -651,29 +606,24 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
             if (CurrentData->CurrentRMSValue_A >= MIN_CURRENT_CAP){  
                 rawActive = SPI_Read(ADDR_AVAHR_HI, true, css_pin);
                 Data1->ReactiveEnergyReg_A = (int32_t)rawActive; // converting to int32 for signed check
-                Data1->ReactiveEnergyValue_kWh_A = ((float) Data1->ReactiveEnergyReg_A * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
+                Data1->ReactiveEnergyValue_kWh_A += ((float) Data1->ReactiveEnergyReg_A * //(calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
+                                                    (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
             }
             
             if (CurrentData->CurrentRMSValue_B >= MIN_CURRENT_CAP){ 
                 rawActive = SPI_Read(ADDR_BVAHR_HI, true, css_pin);
                 Data1->ReactiveEnergyReg_B = (int32_t)rawActive;
-                Data1->ReactiveEnergyValue_kWh_B = ((float) Data1->ReactiveEnergyReg_B * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
+                Data1->ReactiveEnergyValue_kWh_B += ((float) Data1->ReactiveEnergyReg_B * //(calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
+                                                    (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
             }
             
             if (CurrentData->CurrentRMSValue_C >= MIN_CURRENT_CAP){
                 rawActive = SPI_Read(ADDR_CVAHR_HI, true, css_pin);
                 Data1->ReactiveEnergyReg_C = (int32_t)rawActive;
-                Data1->ReactiveEnergyValue_kWh_C = ((float) Data1->ReactiveEnergyReg_C * (calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
+                Data1->ReactiveEnergyValue_kWh_C += ((float) Data1->ReactiveEnergyReg_C * //(calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
+                                                    (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
             }
             //----------------------------------------------------------------------
-            
-            
-//            rawReactive = SPI_Read_Energy(ADDR_CFVARHR_HI, true, css_pin);
-        
-            // Data1->ActiveEnergyReg_A = ((int32_t)rawActive & 0x7FFFFFFF);
-            
-//            Data1->ReactiveEnergyReg_A = (uint64_t)(rawReactive & 0x80000000) ? -((int32_t)(~rawReactive + 1)) : (int32_t)rawReactive;
-            
         }
         else
         {
@@ -684,24 +634,6 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
             // Data1->ReactiveEnergyReg_B = SPI_Read(ADDR_BFVARHR_HI, true, css_pin);
             // Data1->ReactiveEnergyReg_C = SPI_Read(ADDR_CFVARHR_HI, true, css_pin);
         }
-        // Data1->PActiveEnergyValue_kWh_A = (float) Data1->ActiveEnergyReg_A;
-//         if (CurrentData->CurrentRMSValue_A >= MIN_CURRENT_CAP)
-        // {
-            // Data1->PActiveEnergyValue_kWh_A = Data1->ActiveEnergyReg_A * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
-        // }
-        // if (CurrentData->CurrentRMSValue_B >= MIN_CURRENT_CAP)
-        // {
-        //     Data1->PActiveEnergyValue_kWh_B = Data1->ActiveEnergyReg_B * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
-        // }
-        // if (CurrentData->CurrentRMSValue_C >= MIN_CURRENT_CAP)
-        // {
-        //     Data1->PActiveEnergyValue_kWh_C = Data1->ActiveEnergyReg_C * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
-        // }
-
-        // Data1->ReactiveEnergyValue_kWh_A = Data1->ReactiveEnergyReg_A * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
-        // Data1->ReactiveEnergyValue_kWh_B = Data1->ReactiveEnergyReg_B * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
-        // Data1->ReactiveEnergyValue_kWh_C = Data1->ReactiveEnergyReg_C * (float)(calibration_data[css_pin - 1].cal_energy_cc) / 1000000 / 1000;
-        
         SPI_Write(ADDR_STATUS0, (status0 | 0x01), true, css_pin);
     }
     else

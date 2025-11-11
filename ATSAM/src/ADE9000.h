@@ -44,7 +44,7 @@
 //#define ADE9000_EP_CFG 0xE001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
 
 #define ADE9000_EGY_TIME 0x1FFF 				/*Accumulate 8000 samples*/
-#define ADE9000_EP_CFG 0x0001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/    // EGY_LD_ACCUM
+#define ADE9000_EP_CFG 0x0011          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/    // EGY_LD_ACCUM
 
 /*Waveform buffer Settings*/
 #define ADE9000_WFB_CFG 0x1000			/*Neutral current samples enabled, Resampled data enabled*/
@@ -120,9 +120,9 @@ typedef struct {
 } ApparentPowerRegs;
 
 typedef struct {
-    uint64_t ActiveEnergyReg_A;
-    uint64_t ActiveEnergyReg_B;
-    uint64_t ActiveEnergyReg_C;
+    int64_t ActiveEnergyReg_A;
+    int64_t ActiveEnergyReg_B;
+    int64_t ActiveEnergyReg_C;
     float PActiveEnergyValue_kWh_A;
     float PActiveEnergyValue_kWh_B;
     float PActiveEnergyValue_kWh_C;
