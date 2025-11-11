@@ -63,10 +63,6 @@ ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWi
     ui->stackedWidget->setCurrentIndex(0);
 
     loadEnergyData();
-
-    QTimer *saveTimer = new QTimer(this);
-    connect(saveTimer, &QTimer::timeout, this, &ChannelsHome::saveEnergyData);
-    saveTimer->start(5 * 60 * 1000); // Save every 5 minutes
 }
 
 
@@ -450,6 +446,8 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
             setValue("pe_", positiveEnergy);
             setValue("ne_", negativeEnergy);
             setValue("be_", bidirectionalEnergy);
+
+            saveEnergyData();
         }
     }
 }
@@ -524,8 +522,11 @@ void ChannelsHome::saveEnergyData()
     }
 
     QFile file(EnergyFilePath);
-    if (file.open(QIODevice::WriteOnly))
+    if (file.open(QIODevice::WriteOnly)){
         file.write(QJsonDocument(root).toJson());
+        file.flush();
+        file.close();
+    }
 }
 
 
