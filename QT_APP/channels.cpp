@@ -296,17 +296,18 @@ void ChannelsHome::handleSubButtonClick(int channelIndex, const QString &buttonT
 
     if (buttonType == "gn") {
         energyCounter = 0;
+        firstTimeEnergy = true;
         en->setText("Energy");
         gn->setStyleSheet(buttonClickedStyle);
         channelStack->setCurrentIndex(0);
     } else if (buttonType == "pw") {
         energyCounter = 0;
+        firstTimeEnergy = true;
         en->setText("Energy");
         pw->setStyleSheet(buttonClickedStyle);
         channelStack->setCurrentIndex(1);
     } else if (buttonType == "en") {
-        energyCounter++;
-        if (energyCounter == 1)
+        if (energyCounter == 0)
         {
             en->setText("Active\nEnergy");
             ui->label_159->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
@@ -319,7 +320,7 @@ void ChannelsHome::handleSubButtonClick(int channelIndex, const QString &buttonT
             ui->label_180->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
             ui->label_183->setText(QCoreApplication::translate("ChannelsHome", "kWh", nullptr));
         }
-        else if (energyCounter == 2)
+        else if (energyCounter == 1)
         {
             en->setText("Reactive\nEnergy");
             ui->label_159->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
@@ -331,7 +332,6 @@ void ChannelsHome::handleSubButtonClick(int channelIndex, const QString &buttonT
             ui->label_177->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
             ui->label_180->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
             ui->label_183->setText(QCoreApplication::translate("ChannelsHome", "kVAR", nullptr));
-            energyCounter = 0;
         }
         en->setStyleSheet(buttonClickedStyle);
         channelStack->setCurrentIndex(2);
@@ -434,10 +434,7 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
             if (energyCounter == 0) {
                 positiveEnergy = acc.activePositive;
                 negativeEnergy = acc.activeNegative;
-            } else if (energyCounter == 1) { 
-                positiveEnergy = acc.activePositive;
-                negativeEnergy = acc.activeNegative;
-            }  else if (energyCounter == 2) { 
+            }  else if (energyCounter == 1) { 
                 positiveEnergy = acc.reactivePositive;
                 negativeEnergy = acc.reactiveNegative;
             }
@@ -586,5 +583,17 @@ void ChannelsHome::on_resetEnergy_Btn_clicked()
     } else {
         Toast::show("No Energy Data available to reset.", this, Toast::Warning);
     }
+}
+
+
+void ChannelsHome::on_en_bt_1_clicked()
+{
+    if(!firstTimeEnergy)
+    {
+        if(energyCounter == 0 ) energyCounter = 1;
+        else energyCounter = 0;
+    }
+    else
+        firstTimeEnergy = false;
 }
 

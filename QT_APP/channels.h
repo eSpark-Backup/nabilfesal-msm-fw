@@ -35,6 +35,7 @@ private slots:
     void on_exit_clicked();
     void on_tempBtn_clicked(bool updateTrue = false, double val = 0.00);
     void on_resetEnergy_Btn_clicked();
+    void on_en_bt_1_clicked();
 
 private:
     void handleChannelClick(int channelIndex, bool preserveSubTab = false);
@@ -86,6 +87,8 @@ private:
     
     void setupShadowOverlay(QWidget* overlay, bool isLeft);
     void resizeEvent(QResizeEvent *event);
+
+    bool firstTimeEnergy = true;
 };
 
 #endif // CHANNELS_H

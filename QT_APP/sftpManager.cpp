@@ -114,8 +114,8 @@ void sftpManager::scheduleSftpUpload()
     }
 
     qint64 msecToGo = now.msecsTo(scheduledTime);
-    qDebug() << "Next SFTP upload scheduled at:" << scheduledTime
-             << "(in" << msecToGo / 1000 << "seconds)";
+    // qDebug() << "Next SFTP upload scheduled at:" << scheduledTime
+    //          << "(in" << msecToGo / 1000 << "seconds)";
 
     QTimer::singleShot(msecToGo, this, [this]() {
         QString uid = Utils::getUid();
@@ -209,7 +209,7 @@ void sftpManager::connectToSftp()
         return;
     }
 
-    qDebug() << "SFTP process started for" << host;
+    // qDebug() << "SFTP process started for" << host;
 }
 
 
@@ -222,7 +222,7 @@ void sftpManager::disconnectClient()
 void sftpManager::disconnectFromSftp()
 {
     if (process->state() == QProcess::Running) {
-        qDebug() << "Disconnecting SFTP...";
+        // qDebug() << "Disconnecting SFTP...";
         process->write("bye\n");
         process->waitForFinished(2000);
         process->close();
