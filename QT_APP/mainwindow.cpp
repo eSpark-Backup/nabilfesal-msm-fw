@@ -758,30 +758,47 @@ void MainWindow::sendFileWithDelay(const QStringList &files, int index)
     bootFileIndex = index;
     if (index >= files.size()) {
         BootUpSync = false;
-        startApp = false; 
+        startApp = false;
         responseWaitTimer->stop();
-        pollTimer->start(200);
+        if (pollTimer) pollTimer->start(200);
         return;
     }
 
     QString filePath = files[index];
     QFile file(filePath);
-    if (file.open(QIODevice::ReadOnly)) {
-        QByteArray jsonData = file.readAll();
-        file.close();
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-        if (!doc.isNull() && doc.isObject()) {
-            QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
-            qDebug() << "Sending content from file:" << filePath;
-             if (pollTimer && pollTimer->isActive()) {
+
+    if (!file.exists()) {
+        qWarning() << "File not found, skipping:" << filePath;
+        sendFileWithDelay(files, index + 1);
+        return;
+    }
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open file, skipping:" << filePath;
+        sendFileWithDelay(files, index + 1);
+        return;
+    }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    if (!doc.isNull() && doc.isObject()) {
+        QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+        qDebug() << "Sending content from file:" << filePath;
+
+        if (pollTimer && pollTimer->isActive())
             pollTimer->stop();
-            }
-            emit requestSerialCommand(jsonString);
-            waitingForCalibrationResponse = true;
-            responseWaitTimer->start(20000);
-        }
+
+        emit requestSerialCommand(jsonString);
+        waitingForCalibrationResponse = true;
+        responseWaitTimer->start(20000);
+    } else {
+        qWarning() << "Invalid JSON file, skipping:" << filePath;
+        sendFileWithDelay(files, index + 1);
     }
 }
+
 
 void MainWindow::onChannelDataWatchdogTimeout()
 {
@@ -799,11 +816,11 @@ void MainWindow::onChannelDataWatchdogTimeout()
         startApp = true;
 
         QStringList files = {
-            "config/ct_ratio_settings.json",
-            "config/i_offset_settings.json",
-            "config/v_offset_settings.json",
             "config/v_offset_response.json",
-            "config/i_offset_response.json"
+            "config/i_offset_response.json",
+            "config/ct_ratio_settings.json",
+            "config/v_offset_settings.json",
+            "config/i_offset_settings.json"
         };
         sendFileWithDelay(files);
     });    
