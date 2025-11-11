@@ -76,7 +76,7 @@
        <property name="minimumSize">
         <size>
          <width>120</width>
-         <height>45</height>
+         <height>60</height>
         </size>
        </property>
        <property name="font">
