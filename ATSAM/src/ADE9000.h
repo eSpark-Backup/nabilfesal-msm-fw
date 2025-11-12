@@ -136,9 +136,9 @@ typedef struct {
     float ACC_NActiveEnergyValue_kWh_B;
     float ACC_NActiveEnergyValue_kWh_C;
 
-    uint64_t ReactiveEnergyReg_A;
-    uint64_t ReactiveEnergyReg_B;
-    uint64_t ReactiveEnergyReg_C;
+    int64_t ReactiveEnergyReg_A;
+    int64_t ReactiveEnergyReg_B;
+    int64_t ReactiveEnergyReg_C;
     float ReactiveEnergyValue_kWh_A;
     float ReactiveEnergyValue_kWh_B;
     float ReactiveEnergyValue_kWh_C;
@@ -263,7 +263,8 @@ void ADE9000_Initialize(SPI_CSS_Pin css_pin);
 void ADE9000_Set_Calibration(ADE9000_parameter_type parameter, uint8_t channel_id);
 
 int32_t calculate_gain_reg_value(ADE9000_parameter_type parameter, ADE9000_phase phase, uint32_t expected_reg_value, uint8_t channel);
-void current_gain_calibration(float current, uint8_t channel, ADE9000_phase phase);
+void current_gain_calibration_start(float current, uint8_t channel, ADE9000_phase phase);
+void current_gain_calibration_end(float current, uint8_t channel, ADE9000_phase phase);
 void voltage_gain_calibration(float voltage, ADE9000_phase phase);
 //void ct_ratio_calibration(uint16_t ratio);
 void ct_ratio_calibration(uint8_t channel);

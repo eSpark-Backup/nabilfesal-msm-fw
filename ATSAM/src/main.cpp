@@ -260,12 +260,12 @@ void sendChannelJsonData(uint8_t channel)
                            "},"
                            "\"energy\":{"
                            "\"active\":{"
-                           "\"positive\":%.2f,"
-                           "\"negative\":%.2f"
+                           "\"positive\":%.5f,"
+                           "\"negative\":%.5f"
                            "},"
                            "\"reactive\":{"
-                           "\"positive\":%.2f,"
-                           "\"negative\":%.2f"
+                           "\"positive\":%.5f,"
+                           "\"negative\":%.5f"
                            "}"
                            "},"
                            "\"thd\":{"
@@ -785,10 +785,10 @@ void parse_reboot_calibration_json()
     ADE9000_parameter_type data_type;
 
     static const ADE9000_param_map_t param_map[] = {
-        {"\"voltage\"", VOLTAGE_PARAMETER},
-        {"\"current\"", CURRENT_PARAMETER},
-        {"\"power\"",   POWER_PARAMETER},
-        {"\"phase\"",   PERIOD_PARAMETER}, // or PHASE_PARAMETER if defined
+        {"voltage", VOLTAGE_PARAMETER},
+        {"current", CURRENT_PARAMETER},
+        {"power",   POWER_PARAMETER},
+        {"phase",   PERIOD_PARAMETER}, // or PHASE_PARAMETER if defined
     };
 
     for (int i = 0; i < sizeof(param_map) / sizeof(param_map[0]); i++)
@@ -842,6 +842,10 @@ void parse_reboot_calibration_json()
             ADE9000_Set_Calibration(data_type, i);
         }
     }
+
+    sprintf(txBuffer,
+        "{\"command\": \"reboot-calibration\", \"message\": \"%s calibration updated successfully!\"}",
+         param_map[data_type].key);      // add other responses as required
 }
 
 void parse_v_offset_json()
@@ -946,19 +950,31 @@ void parse_i_calibration_json()
 
         // Process and append only non-zero phases
         if (currentCalibration.phase_a != 0) {
-            current_gain_calibration(currentCalibration.phase_a, channel_id_absolute, PHASE_A);
-            sprintf(temp, "\"phase_a\":\"0x%08X\"", reg_values[channel_id_absolute][PHASE_A]);
-            strcat(txBuffer, temp);
-            first = false;
+            current_gain_calibration_start(currentCalibration.phase_a, channel_id_absolute, PHASE_A);
         }
         if (currentCalibration.phase_b != 0) {
-            current_gain_calibration(currentCalibration.phase_b, channel_id_absolute, PHASE_B);
-            sprintf(temp, "%s\"phase_b\":\"0x%08X\"", first ? "" : ",", reg_values[channel_id_absolute][PHASE_B]);
-            strcat(txBuffer, temp);
-            first = false;
+            current_gain_calibration_start(currentCalibration.phase_b, channel_id_absolute, PHASE_B);
         }
         if (currentCalibration.phase_c != 0) {
-            current_gain_calibration(currentCalibration.phase_c, channel_id_absolute, PHASE_C);
+            current_gain_calibration_start(currentCalibration.phase_c, channel_id_absolute, PHASE_C);
+        }
+
+        delay_ms(5000); // wait for calibration to settle
+
+        if (currentCalibration.phase_a != 0) {
+            current_gain_calibration_end(currentCalibration.phase_a, channel_id_absolute, PHASE_A);
+            sprintf(temp, "\"phase_a\":\"0x%08X\"", reg_values[channel_id_absolute][PHASE_A]);
+            strcat(txBuffer, temp);
+            // first = false;
+        }
+        if (currentCalibration.phase_b != 0) {
+            current_gain_calibration_end(currentCalibration.phase_b, channel_id_absolute, PHASE_B);
+            sprintf(temp, "%s\"phase_b\":\"0x%08X\"", first ? "" : ",", reg_values[channel_id_absolute][PHASE_B]);
+            strcat(txBuffer, temp);
+            // first = false;
+        }
+        if (currentCalibration.phase_c != 0) {
+            current_gain_calibration_end(currentCalibration.phase_c, channel_id_absolute, PHASE_C);
             sprintf(temp, "%s\"phase_c\":\"0x%08X\"", first ? "" : ",", reg_values[channel_id_absolute][PHASE_C]);
             strcat(txBuffer, temp);
         }
@@ -1086,28 +1102,6 @@ void ProcessCommand(void)
     {
         ConvertStatusToHexAndSend();
     }
-    /* These calibration have been received in first if condition */
-
-    //    else if (strcmp(rxBuffer, "ct-ratio") == 0)
-    //    {
-    ////        strcpy(txBuffer, "Calibration 1: Step 1 settings");
-    //        strcpy(txBuffer, "CT Ratio updated successfully!");
-    //
-    ////        ct_ratio_calibration(100);
-    ////        send_response_ct_ratio();
-    //    }
-    //    else if (strcmp(rxBuffer, "cal-2") == 0)
-    //    {
-    //        strcpy(txBuffer, "Calibration 2: Step 2 settings");
-    //    }
-    //    else if (strcmp(rxBuffer, "cal-3") == 0)
-    //    {d
-    //        strcpy(txBuffer, "Calibration 3: Step 3 settings");
-    //    }
-    // else if (strcmp(rxBuffer, "cal-4") == 0)
-    // {
-    //     strcpy(txBuffer, "Calibration 4: Step 4 settings");
-    // }
     else
     {
         strcpy(txBuffer, "again");

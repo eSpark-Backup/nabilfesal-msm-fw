@@ -231,22 +231,14 @@ void ADE9000_Initialize(SPI_CSS_Pin css_pin)
     SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, PHASE_A, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
     SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, PHASE_B, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
     SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, PHASE_C, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
-    // SPI_Write(ADDR_BVGAIN, 0x00000000, true, css_pin);
-    // SPI_Write(ADDR_CVGAIN, 0x00000000, true, css_pin);
     
     SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, PHASE_A, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
     SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, PHASE_B, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
     SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, PHASE_C, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
-    // SPI_Write(ADDR_AIGAIN, 0x00000000, true, css_pin);
-    // SPI_Write(ADDR_BIGAIN, 0x00000000, true, css_pin);
-    // SPI_Write(ADDR_CIGAIN, 0x00000000, true, css_pin);
     
     SPI_Write(ade9000_get_phase_register(ADDR_APGAIN, PHASE_A, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
     SPI_Write(ade9000_get_phase_register(ADDR_APGAIN, PHASE_B, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
     SPI_Write(ade9000_get_phase_register(ADDR_APGAIN, PHASE_C, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
-    // SPI_Write(ADDR_APGAIN, 0x00000000, true, css_pin);
-    // SPI_Write(ADDR_BPGAIN, 0x00000000, true, css_pin);
-    // SPI_Write(ADDR_CPGAIN, 0x00000000, true, css_pin);
     
     SPI_Write(ade9000_get_phase_register(ADDR_APHCAL0, PHASE_A, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
     SPI_Write(ade9000_get_phase_register(ADDR_APHCAL0, PHASE_B, CALIBRATION_PARAMETER), 0x00000000, true, css_pin);
@@ -529,21 +521,12 @@ void ReadPowerFactorRegsnValues(PowerFactorRegs *Data, VoltageRMSRegs *rmsData, 
 /***************************ENERGY VALUES*****************************/
 void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *CurrentData, SPI_CSS_Pin css_pin)
 {
-    static uint8_t discardInitialReadingsCount = 0;
-    const uint8_t INITIAL_READINGS_TO_DISCARD = 10;
     uint32_t status0;
     uint32_t rawValue;
     status0 = SPI_Read(ADDR_STATUS0, true, css_pin);
 
     if (status0 & 0x01)
     {
-        // check wether it is required to ignore first few readings
-        // if (discardInitialReadingsCount < INITIAL_READINGS_TO_DISCARD)
-        // {
-        //     discardInitialReadingsCount++;
-        //     return;
-        // }
-
         if (css_pin)
         {
             uint32_t rawActive;
@@ -558,13 +541,11 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
                 Data1->ActiveEnergyReg_A = (int32_t)rawActive; // Converting to in32_t for signed check
 
                 if (Data1->ActiveEnergyReg_A < 0) {
-                    Data1->NActiveEnergyValue_kWh_A += ((float) Data1->ActiveEnergyReg_A *
-                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
-                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
+                    Data1->NActiveEnergyValue_kWh_A += (((float) Data1->ActiveEnergyReg_A *
+                        calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
                 } else {
-                    Data1->PActiveEnergyValue_kWh_A += ((float) Data1->ActiveEnergyReg_A *
-                    // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
-                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
+                    Data1->PActiveEnergyValue_kWh_A += (((float) Data1->ActiveEnergyReg_A *
+                        calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
                 }   
             }
             
@@ -573,13 +554,11 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
                 Data1->ActiveEnergyReg_B = (int32_t)rawActive;
 
                 if (Data1->ActiveEnergyReg_B < 0) {
-                    Data1->NActiveEnergyValue_kWh_B += ((float) Data1->ActiveEnergyReg_B *
-                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
-                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
+                    Data1->NActiveEnergyValue_kWh_B += (((float) Data1->ActiveEnergyReg_B *
+                        calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
                 } else {
-                    Data1->PActiveEnergyValue_kWh_B += ((float) Data1->ActiveEnergyReg_B *
-                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
-                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
+                    Data1->PActiveEnergyValue_kWh_B += (((float) Data1->ActiveEnergyReg_B *
+                        calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
                 }
             }
             
@@ -589,13 +568,11 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
                 Data1->ActiveEnergyReg_C = (int32_t)rawActive;
 
                 if (Data1->ActiveEnergyReg_C < 0) {
-                    Data1->NActiveEnergyValue_kWh_C += ((float) Data1->ActiveEnergyReg_C *
-                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
-                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
+                    Data1->NActiveEnergyValue_kWh_C += (((float) Data1->ActiveEnergyReg_C *
+                        calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
                 } else {
-                    Data1->PActiveEnergyValue_kWh_C += ((float) Data1->ActiveEnergyReg_C *
-                        // calibration_data[css_pin - 1].cal_energy_cc) / 1000000.0f / 1000.0f;
-                        (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
+                    Data1->PActiveEnergyValue_kWh_C += (((float) Data1->ActiveEnergyReg_C *
+                        calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
                 }
             }
             //----------------------------------------------------------------------
@@ -604,24 +581,24 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
             // Reading Reactive Energy
             //----------------------------------------------------------------------
             if (CurrentData->CurrentRMSValue_A >= MIN_CURRENT_CAP){  
-                rawActive = SPI_Read(ADDR_AVAHR_HI, true, css_pin);
-                Data1->ReactiveEnergyReg_A = (int32_t)rawActive; // converting to int32 for signed check
-                Data1->ReactiveEnergyValue_kWh_A += ((float) Data1->ReactiveEnergyReg_A * //(calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
-                                                    (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
+                rawReactive = SPI_Read(ADDR_AVAHR_HI, true, css_pin);
+                Data1->ReactiveEnergyReg_A = (int32_t)rawReactive; // converting to int32 for signed check
+                Data1->ReactiveEnergyValue_kWh_A += (((float) Data1->ReactiveEnergyReg_A *
+                                                     calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
             }
             
             if (CurrentData->CurrentRMSValue_B >= MIN_CURRENT_CAP){ 
-                rawActive = SPI_Read(ADDR_BVAHR_HI, true, css_pin);
-                Data1->ReactiveEnergyReg_B = (int32_t)rawActive;
-                Data1->ReactiveEnergyValue_kWh_B += ((float) Data1->ReactiveEnergyReg_B * //(calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
-                                                    (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
+                rawReactive = SPI_Read(ADDR_BVAHR_HI, true, css_pin);
+                Data1->ReactiveEnergyReg_B = (int32_t)rawReactive;
+                Data1->ReactiveEnergyValue_kWh_B += (((float) Data1->ReactiveEnergyReg_B *
+                                                    calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
             }
             
             if (CurrentData->CurrentRMSValue_C >= MIN_CURRENT_CAP){
-                rawActive = SPI_Read(ADDR_CVAHR_HI, true, css_pin);
-                Data1->ReactiveEnergyReg_C = (int32_t)rawActive;
-                Data1->ReactiveEnergyValue_kWh_C += ((float) Data1->ReactiveEnergyReg_C * //(calibration_data[css_pin - 1].cal_energy_cc)) / 1000000.0f / 1000.0f;
-                                                    (calibration_data[css_pin - 1].cal_energy_cc / 1000000.0f));
+                rawReactive = SPI_Read(ADDR_CVAHR_HI, true, css_pin);
+                Data1->ReactiveEnergyReg_C = (int32_t)rawReactive;
+                Data1->ReactiveEnergyValue_kWh_C += (((float) Data1->ReactiveEnergyReg_C *
+                                                    calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
             }
             //----------------------------------------------------------------------
         }
@@ -635,9 +612,6 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
             // Data1->ReactiveEnergyReg_C = SPI_Read(ADDR_CFVARHR_HI, true, css_pin);
         }
         SPI_Write(ADDR_STATUS0, (status0 | 0x01), true, css_pin);
-    }
-    else
-    {
     }
 }
 
@@ -744,7 +718,13 @@ int32_t calculate_gain_reg_value(ADE9000_parameter_type parameter, ADE9000_phase
     return gain_value;
 }
 
-void current_gain_calibration(float current, uint8_t channel_id, ADE9000_phase phase)
+void current_gain_calibration_start(float current, uint8_t channel_id, ADE9000_phase phase)
+{
+    // Reset gain registers to 0 first
+    SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, phase, CALIBRATION_PARAMETER), (uint32_t)0x00, true, get_css_pin(channel_id));
+}
+
+void current_gain_calibration_end(float current, uint8_t channel_id, ADE9000_phase phase)
 {
 
     // NOMINAL_INPUT_CURRENT and NOMINAL_INPUT_VOLTAGE are also supposed to be received from host controller (V3S)
@@ -756,11 +736,6 @@ void current_gain_calibration(float current, uint8_t channel_id, ADE9000_phase p
 
     // Now calibrate the register values for all 3 phases
     uint32_t expected_irms_value = (i_fsp * ADE9000_RMS_FULL_SCALE_CODES);
-
-    // Reset gain registers to 0 first
-    SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, phase, CALIBRATION_PARAMETER), (uint32_t)0x00, true, get_css_pin(channel_id));
-
-    delay_ms(5000); // wait for some time after resetting gain registers to 0
 
     reg_values[channel_id][phase] = (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, phase, expected_irms_value, channel_id);
 
