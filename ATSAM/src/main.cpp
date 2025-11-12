@@ -198,8 +198,10 @@ void sendChannelJsonData(uint8_t channel)
     float apparentPower[3] = {m.apparentPower.ApparentPowerValue_A, m.apparentPower.ApparentPowerValue_B, m.apparentPower.ApparentPowerValue_C};
     float posEnergy[3] = {m.activeEnergy.PActiveEnergyValue_kWh_A, m.activeEnergy.PActiveEnergyValue_kWh_B, m.activeEnergy.PActiveEnergyValue_kWh_C};
     float negEnergy[3] = {m.activeEnergy.NActiveEnergyValue_kWh_A, m.activeEnergy.NActiveEnergyValue_kWh_B, m.activeEnergy.NActiveEnergyValue_kWh_C};
+    float reactiveposEnergy[3] = {m.activeEnergy.PReactiveEnergyValue_kWh_A, m.activeEnergy.PReactiveEnergyValue_kWh_B, m.activeEnergy.PReactiveEnergyValue_kWh_C};
+    float reactivenegEnergy[3] = {m.activeEnergy.NReactiveEnergyValue_kWh_A, m.activeEnergy.NReactiveEnergyValue_kWh_B, m.activeEnergy.NReactiveEnergyValue_kWh_C};
 
-    // reset energy values
+    // reset active energy values
     m.activeEnergy.PActiveEnergyValue_kWh_A = 0;
     m.activeEnergy.PActiveEnergyValue_kWh_B = 0;
     m.activeEnergy.PActiveEnergyValue_kWh_C = 0;
@@ -207,41 +209,13 @@ void sendChannelJsonData(uint8_t channel)
     m.activeEnergy.NActiveEnergyValue_kWh_B = 0;
     m.activeEnergy.NActiveEnergyValue_kWh_C = 0;
 
-
-    float reactiveposEnergy[3];
-    float reactivenegEnergy[3];
-    if (m.activeEnergy.ReactiveEnergyValue_kWh_A > 0)
-    {
-        reactiveposEnergy[0] = m.activeEnergy.ReactiveEnergyValue_kWh_A;
-        reactivenegEnergy[0] = 0;
-    }
-    else
-    {
-        reactivenegEnergy[0] = m.activeEnergy.ReactiveEnergyValue_kWh_A;
-        reactiveposEnergy[0] = 0;
-    }
-
-    if (m.activeEnergy.ReactiveEnergyValue_kWh_B > 0)
-    {
-        reactiveposEnergy[1] = m.activeEnergy.ReactiveEnergyValue_kWh_B;
-        reactivenegEnergy[1] = 0;
-    }
-    else
-    {
-        reactivenegEnergy[1] = m.activeEnergy.ReactiveEnergyValue_kWh_B;
-        reactiveposEnergy[1] = 0;
-    }
-
-    if (m.activeEnergy.ReactiveEnergyValue_kWh_C > 0)
-    {
-        reactiveposEnergy[2] = m.activeEnergy.ReactiveEnergyValue_kWh_C;
-        reactivenegEnergy[2] = 0;
-    }
-    else
-    {
-        reactivenegEnergy[2] = m.activeEnergy.ReactiveEnergyValue_kWh_C;
-        reactiveposEnergy[2] = 0;
-    }
+    // reset reactive energy values
+    m.activeEnergy.PReactiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.PReactiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.PReactiveEnergyValue_kWh_C = 0;
+    m.activeEnergy.NReactiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.NReactiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.NReactiveEnergyValue_kWh_C = 0;
 
     //    float reactiveEnergy[3] = { m.activeEnergy.ReactiveEnergyValue_kWh_A, m.activeEnergy.ReactiveEnergyValue_kWh_B, m.activeEnergy.ReactiveEnergyValue_kWh_C };
 
@@ -611,20 +585,6 @@ void USART_ReadCallback(uintptr_t context)
     }
 }
 
-void resetEnergyValues(void)
-{
-    // change this to also reset energy values in ade9000 registers?
-    // energy accumulation to be maintained on v3s, so no need to reset here?
-    for (int i = 0; i < TOTAL_ADE9000_UNITS; i++)
-    {
-        unitMeasurements[i].activeEnergy.ACC_NActiveEnergyValue_kWh_A = 0;
-        unitMeasurements[i].activeEnergy.ACC_NActiveEnergyValue_kWh_B = 0;
-        unitMeasurements[i].activeEnergy.ACC_NActiveEnergyValue_kWh_C = 0;
-        unitMeasurements[i].activeEnergy.ACC_PActiveEnergyValue_kWh_A = 0;
-        unitMeasurements[i].activeEnergy.ACC_PActiveEnergyValue_kWh_B = 0;
-        unitMeasurements[i].activeEnergy.ACC_PActiveEnergyValue_kWh_C = 0;
-    }
-}
 //{
 //  "command": "set-ct-ratio",
 //  "ct_ratio": {

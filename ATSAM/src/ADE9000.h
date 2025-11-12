@@ -130,22 +130,16 @@ typedef struct {
     float NActiveEnergyValue_kWh_A;
     float NActiveEnergyValue_kWh_B;
     float NActiveEnergyValue_kWh_C;
-    float ACC_PActiveEnergyValue_kWh_A;
-    float ACC_PActiveEnergyValue_kWh_B;
-    float ACC_PActiveEnergyValue_kWh_C;
-    float ACC_NActiveEnergyValue_kWh_A;
-    float ACC_NActiveEnergyValue_kWh_B;
-    float ACC_NActiveEnergyValue_kWh_C;
 
     int64_t ReactiveEnergyReg_A;
     int64_t ReactiveEnergyReg_B;
     int64_t ReactiveEnergyReg_C;
-    float ReactiveEnergyValue_kWh_A;
-    float ReactiveEnergyValue_kWh_B;
-    float ReactiveEnergyValue_kWh_C;
-    float ACC_ReactiveEnergyValue_kWh_A;
-    float ACC_ReactiveEnergyValue_kWh_B;
-    float ACC_ReactiveEnergyValue_kWh_C;
+    float PReactiveEnergyValue_kWh_A;
+    float PReactiveEnergyValue_kWh_B;
+    float PReactiveEnergyValue_kWh_C;
+    float NReactiveEnergyValue_kWh_A;
+    float NReactiveEnergyValue_kWh_B;
+    float NReactiveEnergyValue_kWh_C;
 } EnergyRegs;
 
 typedef struct {
