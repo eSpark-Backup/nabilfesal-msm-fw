@@ -101,6 +101,7 @@ void SPI_CSS_Control(SPI_CSS_Pin pin, bool set)
     }
 }
 
+// Phase offset table for different parameter types, used for calculating register addresses
 static const uint16_t phase_offset_table[] = {
     [VOLTAGE_PARAMETER]    = ADE9000_OFFSET_RMS_POWER,
     [CURRENT_PARAMETER]    = ADE9000_OFFSET_RMS_POWER,
@@ -164,8 +165,6 @@ uint32_t SPI_Read(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin)
     // ADE9000 SPI read: 0x01 + 24-bit address
     txBuf[0] = (address >> 4) & 0xFF;
     txBuf[1] = (address << 4) | 0x8; // read byte 0x8 added for write it should be 0x0
-    // txBuf[2] = (address >> 8) & 0xFF;
-    // txBuf[3] = address & 0xFF;
 
     // Pull CS low
     SPI_CSS_Control(css_pin, false);
@@ -417,9 +416,6 @@ void ReadActivePowerRegs(ActivePowerRegs *Data, VoltageRMSRegs *rmsData, Current
     {
         Data->ActivePowerValue_C = 0.0f;
     }
-    // Data->ActivePowerValue_A = (float)(int32_t(SPI_Read(ADDR_AWATT, true, css_pin))) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f);
-    // Data->ActivePowerValue_B = (float)(int32_t(SPI_Read(ADDR_BWATT, true, css_pin))) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f);
-    // Data->ActivePowerValue_C = (float)(int32_t(SPI_Read(ADDR_CWATT, true, css_pin))) / (calibration_data[css_pin - 1].cal_power_cc * 1000.0f);
 }
 
 void ReadReactivePowerRegs(ReactivePowerRegs *Data1, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin)
@@ -726,7 +722,6 @@ void current_gain_calibration_start(float current, uint8_t channel_id, ADE9000_p
 
 void current_gain_calibration_end(float current, uint8_t channel_id, ADE9000_phase phase)
 {
-
     // NOMINAL_INPUT_CURRENT and NOMINAL_INPUT_VOLTAGE are also supposed to be received from host controller (V3S)
     float i_nominal = current;
 
@@ -734,9 +729,8 @@ void current_gain_calibration_end(float current, uint8_t channel_id, ADE9000_pha
     float input_current_ADC = (i_nominal * current_transfer_func);
     float i_fsp = (input_current_ADC) / 0.707; // @ gain 1      (ideally fetch the set gain value from the register)
 
-    // Now calibrate the register values for all 3 phases
+    // Now calibrate the register value for required phase
     uint32_t expected_irms_value = (i_fsp * ADE9000_RMS_FULL_SCALE_CODES);
-
     reg_values[channel_id][phase] = (uint32_t)calculate_gain_reg_value(CURRENT_PARAMETER, phase, expected_irms_value, channel_id);
 
     SPI_Write(ade9000_get_phase_register(ADDR_AIGAIN, phase, CALIBRATION_PARAMETER), reg_values[channel_id][phase], true, get_css_pin(channel_id));
@@ -784,14 +778,12 @@ void voltage_gain_calibration(float voltage, ADE9000_phase phase)
 
 void ct_ratio_calibration(uint8_t channel_id)
 {
-
     /* Conversion Constants */
     // calibration_data[channel].cal_irms_cc = (SQRT_2 * current_transfer_func * ADE9000_RMS_FULL_SCALE_CODES);
     calibration_data[channel_id].cal_irms_cc = (1000000.0 * 0.707 * channelConfig[channel_id].ctRatio) / (R_BURDEN * (float)ADE9000_RMS_FULL_SCALE_CODES);
     calibration_data[channel_id].cal_power_cc = (1000.0 * 0.707 * 0.707 * channelConfig[channel_id].ctRatio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION);
     calibration_data[channel_id].cal_energy_cc = (1000000.0 * 0.707 * 0.707 * channelConfig[channel_id].ctRatio) / (ADE9000_WATT_FULL_SCALE_CODES * R_BURDEN * VOLTAGE_TRANSFER_FUNCTION * 3600.0f * 8000.0f * 0.0001220703125f); // 2^(-13) = 0.0001220703125f
     // need to use accumulation time here instead of 8000
-
 }
 
 void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin)
