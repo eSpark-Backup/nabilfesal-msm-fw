@@ -28,6 +28,7 @@
 
 void timer_callback(TC_TIMER_STATUS status, uintptr_t context);
 void delay_ms(uint32_t milliseconds);
+uint32_t get_msCounter(void);
 float extract_channel_values(const char* channel);
 void parse_ct_ratio_json();
 void parse_i_offset_json();
