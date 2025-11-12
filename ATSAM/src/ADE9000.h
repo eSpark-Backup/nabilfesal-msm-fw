@@ -92,6 +92,7 @@ typedef enum {
     PERIOD_PARAMETER,
     WAVEFORM_PARAMETER,
     CALIBRATION_PARAMETER,
+    INVALID_PARAMETER = 0xFF,
 } ADE9000_parameter_type;
 
 typedef struct {
@@ -265,7 +266,8 @@ void ADE9000_Set_Calibration(ADE9000_parameter_type parameter, uint8_t channel_i
 int32_t calculate_gain_reg_value(ADE9000_parameter_type parameter, ADE9000_phase phase, uint32_t expected_reg_value, uint8_t channel);
 void current_gain_calibration_start(float current, uint8_t channel, ADE9000_phase phase);
 void current_gain_calibration_end(float current, uint8_t channel, ADE9000_phase phase);
-void voltage_gain_calibration(float voltage, ADE9000_phase phase);
+void voltage_gain_calibration_start(float voltage, ADE9000_phase phase);
+void voltage_gain_calibration_end(float voltage, ADE9000_phase phase);
 //void ct_ratio_calibration(uint16_t ratio);
 void ct_ratio_calibration(uint8_t channel);
 

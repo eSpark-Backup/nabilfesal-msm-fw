@@ -117,6 +117,11 @@ void delay_ms(uint32_t milliseconds)
     while ((msCounter - start) < milliseconds);
 }
 
+uint32_t get_msCounter(void)
+{
+    return msCounter;
+}
+
 void storeIEEE754InBuffer(float floatValue, uint8_t *buffer, uint16_t index)
 {
     if (index < 0 || index >= TOTAL_ARRAYSIZE - 4)
@@ -166,6 +171,7 @@ void sendChannelJsonData(uint8_t channel)
 {
     if (channel == 0 || channel > 12)
         return;
+
     ADE9000UnitMeasurements &m = unitMeasurements[channel - 1];
     char jsonBuffer[2048]; // Increase if needed
     char *ptr = jsonBuffer;
@@ -242,7 +248,7 @@ void sendChannelJsonData(uint8_t channel)
     float currentTHD[3] = {m.currentTHD.CurrentTHDValue_A, m.currentTHD.CurrentTHDValue_B, m.currentTHD.CurrentTHDValue_C};
     float voltageTHD[3] = {m.voltageTHD.VoltageTHDValue_A, m.voltageTHD.VoltageTHDValue_B, m.voltageTHD.VoltageTHDValue_C};
     float angle[3] = {m.angleDegree.AngleValue_VA_IA, m.angleDegree.AngleValue_VB_IB, m.angleDegree.AngleValue_VC_IC};
-    for (int i = 0; i < 3; i++)
+    for (int i = PHASE_A; i < TOTAL_PHASES; i++)
     {
         written = snprintf(ptr, remaining,
                            "\"%s\":{"
@@ -782,7 +788,7 @@ void parse_reboot_calibration_json()
 {
     // Detect type (voltage or current)
     char* ch = rxBuffer;
-    ADE9000_parameter_type data_type;
+    ADE9000_parameter_type data_type = INVALID_PARAMETER;
 
     static const ADE9000_param_map_t param_map[] = {
         {"voltage", VOLTAGE_PARAMETER},
@@ -793,7 +799,9 @@ void parse_reboot_calibration_json()
 
     for (int i = 0; i < sizeof(param_map) / sizeof(param_map[0]); i++)
     {
-        if (strstr(rxBuffer, param_map[i].key))
+        char searchPattern[32];
+        snprintf(searchPattern, sizeof(searchPattern), "\"%s\"", param_map[i].key);
+        if (strstr(rxBuffer, searchPattern))
         {
             data_type = param_map[i].type;
         }
@@ -895,9 +903,15 @@ void parse_v_calibration_json()
         char key[10];
         memset(reg_values, 0, sizeof(reg_values));
 
-        voltage_gain_calibration(extract_phase_value("phase_a"), PHASE_A);
-        voltage_gain_calibration(extract_phase_value("phase_b"), PHASE_B);
-        voltage_gain_calibration(extract_phase_value("phase_c"), PHASE_C);
+        voltage_gain_calibration_start(extract_phase_value("phase_a"), PHASE_A);
+        voltage_gain_calibration_start(extract_phase_value("phase_b"), PHASE_B);
+        voltage_gain_calibration_start(extract_phase_value("phase_c"), PHASE_C);
+
+        delay_ms(5000); // wait for calibration to settle
+
+        voltage_gain_calibration_end(extract_phase_value("phase_a"), PHASE_A);
+        voltage_gain_calibration_end(extract_phase_value("phase_b"), PHASE_B);
+        voltage_gain_calibration_end(extract_phase_value("phase_c"), PHASE_C);
         
         // Start building JSON
         // memset(txBuffer, 0, sizeof(txBuffer));
@@ -945,6 +959,12 @@ void parse_i_calibration_json()
                 "\"ID\": %d,",
                 currentCalibration.channelID);
 
+        // if(!ADE9000_status[channel_id_absolute])
+        // {
+        //     strcat(txBuffer, "\"message\": \"ADE9000 not detected on this channel!\"}}");
+        //     return;
+        // }
+
         char temp[128];
         bool first = true; // to manage commas properly
 
@@ -965,13 +985,13 @@ void parse_i_calibration_json()
             current_gain_calibration_end(currentCalibration.phase_a, channel_id_absolute, PHASE_A);
             sprintf(temp, "\"phase_a\":\"0x%08X\"", reg_values[channel_id_absolute][PHASE_A]);
             strcat(txBuffer, temp);
-            // first = false;
+            first = false;
         }
         if (currentCalibration.phase_b != 0) {
             current_gain_calibration_end(currentCalibration.phase_b, channel_id_absolute, PHASE_B);
             sprintf(temp, "%s\"phase_b\":\"0x%08X\"", first ? "" : ",", reg_values[channel_id_absolute][PHASE_B]);
             strcat(txBuffer, temp);
-            // first = false;
+            first = false;
         }
         if (currentCalibration.phase_c != 0) {
             current_gain_calibration_end(currentCalibration.phase_c, channel_id_absolute, PHASE_C);

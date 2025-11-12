@@ -13,6 +13,8 @@
 
 bool SECONDHEX = false;
 
+extern uint8_t ADE9000_status[TOTAL_ADE9000_UNITS];
+
 Calibration_regs calibration_data[TOTAL_ADE9000_UNITS];
 VoltageRMSOSRegs voltage_RMS_OS;
 CurrentRMSOSRegs current_RMS_OS;
@@ -275,6 +277,7 @@ void ADE9000_Set_Calibration(ADE9000_parameter_type parameter, uint8_t channel_i
             baseReg_addr = ADDR_APHCAL0;
             break;
         default:
+            return;
             break;
     }
     if(reg_values[channel_id][PHASE_A] != 0)
@@ -537,6 +540,7 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
                 Data1->ActiveEnergyReg_A = (int32_t)rawActive; // Converting to in32_t for signed check
 
                 if (Data1->ActiveEnergyReg_A < 0) {
+                    Data1->ActiveEnergyReg_A = llabs(Data1->ActiveEnergyReg_A);
                     Data1->NActiveEnergyValue_kWh_A += (((float) Data1->ActiveEnergyReg_A *
                         calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
                 } else {
@@ -550,6 +554,7 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
                 Data1->ActiveEnergyReg_B = (int32_t)rawActive;
 
                 if (Data1->ActiveEnergyReg_B < 0) {
+                    Data1->ActiveEnergyReg_B = llabs(Data1->ActiveEnergyReg_B);
                     Data1->NActiveEnergyValue_kWh_B += (((float) Data1->ActiveEnergyReg_B *
                         calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
                 } else {
@@ -564,6 +569,7 @@ void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *C
                 Data1->ActiveEnergyReg_C = (int32_t)rawActive;
 
                 if (Data1->ActiveEnergyReg_C < 0) {
+                    Data1->ActiveEnergyReg_C = llabs(Data1->ActiveEnergyReg_C);
                     Data1->NActiveEnergyValue_kWh_C += (((float) Data1->ActiveEnergyReg_C *
                         calibration_data[css_pin - 1].cal_energy_cc) / (1000000.0f * 1000.0f));
                 } else {
@@ -693,6 +699,11 @@ void ReadTempRegnValue(TemperatureRegs *Data, SPI_CSS_Pin css_pin)
     trim = SPI_Read(ADDR_TEMP_TRIM, true, css_pin);
     gain = (trim & 0xFFFF);
     offset = ((trim >> 16) & 0xFFFF);
+    
+    SPI_Write(ADDR_TEMP_CFG, ADE9000_TEMP_CFG, false, css_pin);     // start temperature measurement
+
+    delay_ms(5); // wait for some time to allow measurement to complete
+
     Data->Temperature = (float)(offset >> 5) - ((float)(SPI_Read(ADDR_TEMP_RSLT, false, css_pin)) * (float)gain / 65536.0f);
 }
 
@@ -741,7 +752,18 @@ void current_gain_calibration_end(float current, uint8_t channel_id, ADE9000_pha
 
 }
 
-void voltage_gain_calibration(float voltage, ADE9000_phase phase)
+void voltage_gain_calibration_start(float voltage, ADE9000_phase phase)
+{    
+    for(uint8_t channel_id=0; channel_id<TOTAL_ADE9000_UNITS; channel_id++)
+    {
+        if(!ADE9000_status[channel_id])
+        {   continue;  }   // skip if ADE9000 not available
+
+        SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER), 0x00000000, true, get_css_pin(channel_id));
+    }
+}
+
+void voltage_gain_calibration_end(float voltage, ADE9000_phase phase)
 {
     // NOMINAL_INPUT_CURRENT and NOMINAL_INPUT_VOLTAGE are also supposed to be received from host controller (V3S)
     float v_nominal = voltage;
@@ -750,18 +772,14 @@ void voltage_gain_calibration(float voltage, ADE9000_phase phase)
     float input_voltage_ADC = (v_nominal * VOLTAGE_TRANSFER_FUNCTION);
     float v_fsp = (input_voltage_ADC) / 0.707; // @ gain 1      (ideally fetch the set gain value from the register)
 
-    // // Now calibrate the register values
+    // Now calibrate the register values
     uint32_t expected_vrms_value = (v_fsp * ADE9000_RMS_FULL_SCALE_CODES);
     
     for(uint8_t channel_id=0; channel_id<TOTAL_ADE9000_UNITS; channel_id++)
     {
-        SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER), 0x00000000, true, get_css_pin(channel_id));
-    }
-    
-    delay_ms(5000); // wait for some time after resetting gain registers to 0
-    
-    for(uint8_t channel_id=0; channel_id<TOTAL_ADE9000_UNITS; channel_id++)
-    {
+        if(!ADE9000_status[channel_id])
+        {   continue;  }   // skip if ADE9000 not available
+
         uint32_t gain_reg = SPI_Read(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER), true, get_css_pin(channel_id));
         reg_values[channel_id][phase] = (uint32_t)calculate_gain_reg_value(VOLTAGE_PARAMETER, phase, expected_vrms_value, channel_id);
         SPI_Write(ade9000_get_phase_register(ADDR_AVGAIN, phase, CALIBRATION_PARAMETER),
