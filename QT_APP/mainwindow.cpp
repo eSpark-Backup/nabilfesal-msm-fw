@@ -859,7 +859,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     // First: handle key events globally
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_Home) {
+        if (keyEvent->key() == Qt::Key_Home && Utils::getUid() != "") {
             emit homeDetected();
             return true;
         }
