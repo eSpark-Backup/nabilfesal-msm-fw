@@ -350,35 +350,6 @@ void FactSetting::on_sftp_save_btn_clicked()
 }
 
 
-void FactSetting::loadAwsMqttsSettings(bool showMessages)
-{
-    // QFile file("config/aws_mqtts_settings.json");
-    // if (!file.exists()) {
-    //     if (showMessages)
-    //         QMessageBox::warning(this, "AWS MQTTS Settings", "No saved settings found.");
-    //     return;
-    // }
-
-    // if (!file.open(QIODevice::ReadOnly)) {
-    //     if (showMessages)
-    //         QMessageBox::critical(this, "AWS MQTTS Settings", "Failed to open settings file.");
-    //     return;
-    // }
-
-    // QByteArray data = file.readAll();
-    // file.close();
-
-    // QJsonParseError parseError;
-    // QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    // if (doc.isNull() || !doc.isObject()) {
-    //     if (showMessages)
-    //         QMessageBox::critical(this, "AWS MQTTS Settings", "Invalid JSON format: " + parseError.errorString());
-    //     return;
-    // }
-
-    // QJsonObject mqttSettings = doc.object();
-    emit aws_mqtts_load();
-}
 void FactSetting::on_pushButton_4_clicked()
 {
     ui->stackedWidget->setCurrentIndex(0);
@@ -600,6 +571,11 @@ void FactSetting::on_mqtts_save_btn_clicked(bool msgBox)
 
 void FactSetting::on_pushButton_3_clicked()
 {
+    QString endpoint = ui->mqtts_endpoint->text();
+    if (endpoint.length() < 5) {
+        Toast::show("[Invalid Input] Endpoint must be at least 5 characters long.", this, Toast::Error);
+        return;
+    }
     ui->pushButton_3->setEnabled(false);
     emit runFleetProvisioning();
 }
@@ -607,7 +583,8 @@ void FactSetting::on_pushButton_3_clicked()
 
 void FactSetting::runFleetProvisionerAsync()
 {
-    Utils::updateSerialInConfig();
+    QString mqttsEp = ui->mqtts_endpoint->text();
+    Utils::updateSerialInConfig(mqttsEp);
     QString exe_path;
     #if defined(BUILD_X86)
         exe_path = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin";
@@ -626,20 +603,17 @@ void FactSetting::runFleetProvisionerAsync()
     QObject::connect(process, &QProcess::errorOccurred, [this, process](QProcess::ProcessError err) {
         qWarning() << "[Fleet ERROR] QProcess error:" << err
                    << "Details:" << process->errorString();
-        ui->pushButton_3->setEnabled(true);
     });
 
     QObject::connect(process, &QProcess::readyReadStandardOutput, [this, process, logBuffer]() {
         QByteArray output = process->readAllStandardOutput();
         logBuffer->append(QString::fromUtf8(output));
         qDebug().noquote() << "[Fleet STDOUT]" << output;
-        ui->pushButton_3->setEnabled(true);
     });
 
     QObject::connect(process, &QProcess::readyReadStandardError, [this, process]() {
         QByteArray error = process->readAllStandardError();
         qWarning().noquote() << "[Fleet STDERR]" << error;
-        ui->pushButton_3->setEnabled(true);
     });
 
     QObject::connect(process,

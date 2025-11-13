@@ -260,7 +260,7 @@ void rebootSystem()
 }
 
 
-bool updateSerialInConfig()
+bool updateSerialInConfig(const QString &AwsEp)
 {
     QString configJson_path;
     #if defined(BUILD_X86)
@@ -270,7 +270,7 @@ bool updateSerialInConfig()
     #endif
 
     QFile file(configJson_path);
-    if (!file.open(QIODevice::ReadOnly)) {
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Failed to open config file for reading:" << configJson_path;
         return false;
     }
@@ -292,9 +292,10 @@ bool updateSerialInConfig()
         return false;
     }
     obj["serial"] = uid;
+    obj["endpoint"] = AwsEp;
 
     doc.setObject(obj);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
         qWarning() << "Failed to open config file for writing:" << configJson_path;
         return false;
     }

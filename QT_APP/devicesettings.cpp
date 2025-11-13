@@ -484,29 +484,6 @@ void DeviceSettings::apply_sftp_Settings(const QJsonObject &sftpSettings, bool m
 }
 
 
-void DeviceSettings::loadAwsMqttsSettings(bool showMessages)
-{
-    QString certs_path;
-    #if defined(BUILD_X86)
-        certs_path = QCoreApplication::applicationDirPath() + "/data/certs/";
-    #elif defined(BUILD_V3S)
-        certs_path = "/MSM/potential-pancake/MSM/creds/prov_certs/";
-    #endif
-
-    QString certPath = certs_path + "deviceCert.pem";
-    QString keyPath  = certs_path + "privateKey.pem";
-
-    if ((!QFile::exists(certPath) || !QFile::exists(keyPath)) && !Utils::getUid().isEmpty()) {
-        qDebug() << "One or more certificate files are missing!";
-        QFile::remove(certPath); QFile::remove(keyPath);
-        Utils::updateSerialInConfig();
-        return;
-    }
-    else
-        emit aws_mqtts_load();
-}
-
-
 void DeviceSettings::refreshInfo()
 {
     curDevInfo.uuid       = Utils::getUid();

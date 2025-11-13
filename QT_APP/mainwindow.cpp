@@ -269,7 +269,8 @@ void MainWindow::connectFactSettings(FactSetting *fs)
         }
     });
 
-    connect(fs, &FactSetting::runFleetProvisioning, this, [this]() { factSettings->runFleetProvisionerAsync(); });
+    connect(fs, &FactSetting::runFleetProvisioning, this,
+         [this]() { factSettings->runFleetProvisionerAsync(); }, Qt::UniqueConnection);
 }
 
 // -----------------------------

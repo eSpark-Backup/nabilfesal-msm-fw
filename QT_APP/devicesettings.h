@@ -16,7 +16,6 @@ class DeviceSettings : public settingsManager
 
 public:
     explicit DeviceSettings(QWidget *parent = nullptr);
-    void loadAwsMqttsSettings(bool showMessages = true);
     void refreshInfo();
     ~DeviceSettings();
     DeviceInfo curDevInfo, prvDevInfo;
