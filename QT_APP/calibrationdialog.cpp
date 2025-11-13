@@ -168,6 +168,13 @@ void CalibrationDialog::loadCalibrationScreen(bool isEnable)
 
 void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
 {
+    if(response.contain("error"))
+    {
+        QString err = obj.value("error").toString();
+        Toast::show(err, this, Toast::Error);
+        return;
+    }
+
     QDir().mkpath("config");
     const QString command = response["command"].toString();
 
