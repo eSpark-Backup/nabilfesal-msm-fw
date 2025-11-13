@@ -356,14 +356,18 @@ void FactSetting::on_pushButton_4_clicked()
 }
 
 
-void FactSetting::on_pushButton_clicked()
+void FactSetting::on_OTA_pushButton_clicked()
 {
-    QString selectedVersion = ui->comboBox->currentText();
+    QString selVersion = ui->comboBox->currentText();
+    startOTA(selVersion);
+}
+
+void FactSetting::startOTA(const QString &selectedVersion)
+{    
     if (selectedVersion.isEmpty()) {
         Toast::show("No OTA version selected.", this, Toast::Warning);
         return;
     }
-
     QString updatingImagePath = ":/icons/updating.png";
     updatingLabel = Utils::showImageFullscreenFor(updatingImagePath, -1);
 
@@ -427,6 +431,7 @@ void FactSetting::on_pushButton_clicked()
             }
 
         if (exitCode == 0) {
+            sendOTAData(exitCode);
             Utils::setLastOTAInitiated();
             Utils::rebootSystem();
         } else {
@@ -776,5 +781,36 @@ void FactSetting::checkCertificates()
     ui->key->setChecked(QFile::exists(keyPath));
     ui->devCertChkBox->setChecked(QFile::exists(prvCertPath));
     ui->devKeyChkBox->setChecked(QFile::exists(prvkeyPath));
+}
+
+
+void FactSetting::sendOTAData(int status)
+{
+    QString firmware = Utils::getFirmwareVersion();
+    QString otaInitiated = Utils::getLastOTAInitiated();
+    QJsonObject json;
+    json["current_version"] = firmware;
+
+    QJsonObject lastUpdate;
+    if (!otaInitiated.isEmpty()) {
+        QDateTime dateTime = QDateTime::fromString(otaInitiated, Qt::ISODate);
+        if (dateTime.isValid()) {
+            lastUpdate["date"] = dateTime.date().toString("yyyy-MM-dd");
+            lastUpdate["time"] = dateTime.time().toString("HH:mm:ss");
+        } else {
+            lastUpdate["date"] = "N/A";
+            lastUpdate["time"] = "N/A";
+        }
+    } else {
+        lastUpdate["date"] = "N/A";
+        lastUpdate["time"] = "N/A";
+    }
+
+    json["last_update"] = lastUpdate;
+
+    emit OTA_status(json);
+    QString jsonString = QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Compact));
+    qDebug().noquote() << "OTA JSON:" << QJsonDocument(json).toJson(QJsonDocument::Indented);
+
 }
 

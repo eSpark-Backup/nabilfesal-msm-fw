@@ -47,6 +47,10 @@ signals:
     void ntpConfigReceived(const QJsonObject &payload);
     void mqttConfigReceived(const QJsonObject &payload);
     void sftpConfigReceived(const QJsonObject &payload);
+    void ctRatioReceived(const QJsonObject &payload);
+    void vOffsetReceived(const QJsonObject &payload);
+    void iOffsetReceived(const QJsonObject &payload);
+    void otaReceived(const QString &payload);
     void updateAwsData();
     void settingsChanged();
 
@@ -59,6 +63,10 @@ public slots:
     void processSftpSettings(const QJsonObject &sftpSetting);
     void processNtpSettings(const NtpSettings &ntpSettings);
     void processReboot();
+    void processCtRatio(const QJsonObject &ctRatio);
+    void processVOffset(const QJsonObject &vOffset);
+    void processIOffset(const QJsonObject &iOffset);
+    void processOTA(const QJsonObject &otaData);
     
 private:
     explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
@@ -72,6 +80,7 @@ private:
     bool loadCertificates();
     static bool debugEnabled();
     QByteArray buildAwsTelemetryJson(int startIndex, int endIndex) const;
+    void otaSend(const QJsonObject &obj);
 
     DeviceInfo newDeviceInfo;
     QString configPath;
@@ -99,11 +108,20 @@ private:
     QString topic_pub_ntp;
     QString topic_pub_mqtt;
     QString topic_pub_sftp;
+    QString topic_pub_ctRatio;
+    QString topic_pub_vOffset;
+    QString topic_pub_iOffset;
+    QString topic_pub_ota;
+
     QString topic_sub_reboot;
     QString topic_sub_ntp;
     QString topic_sub_mqtt;
     QString topic_sub_sftp;
-
+    QString topic_sub_ctRatio;
+    QString topic_sub_vOffset;
+    QString topic_sub_iOffset;
+    QString topic_sub_ota;
+    
     QTimer *publishTimer = nullptr;
     QSslConfiguration sslConf;
     QSslSocket *sslSocket = nullptr;

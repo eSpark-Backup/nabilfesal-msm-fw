@@ -282,6 +282,11 @@ void MainWindow::connectLoginSignals()
     if (!settings) {
         settings = new DeviceSettings;
     }
+    if (!measure)
+        measure = new Measurements;
+
+    if (!factSettings)
+        factSettings = new FactSetting;
 
     // When DeviceSettings says "reload SFTP", disconnect and reload after a short delay.
     connect(settings, &DeviceSettings::sftp_load, this, [this]() {
@@ -327,7 +332,27 @@ void MainWindow::connectLoginSignals()
     connect(settings, &DeviceSettings::sftpSettingsChanged,
             awsMqttsHandler, &AwsMqttManager::processSftpSettings);
     connect(settings, &DeviceSettings::ntpSettingsChanged,
-            awsMqttsHandler, &AwsMqttManager::processNtpSettings);           
+            awsMqttsHandler, &AwsMqttManager::processNtpSettings);
+    
+    // When measurement settings change, notify AWS manager to process them
+    connect(measure, &Measurements::ct_ratio_changed,
+            awsMqttsHandler, &AwsMqttManager::processCtRatio);
+    connect(measure, &Measurements::v_offset_changed,
+            awsMqttsHandler, &AwsMqttManager::processVOffset);
+    connect(measure, &Measurements::i_offset_changed,
+            awsMqttsHandler, &AwsMqttManager::processIOffset);
+
+    // If AWS sends back measurement config, populate measurements' fields
+    connect(awsMqttsHandler, &AwsMqttManager::ctRatioReceived,
+            measure, &Measurements::parse_load_store_ctRatio);
+    connect(awsMqttsHandler, &AwsMqttManager::vOffsetReceived,
+            measure, &Measurements::parse_load_store_vOffset);
+    connect(awsMqttsHandler, &AwsMqttManager::iOffsetReceived,
+            measure, &Measurements::parse_load_store_iOffset);
+
+
+    connect(factSettings, &FactSetting::OTA_status, awsMqttsHandler, &AwsMqttManager::processOTA);
+    connect(awsMqttsHandler, &AwsMqttManager::otaReceived, factSettings, &FactSetting::startOTA);
 
     // Wire telemetry -> managers
     connect(this, &MainWindow::receivedChannelData,

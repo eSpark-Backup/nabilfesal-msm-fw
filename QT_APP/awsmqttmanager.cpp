@@ -288,7 +288,11 @@ void AwsMqttManager::subscribeToTopic()
         topic_sub_reboot,
         topic_sub_ntp,
         topic_sub_mqtt,
-        topic_sub_sftp
+        topic_sub_sftp,
+        topic_sub_ctRatio,
+        topic_sub_vOffset,
+        topic_sub_iOffset,
+        topic_sub_ota
     };
 
     for (const QString &t : topics) {
@@ -318,6 +322,14 @@ void AwsMqttManager::subscribeToTopic()
                 emit mqttConfigReceived(obj);
             } else if (topic == topic_sub_sftp) {
                 emit sftpConfigReceived(obj);
+            } else if (topic == topic_sub_ctRatio) {
+                emit ctRatioReceived(obj);
+            } else if (topic == topic_sub_vOffset) {
+                emit vOffsetReceived(obj);
+            } else if (topic == topic_sub_iOffset) {
+                emit iOffsetReceived(obj);
+            } else if (topic == topic_sub_ota) {
+                otaSend(obj);
             } else {
                 qWarning() << "[MQTT] Unknown topic:" << topic;
             }
@@ -337,11 +349,19 @@ void AwsMqttManager::awsTopicsInit()
     topic_pub_ntp           = base_pub_topic + "/ntp";
     topic_pub_mqtt          = base_pub_topic + "/mqtt";
     topic_pub_sftp          = base_pub_topic + "/sftp";
+    topic_pub_ctRatio       = base_pub_topic + "/ct_ratio";
+    topic_pub_vOffset       = base_pub_topic + "/v_offset";
+    topic_pub_iOffset       = base_pub_topic + "/i_offset";
+    topic_pub_ota           = base_pub_topic + "/ota";
 
     topic_sub_reboot        = base_sub_topic + "/reboot";
     topic_sub_ntp           = base_sub_topic + "/ntp";
     topic_sub_mqtt          = base_sub_topic + "/mqtt";
     topic_sub_sftp          = base_sub_topic + "/sftp";
+    topic_sub_ctRatio       = base_sub_topic + "/ct_ratio";
+    topic_sub_vOffset       = base_sub_topic + "/v_offset";
+    topic_sub_iOffset       = base_sub_topic + "/i_offset";
+    topic_sub_ota           = base_sub_topic + "/ota";
 }
 
 
@@ -507,3 +527,76 @@ void AwsMqttManager::processReboot()
     publishMessage(topic_pub_reboot, jsonString);
 }
 
+
+void AwsMqttManager::processCtRatio(const QJsonObject &ctRatio)
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+
+    QJsonObject payload;
+    payload["device_uuid"] = Utils::getUid();
+    QJsonArray dataArray;
+    dataArray.append(ctRatio);
+    payload["data"] = dataArray;
+    QJsonDocument doc(payload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_ctRatio, jsonString);
+}
+
+
+void AwsMqttManager::processVOffset(const QJsonObject &vOffset)
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    
+    QJsonObject payload;
+    payload["device_uuid"] = Utils::getUid();
+    QJsonArray dataArray;
+    dataArray.append(vOffset);
+    payload["data"] = dataArray;
+    QJsonDocument doc(payload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_vOffset, jsonString);
+}
+
+
+void AwsMqttManager::processIOffset(const QJsonObject &iOffset)
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+
+    QJsonObject payload;
+    payload["device_uuid"] = Utils::getUid();
+    QJsonArray dataArray;
+    dataArray.append(iOffset);
+    payload["data"] = dataArray;
+    QJsonDocument doc(payload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_iOffset, jsonString);
+}
+
+
+void AwsMqttManager::processOTA(const QJsonObject &otaData)
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+
+    QJsonObject payload;
+    payload["device_uuid"] = Utils::getUid();
+    QJsonArray dataArray;
+    dataArray.append(otaData);
+    payload["data"] = dataArray;
+
+    QJsonDocument doc(payload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_ota, jsonString);
+}
+
+
+void AwsMqttManager::otaSend(const QJsonObject &obj)
+{
+    QJsonArray dataArray = obj.value("data").toArray();
+    if (!dataArray.isEmpty()) {
+        QJsonObject firstObj = dataArray.first().toObject();
+        QString otaVersion = firstObj.value("ota_version").toString();
+        emit otaReceived(otaVersion);
+    } else {
+        qWarning() << "[MQTT] OTA message received but 'data' array is empty.";
+    }
+}

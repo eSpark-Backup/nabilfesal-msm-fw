@@ -255,6 +255,7 @@ void Measurements::on_save_btn_clicked()
         file.close();
 
         emit requestSerialCommand(QString::fromUtf8(QJsonDocument(data).toJson(QJsonDocument::Compact)));
+        emit ct_ratio_changed(data);
     }
     else if (isIOffsetActivated)
     {
@@ -281,6 +282,7 @@ void Measurements::on_save_btn_clicked()
         file.close();
 
         emit requestSerialCommand(QString::fromUtf8(QJsonDocument(data).toJson(QJsonDocument::Compact)));
+        emit i_offset_changed(data);
     }
     else if (isVOffsetActivated)
     {
@@ -307,6 +309,7 @@ void Measurements::on_save_btn_clicked()
         file.close();
 
         emit requestSerialCommand(QString::fromUtf8(QJsonDocument(data).toJson(QJsonDocument::Compact)));
+        emit v_offset_changed(data);
     }
 }
 
@@ -418,6 +421,7 @@ void Measurements::on_toolButton_12_clicked()
     keyboard->show();
 }
 
+
 void Measurements::ration_btn_clicked()
 {
     ui->header_label->setText("CT RATIO SETTINGS");
@@ -431,6 +435,7 @@ void Measurements::ration_btn_clicked()
     on_load_btn_clicked();
 }
 
+
 void Measurements::i_off_btn_clicked()
 {
     ui->header_label->setText("I-OFFSET SETTINGS");
@@ -443,6 +448,7 @@ void Measurements::i_off_btn_clicked()
     on_load_btn_clicked();
 }
 
+
 void Measurements::v_off_btn_clicked()
 {
     ui->header_label->setText("V-OFFSET SETTINGS");
@@ -453,4 +459,66 @@ void Measurements::v_off_btn_clicked()
     isVOffsetActivated = true;
     isIOffsetActivated = false;
     on_load_btn_clicked();
+}
+
+
+void Measurements::parse_load_store_generic(const QJsonObject &payload, const QString &key)
+{
+    QJsonArray dataArray = payload.value("data").toArray();
+    if (dataArray.isEmpty()) {
+        qWarning() << QString("[%1] Missing or empty 'data' array in payload.").arg(key);
+        return;
+    }
+
+    QJsonObject innerObj = dataArray.first().toObject();
+    QJsonObject settings = innerObj.value(key).toObject();
+    if (settings.isEmpty()) {
+        qWarning() << QString("[%1] Missing or empty object in payload.").arg(key);
+        return;
+    }
+
+    // --- Derive file name and title automatically ---
+    QString fileName = QString("config/%1_settings.json").arg(key);
+    QString title = key;
+    title.replace("_", " ");           // e.g. "ct_ratio" → "ct ratio"
+    title[0] = title[0].toUpper();     // Capitalize first letter
+
+    QDir dir("config");
+    if (!dir.exists()) dir.mkpath(".");
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QMessageBox::critical(this, title, QString("Failed to save %1 settings to file.").arg(title));
+        return;
+    }
+
+    QJsonDocument doc(innerObj);
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    for (int i = 1; i <= 12; ++i) {
+        QString chKey = QString("channel-%1").arg(i);
+        if (QLineEdit *edit = this->findChild<QLineEdit*>(QString("ch%1").arg(i))) {
+            double val = settings.value(chKey).toDouble();
+            edit->setText(QString::number(val, 'f', 2));
+        }
+    }
+
+    emit requestSerialCommand(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+}
+
+
+void Measurements::parse_load_store_ctRatio(const QJsonObject &payload)
+{
+    parse_load_store_generic(payload, "ct_ratio");
+}
+
+void Measurements::parse_load_store_vOffset(const QJsonObject &payload)
+{
+    parse_load_store_generic(payload, "v_offset");
+}
+
+void Measurements::parse_load_store_iOffset(const QJsonObject &payload)
+{
+    parse_load_store_generic(payload, "i_offset");
 }
