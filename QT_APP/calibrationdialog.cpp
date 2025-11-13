@@ -98,18 +98,14 @@ void CalibrationDialog::showEvent(QShowEvent *event)
 
 void CalibrationDialog::setupTouchSpin()
 {
-    int minValue = 1;
-    int maxValue = 12;
-    int value = 1;
-
     ui->valueDisplay->setText(QString::number(value));
 
-    connect(ui->plusBtn, &QPushButton::clicked, this, [=]() mutable {
+    connect(ui->plusBtn, &QPushButton::clicked, this, [=]() {
         value = (value >= maxValue) ? minValue : value + 1;
         ui->valueDisplay->setText(QString::number(value));
     });
 
-    connect(ui->minusBtn, &QPushButton::clicked, this, [=]() mutable {
+    connect(ui->minusBtn, &QPushButton::clicked, this, [=]() {
         value = (value <= minValue) ? maxValue : value - 1;
         ui->valueDisplay->setText(QString::number(value));
     });

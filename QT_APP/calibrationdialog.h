@@ -37,6 +37,9 @@ private:
     NumKeyboard *keyboard;
 
     bool isCurrentData;
+    const int minValue = 1;
+    const int maxValue = 12;
+    int value = 1;
 };
 
 #endif // CALIBRATIONDIALOG_H
