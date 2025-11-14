@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <QLabel>
 #include <QPixmap>
+#include <QDir>
 
 namespace Utils {
 void keySound() {
@@ -264,7 +265,7 @@ bool updateSerialInConfig(const QString &AwsEp)
 {
     QString configJson_path;
     #if defined(BUILD_X86)
-        configJson_path = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/config.json";
+        configJson_path = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/config.json";
     #elif defined(BUILD_V3S)
         configJson_path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner/config.json";
     #endif

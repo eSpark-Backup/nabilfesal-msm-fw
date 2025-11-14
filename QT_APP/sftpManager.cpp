@@ -33,7 +33,6 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected) {
-            qWarning() << "[SFTP] Retrying connection...";
             connectToSftp();
         }
     });
@@ -45,7 +44,7 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
     // Process connected
     connect(process, &QProcess::started, this, [this]() {
         isConnected = true;
-        qDebug() << "Connected to SFTP!";
+        qDebug() << "[SFTP] Connected to SFTP!";
         reconnectTimer->stop();   // stop retries when connected
         scheduleSftpUpload();
         publishTimer->start(intervalSec * 1000);
@@ -58,7 +57,7 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
         Q_UNUSED(status)
         isConnected = false;
         publishTimer->stop();
-        qDebug() << "Disconnected from SFTP.";
+        qDebug() << "[SFTP] Disconnected from SFTP.";
         if (!reconnectTimer->isActive()) {
             reconnectTimer->start();   // start retry loop
         }
@@ -70,6 +69,7 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
         qWarning() << "SFTP process error:" << error;
         if (!reconnectTimer->isActive()) {
             reconnectTimer->start();   // start retry loop
+            qWarning() << "[SFTP] Retrying connection...";
         }
     });
 

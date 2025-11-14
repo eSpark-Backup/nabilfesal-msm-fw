@@ -268,8 +268,13 @@ void FactSetting::on_reboot_btn_clicked()
 
 void FactSetting::on_mqtt_load_btn_clicked(bool msgBox)
 {
-    QJsonObject mqttSettings = loadMqttSettings(msgBox);
+    load_mqtt_settings(msgBox);
+}
 
+
+void FactSetting::load_mqtt_settings(bool msgBox, bool reconnect)
+{
+    QJsonObject mqttSettings = loadMqttSettings(msgBox, reconnect);
     if (!mqttSettings.isEmpty())
     {
         ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
@@ -310,7 +315,13 @@ void FactSetting::on_mqtt_save_btn_clicked()
 
 void FactSetting::on_sftp_load_btn_clicked(bool msgBox)
 {
-    QJsonObject sftpSettings = loadSftpSettings(msgBox);
+    load_sftp_settings(msgBox);
+}
+
+
+void FactSetting::load_sftp_settings(bool msgBox, bool reconnect)
+{
+    QJsonObject sftpSettings = loadSftpSettings(msgBox, reconnect);
 
     if (!sftpSettings.isEmpty())
     {
@@ -468,6 +479,12 @@ void FactSetting::on_pushButton_5_clicked()
 
 void FactSetting::on_mqtts_load_btn_clicked(bool msgBox)
 {
+    load_mqtts_settings(msgBox);
+}
+
+
+void FactSetting::load_mqtts_settings(bool msgBox, bool reconnect)
+{
     QString filePath = "config/aws_mqtts_settings.json";
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -510,7 +527,7 @@ void FactSetting::on_mqtts_load_btn_clicked(bool msgBox)
     checkCertificates();
             
     if (!msgBox) Toast::show("MQTT settings loaded successfully!", this, Toast::Info);
-    emit aws_mqtts_load();
+    if(reconnect) emit aws_mqtts_load();
 }
 
 
@@ -586,7 +603,7 @@ void FactSetting::runFleetProvisionerAsync()
     Utils::updateSerialInConfig(mqttsEp);
     QString exe_path;
     #if defined(BUILD_X86)
-        exe_path = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin";
+        exe_path = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin";
     #elif defined(BUILD_V3S)
         exe_path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner";
     #endif
@@ -658,7 +675,7 @@ void FactSetting::on_pushButton_2_clicked()
     ui->pushButton_2->setEnabled(false);
     QString claimDir = "/MSM/potential-pancake/MSM/creds/";
 #if defined(BUILD_X86)
-    claimDir = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/";
+    claimDir = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/";
 #endif
     QString configPath = "config/sftp_settings.json";
 
@@ -757,7 +774,7 @@ void FactSetting::on_pushButton_2_clicked()
 void FactSetting::checkCertificates()
 {
     #if defined(BUILD_X86)
-        QString claimBasePath = "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/claim_certs/";
+        QString claimBasePath = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/claim_certs/";
         QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
     #elif defined(BUILD_V3S)
         QString claimBasePath = "/MSM/potential-pancake/MSM/creds/claim_certs/";

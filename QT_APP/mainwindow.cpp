@@ -757,16 +757,16 @@ void MainWindow::handlePostProgress()
     }
 
     // load preset settings into DeviceSettings and FactSetting (original behavior)
-    settings->on_mqtt_load_btn_clicked(true);
-    settings->on_sftp_load_btn_clicked(true);
-    settings->on_mqtts_load_btn_clicked(true);
+    settings->load_mqtt_settings(true);
+    settings->load_sftp_settings(true);
+    settings->load_mqtts_settings(true);
 
     if (!factSettings) {
         factSettings = new FactSetting;
     }
-    factSettings->on_mqtt_load_btn_clicked(true);
-    factSettings->on_sftp_load_btn_clicked(true);
-    factSettings->on_mqtts_load_btn_clicked(true);
+    factSettings->load_mqtt_settings(true);
+    factSettings->load_sftp_settings(true);
+    factSettings->load_mqtts_settings(true);
 
     if (!channels)
         channels = new ChannelsHome(hardwareVersion, softwareVersion);
@@ -810,7 +810,6 @@ void MainWindow::sendFileWithDelay(const QStringList &files, int index)
     QJsonDocument doc = QJsonDocument::fromJson(jsonData);
     if (!doc.isNull() && doc.isObject()) {
         QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
-        qDebug() << "Sending content from file:" << filePath;
 
         if (pollTimer && pollTimer->isActive())
             pollTimer->stop();
@@ -819,7 +818,6 @@ void MainWindow::sendFileWithDelay(const QStringList &files, int index)
         waitingForCalibrationResponse = true;
         responseWaitTimer->start(20000);
     } else {
-        qWarning() << "Invalid JSON file, skipping:" << filePath;
         sendFileWithDelay(files, index + 1);
     }
 }

@@ -35,6 +35,9 @@ public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = false);
     void on_sftp_load_btn_clicked(bool msgBox = false);
     void on_mqtts_load_btn_clicked(bool msgBox = false);
+    void load_mqtt_settings(bool msgBox = false, bool reconnect = false);
+    void load_sftp_settings(bool msgBox = false, bool reconnect = false);
+    void load_mqtts_settings(bool msgBox = false, bool reconnect = false);
     void sendOTAData(int status);
     void startOTA(const QString &selectedVersion);
 

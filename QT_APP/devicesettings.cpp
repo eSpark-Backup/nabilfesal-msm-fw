@@ -369,12 +369,14 @@ void DeviceSettings::on_mqtt_save_btn_clicked()
 
 void DeviceSettings::on_mqtt_load_btn_clicked(bool msgBox)
 {
-    QJsonObject mqttSettings = loadMqttSettings(msgBox);
+   load_mqtt_settings(msgBox);
+}
 
-    if (!mqttSettings.isEmpty())
-    {
-        apply_mqtt_Settings(mqttSettings, msgBox);
-    }
+
+void DeviceSettings::load_mqtt_settings(bool msgBox, bool reconnect)
+{
+    QJsonObject mqttSettings = loadMqttSettings(msgBox, reconnect);
+    if (!mqttSettings.isEmpty()) apply_mqtt_Settings(mqttSettings, msgBox);
 }
 
 
@@ -440,12 +442,14 @@ void DeviceSettings::on_sftp_save_btn_clicked()
 
 void DeviceSettings::on_sftp_load_btn_clicked(bool msgBox)
 {
-    QJsonObject sftpSettings = loadSftpSettings(msgBox);
+    load_sftp_settings(msgBox);
+}
 
-    if (!sftpSettings.isEmpty())
-    {
-        apply_sftp_Settings(sftpSettings, msgBox);
-    }
+
+void DeviceSettings::load_sftp_settings(bool msgBox, bool reconnect)
+{
+    QJsonObject sftpSettings = loadSftpSettings(msgBox, reconnect);
+    if (!sftpSettings.isEmpty()) apply_sftp_Settings(sftpSettings, msgBox);
 }
 
 
@@ -585,6 +589,11 @@ void DeviceSettings::on_pushButton_2_clicked()
 
 void DeviceSettings::on_mqtts_load_btn_clicked(bool msgBox)
 {
+    load_mqtts_settings(msgBox);
+}
+
+void DeviceSettings::load_mqtts_settings(bool msgBox, bool reconnect)
+{
     QString filePath = "config/aws_mqtts_settings.json";
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -611,8 +620,8 @@ void DeviceSettings::on_mqtts_load_btn_clicked(bool msgBox)
     ui->mqtts_interval->setText(obj.value("interval").toString());
     ui->mqtts_client_id->setText(Utils::getUid());
 
-    emit aws_mqtts_load();
     if(!msgBox) Toast::show("MQTTS settings loaded successfully!", this, Toast::Info);
+    if(reconnect) emit aws_mqtts_load();
 }
 
 
@@ -668,11 +677,5 @@ void DeviceSettings::on_mqtts_save_btn_clicked(bool msgBox)
 
     if(!msgBox) Toast::show("MQTTS configuration saved successfully!", this, Toast::Info);
     emit aws_mqtts_load();
-}
-
-
-void DeviceSettings::on_back_btn_clicked()
-{
-
 }
 

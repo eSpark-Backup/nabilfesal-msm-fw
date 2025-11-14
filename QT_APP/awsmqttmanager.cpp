@@ -43,12 +43,15 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);
 
+    if (!loadAwsConfig(AWS_MQTTS_PATH)) {
+        qWarning() << "No valid config found. Skipping AWS MQTTS connection.";
+    }
+
     reconnectTimer->setInterval(5 * 1000);  // 5 seconds
     reconnectTimer->setSingleShot(false);    // repeat until success
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected) {
-            qWarning() << "[AWS] Reconnection attempt...";
             connectToBroker();
         }
     });
@@ -85,7 +88,7 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     // Connected signal
     connect(awsMqttsClient, &QMqttClient::connected, this, [this]() {
         isConnected = true;
-        qDebug() << "Connected to AWS IoT Core!";
+        qDebug() << "[MQTTS] Connected to AWS IoT Core!";
         reconnectTimer->stop();
 
         if (intervalSec > 0) {
@@ -102,10 +105,11 @@ AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
     // Disconnected signal
     connect(awsMqttsClient, &QMqttClient::disconnected, this, [this]() {
         isConnected = false;
-        qDebug() << "Disconnected from AWS IoT Core.";
+        qDebug() << "[MQTTS] Disconnected from AWS IoT Core.";
         publishTimer->stop();
         if (!reconnectTimer->isActive()) {
-            reconnectTimer->start();  // retry every 1 min
+            reconnectTimer->start();
+            qWarning() << "[AWS] Reconnection attempt...";
         }
     });
 }
