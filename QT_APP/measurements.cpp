@@ -10,6 +10,7 @@
 #include <QDir>
 #include <QFile>
 #include <QKeyEvent>
+#include "toast.h"
 
 Measurements::Measurements(QWidget *parent)
     : QWidget(parent)
@@ -213,6 +214,31 @@ void Measurements::on_load_btn_clicked()
 }
 
 
+bool Measurements::areSettingsUnchanged(const QJsonObject &current, const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.exists())
+        return false;  // If no file, settings must be new
+
+    if (!file.open(QIODevice::ReadOnly))
+        return false;  // Cannot read → assume changed
+
+    QByteArray bytes = file.readAll();
+    file.close();
+
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(bytes, &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject())
+        return false;  // Corrupt → treat as changed
+
+    QJsonObject existing = doc.object();
+
+    // Compare deeply
+    return (QJsonDocument(current).toJson(QJsonDocument::Compact) ==
+            QJsonDocument(existing).toJson(QJsonDocument::Compact));
+}
+
+
 void Measurements::on_save_btn_clicked()
 {
     QStringList channels = {
@@ -224,94 +250,99 @@ void Measurements::on_save_btn_clicked()
         ui->ch11->text().trimmed(), ui->ch12->text().trimmed()
     };
 
-    auto parseDoubleSafe = [](const QString &str) -> double {
-        bool ok = false;
-        double val = str.toDouble(&ok);
-        return ok ? val : 0.0;
+    auto parseDoubleSafe = [](const QString &str){
+        bool ok; double v = str.toDouble(&ok); return ok ? v : 0.0;
     };
 
+    QJsonObject channelJson;
+    for (int i = 0; i < channels.size(); ++i)
+        channelJson[QString("channel-%1").arg(i + 1)] = parseDoubleSafe(channels[i]);
+
     if (isRatioActivated)
-    {
-        QJsonObject ratioSettings;
-        for (int i = 0; i < channels.size(); ++i) {
-            ratioSettings[QString("channel-%1").arg(i + 1)] = parseDoubleSafe(channels[i]);
-        }
+        processSettings("ct_ratio", channelJson, "set-ct-ratio", false, true);
 
-        QJsonObject data;
-        data["ct_ratio"] = ratioSettings;
-        data["command"]  = "set-ct-ratio";
-
-        QDir dir("config");
-        if (!dir.exists()) dir.mkpath(".");
-
-        QFile file("config/ct_ratio_settings.json");
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            QMessageBox::critical(this, "CT Ratio Settings", "Failed to save CT Ratio settings to a file.");
-            return;
-        }
-
-        QByteArray jsonBytes = QJsonDocument(data).toJson(QJsonDocument::Indented);
-        file.write(jsonBytes);
-        file.close();
-
-        emit requestSerialCommand(QString::fromUtf8(QJsonDocument(data).toJson(QJsonDocument::Compact)));
-        emit ct_ratio_changed(data);
-    }
     else if (isIOffsetActivated)
-    {
-        QJsonObject iOffsetSettings;
-        for (int i = 0; i < channels.size(); ++i) {
-            iOffsetSettings[QString("channel-%1").arg(i + 1)] = parseDoubleSafe(channels[i]);
-        }
+        processSettings("i_offset", channelJson, "set-i-offset", false, true);
 
-        QJsonObject data;
-        data["i_offset"] = iOffsetSettings;
-        data["command"]  = "set-i-offset";
-
-        QDir dir("config");
-        if (!dir.exists()) dir.mkpath(".");
-
-        QFile file("config/i_offset_settings.json");
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            QMessageBox::critical(this, "I-Offset Settings", "Failed to save I-Offset settings to a file.");
-            return;
-        }
-
-        QByteArray jsonBytes = QJsonDocument(data).toJson(QJsonDocument::Indented);
-        file.write(jsonBytes);
-        file.close();
-
-        emit requestSerialCommand(QString::fromUtf8(QJsonDocument(data).toJson(QJsonDocument::Compact)));
-        emit i_offset_changed(data);
-    }
     else if (isVOffsetActivated)
+        processSettings("v_offset", channelJson, "set-v-offset", false, true);
+}
+
+
+void Measurements::processSettings(const QString &key,
+                                   const QJsonObject &settingsObj,
+                                   const QString &command,
+                                   bool updateUI,
+                                   bool emitDeviceCommand)
+{
+    QString filePath = QString("config/%1_settings.json").arg(key);
+
+    QString title = key;
+    title.replace("_", " ");
+    title[0] = title[0].toUpper();
+
+    // Build final nested object
+    QJsonObject data;
+    data[key] = settingsObj;
+    if (!command.isEmpty())
+        data["command"] = command;
+
+    // Compare with existing file
+    if (areSettingsUnchanged(data, filePath))
     {
-        QJsonObject vOffsetSettings;
-        for (int i = 0; i < channels.size(); ++i) {
-            vOffsetSettings[QString("channel-%1").arg(i + 1)] = parseDoubleSafe(channels[i]);
+        Toast::show(QString("[%1] Settings unchanged → not saving.").arg(title),
+                    this, Toast::Warning);
+
+        // Even on unchanged, UI might still need updating (load case)
+        if (updateUI)
+        {
+            for (int i = 1; i <= 12; ++i)
+            {
+                if (auto edit = findChild<QLineEdit*>(QString("ch%1").arg(i)))
+                    edit->setText(QString::number(settingsObj[QString("channel-%1").arg(i)].toDouble(), 'f', 2));
+            }
         }
+        return;
+    }
 
-        QJsonObject data;
-        data["v_offset"] = vOffsetSettings;
-        data["command"]  = "set-v-offset";
+    // Save to file
+    QDir dir("config");
+    if (!dir.exists()) dir.mkpath(".");
 
-        QDir dir("config");
-        if (!dir.exists()) dir.mkpath(".");
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        Toast::show(QString("[%1] Failed to save settings.").arg(title),
+                    this, Toast::Error);
+        return;
+    }
 
-        QFile file("config/v_offset_settings.json");
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            QMessageBox::critical(this, "V-Offset Settings", "Failed to save V-Offset settings to a file.");
-            return;
+    file.write(QJsonDocument(data).toJson(QJsonDocument::Indented));
+    file.close();
+
+    Toast::show(QString("[%1] Settings saved to file.").arg(title),
+                this, Toast::Info);
+
+    // Update UI if requested
+    if (updateUI)
+    {
+        for (int i = 1; i <= 12; ++i)
+        {
+            if (auto edit = findChild<QLineEdit*>(QString("ch%1").arg(i)))
+                edit->setText(QString::number(settingsObj[QString("channel-%1").arg(i)].toDouble(), 'f', 2));
         }
+    }
 
-        QByteArray jsonBytes = QJsonDocument(data).toJson(QJsonDocument::Indented);
-        file.write(jsonBytes);
-        file.close();
+    emit requestSerialCommand(QJsonDocument(data).toJson(QJsonDocument::Compact));
 
-        emit requestSerialCommand(QString::fromUtf8(QJsonDocument(data).toJson(QJsonDocument::Compact)));
-        emit v_offset_changed(data);
+    if (emitDeviceCommand)
+    {
+        if (key == "ct_ratio") emit ct_ratio_changed(data);
+        if (key == "i_offset") emit i_offset_changed(data);
+        if (key == "v_offset") emit v_offset_changed(data);
     }
 }
+
 
 
 void Measurements::on_toolButton_clicked()
@@ -464,47 +495,14 @@ void Measurements::v_off_btn_clicked()
 
 void Measurements::parse_load_store_generic(const QJsonObject &payload, const QString &key)
 {
-    QJsonArray dataArray = payload.value("data").toArray();
-    if (dataArray.isEmpty()) {
-        qWarning() << QString("[%1] Missing or empty 'data' array in payload.").arg(key);
-        return;
-    }
+    QJsonArray dataArray = payload["data"].toArray();
+    if (dataArray.isEmpty()) return;
 
-    QJsonObject innerObj = dataArray.first().toObject();
-    QJsonObject settings = innerObj.value(key).toObject();
-    if (settings.isEmpty()) {
-        qWarning() << QString("[%1] Missing or empty object in payload.").arg(key);
-        return;
-    }
+    QJsonObject inner = dataArray.first().toObject();
+    QJsonObject settingsObj = inner[key].toObject();
+    if (settingsObj.isEmpty()) return;
 
-    // --- Derive file name and title automatically ---
-    QString fileName = QString("config/%1_settings.json").arg(key);
-    QString title = key;
-    title.replace("_", " ");           // e.g. "ct_ratio" → "ct ratio"
-    title[0] = title[0].toUpper();     // Capitalize first letter
-
-    QDir dir("config");
-    if (!dir.exists()) dir.mkpath(".");
-
-    QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QMessageBox::critical(this, title, QString("Failed to save %1 settings to file.").arg(title));
-        return;
-    }
-
-    QJsonDocument doc(innerObj);
-    file.write(doc.toJson(QJsonDocument::Indented));
-    file.close();
-
-    for (int i = 1; i <= 12; ++i) {
-        QString chKey = QString("channel-%1").arg(i);
-        if (QLineEdit *edit = this->findChild<QLineEdit*>(QString("ch%1").arg(i))) {
-            double val = settings.value(chKey).toDouble();
-            edit->setText(QString::number(val, 'f', 2));
-        }
-    }
-
-    emit requestSerialCommand(QString::fromUtf8(doc.toJson(QJsonDocument::Compact)));
+    processSettings(key, settingsObj, "", true, true);
 }
 
 

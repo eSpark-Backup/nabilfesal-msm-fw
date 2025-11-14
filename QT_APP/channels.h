@@ -33,7 +33,7 @@ protected:
 
 private slots:
     void on_exit_clicked();
-    void on_tempBtn_clicked(bool updateTrue = false, double val = 0.00);
+    void on_tempBtn_clicked(bool check = false);
     void on_resetEnergy_Btn_clicked();
     void on_en_bt_1_clicked();
 
@@ -49,6 +49,7 @@ private:
     int findNextActiveChannel(int startChannel, int direction);
     void loadEnergyData();
     void saveEnergyData();
+    void handleTempButton(bool updateTrue = false, double val = 0.00);
 
 private:
     Ui::ChannelsHome *ui;

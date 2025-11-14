@@ -168,9 +168,9 @@ void CalibrationDialog::loadCalibrationScreen(bool isEnable)
 
 void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
 {
-    if(response.contain("error"))
+    if(response.contains("error"))
     {
-        QString err = obj.value("error").toString();
+        QString err = response.value("error").toString();
         Toast::show(err, this, Toast::Error);
         return;
     }

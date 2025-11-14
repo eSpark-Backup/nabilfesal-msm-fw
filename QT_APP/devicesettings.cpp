@@ -256,7 +256,7 @@ void DeviceSettings::on_continue_btn_clicked()
 }
 
 
-void DeviceSettings::on_back_btn_clicked()
+void DeviceSettings::on_dev_back_btn_clicked()
 {
     ui->stackedWidget->setCurrentIndex(1);
 }
@@ -668,5 +668,11 @@ void DeviceSettings::on_mqtts_save_btn_clicked(bool msgBox)
 
     if(!msgBox) Toast::show("MQTTS configuration saved successfully!", this, Toast::Info);
     emit aws_mqtts_load();
+}
+
+
+void DeviceSettings::on_back_btn_clicked()
+{
+
 }
 

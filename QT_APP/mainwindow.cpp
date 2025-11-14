@@ -498,21 +498,21 @@ void MainWindow::onGenericResponseReady(const QString &resp)
         QJsonDocument doc = QJsonDocument::fromJson(resp.toUtf8(), &parseError);
 
         if (parseError.error == QJsonParseError::NoError) {
-            qDebug() << "Valid JSON received:" << resp;
             QJsonObject obj = doc.object();
             if (!BootUpSync && gainCalibrator)
                 gainCalibrator->parse_and_save_response(obj);
             else
             {
-                QString msg = obj.value("message").toString();
-                Toast::show(msg, this, Toast::Info);
+                bool ok = obj.contains("message");
+                Toast::show(obj[ok ? "message" : "error"].toString(),
+                            this, ok ? Toast::Info : Toast::Error);
                 QTimer::singleShot(1000, this, [this](){
                     sendFileWithDelay(bootFiles, bootFileIndex + 1);
                 });
             }
         } else {
-            qDebug() << "Invalid JSON response:" << resp;
-            qDebug() << "Parse error:" << parseError.errorString();
+            // qDebug() << "Invalid JSON response:" << resp;
+            // qDebug() << "Parse error:" << parseError.errorString();
         }
     }
 

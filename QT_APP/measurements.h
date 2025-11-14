@@ -52,7 +52,9 @@ public slots:
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
     void parse_load_store_generic(const QJsonObject &payload, const QString &key);
-    
+    bool areSettingsUnchanged(const QJsonObject &current, const QString &filePath);
+    void processSettings(const QString &key, const QJsonObject &settingsObj,
+                    const QString &command, bool updateUI, bool emitDeviceCommand);
 private:
     Ui::Measurements *ui;
     bool isRatioActivated = false;

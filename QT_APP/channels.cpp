@@ -392,7 +392,7 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
     if (channel == m_channel)
     {
         double temp = json.value("temperature").toDouble();
-        on_tempBtn_clicked(true, temp);
+        handleTempButton(true, temp);
         QString suffix = QString::number(1);
         QJsonObject data = json.value("data").toObject();
         for (const QString &phase : {"phase_a", "phase_b", "phase_c"}) {
@@ -530,7 +530,13 @@ void ChannelsHome::saveEnergyData()
 }
 
 
-void ChannelsHome::on_tempBtn_clicked(bool updateTrue, double val)
+void ChannelsHome::on_tempBtn_clicked(bool check)
+{
+    handleTempButton(check, 0.00);
+}
+
+
+void ChannelsHome::handleTempButton(bool updateTrue, double val)
 {
     QString text = ui->tempBtn->text(); // e.g., "30.73 °C"
 

@@ -241,7 +241,7 @@ void FactSetting::on_next_btn_clicked()
 }
 
 
-void FactSetting::on_back_btn_clicked()
+void FactSetting::on_fact_back_btn_clicked()
 {
     ui->stackedWidget->setCurrentIndex(0);
 }
@@ -347,12 +347,6 @@ void FactSetting::on_sftp_save_btn_clicked()
         return;
     }
     saveSftpSettings(sftpSettings);
-}
-
-
-void FactSetting::on_pushButton_4_clicked()
-{
-    ui->stackedWidget->setCurrentIndex(0);
 }
 
 

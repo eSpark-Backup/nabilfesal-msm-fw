@@ -40,7 +40,7 @@ public slots:
 private slots:
     void on_channels_btn_clicked();
     void on_continue_btn_clicked();
-    void on_back_btn_clicked();
+    void on_dev_back_btn_clicked();
     void on_ntp_load_btn_clicked();
     void on_ntp_save_btn_clicked();
     void on_mqtt_save_btn_clicked();

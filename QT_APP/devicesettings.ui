@@ -2548,7 +2548,7 @@ QPushButton:focus {
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_28">
          <item>
-          <widget class="QPushButton" name="back_btn">
+          <widget class="QPushButton" name="dev_back_btn">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
