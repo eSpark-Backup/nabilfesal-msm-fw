@@ -67,6 +67,7 @@ public slots:
     void processVOffset(const QJsonObject &vOffset);
     void processIOffset(const QJsonObject &iOffset);
     void processOTA(const QJsonObject &otaData);
+    void resetAccumulatedEnergy();
     
 private:
     explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
@@ -128,5 +129,13 @@ private:
     mutable QReadWriteLock telemetryLock;
     QMap<int, QJsonObject> channelTelemetry;
     QTimer *reconnectTimer;
+
+    // Running totals for energy
+    double posActEnergy[13] = {0};
+    double negActEnergy[13] = {0};
+    double posReacEnergy[13] = {0};
+    double negReacEnergy[13] = {0};
+
+
 };
 

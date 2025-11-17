@@ -288,6 +288,9 @@ void MainWindow::connectLoginSignals()
     if (!factSettings)
         factSettings = new FactSetting;
 
+    if (!channels)
+        channels = new ChannelsHome(hardwareVersion, softwareVersion);
+
     // When DeviceSettings says "reload SFTP", disconnect and reload after a short delay.
     connect(settings, &DeviceSettings::sftp_load, this, [this]() {
         sftpHandler->disconnectClient();
@@ -361,6 +364,13 @@ void MainWindow::connectLoginSignals()
             sftpHandler, &sftpManager::processIncomingJson);
     connect(this, &MainWindow::receivedChannelData,
             awsMqttsHandler, &AwsMqttManager::processAwsTelemetry);
+
+    // channel UI related signals
+    connect(channels, &ChannelsHome::resetEnergy, this, [this]() {
+        awsMqttsHandler->resetAccumulatedEnergy();
+        mqttHandler->resetAccumulatedEnergy();
+        sftpHandler->resetAccumulatedEnergy();
+    });
 
     // Note:
     // Navigation-related connections (showing/hiding settings/channels/usbExport)

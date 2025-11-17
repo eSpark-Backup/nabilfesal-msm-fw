@@ -620,6 +620,7 @@ void ChannelsHome::on_resetEnergy_Btn_clicked()
         }
 
         activePos = activeNeg = reactivePos = reactiveNeg = 0;
+        emit resetEnergy();
     }
 }
 

@@ -243,16 +243,33 @@ private slots:
         row << "\"" + Utils::getDeviceIp() + "\"";
         row << "\"" + Utils::getUid() + "\"";
 
+        // ---- Channel 1 (incoming) ----
         const auto obj1 = snapshotCopy.value(1);
-        for (const QString &k : baseKeysIncoming)
-            row << "\"" + QString::number(obj1.value(k).toDouble(), 'f', 2) + "\"";
+        for (const QString &k : baseKeysIncoming) {
+            double val = obj1.value(k).toDouble();
+            row << "\"" + QString::number(val, 'f', 2) + "\"";
+        }
 
+        // Accumulate Channel 1 energy
+        negActEnergy[1] += obj1.value("Epimp1").toDouble();
+        posActEnergy[1] += obj1.value("Epexp1").toDouble();
+        negReacEnergy[1] += obj1.value("Eqimp1").toDouble();
+        posReacEnergy[1] += obj1.value("Eqexp1").toDouble();
+
+        // ---- Channels 2–12 (outgoing) ----
         for (int ch = 2; ch <= 12; ++ch) {
             int idx = ch - 1;
             const auto obj = snapshotCopy.value(ch);
+
+            // Accumulate energy for this channel
+            negActEnergy[ch] += obj.value(QString("F%1_Epimp").arg(idx)).toDouble();
+            posActEnergy[ch] += obj.value(QString("F%1_Epexp").arg(idx)).toDouble();
+            negReacEnergy[ch] += obj.value(QString("F%1_Eqimp").arg(idx)).toDouble();
+            posReacEnergy[ch] += obj.value(QString("F%1_Eqexp").arg(idx)).toDouble();
+
             for (const QString &k : baseKeysOutgoing) {
                 QString fullKey = k.startsWith("PF_") ? k + QString::number(idx)
-                                                      : QString("F%1_%2").arg(idx).arg(k);
+                                                    : QString("F%1_%2").arg(idx).arg(k);
                 row << "\"" + QString::number(obj.value(fullKey).toDouble(), 'f', 2) + "\"";
             }
         }
@@ -302,4 +319,11 @@ private:
     QTimer *m_logTimer;
     QMap<int, QJsonObject> m_latestSnapshot;
     QMutex m_mutex;
+
+    // Accumultion
+    double posActEnergy[13] = {0};
+    double negActEnergy[13] = {0};
+    double posReacEnergy[13] = {0};
+    double negReacEnergy[13] = {0};
+
 };

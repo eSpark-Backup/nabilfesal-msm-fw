@@ -21,7 +21,7 @@ public:
     
 public slots:
     void processIncomingJson(int channel, const QJsonObject &payload);
-
+    void resetAccumulatedEnergy();
 private:
     explicit sftpManager(QObject *parent = nullptr);
     sftpManager(const sftpManager&) = delete;
@@ -48,7 +48,12 @@ private:
 
     mutable QReadWriteLock telemetryLock;
     QMap<int, QJsonObject> channelTelemetry;
-    QTimer *reconnectTimer; 
+    QTimer *reconnectTimer;
 
+    // Assume channel numbers start at 1
+    double posActEnergy[13] = {0};
+    double negActEnergy[13] = {0};
+    double posReacEnergy[13] = {0};
+    double negReacEnergy[13] = {0};
 };
 

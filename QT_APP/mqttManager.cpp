@@ -248,6 +248,24 @@ void mqttManager::processIncomingJson(int channel, const QJsonObject &payload)
     QJsonObject phaseA = data["phase_a"].toObject();
     QJsonObject phaseB = data["phase_b"].toObject();
     QJsonObject phaseC = data["phase_c"].toObject();
+
+    // Accumulate energy for the current channel
+    negActEnergy[channel] += phaseA["energy"].toObject()["active"].toObject()["negative"].toDouble();
+    negActEnergy[channel] += phaseB["energy"].toObject()["active"].toObject()["negative"].toDouble();
+    negActEnergy[channel] += phaseC["energy"].toObject()["active"].toObject()["negative"].toDouble();
+
+    posActEnergy[channel] += phaseA["energy"].toObject()["active"].toObject()["positive"].toDouble();
+    posActEnergy[channel] += phaseB["energy"].toObject()["active"].toObject()["positive"].toDouble();
+    posActEnergy[channel] += phaseC["energy"].toObject()["active"].toObject()["positive"].toDouble();
+
+    negReacEnergy[channel] += phaseA["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+    negReacEnergy[channel] += phaseB["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+    negReacEnergy[channel] += phaseC["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+
+    posReacEnergy[channel] += phaseA["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+    posReacEnergy[channel] += phaseB["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+    posReacEnergy[channel] += phaseC["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+
     QJsonObject telemetry;
 
     if(channel == 1)
@@ -298,10 +316,10 @@ void mqttManager::processIncomingJson(int channel, const QJsonObject &payload)
         QJsonObject reactiveA = energyA["reactive"].toObject();
 
         telemetry["T_C"]    = root["temperature"].toDouble();
-        telemetry["Epimp1"] = activeA["negative"].toDouble();
-        telemetry["Epexp1"] = activeA["positive"].toDouble();
-        telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
-        telemetry["Eqexp1"] = reactiveA["positive"].toDouble();
+        telemetry["Epimp1"] = negActEnergy[1];
+        telemetry["Epexp1"] = posActEnergy[1];
+        telemetry["Eqimp1"] = negReacEnergy[1];
+        telemetry["Eqexp1"] = posReacEnergy[1];
     }
     else
     {
@@ -340,10 +358,10 @@ void mqttManager::processIncomingJson(int channel, const QJsonObject &payload)
         telemetry[prefix + "S"] = std::round((S_R + S_B + S_Y) * 100.0) / 100.0;
 
         telemetry[prefix + "T"]     = root["temperature"].toDouble();
-        telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
-        telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
-        telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
-        telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
+        telemetry[prefix + "Epimp"] = negActEnergy[channel];
+        telemetry[prefix + "Epexp"] = posActEnergy[channel];
+        telemetry[prefix + "Eqimp"] = negReacEnergy[channel];
+        telemetry[prefix + "Eqexp"] = posReacEnergy[channel];
     }
     
     QWriteLocker locker(&telemetryLock);
@@ -382,5 +400,16 @@ void mqttManager::initializeTelemetryJson()
         }
 
         channelTelemetry[ch] = defaults;
+    }
+}
+
+
+void mqttManager::resetAccumulatedEnergy()
+{
+    for(int ch = 1; ch <= 12; ++ch) {
+        posActEnergy[ch] = 0;
+        negActEnergy[ch] = 0;
+        posReacEnergy[ch] = 0;
+        negReacEnergy[ch] = 0;
     }
 }

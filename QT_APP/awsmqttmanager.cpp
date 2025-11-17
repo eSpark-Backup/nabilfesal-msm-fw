@@ -406,6 +406,31 @@ void AwsMqttManager::processAwsTelemetry(int channel, const QJsonObject &payload
             phaseObj.remove("avg_power");
             phaseObj.remove("avg_energy");
             phaseObj.remove("thd");
+
+             // Get energy object
+            QJsonObject energyObj = phaseObj["energy"].toObject();
+
+            QJsonObject active = energyObj["active"].toObject();
+            QJsonObject reactive = energyObj["reactive"].toObject();
+
+            // Accumulate into class variables
+            posActEnergy[channel] += active["positive"].toDouble();
+            negActEnergy[channel] += active["negative"].toDouble();
+            posReacEnergy[channel] += reactive["positive"].toDouble();
+            negReacEnergy[channel] += reactive["negative"].toDouble();
+
+
+            // Update JSON with accumulated totals
+            active["positive"] = posActEnergy[channel];
+            active["negative"] = negActEnergy[channel];
+            reactive["positive"] = posReacEnergy[channel];
+            reactive["negative"] = negReacEnergy[channel];
+
+
+            energyObj["active"] = active;
+            energyObj["reactive"] = reactive;
+            phaseObj["energy"] = energyObj;
+            
             dataObj[phase] = phaseObj;
         }
     }
@@ -602,5 +627,15 @@ void AwsMqttManager::otaSend(const QJsonObject &obj)
         emit otaReceived(otaVersion);
     } else {
         qWarning() << "[MQTT] OTA message received but 'data' array is empty.";
+    }
+}
+
+void AwsMqttManager::resetAccumulatedEnergy()
+{
+    for(int ch = 1; ch <= 12; ++ch) {
+        posActEnergy[ch] = 0;
+        negActEnergy[ch] = 0;
+        posReacEnergy[ch] = 0;
+        negReacEnergy[ch] = 0;
     }
 }

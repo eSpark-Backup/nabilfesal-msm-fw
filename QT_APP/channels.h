@@ -27,6 +27,7 @@ public:
 
 signals:
     void channelsExit();
+    void resetEnergy();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
