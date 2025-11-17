@@ -149,6 +149,9 @@
             <property name="leftMargin">
              <number>30</number>
             </property>
+            <property name="topMargin">
+             <number>18</number>
+            </property>
             <property name="rightMargin">
              <number>30</number>
             </property>
@@ -1592,29 +1595,6 @@ QPushButton:focus {
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_42">
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <item>
-             <spacer name="verticalSpacer">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_41">
             <property name="leftMargin">
              <number>9</number>
@@ -1834,7 +1814,7 @@ QPushButton:focus {
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>40</width>
+                 <width>50</width>
                  <height>20</height>
                 </size>
                </property>
@@ -1873,7 +1853,7 @@ background-color: #D9D9D9;</string>
                  <number>5</number>
                 </property>
                 <property name="rightMargin">
-                 <number>20</number>
+                 <number>25</number>
                 </property>
                 <property name="bottomMargin">
                  <number>0</number>
@@ -2044,13 +2024,13 @@ background-color: #D9D9D9;</string>
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_40">
                <property name="leftMargin">
-                <number>10</number>
+                <number>0</number>
                </property>
                <property name="topMargin">
                 <number>10</number>
                </property>
                <property name="rightMargin">
-                <number>10</number>
+                <number>0</number>
                </property>
                <property name="bottomMargin">
                 <number>10</number>

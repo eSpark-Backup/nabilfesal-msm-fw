@@ -252,7 +252,7 @@ QString getSftpStatus()
 void rebootSystem()
 {
     QString imgPath = ":/icons/rebooting.png";
-    QLabel *label = showImageFullscreenFor(imgPath, 2000);
+    QLabel *label = showImageFullscreenFor(imgPath, -1);
     QTimer::singleShot(2000, [label]() {
     #if defined(BUILD_V3S)
         QProcess::startDetached("sh", {"-c", "sync; reboot"});

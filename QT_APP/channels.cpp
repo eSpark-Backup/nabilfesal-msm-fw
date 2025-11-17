@@ -7,6 +7,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include "toast.h"
+#include <QMessageBox>
 
 
 #define EnergyFilePath "data/energy_data.json"
@@ -580,41 +581,46 @@ void ChannelsHome::on_resetEnergy_Btn_clicked()
 {
     ui->resetEnergy_Btn->clearFocus();
 
-    for (auto &channel : accumulatedEnergy) {
-        for (auto &phase : channel) {
-            phase.activePositive = 0;
-            phase.activeNegative = 0;
-            phase.reactivePositive = 0;
-            phase.reactiveNegative = 0;
-        }
-    }
+    int ret = QMessageBox::question(
+    this, "Reset Energy", "Do you want to reset energy?",QMessageBox::Ok | QMessageBox::Cancel);
 
-    for (int ch = 1; ch <= 12; ++ch) {
-        if (!channelLabelMap.contains(ch)) continue;
-
-        for (auto it = channelLabelMap[ch].begin(); it != channelLabelMap[ch].end(); ++it) {
-            QString key = it.key();
-            QLabel* label = it.value();
-            if (!label) continue;
-
-            // Only reset energy/power labels
-            if (key.startsWith("pe_") || key.startsWith("ne_") || key.startsWith("be_"))
-            {
-                label->setText("0.00");
+    if (ret == QMessageBox::Ok) {
+        for (auto &channel : accumulatedEnergy) {
+            for (auto &phase : channel) {
+                phase.activePositive = 0;
+                phase.activeNegative = 0;
+                phase.reactivePositive = 0;
+                phase.reactiveNegative = 0;
             }
         }
-    }
 
-    if (QFile::exists(EnergyFilePath)) {
-        if (QFile::remove(EnergyFilePath))
-            Toast::show("Energy reset successfully for all channels.", this, Toast::Info);
-        else
-            Toast::show("Unable to reset energy data.", this, Toast::Error);
-    } else {
-        Toast::show("No energy file found to reset.", this, Toast::Warning);
-    }
+        for (int ch = 1; ch <= 12; ++ch) {
+            if (!channelLabelMap.contains(ch)) continue;
 
-    activePos = activeNeg = reactivePos = reactiveNeg = 0;
+            for (auto it = channelLabelMap[ch].begin(); it != channelLabelMap[ch].end(); ++it) {
+                QString key = it.key();
+                QLabel* label = it.value();
+                if (!label) continue;
+
+                // Only reset energy/power labels
+                if (key.startsWith("pe_") || key.startsWith("ne_") || key.startsWith("be_"))
+                {
+                    label->setText("0.00");
+                }
+            }
+        }
+
+        if (QFile::exists(EnergyFilePath)) {
+            if (QFile::remove(EnergyFilePath))
+                Toast::show("Energy reset successfully for all channels.", this, Toast::Info);
+            else
+                Toast::show("Unable to reset energy data.", this, Toast::Error);
+        } else {
+            Toast::show("No energy file found to reset.", this, Toast::Warning);
+        }
+
+        activePos = activeNeg = reactivePos = reactiveNeg = 0;
+    }
 }
 
 
