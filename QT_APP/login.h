@@ -20,10 +20,12 @@ signals:
     void adminLoginSuccess();
     void factoryLoginSuccess();
     void loadChannels();
-
+    void loadDiagnotics();
+    
 private slots:
     void on_loginButton_clicked();
     void on_pushButton_clicked();
+    // void on_diagBtn_clicked();
 
 protected:
     void showEvent(QShowEvent *event) override;

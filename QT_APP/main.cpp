@@ -5,7 +5,7 @@
 #include "buttonSound.h"
 #include <QScreen>
 #include "buildinfo.h"
-#define BUILD_VERSION "2.0.10"
+#define BUILD_VERSION "2.0.11"
 
 class InactivityWatcher : public QObject {
     Q_OBJECT

@@ -176,6 +176,7 @@ void MainWindow::setupLogin()
     connect(login, &LoginWidget::loadChannels, this, &MainWindow::onLoadChannels);
     connect(login, &LoginWidget::adminLoginSuccess, this, &MainWindow::onAdminLogin);
     connect(login, &LoginWidget::factoryLoginSuccess, this, &MainWindow::onFactoryLogin);
+    connect(login, &LoginWidget::loadDiagnotics, this, &MainWindow::onLoadDiagnotiscs);
 }
 
 void MainWindow::setupUsb()
@@ -540,6 +541,15 @@ void MainWindow::onGenericResponseReady(const QString &resp)
 
 }
 
+void MainWindow::onLoadDiagnotiscs()
+{
+    if (!alerts)
+        alerts = new Diagnostics;
+
+    connect(alerts, &Diagnostics::diagExit, this, &MainWindow::onDiagExit);
+    alerts->showFullScreen();
+    login->hide();
+}
 
 // -----------------------------
 // Login / Navigation slots
@@ -682,6 +692,15 @@ void MainWindow::onFactoryLogin()
         usbDetected = false;
     }
 }
+
+
+void MainWindow::onDiagExit()
+{
+    isLogin = false;
+    if (login) login->showFullScreen();
+    if (alerts) alerts->hide();
+}
+
 
 void MainWindow::onChannelsExit()
 {

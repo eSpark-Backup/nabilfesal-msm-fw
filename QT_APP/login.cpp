@@ -135,3 +135,8 @@ void LoginWidget::on_pushButton_clicked()
     emit loadChannels();
 }
 
+// void LoginWidget::on_diagBtn_clicked()
+// {
+//     emit loadDiagnotics();
+// }
+

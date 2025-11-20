@@ -25,6 +25,7 @@
 #include "commonSetting.h"
 #include "systemexporter.h"
 #include "calibrationdialog.h"
+#include "diagnostics.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -57,10 +58,12 @@ private slots:
     void onGenericResponseReady(const QString &resp);
 
     // Login / navigation
+    void onLoadDiagnotiscs();
     void onLoadChannels();
     void onAdminLogin();
     void onFactoryLogin();
     void onChannelsExit();
+    void onDiagExit();
 
     // Progress management
     void updateProgress();
@@ -105,6 +108,7 @@ private:
     Measurements *measure = nullptr;
     SystemDataExporter *dataExporter = nullptr;
     CalibrationDialog *gainCalibrator = nullptr;
+    Diagnostics *alerts = nullptr;
 
     // managers (mostly singletons)
     settingsManager *settingsHandler = nullptr;
