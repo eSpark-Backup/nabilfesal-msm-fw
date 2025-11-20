@@ -390,6 +390,14 @@ void MainWindow::onUsbMounted(const QString &dev, const QString &path)
     if (!startApp)
     {
         if (!isLogin) {
+            for (QWidget *w : QApplication::topLevelWidgets()) {
+                if (w->inherits("QDialog")) {
+                    QDialog *dlg = qobject_cast<QDialog*>(w);
+                    if (dlg) dlg->reject();
+                } else {
+                    w->hide();
+                }
+            }
             usbDetected = true;
             login->showFullScreen();
         } else {

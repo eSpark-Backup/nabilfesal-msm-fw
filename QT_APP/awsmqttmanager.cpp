@@ -313,8 +313,10 @@ void AwsMqttManager::subscribeToTopic()
             QJsonDocument doc = QJsonDocument::fromJson(rawPayload);
             QJsonObject obj;
             if (!doc.isNull() && doc.isObject()) {
+                QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz");
                 obj = doc.object();
-                qDebug().noquote() << "\n[AWS] Topic: " << msg.topic() << "Message received:" << "Parsed JSON:" << QJsonDocument(obj).toJson(QJsonDocument::Indented);
+                qDebug().noquote() << "\n[" << timestamp << "] [AWS] Topic: "
+                               << topic << "Message received:" << "Parsed JSON:" << QJsonDocument(obj).toJson(QJsonDocument::Indented);
             }
             emit settingsChanged();
 

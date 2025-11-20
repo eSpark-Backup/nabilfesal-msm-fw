@@ -24,7 +24,7 @@ public:
         auto *toast = new Toast(message, parent, level, timeoutMs);
         activeToasts.append(toast);
         toast->repositionAllToasts();
-        QApplication::beep();
+        // QApplication::beep();
     }
 
 private:

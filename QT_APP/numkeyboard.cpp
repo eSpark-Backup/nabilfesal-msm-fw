@@ -107,7 +107,7 @@ void NumKeyboard::numberClicked()
         QValidator::State state = targetLineEdit->validator()->validate(next, pos);
 
         if (state == QValidator::Invalid) {
-            QApplication::beep();
+            // QApplication::beep();
             return;
         }
 
@@ -116,7 +116,7 @@ void NumKeyboard::numberClicked()
             double value = next.toDouble(&ok);
             if (ok) {
                 if (value < doubleValidator->bottom() || value > doubleValidator->top()) {
-                    QApplication::beep();
+                    // QApplication::beep();
                     return;
                 }
             }

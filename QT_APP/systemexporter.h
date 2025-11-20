@@ -190,7 +190,7 @@ private slots:
             "V(R)","In1(R1)","In1(RPF)",
             "V(Y)","In1(Y1)","In1(YPF)",
             "V(B)","In1(B1)","In1(BPF)",
-            "P1","Q1","S1","T(*C)",
+            "P1","Q1","S1",
             "Epimp1","Epexp1","Eqimp1","Eqexp1"
         };
 
@@ -198,24 +198,24 @@ private slots:
             "V_R","In1_R1","In1_RPF",
             "V_Y","In1_Y1","In1_YPF",
             "V_B","In1_B1","In1_BPF",
-            "P1","Q1","S1", "T_C",
+            "P1","Q1","S1",
             "Epimp1","Epexp1","Eqimp1","Eqexp1"
         };
 
         QStringList baseKeysOutgoing_Modified = {
-            "R","PF(R","Y","PF(Y","B","PF(B","P","Q","S","T",
+            "R","PF(R","Y","PF(Y","B","PF(B","P","Q","S",
             "Epimp","Epexp","Eqimp","Eqexp"
         };
 
         QStringList baseKeysOutgoing = {
-            "R","PF_R","Y","PF_Y","B","PF_B","P","Q","S","T",
+            "R","PF_R","Y","PF_Y","B","PF_B","P","Q","S",
             "Epimp","Epexp","Eqimp","Eqexp"
         };
 
         // ---- Write Header ----
         if (writeHeader) {
             QStringList header;
-            header << "\"Date\"" << "\"Time\"" << "\"IP\"" << "\"UUID\"";
+            header << "\"Date\"" << "\"Time\"" << "\"IP\"";
 
             // Channel 1 (incoming)
             for (const QString &k : baseKeysIncoming_Modified) {
@@ -241,7 +241,6 @@ private slots:
         row << "\"" + now.date().toString("dd/MM/yyyy") + "\"";
         row << "\"" + now.time().toString("HH:mm:ss") + "\"";
         row << "\"" + Utils::getDeviceIp() + "\"";
-        row << "\"" + Utils::getUid() + "\"";
 
         // ---- Channel 1 (incoming) ----
         const auto obj1 = snapshotCopy.value(1);
