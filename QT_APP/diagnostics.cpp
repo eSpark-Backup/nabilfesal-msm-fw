@@ -18,3 +18,18 @@ void Diagnostics::on_pushButton_clicked()
     emit diagExit();
 }
 
+
+void Diagnostics::on_moveRight_clicked()
+{
+    if(index < 4) index++;
+    else index = 0;
+    ui->stackedWidget->setCurrentIndex(index);
+}
+
+
+void Diagnostics::on_moveLeft_clicked()
+{
+    if(index > 0) index--;
+    else index = 4;
+    ui->stackedWidget->setCurrentIndex(index);
+}

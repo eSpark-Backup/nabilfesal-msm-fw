@@ -17,12 +17,15 @@ public:
 
 private slots:
     void on_pushButton_clicked();
+    void on_moveRight_clicked();
+    void on_moveLeft_clicked();
 
 signals:
     void diagExit();
 
 private:
     Ui::Diagnostics *ui;
+    int index = 0;
 };
 
 #endif // DIAGNOSTICS_H
