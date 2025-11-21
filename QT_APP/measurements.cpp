@@ -108,7 +108,7 @@ void Measurements::on_load_btn_clicked()
         for (QLabel *label : signEdits) {
             label->setText("%");
         }
-        QFile file("config/ct_ratio_settings.json");
+        QFile file("calibration/ct_ratio_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -144,7 +144,7 @@ void Measurements::on_load_btn_clicked()
         for (QLabel *label : signEdits) {
             label->setText("mA");
         }
-        QFile file("config/i_offset_settings.json");
+        QFile file("calibration/i_offset_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -180,7 +180,7 @@ void Measurements::on_load_btn_clicked()
         for (QLabel *label : signEdits) {
             label->setText("V");
         }
-        QFile file("config/v_offset_settings.json");
+        QFile file("calibration/v_offset_settings.json");
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -275,7 +275,7 @@ void Measurements::processSettings(const QString &key,
                                    bool updateUI,
                                    bool emitDeviceCommand)
 {
-    QString filePath = QString("config/%1_settings.json").arg(key);
+    QString filePath = QString("calibration/%1_settings.json").arg(key);
 
     QString title = key;
     title.replace("_", " ");
@@ -306,7 +306,7 @@ void Measurements::processSettings(const QString &key,
     }
 
     // Save to file
-    QDir dir("config");
+    QDir dir("calibration");
     if (!dir.exists()) dir.mkpath(".");
 
     QFile file(filePath);

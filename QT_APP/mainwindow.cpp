@@ -95,11 +95,11 @@ MainWindow::MainWindow(QWidget *parent)
     if (pollTimer) pollTimer->stop();
 
     QStringList files = {
-        "config/v_offset_response.json",
-        "config/i_offset_response.json",
-        "config/ct_ratio_settings.json",
-        "config/v_offset_settings.json",
-        "config/i_offset_settings.json"
+        "calibration/v_offset_response.json",
+        "calibration/i_offset_response.json",
+        "calibration/ct_ratio_settings.json",
+        "calibration/v_offset_settings.json",
+        "calibration/i_offset_settings.json"
     };
     sendFileWithDelay(files);
     qApp->installEventFilter(this);
@@ -876,11 +876,11 @@ void MainWindow::onChannelDataWatchdogTimeout()
         startApp = true;
 
         QStringList files = {
-            "config/v_offset_response.json",
-            "config/i_offset_response.json",
-            "config/ct_ratio_settings.json",
-            "config/v_offset_settings.json",
-            "config/i_offset_settings.json"
+            "calibration/v_offset_response.json",
+            "calibration/i_offset_response.json",
+            "calibration/ct_ratio_settings.json",
+            "calibration/v_offset_settings.json",
+            "calibration/i_offset_settings.json"
         };
         sendFileWithDelay(files);
     });    
