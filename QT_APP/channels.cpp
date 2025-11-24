@@ -375,26 +375,19 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
         QJsonObject activeEnergy = energyObj.value("active").toObject();
         QJsonObject reactiveEnergy = energyObj.value("reactive").toObject();
 
-        activePos = activeEnergy.value("positive").toDouble();
-        activeNeg = activeEnergy.value("negative").toDouble();
-        reactivePos = reactiveEnergy.value("positive").toDouble();
-        reactiveNeg = reactiveEnergy.value("negative").toDouble();
+        int phaseNum = (phase == "phase_a") ? 0 : (phase == "phase_b") ? 1 : 2;
 
-        QString phaseKey = (phase == "phase_a") ? "a" :
-                           (phase == "phase_b") ? "b" : "c";
-
-        auto &acc = accumulatedEnergy[channel][phaseKey];
-        acc.activePositive  += activePos;
-        acc.activeNegative  += activeNeg;
-        acc.reactivePositive += reactivePos;
-        acc.reactiveNegative += reactiveNeg;
+        energy[channel].posActEnergy[phaseNum]   += activeEnergy.value("positive").toDouble();
+        energy[channel].negActEnergy[phaseNum]   += activeEnergy.value("negative").toDouble();
+        energy[channel].posReacEnergy[phaseNum]  += reactiveEnergy.value("positive").toDouble();
+        energy[channel].negReacEnergy[phaseNum]  += reactiveEnergy.value("negative").toDouble();
     }
 
     if (channel == m_channel)
     {
         double temp = json.value("temperature").toDouble();
         handleTempButton(true, temp);
-        QString suffix = QString::number(1);
+        // QString suffix = QString::number(1);
         QJsonObject data = json.value("data").toObject();
         for (const QString &phase : {"phase_a", "phase_b", "phase_c"}) {
             QJsonObject phaseObj = data.value(phase).toObject();
@@ -423,20 +416,19 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
         }
 
         for (const QString &phase : {"a", "b", "c"}) {
-            const auto &acc = accumulatedEnergy[channel][phase];
-
+        int phaseNum = (phase == "a") ? 0 : (phase == "b") ? 1 : 2;
             double positiveEnergy = 0.0;
             double negativeEnergy = 0.0;
 
             if (energyCounter == 0) {
-                positiveEnergy = acc.activePositive;
-                negativeEnergy = acc.activeNegative;
+                positiveEnergy = energy[channel].posActEnergy[phaseNum];
+                negativeEnergy = energy[channel].negActEnergy[phaseNum];
             }  else if (energyCounter == 1) { 
-                positiveEnergy = acc.reactivePositive;
-                negativeEnergy = acc.reactiveNegative;
+                positiveEnergy = energy[channel].posReacEnergy[phaseNum];
+                negativeEnergy = energy[channel].negReacEnergy[phaseNum];
             }
 
-            double bidirectionalEnergy = positiveEnergy + negativeEnergy;
+            double bidirectionalEnergy = positiveEnergy - negativeEnergy;
 
             auto setValue = [&](const QString &key, double val) {
                 QString name = key + phase + "_1";
@@ -447,9 +439,8 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
             setValue("pe_", positiveEnergy);
             setValue("ne_", negativeEnergy);
             setValue("be_", bidirectionalEnergy);
-
-            saveEnergyData();
         }
+            saveEnergyData();
     }
 }
 
@@ -486,40 +477,53 @@ void ChannelsHome::loadEnergyData()
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     QJsonObject root = doc.object();
 
+    // Loop through each channel in JSON
     for (const QString &chKey : root.keys()) {
         int channel = chKey.toInt();
+        if (channel < 1 || channel > 12)
+            continue;
+
         QJsonObject chObj = root[chKey].toObject();
 
-        for (const QString &phase : chObj.keys()) {
-            QJsonObject phObj = chObj[phase].toObject();
+        // Loop phases a, b, c
+        for (const QString &phaseKey : {"a", "b", "c"}) {
 
-            EnergyData data;
-            data.activePositive = phObj["activePositive"].toDouble();
-            data.activeNegative = phObj["activeNegative"].toDouble();
-            data.reactivePositive = phObj["reactivePositive"].toDouble();
-            data.reactiveNegative = phObj["reactiveNegative"].toDouble();
+            if (!chObj.contains(phaseKey))
+                continue;
 
-            accumulatedEnergy[channel][phase] = data;
+            QJsonObject phObj = chObj[phaseKey].toObject();
+
+            int phIdx = (phaseKey == "a") ? 0 :
+                        (phaseKey == "b") ? 1 : 2;
+
+            energy[channel].posActEnergy[phIdx]  = phObj["activePositive"].toDouble();
+            energy[channel].negActEnergy[phIdx]  = phObj["activeNegative"].toDouble();
+            energy[channel].posReacEnergy[phIdx] = phObj["reactivePositive"].toDouble();
+            energy[channel].negReacEnergy[phIdx] = phObj["reactiveNegative"].toDouble();
         }
     }
+    emit energyUpdated(energy);
 }
+
 
 void ChannelsHome::saveEnergyData()
 {
     QJsonObject root;
 
-    for (auto chIt = accumulatedEnergy.begin(); chIt != accumulatedEnergy.end(); ++chIt) {
+    for (int chIt = 1; chIt <= 12; chIt++) {
         QJsonObject chObj;
-        for (auto phIt = chIt.value().begin(); phIt != chIt.value().end(); ++phIt) {
+        for (int phIt = 0; phIt < 3; phIt++) {
+
+            QString phaseKey = (phIt == 0) ? "a" : (phIt == 1) ? "b" : "c";
+
             QJsonObject phObj;
-            const EnergyData &data = phIt.value();
-            phObj["activePositive"] = data.activePositive;
-            phObj["activeNegative"] = data.activeNegative;
-            phObj["reactivePositive"] = data.reactivePositive;
-            phObj["reactiveNegative"] = data.reactiveNegative;
-            chObj[phIt.key()] = phObj;
+            phObj["activePositive"]   = energy[chIt].posActEnergy[phIt];
+            phObj["activeNegative"]   = energy[chIt].negActEnergy[phIt];
+            phObj["reactivePositive"] = energy[chIt].posReacEnergy[phIt];
+            phObj["reactiveNegative"] = energy[chIt].negReacEnergy[phIt];
+            chObj[phaseKey] = phObj;
         }
-        root[QString::number(chIt.key())] = chObj;
+        root[QString::number(chIt)] = chObj;
     }
 
     QFile file(EnergyFilePath);
@@ -585,16 +589,13 @@ void ChannelsHome::on_resetEnergy_Btn_clicked()
     this, "Reset Energy", "Do you want to reset energy?",QMessageBox::Ok | QMessageBox::Cancel);
 
     if (ret == QMessageBox::Ok) {
-        for (auto &channel : accumulatedEnergy) {
-            for (auto &phase : channel) {
-                phase.activePositive = 0;
-                phase.activeNegative = 0;
-                phase.reactivePositive = 0;
-                phase.reactiveNegative = 0;
-            }
-        }
-
         for (int ch = 1; ch <= 12; ++ch) {
+            for (int phIt = 0; phIt < 3; phIt++) {            
+                energy[ch].posActEnergy[phIt]  = 0.0;
+                energy[ch].negActEnergy[phIt]  = 0.0;
+                energy[ch].posReacEnergy[phIt] = 0.0;
+                energy[ch].negReacEnergy[phIt] = 0.0; 
+            }
             if (!channelLabelMap.contains(ch)) continue;
 
             for (auto it = channelLabelMap[ch].begin(); it != channelLabelMap[ch].end(); ++it) {
@@ -619,7 +620,6 @@ void ChannelsHome::on_resetEnergy_Btn_clicked()
             Toast::show("No energy file found to reset.", this, Toast::Warning);
         }
 
-        activePos = activeNeg = reactivePos = reactiveNeg = 0;
         emit resetEnergy();
     }
 }

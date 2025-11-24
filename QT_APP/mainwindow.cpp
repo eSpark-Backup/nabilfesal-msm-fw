@@ -374,6 +374,15 @@ void MainWindow::connectLoginSignals()
         dataExporter->resetAccumulatedEnergy();
     });
 
+    connect(channels, &ChannelsHome::energyUpdated, this, [this](const std::array<EnergyData, 13> &energy) {
+        awsMqttsHandler->updateAccumulatedEnergy(energy);
+        mqttHandler->updateAccumulatedEnergy(energy);
+        sftpHandler->updateAccumulatedEnergy(energy);
+        dataExporter->updateAccumulatedEnergy(energy);
+    });
+
+    channels->loadEnergyData();
+
     // Note:
     // Navigation-related connections (showing/hiding settings/channels/usbExport)
     // are handled where UI is shown (onAdminLogin / onFactoryLogin) to avoid double

@@ -403,6 +403,7 @@ void AwsMqttManager::processAwsTelemetry(int channel, const QJsonObject &payload
     QJsonObject dataObj = cleanPayload["data"].toObject();
 
     for (const QString &phase : {"phase_a", "phase_b", "phase_c"}) {
+        int phaseNum = (phase == "phase_a") ? 0 : (phase == "phase_b") ? 1 : 2;
         if (dataObj.contains(phase)) {
             QJsonObject phaseObj = dataObj[phase].toObject();
             phaseObj.remove("avg_power");
@@ -416,18 +417,17 @@ void AwsMqttManager::processAwsTelemetry(int channel, const QJsonObject &payload
             QJsonObject reactive = energyObj["reactive"].toObject();
 
             // Accumulate into class variables
-            posActEnergy[channel] += active["positive"].toDouble();
-            negActEnergy[channel] += active["negative"].toDouble();
-            posReacEnergy[channel] += reactive["positive"].toDouble();
-            negReacEnergy[channel] += reactive["negative"].toDouble();
+            awsEnergy[channel].posActEnergy[phaseNum] += active["positive"].toDouble();
+            awsEnergy[channel].negActEnergy[phaseNum] += active["negative"].toDouble();
+            awsEnergy[channel].posReacEnergy[phaseNum] += reactive["positive"].toDouble();
+            awsEnergy[channel].negReacEnergy[phaseNum] += reactive["negative"].toDouble();
 
 
             // Update JSON with accumulated totals
-            active["positive"] = posActEnergy[channel];
-            active["negative"] = negActEnergy[channel];
-            reactive["positive"] = posReacEnergy[channel];
-            reactive["negative"] = negReacEnergy[channel];
-
+            active["positive"] = awsEnergy[channel].posActEnergy[phaseNum];
+            active["negative"] = awsEnergy[channel].negActEnergy[phaseNum];
+            reactive["positive"] = awsEnergy[channel].posReacEnergy[phaseNum];
+            reactive["negative"] = awsEnergy[channel].negReacEnergy[phaseNum];
 
             energyObj["active"] = active;
             energyObj["reactive"] = reactive;
@@ -635,9 +635,17 @@ void AwsMqttManager::otaSend(const QJsonObject &obj)
 void AwsMqttManager::resetAccumulatedEnergy()
 {
     for(int ch = 1; ch <= 12; ++ch) {
-        posActEnergy[ch] = 0;
-        negActEnergy[ch] = 0;
-        posReacEnergy[ch] = 0;
-        negReacEnergy[ch] = 0;
+        for(int ph = 0; ph < 3; ph++)
+        {
+            awsEnergy[ch].posActEnergy[ph] = 0.0;
+            awsEnergy[ch].negActEnergy[ph] = 0.0;
+            awsEnergy[ch].posReacEnergy[ph] = 0.0;
+            awsEnergy[ch].negReacEnergy[ph] = 0.0;
+        }
     }
+}
+
+void AwsMqttManager::updateAccumulatedEnergy(const std::array<EnergyData,13> &data)
+{
+    awsEnergy = data;
 }

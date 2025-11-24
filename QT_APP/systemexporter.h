@@ -12,6 +12,7 @@
 #include <QMutexLocker>
 #include "utils.h"
 #include <QDir>
+#include "common_headers.h"
 
 class SystemDataExporter : public QObject {
     Q_OBJECT
@@ -65,6 +66,24 @@ public slots:
         QJsonObject phaseA = data["phase_a"].toObject();
         QJsonObject phaseB = data["phase_b"].toObject();
         QJsonObject phaseC = data["phase_c"].toObject();
+
+        // Accumulate energy for the current channel
+        sdEnergy[channel].negActEnergy[0] += phaseA["energy"].toObject()["active"].toObject()["negative"].toDouble();
+        sdEnergy[channel].negActEnergy[1] += phaseB["energy"].toObject()["active"].toObject()["negative"].toDouble();
+        sdEnergy[channel].negActEnergy[2] += phaseC["energy"].toObject()["active"].toObject()["negative"].toDouble();
+
+        sdEnergy[channel].posActEnergy[0] += phaseA["energy"].toObject()["active"].toObject()["positive"].toDouble();
+        sdEnergy[channel].posActEnergy[1] += phaseB["energy"].toObject()["active"].toObject()["positive"].toDouble();
+        sdEnergy[channel].posActEnergy[2] += phaseC["energy"].toObject()["active"].toObject()["positive"].toDouble();
+
+        sdEnergy[channel].negReacEnergy[0] += phaseA["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+        sdEnergy[channel].negReacEnergy[1] += phaseB["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+        sdEnergy[channel].negReacEnergy[2] += phaseC["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+
+        sdEnergy[channel].posReacEnergy[0] += phaseA["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+        sdEnergy[channel].posReacEnergy[1] += phaseB["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+        sdEnergy[channel].posReacEnergy[2] += phaseC["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+
         QJsonObject telemetry;
 
         // =================== INCOMING CHANNEL ===================
@@ -105,10 +124,10 @@ public slots:
             QJsonObject reactiveA = energyA["reactive"].toObject();
 
             telemetry["T_C"]    = root["temperature"].toDouble();
-            telemetry["Epimp1"] = activeA["negative"].toDouble();
-            telemetry["Epexp1"] = activeA["positive"].toDouble();
-            telemetry["Eqimp1"] = reactiveA["negative"].toDouble();
-            telemetry["Eqexp1"] = reactiveA["positive"].toDouble();
+            telemetry["Epimp1"] = sdEnergy[1].negActEnergy[0] + sdEnergy[1].negActEnergy[1] + sdEnergy[1].negActEnergy[2];
+            telemetry["Epexp1"] = sdEnergy[1].posActEnergy[0] + sdEnergy[1].posActEnergy[1] + sdEnergy[1].posActEnergy[2];
+            telemetry["Eqimp1"] = sdEnergy[1].negReacEnergy[0] + sdEnergy[1].negReacEnergy[1] + sdEnergy[1].negReacEnergy[2];
+            telemetry["Eqexp1"] = sdEnergy[1].posReacEnergy[0] + sdEnergy[1].posReacEnergy[1] + sdEnergy[1].posReacEnergy[2];
         } 
         // =================== OUTGOING CHANNELS ===================
         else {
@@ -145,10 +164,10 @@ public slots:
             telemetry[prefix + "S"] = S_R + S_Y + S_B;
 
             telemetry[prefix + "T"]     = root["temperature"].toDouble();
-            telemetry[prefix + "Epimp"] = activeA["negative"].toDouble();
-            telemetry[prefix + "Epexp"] = activeA["positive"].toDouble();
-            telemetry[prefix + "Eqimp"] = reactiveA["negative"].toDouble();
-            telemetry[prefix + "Eqexp"] = reactiveA["positive"].toDouble();
+            telemetry[prefix + "Epimp"] = sdEnergy[channel].negActEnergy[0] + sdEnergy[channel].negActEnergy[1] + sdEnergy[channel].negActEnergy[2];
+            telemetry[prefix + "Epexp"] = sdEnergy[channel].posActEnergy[0] + sdEnergy[channel].posActEnergy[1] + sdEnergy[channel].posActEnergy[2];
+            telemetry[prefix + "Eqimp"] = sdEnergy[channel].negReacEnergy[0] + sdEnergy[channel].negReacEnergy[1] + sdEnergy[channel].negReacEnergy[2];
+            telemetry[prefix + "Eqexp"] = sdEnergy[channel].posReacEnergy[0] + sdEnergy[channel].posReacEnergy[1] + sdEnergy[channel].posReacEnergy[2];
         }
 
         QMap<int, QJsonObject> snapshotCopy;
@@ -167,11 +186,19 @@ public slots:
     void resetAccumulatedEnergy()
     {
         for(int ch = 1; ch <= 12; ++ch) {
-            posActEnergy[ch] = 0;
-            negActEnergy[ch] = 0;
-            posReacEnergy[ch] = 0;
-            negReacEnergy[ch] = 0;
+            for(int ph = 0; ph < 3; ph++)
+            {
+                sdEnergy[ch].posActEnergy[ph] = 0.0;
+                sdEnergy[ch].negActEnergy[ph] = 0.0;
+                sdEnergy[ch].posReacEnergy[ph] = 0.0;
+                sdEnergy[ch].negReacEnergy[ph] = 0.0;
+            }
         }
+    }
+
+    void updateAccumulatedEnergy(const std::array<EnergyData,13> &data)
+    {
+        sdEnergy = data;
     }
 
 private slots:
@@ -257,42 +284,54 @@ private slots:
         const QJsonObject obj1 = snapshotCopy.value(1);
 
         for (const QString &k : baseKeysIncoming) {
-            if (k == "Epimp1") row << "\"" + QString::number(negActEnergy[1], 'f', 2) + "\"";
-            else if (k == "Epexp1") row << "\"" + QString::number(posActEnergy[1], 'f', 2) + "\"";
-            else if (k == "Eqimp1") row << "\"" + QString::number(negReacEnergy[1], 'f', 2) + "\"";
-            else if (k == "Eqexp1") row << "\"" + QString::number(posReacEnergy[1], 'f', 2) + "\"";
+                 if (k == "Epimp1") row << "\"" + QString::number(sdEnergy[1].negActEnergy[0] + sdEnergy[1].negActEnergy[1] + sdEnergy[1].negActEnergy[2], 'f', 2) + "\"";
+            else if (k == "Epexp1") row << "\"" + QString::number(sdEnergy[1].posActEnergy[0] + sdEnergy[1].posActEnergy[1] + sdEnergy[1].posActEnergy[2], 'f', 2) + "\"";
+            else if (k == "Eqimp1") row << "\"" + QString::number(sdEnergy[1].negReacEnergy[0] + sdEnergy[1].negReacEnergy[1] + sdEnergy[1].negReacEnergy[2], 'f', 2) + "\"";
+            else if (k == "Eqexp1") row << "\"" + QString::number(sdEnergy[1].posReacEnergy[0] + sdEnergy[1].posReacEnergy[1] + sdEnergy[1].posReacEnergy[2], 'f', 2) + "\"";
             else
                 row << "\"" + QString::number(obj1.value(k).toDouble(), 'f', 2) + "\"";
         }
-
-        // Accumulate energy for ch1
-        negActEnergy[1] += obj1.value("Epimp1").toDouble();
-        posActEnergy[1] += obj1.value("Epexp1").toDouble();
-        negReacEnergy[1] += obj1.value("Eqimp1").toDouble();
-        posReacEnergy[1] += obj1.value("Eqexp1").toDouble();
 
         // ---------------- CHANNELS 2–12 ----------------
         for (int ch = 2; ch <= 12; ++ch) {
             int idx = ch - 1;
             const QJsonObject obj = snapshotCopy.value(ch);
 
-            // accumulate
-            negActEnergy[ch] += obj.value(QString("F%1_Epimp").arg(idx)).toDouble();
-            posActEnergy[ch] += obj.value(QString("F%1_Epexp").arg(idx)).toDouble();
-            negReacEnergy[ch] += obj.value(QString("F%1_Eqimp").arg(idx)).toDouble();
-            posReacEnergy[ch] += obj.value(QString("F%1_Eqexp").arg(idx)).toDouble();
-
             for (const QString &k : baseKeysOutgoing) {
                 QString fullKey;
 
-                if (k == "Epimp")
-                    row << "\"" + QString::number(negActEnergy[ch], 'f', 2) + "\"";
-                else if (k == "Epexp")
-                    row << "\"" + QString::number(posActEnergy[ch], 'f', 2) + "\"";
-                else if (k == "Eqimp")
-                    row << "\"" + QString::number(negReacEnergy[ch], 'f', 2) + "\"";
-                else if (k == "Eqexp")
-                    row << "\"" + QString::number(posReacEnergy[ch], 'f', 2) + "\"";
+                if (k == "Epimp") {
+                    double total =
+                        sdEnergy[ch].negActEnergy[0] +
+                        sdEnergy[ch].negActEnergy[1] +
+                        sdEnergy[ch].negActEnergy[2];
+
+                    row << "\"" + QString::number(total, 'f', 2) + "\"";
+                }
+                else if (k == "Epexp") {
+                    double total =
+                        sdEnergy[ch].posActEnergy[0] +
+                        sdEnergy[ch].posActEnergy[1] +
+                        sdEnergy[ch].posActEnergy[2];
+
+                    row << "\"" + QString::number(total, 'f', 2) + "\"";
+                }
+                else if (k == "Eqimp") {
+                    double total =
+                        sdEnergy[ch].negReacEnergy[0] +
+                        sdEnergy[ch].negReacEnergy[1] +
+                        sdEnergy[ch].negReacEnergy[2];
+
+                    row << "\"" + QString::number(total, 'f', 2) + "\"";
+                }
+                else if (k == "Eqexp") {
+                    double total =
+                        sdEnergy[ch].posReacEnergy[0] +
+                        sdEnergy[ch].posReacEnergy[1] +
+                        sdEnergy[ch].posReacEnergy[2];
+
+                    row << "\"" + QString::number(total, 'f', 2) + "\"";
+                }
                 else {
                     fullKey = k.startsWith("PF_")
                                 ? (k + QString::number(idx))
@@ -350,9 +389,5 @@ private:
     QMutex m_mutex;
 
     // Accumultion
-    double posActEnergy[13] = {0};
-    double negActEnergy[13] = {0};
-    double posReacEnergy[13] = {0};
-    double negReacEnergy[13] = {0};
-
+    std::array<EnergyData, 13> sdEnergy;
 };

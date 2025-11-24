@@ -4,6 +4,7 @@
 #include <QReadWriteLock>
 #include <QtMqtt/QMqttClient>
 #include <QCoreApplication>
+#include "common_headers.h"
 
 
 struct DeviceInfo {
@@ -68,6 +69,7 @@ public slots:
     void processIOffset(const QJsonObject &iOffset);
     void processOTA(const QJsonObject &otaData);
     void resetAccumulatedEnergy();
+    void updateAccumulatedEnergy(const std::array<EnergyData,13> &energyData);
     
 private:
     explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
@@ -131,11 +133,6 @@ private:
     QTimer *reconnectTimer;
 
     // Running totals for energy
-    double posActEnergy[13] = {0};
-    double negActEnergy[13] = {0};
-    double posReacEnergy[13] = {0};
-    double negReacEnergy[13] = {0};
-
-
+    std::array<EnergyData, 13> awsEnergy;
 };
 

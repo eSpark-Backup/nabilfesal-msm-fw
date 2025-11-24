@@ -11,6 +11,7 @@
 #include <QJsonObject>
 #include <QPoint>
 #include <QSwipeGesture>
+#include "common_headers.h"
 
 namespace Ui {
 class ChannelsHome;
@@ -24,10 +25,12 @@ public:
     explicit ChannelsHome(QString hardwareVersion, QString softwareVersion, QWidget *parent = nullptr);
     ~ChannelsHome();
     void handleChannelData(int channel, const QJsonObject &json);
+    void loadEnergyData();
 
 signals:
     void channelsExit();
     void resetEnergy();
+    void energyUpdated(const std::array<EnergyData,13> &energyData);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
@@ -48,7 +51,6 @@ private:
     void handleManualSwipe(const QPoint &startPos, const QPoint &endPos);
     void navigateToChannel(int newChannel);
     int findNextActiveChannel(int startChannel, int direction);
-    void loadEnergyData();
     void saveEnergyData();
     void handleTempButton(bool updateTrue = false, double val = 0.00);
 
@@ -75,13 +77,6 @@ private:
     bool m_isSwipeInProgress = false;
     int m_minSwipeDistance;
 
-    struct EnergyData {
-        double activePositive = 0.0;
-        double activeNegative = 0.0;
-        double reactivePositive = 0.0;
-        double reactiveNegative = 0.0;
-    };
-
     QMap<int, QMap<QString, EnergyData>> accumulatedEnergy; 
 
     QWidget *leftShadowOverlay = nullptr;
@@ -91,10 +86,7 @@ private:
     void resizeEvent(QResizeEvent *event);
 
     bool firstTimeEnergy = true;
-    double activePos = 0;
-    double activeNeg = 0;
-    double reactivePos = 0;
-    double reactiveNeg = 0;
+    std::array<EnergyData, 13> energy;
 };
 
 #endif // CHANNELS_H

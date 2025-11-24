@@ -291,21 +291,21 @@ void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
     QJsonObject phaseC = data["phase_c"].toObject();
 
     // Accumulate energy for the current channel
-    negActEnergy[channel] += phaseA["energy"].toObject()["active"].toObject()["negative"].toDouble();
-    negActEnergy[channel] += phaseB["energy"].toObject()["active"].toObject()["negative"].toDouble();
-    negActEnergy[channel] += phaseC["energy"].toObject()["active"].toObject()["negative"].toDouble();
+    sftpEnergy[channel].negActEnergy[0] += phaseA["energy"].toObject()["active"].toObject()["negative"].toDouble();
+    sftpEnergy[channel].negActEnergy[1] += phaseB["energy"].toObject()["active"].toObject()["negative"].toDouble();
+    sftpEnergy[channel].negActEnergy[2] += phaseC["energy"].toObject()["active"].toObject()["negative"].toDouble();
 
-    posActEnergy[channel] += phaseA["energy"].toObject()["active"].toObject()["positive"].toDouble();
-    posActEnergy[channel] += phaseB["energy"].toObject()["active"].toObject()["positive"].toDouble();
-    posActEnergy[channel] += phaseC["energy"].toObject()["active"].toObject()["positive"].toDouble();
+    sftpEnergy[channel].posActEnergy[0] += phaseA["energy"].toObject()["active"].toObject()["positive"].toDouble();
+    sftpEnergy[channel].posActEnergy[1] += phaseB["energy"].toObject()["active"].toObject()["positive"].toDouble();
+    sftpEnergy[channel].posActEnergy[2] += phaseC["energy"].toObject()["active"].toObject()["positive"].toDouble();
 
-    negReacEnergy[channel] += phaseA["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
-    negReacEnergy[channel] += phaseB["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
-    negReacEnergy[channel] += phaseC["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+    sftpEnergy[channel].negReacEnergy[0] += phaseA["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+    sftpEnergy[channel].negReacEnergy[1] += phaseB["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+    sftpEnergy[channel].negReacEnergy[2] += phaseC["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
 
-    posReacEnergy[channel] += phaseA["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
-    posReacEnergy[channel] += phaseB["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
-    posReacEnergy[channel] += phaseC["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+    sftpEnergy[channel].posReacEnergy[0] += phaseA["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+    sftpEnergy[channel].posReacEnergy[1] += phaseB["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+    sftpEnergy[channel].posReacEnergy[2] += phaseC["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
 
     QJsonObject telemetry;
 
@@ -357,10 +357,10 @@ void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
         QJsonObject reactiveA = energyA["reactive"].toObject();
 
         telemetry["T_C"]    = root["temperature"].toDouble();
-        telemetry["Epimp1"] = negActEnergy[1];
-        telemetry["Epexp1"] = posActEnergy[1];
-        telemetry["Eqimp1"] = negReacEnergy[1];
-        telemetry["Eqexp1"] = posReacEnergy[1];
+        telemetry["Epimp1"] = sftpEnergy[1].negActEnergy[0] + sftpEnergy[1].negActEnergy[1] + sftpEnergy[1].negActEnergy[2];
+        telemetry["Epexp1"] = sftpEnergy[1].posActEnergy[0] + sftpEnergy[1].posActEnergy[1] + sftpEnergy[1].posActEnergy[2];
+        telemetry["Eqimp1"] = sftpEnergy[1].negReacEnergy[0] + sftpEnergy[1].negReacEnergy[1] + sftpEnergy[1].negReacEnergy[2];
+        telemetry["Eqexp1"] = sftpEnergy[1].posReacEnergy[0] + sftpEnergy[1].posReacEnergy[1] + sftpEnergy[1].posReacEnergy[2];
     }
     else
     {
@@ -399,10 +399,10 @@ void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
         telemetry[prefix + "S"] = S_R + S_B + S_Y;
 
         telemetry[prefix + "T"]     = root["temperature"].toDouble();
-        telemetry[prefix + "Epimp"] = negActEnergy[channel];
-        telemetry[prefix + "Epexp"] = posActEnergy[channel];
-        telemetry[prefix + "Eqimp"] = negReacEnergy[channel];
-        telemetry[prefix + "Eqexp"] = posReacEnergy[channel];
+        telemetry[prefix + "Epimp"] = sftpEnergy[channel].negActEnergy[0] + sftpEnergy[channel].negActEnergy[1] + sftpEnergy[channel].negActEnergy[2];
+        telemetry[prefix + "Epexp"] = sftpEnergy[channel].posActEnergy[0] + sftpEnergy[channel].posActEnergy[1] + sftpEnergy[channel].posActEnergy[2];
+        telemetry[prefix + "Eqimp"] = sftpEnergy[channel].negReacEnergy[0] + sftpEnergy[channel].negReacEnergy[1] + sftpEnergy[channel].negReacEnergy[2];
+        telemetry[prefix + "Eqexp"] = sftpEnergy[channel].posReacEnergy[0] + sftpEnergy[channel].posReacEnergy[1] + sftpEnergy[channel].posReacEnergy[2];
     }
     
     QWriteLocker locker(&telemetryLock);
@@ -512,9 +512,18 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
 void sftpManager::resetAccumulatedEnergy()
 {
     for(int ch = 1; ch <= 12; ++ch) {
-        posActEnergy[ch] = 0;
-        negActEnergy[ch] = 0;
-        posReacEnergy[ch] = 0;
-        negReacEnergy[ch] = 0;
+        for(int ph = 0; ph < 3; ph++)
+        {
+            sftpEnergy[ch].posActEnergy[ph] = 0.0;
+            sftpEnergy[ch].negActEnergy[ph] = 0.0;
+            sftpEnergy[ch].posReacEnergy[ph] = 0.0;
+            sftpEnergy[ch].negReacEnergy[ph] = 0.0;
+        }
     }
+}
+
+
+void sftpManager::updateAccumulatedEnergy(const std::array<EnergyData,13> &data)
+{
+    sftpEnergy = data;
 }

@@ -3,6 +3,7 @@
 #include <QMqttClient>
 #include <QTimer>
 #include <QReadWriteLock>
+#include "common_headers.h"
 
 class mqttManager : public QObject
 {
@@ -21,6 +22,7 @@ public:
 public slots:
     void processIncomingJson(int channel, const QJsonObject &payload);
     void resetAccumulatedEnergy();
+    void updateAccumulatedEnergy(const std::array<EnergyData,13> &energyData);
 
 private:
     explicit mqttManager(QObject *parent = nullptr); // private ctor
@@ -55,9 +57,5 @@ private:
     QTimer *reconnectTimer;
 
     // Assume channel numbers start at 1
-    double posActEnergy[13] = {0};
-    double negActEnergy[13] = {0};
-    double posReacEnergy[13] = {0};
-    double negReacEnergy[13] = {0};
+    std::array<EnergyData, 13> mqttEnergy;
 };
-

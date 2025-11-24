@@ -5,7 +5,7 @@
 #include <QLineEdit> 
 #include "mqttManager.h"
 #include "sftpManager.h"
-
+#include "common_headers.h"
 
 class settingsManager : public QWidget
 {

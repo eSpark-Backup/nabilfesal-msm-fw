@@ -5,7 +5,7 @@
 #include "buttonSound.h"
 #include <QScreen>
 #include "buildinfo.h"
-#define BUILD_VERSION "2.0.11"
+#define BUILD_VERSION "2.0.12"
 
 class InactivityWatcher : public QObject {
     Q_OBJECT
@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
     qDebug().noquote() << "Commit Hash:     " << GIT_COMMIT_HASH;
     qDebug().noquote() << "===================================================================================================";
 
+    qRegisterMetaType<std::array<EnergyData, 13>>("std::array<EnergyData, 13>");
     QApplication a(argc, argv);
 
     int fontId = QFontDatabase::addApplicationFont(":/icons/gilroy-semibold.ttf");
