@@ -371,6 +371,7 @@ void MainWindow::connectLoginSignals()
         awsMqttsHandler->resetAccumulatedEnergy();
         mqttHandler->resetAccumulatedEnergy();
         sftpHandler->resetAccumulatedEnergy();
+        dataExporter->resetAccumulatedEnergy();
     });
 
     // Note:

@@ -164,24 +164,33 @@ public slots:
         }
     }
 
+    void resetAccumulatedEnergy()
+    {
+        for(int ch = 1; ch <= 12; ++ch) {
+            posActEnergy[ch] = 0;
+            negActEnergy[ch] = 0;
+            posReacEnergy[ch] = 0;
+            negReacEnergy[ch] = 0;
+        }
+    }
+
 private slots:
-    void exportSnapshot() {
+    void exportSnapshot()
+    {
         QMap<int, QJsonObject> snapshotCopy;
         {
             QMutexLocker locker(&m_mutex);
             snapshotCopy = m_latestSnapshot;
         }
 
-        if (snapshotCopy.isEmpty()) {
+        if (snapshotCopy.isEmpty())
             return;
-        }
 
         QFile file(m_filePath);
         bool writeHeader = !file.exists();
 
-        if (!file.open(QIODevice::Append | QIODevice::Text)) {
+        if (!file.open(QIODevice::Append | QIODevice::Text))
             return;
-        }
 
         QTextStream out(&file);
         out.setCodec("UTF-8");
@@ -212,19 +221,19 @@ private slots:
             "Epimp","Epexp","Eqimp","Eqexp"
         };
 
-        // ---- Write Header ----
+        // ---------------- WRITE HEADER ----------------
         if (writeHeader) {
             QStringList header;
             header << "\"Date\"" << "\"Time\"" << "\"IP\"";
 
-            // Channel 1 (incoming)
-            for (const QString &k : baseKeysIncoming_Modified) {
+            // Channel 1
+            for (const QString &k : baseKeysIncoming_Modified)
                 header << "\"" + k + "\"";
-            }
 
-            // Channels 2–12 (outgoing)
+            // Channel 2–12
             for (int ch = 2; ch <= 12; ++ch) {
                 int idx = ch - 1;
+
                 for (const QString &k : baseKeysOutgoing_Modified) {
                     if (k == "PF(R" || k == "PF(Y" || k == "PF(B")
                         header << QString("\"%1%2)\"").arg(k).arg(idx);
@@ -232,44 +241,64 @@ private slots:
                         header << QString("\"F%1(%2)\"").arg(idx).arg(k);
                 }
             }
+
             out << header.join(",") << "\n";
         }
 
-        // Row
+        // ---------------- BUILD ROW ----------------
         QStringList row;
+
         QDateTime now = QDateTime::currentDateTime();
         row << "\"" + now.date().toString("dd/MM/yyyy") + "\"";
         row << "\"" + now.time().toString("HH:mm:ss") + "\"";
         row << "\"" + Utils::getDeviceIp() + "\"";
 
-        // ---- Channel 1 (incoming) ----
-        const auto obj1 = snapshotCopy.value(1);
+        // --------------- CHANNEL 1 -------------------
+        const QJsonObject obj1 = snapshotCopy.value(1);
+
         for (const QString &k : baseKeysIncoming) {
-            double val = obj1.value(k).toDouble();
-            row << "\"" + QString::number(val, 'f', 2) + "\"";
+            if (k == "Epimp1") row << "\"" + QString::number(negActEnergy[1], 'f', 2) + "\"";
+            else if (k == "Epexp1") row << "\"" + QString::number(posActEnergy[1], 'f', 2) + "\"";
+            else if (k == "Eqimp1") row << "\"" + QString::number(negReacEnergy[1], 'f', 2) + "\"";
+            else if (k == "Eqexp1") row << "\"" + QString::number(posReacEnergy[1], 'f', 2) + "\"";
+            else
+                row << "\"" + QString::number(obj1.value(k).toDouble(), 'f', 2) + "\"";
         }
 
-        // Accumulate Channel 1 energy
+        // Accumulate energy for ch1
         negActEnergy[1] += obj1.value("Epimp1").toDouble();
         posActEnergy[1] += obj1.value("Epexp1").toDouble();
         negReacEnergy[1] += obj1.value("Eqimp1").toDouble();
         posReacEnergy[1] += obj1.value("Eqexp1").toDouble();
 
-        // ---- Channels 2–12 (outgoing) ----
+        // ---------------- CHANNELS 2–12 ----------------
         for (int ch = 2; ch <= 12; ++ch) {
             int idx = ch - 1;
-            const auto obj = snapshotCopy.value(ch);
+            const QJsonObject obj = snapshotCopy.value(ch);
 
-            // Accumulate energy for this channel
+            // accumulate
             negActEnergy[ch] += obj.value(QString("F%1_Epimp").arg(idx)).toDouble();
             posActEnergy[ch] += obj.value(QString("F%1_Epexp").arg(idx)).toDouble();
             negReacEnergy[ch] += obj.value(QString("F%1_Eqimp").arg(idx)).toDouble();
             posReacEnergy[ch] += obj.value(QString("F%1_Eqexp").arg(idx)).toDouble();
 
             for (const QString &k : baseKeysOutgoing) {
-                QString fullKey = k.startsWith("PF_") ? k + QString::number(idx)
-                                                    : QString("F%1_%2").arg(idx).arg(k);
-                row << "\"" + QString::number(obj.value(fullKey).toDouble(), 'f', 2) + "\"";
+                QString fullKey;
+
+                if (k == "Epimp")
+                    row << "\"" + QString::number(negActEnergy[ch], 'f', 2) + "\"";
+                else if (k == "Epexp")
+                    row << "\"" + QString::number(posActEnergy[ch], 'f', 2) + "\"";
+                else if (k == "Eqimp")
+                    row << "\"" + QString::number(negReacEnergy[ch], 'f', 2) + "\"";
+                else if (k == "Eqexp")
+                    row << "\"" + QString::number(posReacEnergy[ch], 'f', 2) + "\"";
+                else {
+                    fullKey = k.startsWith("PF_")
+                                ? (k + QString::number(idx))
+                                : QString("F%1_%2").arg(idx).arg(k);
+                    row << "\"" + QString::number(obj.value(fullKey).toDouble(), 'f', 2) + "\"";
+                }
             }
         }
 
@@ -278,6 +307,7 @@ private slots:
 
         trimCsvFile();
     }
+
 
 private:
     void trimCsvFile() {

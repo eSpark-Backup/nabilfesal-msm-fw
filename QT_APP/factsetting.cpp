@@ -279,6 +279,7 @@ void FactSetting::load_mqtt_settings(bool msgBox, bool reconnect)
     {
         ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
         ui->mqtt_user->setText(mqttSettings.value("user").toString());
+        ui->mqtt_port->setText(mqttSettings.value("port").toString());
         ui->mqtt_pass->setText(mqttSettings.value("password").toString());
         ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
         ui->mqtt_int->setText(mqttSettings.value("interval").toString());

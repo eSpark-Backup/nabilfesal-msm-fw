@@ -356,17 +356,17 @@ QPushButton:focus {
                  <item>
                   <widget class="QLineEdit" name="mqtt_port">
                    <property name="enabled">
-                    <bool>false</bool>
+                    <bool>true</bool>
                    </property>
                    <property name="focusPolicy">
                     <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="styleSheet">
-                    <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
-    border: 1px solid #CCC;        /* Blue thin border */
+                    <string notr="true">background: #e6e6e6;
+    border: 1px solid #1E88E5;
     border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 15px;
+    padding: 6px 12px;
+    font-size: 14px;
     color: black;</string>
                    </property>
                    <property name="text">

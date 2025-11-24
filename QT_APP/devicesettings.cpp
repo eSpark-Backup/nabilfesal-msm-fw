@@ -406,6 +406,7 @@ void DeviceSettings::apply_mqtt_Settings(const QJsonObject &mqttSettings, bool m
 {
     ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
     ui->mqtt_user->setText(mqttSettings.value("user").toString());
+    ui->mqtt_port->setText(mqttSettings.value("port").toString());
     ui->mqtt_pass->setText(mqttSettings.value("password").toString());
     ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
     ui->mqtt_int->setText(mqttSettings.value("interval").toString());
