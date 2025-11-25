@@ -560,6 +560,10 @@ void DeviceSettings::send_aws_updated_data()
     if (!sftpSettings.isEmpty())
         emit sftpSettingsChanged(sftpSettings);
 
+    QJsonObject mqttsSettings = loadMqttsSettings(true, false);
+    if (!mqttsSettings.isEmpty())
+        emit mqttsSettingsChanged(mqttsSettings);
+
     NtpSettings ntp;
     auto ntpData = Utils::getNtpStatus();
     if (ntpData.contains("ntp_servers") && ntpData["ntp_servers"].isArray()) {
@@ -590,17 +594,93 @@ void DeviceSettings::on_pushButton_2_clicked()
 
 void DeviceSettings::on_mqtts_load_btn_clicked(bool msgBox)
 {
-    load_mqtts_settings(msgBox);
+    QJsonObject mqttsSettings = loadMqttsSettings(msgBox);
+    apply_mqtts_Settings(mqttsSettings, msgBox);
 }
 
+
+void DeviceSettings::parse_load_store_mqtts(const QJsonObject &payload)
+{
+    QMetaObject::invokeMethod(this, [this, payload]() {
+        QJsonArray dataArray = payload.value("data").toArray();
+        if (dataArray.isEmpty()) {
+            qWarning() << "[MQTTS] 'data' array is incomplete!";
+            return;
+        }
+
+        QJsonObject mqttsPayload = dataArray.at(0).toObject();
+        QJsonObject mqttsSetting;
+        mqttsSetting["endpoint"] = mqttsPayload.value("broker_ip").toString();
+        mqttsSetting["port"]     = QString::number(mqttsPayload.value("broker_port").toInt());
+        mqttsSetting["interval"] = QString::number(mqttsPayload.value("data_interval").toInt());
+
+        saveMqttsSettings(mqttsSetting);
+        apply_mqtts_Settings(mqttsSetting);
+    }, Qt::QueuedConnection);
+}
+
+
+
+void DeviceSettings::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages)
+{
+    QString MQTTS_CONFIG_PATH = "config/aws_mqtts_settings.json";
+    bool isJsonDiff = jsonDifferent(mqttsSetting, MQTTS_CONFIG_PATH);
+    if (!isJsonDiff) {
+        if (showMessages) Toast::show("[MQTTS] Settings unchanged, not saving into file.", this, Toast::Warning);
+        return;
+    }
+
+    QDir dir("config");
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+
+    QFile file(MQTTS_CONFIG_PATH);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        if(showMessages) Toast::show("Failed to save MQTTS settings!", this, Toast::Error);
+        return;
+    }
+
+    QJsonDocument doc(mqttsSetting);
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+
+    if(showMessages) 
+    {
+        Toast::show("MQTTS settings saved successfully!", this, Toast::Info);
+        emit mqttsSettingsChanged(mqttsSetting);
+    }
+    emit aws_mqtts_load();
+}
+
+
+void DeviceSettings::apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox)
+{
+    ui->mqtts_port->setText(mqttsSettings.value("port").toString());
+    ui->mqtts_endpoint->setText(mqttsSettings.value("endpoint").toString());
+    ui->mqtts_interval->setText(mqttsSettings.value("interval").toString());
+    ui->mqtts_endpoint->setCursorPosition(0);
+    ui->mqtts_client_id->setText(Utils::getUid());
+    
+    if(!msgBox)
+        Toast::show("MQTTS settings loaded successfully!", this, Toast::Info);
+}
+
+
 void DeviceSettings::load_mqtts_settings(bool msgBox, bool reconnect)
+{
+    QJsonObject mqttsSettings = loadMqttsSettings(msgBox, reconnect);
+    if (!mqttsSettings.isEmpty()) apply_mqtts_Settings(mqttsSettings, msgBox);
+}
+
+QJsonObject DeviceSettings::loadMqttsSettings(bool showMessages, bool reloadSettings)
 {
     QString filePath = "config/aws_mqtts_settings.json";
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (!msgBox)
+        if (!showMessages)
             Toast::show("Failed to open MQTTS configuration file.", this, Toast::Error);
-        return;
+        return {};
     }
 
     QByteArray data = file.readAll();
@@ -609,74 +689,34 @@ void DeviceSettings::load_mqtts_settings(bool msgBox, bool reconnect)
     QJsonParseError parseError;
     QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        if (!msgBox)
+        if (!showMessages)
             Toast::show("Invalid MQTTS configuration file format.", this, Toast::Warning);
-        return;
+        return {};
     }
 
     QJsonObject obj = doc.object();
-
-    ui->mqtts_endpoint->setText(obj.value("endpoint").toString());
-    ui->mqtts_endpoint->setCursorPosition(0);
-    ui->mqtts_interval->setText(obj.value("interval").toString());
-    ui->mqtts_client_id->setText(Utils::getUid());
-
-    if(!msgBox) Toast::show("MQTTS settings loaded successfully!", this, Toast::Info);
-    if(reconnect) emit aws_mqtts_load();
+    if(reloadSettings) emit aws_mqtts_load();
+    return obj;
 }
 
 
 void DeviceSettings::on_mqtts_save_btn_clicked(bool msgBox)
 {
-    QString filePath = "config/aws_mqtts_settings.json";
+    QString mqttEndpoint = ui->mqtts_endpoint->text().trimmed();
+    QString mqttPort     = ui->mqtts_port->text().trimmed();
+    QString mqttInterval = ui->mqtts_interval->text().trimmed();
 
-    // Ensure directory exists
-    QDir().mkpath(QFileInfo(filePath).absolutePath());
+    if (mqttPort != "8883") mqttPort = "8883";  //not editable
 
-    QFile file(filePath);
-    QJsonObject obj;
+    QJsonObject mqttsSettings;
+    mqttsSettings["endpoint"] = mqttEndpoint;
+    mqttsSettings["port"]     = mqttPort;
+    mqttsSettings["interval"] = mqttInterval;
 
-    // Try reading existing file (if present)
-    if (file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QByteArray data = file.readAll();
-        file.close();
-
-        QJsonParseError parseError;
-        QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-        if (parseError.error == QJsonParseError::NoError && doc.isObject())
-            obj = doc.object();
-    }
-
-    // Update relevant fields
-    obj["endpoint"] = ui->mqtts_endpoint->text();
-    obj["interval"] = ui->mqtts_interval->text();
-
-    // Keep or set defaults for other fields
-    if (!obj.contains("port"))
-        obj["port"] = "8883";  // constant, not editable in UI
-
-    
-    if (hasEmptyField(obj)) {
+    if (hasEmptyField(mqttsSettings)) {
         Toast::show("Please fill in all MQTTS fields before saving.", this, Toast::Warning);
         return;
     }
-
-    if (!jsonDifferent(obj, filePath)) {
-        if (!msgBox) Toast::show("[MQTTS] Settings unchanged, not saving into file.", this, Toast::Warning);
-        return;
-    }
-
-    // Write updated JSON back
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        if(!msgBox) Toast::show("Failed to save MQTTS configuration.", this, Toast::Warning);
-        return;
-    }
-
-    QJsonDocument newDoc(obj);
-    file.write(newDoc.toJson(QJsonDocument::Indented));
-    file.close();
-
-    if(!msgBox) Toast::show("MQTTS configuration saved successfully!", this, Toast::Info);
-    emit aws_mqtts_load();
+    saveMqttsSettings(mqttsSettings, true);
 }
 

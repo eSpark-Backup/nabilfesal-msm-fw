@@ -262,7 +262,7 @@ void AwsMqttManager::disconnectFromBroker()
 {
     if (!awsMqttsClient) return;
 
-    AWS_LOG("[MQTT] Disconnecting...");
+    AWS_LOG("[MQTTS] Disconnecting...");
 
     publishTimer->stop();
    
@@ -292,6 +292,7 @@ void AwsMqttManager::subscribeToTopic()
         topic_sub_reboot,
         topic_sub_ntp,
         topic_sub_mqtt,
+        topic_sub_mqtts,
         topic_sub_sftp,
         topic_sub_ctRatio,
         topic_sub_vOffset,
@@ -326,6 +327,8 @@ void AwsMqttManager::subscribeToTopic()
                 emit ntpConfigReceived(obj);
             } else if (topic == topic_sub_mqtt) {
                 emit mqttConfigReceived(obj);
+            } else if (topic == topic_sub_mqtts) {
+                emit mqttsConfigReceived(obj);
             } else if (topic == topic_sub_sftp) {
                 emit sftpConfigReceived(obj);
             } else if (topic == topic_sub_ctRatio) {
@@ -354,6 +357,7 @@ void AwsMqttManager::awsTopicsInit()
     topic_pub_reboot        = base_pub_topic + "/reboot";
     topic_pub_ntp           = base_pub_topic + "/ntp";
     topic_pub_mqtt          = base_pub_topic + "/mqtt";
+    topic_pub_mqtts         = base_pub_topic + "/mqtts";
     topic_pub_sftp          = base_pub_topic + "/sftp";
     topic_pub_ctRatio       = base_pub_topic + "/ct_ratio";
     topic_pub_vOffset       = base_pub_topic + "/v_offset";
@@ -363,6 +367,7 @@ void AwsMqttManager::awsTopicsInit()
     topic_sub_reboot        = base_sub_topic + "/reboot";
     topic_sub_ntp           = base_sub_topic + "/ntp";
     topic_sub_mqtt          = base_sub_topic + "/mqtt";
+    topic_sub_mqtts         = base_sub_topic + "/mqtts";
     topic_sub_sftp          = base_sub_topic + "/sftp";
     topic_sub_ctRatio       = base_sub_topic + "/ct_ratio";
     topic_sub_vOffset       = base_sub_topic + "/v_offset";
@@ -536,6 +541,40 @@ void AwsMqttManager::processNtpSettings(const NtpSettings &ntpSettings)
     QJsonDocument doc(payload);
     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
     publishMessage(topic_pub_ntp, jsonString);
+}
+
+
+void AwsMqttManager::processMqttsSettings(const QJsonObject &mqttsSetting)
+{
+    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+
+    QJsonObject credentials;
+    credentials["root_ca"]    = fileExists(caPath);
+    credentials["claim_cert"] = fileExists(claimCertPath);
+    credentials["claim_key"]  = fileExists(claimKeyPath);
+
+    QJsonObject awsData;
+    awsData["broker_ip"]     = mqttsSetting.value("endpoint").toString();
+    awsData["broker_port"]   = mqttsSetting.value("port").toString().toInt();
+    awsData["data_interval"] = mqttsSetting.value("interval").toString().toInt();
+    awsData["credentials"]   = credentials;
+
+    QJsonArray dataArray;
+    dataArray.append(awsData);
+
+    QJsonObject payload;
+    payload["device_uuid"] = Utils::getUid();
+    payload["data"] = dataArray;
+
+    QJsonDocument doc(payload);
+    QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+    publishMessage(topic_pub_mqtts, jsonString);
+}
+
+
+bool AwsMqttManager::fileExists(const QString &path)
+{
+    return QFile::exists(path);
 }
 
 

@@ -26,7 +26,7 @@ protected:
     virtual bool eventFilter(QObject *obj, QEvent *event) = 0;
     QJsonObject loadMqttSettings(bool showMessages, bool reloadSettings = true);
     QJsonObject loadSftpSettings(bool showMessages, bool reloadSettings = true);
-    void saveMqttSettings(QJsonObject sftpSetting, bool showMessages = true);
+    void saveMqttSettings(QJsonObject mqttSetting, bool showMessages = true);
     void saveSftpSettings(QJsonObject sftpSetting, bool showMessages = true);
     bool jsonDifferent(const QJsonObject &a, const QString &path);
     bool hasEmptyField(const QJsonObject &obj);

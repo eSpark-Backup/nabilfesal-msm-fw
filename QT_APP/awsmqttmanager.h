@@ -1,4 +1,5 @@
 #pragma once
+#include <QDir>
 #include <QObject>
 #include <QTimer>
 #include <QReadWriteLock>
@@ -47,6 +48,7 @@ signals:
     void rebootRequested();
     void ntpConfigReceived(const QJsonObject &payload);
     void mqttConfigReceived(const QJsonObject &payload);
+    void mqttsConfigReceived(const QJsonObject &payload);
     void sftpConfigReceived(const QJsonObject &payload);
     void ctRatioReceived(const QJsonObject &payload);
     void vOffsetReceived(const QJsonObject &payload);
@@ -63,6 +65,7 @@ public slots:
     void processMqttSettings(const QJsonObject &mqttSetting);
     void processSftpSettings(const QJsonObject &sftpSetting);
     void processNtpSettings(const NtpSettings &ntpSettings);
+    void processMqttsSettings(const QJsonObject &mqttsSetting);
     void processReboot();
     void processCtRatio(const QJsonObject &ctRatio);
     void processVOffset(const QJsonObject &vOffset);
@@ -84,6 +87,7 @@ private:
     static bool debugEnabled();
     QByteArray buildAwsTelemetryJson(int startIndex, int endIndex) const;
     void otaSend(const QJsonObject &obj);
+    bool fileExists(const QString &path);
 
     DeviceInfo newDeviceInfo;
     QString configPath;
@@ -95,13 +99,17 @@ private:
     bool isFirstTime = true;
 
     #if defined(BUILD_X86)
+        QString claimBasePath = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/claim_certs/";
         QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
         QString caPath   = basePath + "AmazonRootCA1.pem";
     #elif defined(BUILD_V3S)
+        QString claimBasePath = "/MSM/potential-pancake/MSM/creds/claim_certs/";
         QString basePath = "/MSM/potential-pancake/MSM/creds/prov_certs/";
         QString caPath = "/MSM/potential-pancake/MSM/creds/claim_certs/AmazonRootCA1.pem"; //v3s
     #endif
 
+    QString claimCertPath = claimBasePath + "claim_cert.pem";
+    QString claimKeyPath  = claimBasePath + "claim_private.key";
     QString certPath = basePath + "deviceCert.pem";
     QString keyPath  = basePath + "privateKey.pem";
 
@@ -110,6 +118,7 @@ private:
     QString topic_pub_reboot;
     QString topic_pub_ntp;
     QString topic_pub_mqtt;
+    QString topic_pub_mqtts;
     QString topic_pub_sftp;
     QString topic_pub_ctRatio;
     QString topic_pub_vOffset;
@@ -119,6 +128,7 @@ private:
     QString topic_sub_reboot;
     QString topic_sub_ntp;
     QString topic_sub_mqtt;
+    QString topic_sub_mqtts;
     QString topic_sub_sftp;
     QString topic_sub_ctRatio;
     QString topic_sub_vOffset;

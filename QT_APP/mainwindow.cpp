@@ -305,9 +305,11 @@ void MainWindow::connectLoginSignals()
 
     // AWS MQTTS reload request
     connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
+    QMetaObject::invokeMethod(this, [this]() {
         awsMqttsHandler->disconnectAwsClient();
         if(factSettings != nullptr) factSettings->checkCertificates();
         QTimer::singleShot(1000, [this]() { awsMqttsHandler->reloadAwsMqttsSettings(); });
+        }, Qt::QueuedConnection);
     });
 
     // AWS manager may ask for reboot
@@ -324,6 +326,8 @@ void MainWindow::connectLoginSignals()
             settings, &DeviceSettings::parse_load_store_sftp);
     connect(awsMqttsHandler, &AwsMqttManager::mqttConfigReceived,
             settings, &DeviceSettings::parse_load_store_mqtt);
+    connect(awsMqttsHandler, &AwsMqttManager::mqttsConfigReceived,
+            settings, &DeviceSettings::parse_load_store_mqtts);
     connect(awsMqttsHandler, &AwsMqttManager::updateAwsData,
             settings, &DeviceSettings::send_aws_updated_data);
 
@@ -336,6 +340,8 @@ void MainWindow::connectLoginSignals()
             awsMqttsHandler, &AwsMqttManager::processSftpSettings);
     connect(settings, &DeviceSettings::ntpSettingsChanged,
             awsMqttsHandler, &AwsMqttManager::processNtpSettings);
+    connect(settings, &DeviceSettings::mqttsSettingsChanged,
+            awsMqttsHandler, &AwsMqttManager::processMqttsSettings);
     
     // When measurement settings change, notify AWS manager to process them
     connect(measure, &Measurements::ct_ratio_changed,
