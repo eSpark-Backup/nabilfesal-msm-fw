@@ -12,6 +12,12 @@
 #include <QKeyEvent>
 #include "toast.h"
 
+
+#define CT_RATIO    "calibration/ct_ratio_settings.json"
+#define I_OFFSET    "calibration/i_offset_settings.json"
+#define V_OFFSET    "calibration/v_offset_settings.json"
+
+
 Measurements::Measurements(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Measurements)
@@ -108,7 +114,7 @@ void Measurements::on_load_btn_clicked()
         for (QLabel *label : signEdits) {
             label->setText("%");
         }
-        QFile file("calibration/ct_ratio_settings.json");
+        QFile file(CT_RATIO);
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -144,7 +150,7 @@ void Measurements::on_load_btn_clicked()
         for (QLabel *label : signEdits) {
             label->setText("mA");
         }
-        QFile file("calibration/i_offset_settings.json");
+        QFile file(I_OFFSET);
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -180,7 +186,7 @@ void Measurements::on_load_btn_clicked()
         for (QLabel *label : signEdits) {
             label->setText("V");
         }
-        QFile file("calibration/v_offset_settings.json");
+        QFile file(V_OFFSET);
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -519,4 +525,20 @@ void Measurements::parse_load_store_vOffset(const QJsonObject &payload)
 void Measurements::parse_load_store_iOffset(const QJsonObject &payload)
 {
     parse_load_store_generic(payload, "i_offset");
+}
+
+
+void Measurements::send_measurement_data()
+{
+    QJsonObject measurement_json = Utils::readJsonFile(CT_RATIO);
+    if (!measurement_json.isEmpty())
+        emit ct_ratio_changed(measurement_json);
+    
+    measurement_json = Utils::readJsonFile(V_OFFSET);
+    if (!measurement_json.isEmpty())
+        emit v_offset_changed(measurement_json);
+
+    measurement_json = Utils::readJsonFile(I_OFFSET);
+    if (!measurement_json.isEmpty())
+        emit i_offset_changed(measurement_json);
 }

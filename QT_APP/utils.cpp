@@ -430,4 +430,33 @@ QStringList getAvailableVersions()
     return versionList;
 }
 
+
+QJsonObject readJsonFile(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return QJsonObject();
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    if (data.isEmpty()) {
+        return QJsonObject();
+    }
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+
+    if (parseError.error != QJsonParseError::NoError) {
+        return QJsonObject();
+    }
+
+    if (!doc.isObject()) {
+        return QJsonObject();
+    }
+
+    return doc.object();
+}
+
 }

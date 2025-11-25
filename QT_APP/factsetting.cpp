@@ -821,8 +821,8 @@ void FactSetting::sendOTAData(int status)
     json["last_update"] = lastUpdate;
 
     emit OTA_status(json);
-    QString jsonString = QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Compact));
-    qDebug().noquote() << "OTA JSON:" << QJsonDocument(json).toJson(QJsonDocument::Indented);
+    // QString jsonString = QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Compact));
+    // qDebug().noquote() << "OTA JSON:" << QJsonDocument(json).toJson(QJsonDocument::Indented);
 
 }
 

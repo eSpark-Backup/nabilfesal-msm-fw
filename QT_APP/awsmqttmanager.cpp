@@ -362,7 +362,7 @@ void AwsMqttManager::awsTopicsInit()
     topic_pub_ctRatio       = base_pub_topic + "/ct_ratio";
     topic_pub_vOffset       = base_pub_topic + "/v_offset";
     topic_pub_iOffset       = base_pub_topic + "/i_offset";
-    topic_pub_ota           = base_pub_topic + "/ota";
+    topic_pub_ota           = base_pub_topic + "/ota_info";
 
     topic_sub_reboot        = base_sub_topic + "/reboot";
     topic_sub_ntp           = base_sub_topic + "/ntp";
@@ -372,7 +372,7 @@ void AwsMqttManager::awsTopicsInit()
     topic_sub_ctRatio       = base_sub_topic + "/ct_ratio";
     topic_sub_vOffset       = base_sub_topic + "/v_offset";
     topic_sub_iOffset       = base_sub_topic + "/i_offset";
-    topic_sub_ota           = base_sub_topic + "/ota";
+    topic_sub_ota           = base_sub_topic + "/ota_trigger";
 }
 
 

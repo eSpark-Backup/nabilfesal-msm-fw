@@ -328,8 +328,11 @@ void MainWindow::connectLoginSignals()
             settings, &DeviceSettings::parse_load_store_mqtt);
     connect(awsMqttsHandler, &AwsMqttManager::mqttsConfigReceived,
             settings, &DeviceSettings::parse_load_store_mqtts);
-    connect(awsMqttsHandler, &AwsMqttManager::updateAwsData,
-            settings, &DeviceSettings::send_aws_updated_data);
+    connect(awsMqttsHandler, &AwsMqttManager::updateAwsData, this, [this]() {
+            settings->send_aws_updated_data();
+            measure->send_measurement_data();
+            factSettings->sendOTAData(0);
+            },Qt::QueuedConnection);
 
     // When settings change, notify AWS manager to process them
     connect(settings, &DeviceSettings::deviceInfoChanged,

@@ -25,6 +25,7 @@ QString getLastOTAInitiated();
 QStringList getAvailableVersions();
 void setLastOTAInitiated();
 QString getMqttsStatus();
+QJsonObject readJsonFile(const QString &filePath);
 }
 
 #endif // UTILS_H

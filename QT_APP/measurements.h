@@ -19,7 +19,9 @@ public:
     void ration_btn_clicked();
     void i_off_btn_clicked();
     void v_off_btn_clicked();
+    void send_measurement_data();
     ~Measurements();
+    
 signals:
     void measureExit();
     void requestSerialCommand(const QString &cmd);
