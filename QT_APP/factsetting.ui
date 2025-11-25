@@ -76,7 +76,8 @@ QPushButton:focus {
 }</string>
        </property>
        <property name="text">
-        <string>Back</string>
+        <string>Factory
+Menu</string>
        </property>
       </widget>
      </item>

@@ -24,6 +24,7 @@ signals:
     void channels_view();
     void usbExport();
     void aws_mqtts_load();
+    void resetEnergy();
     void deviceInfoChanged(const DeviceInfo &info);
     void ntpSettingsChanged(const NtpSettings &settings);
     void mqttsSettingsChanged(const QJsonObject &mqttsSetting);
@@ -54,6 +55,7 @@ private slots:
     void on_pushButton_clicked();
     void on_pushButton_2_clicked();
     void on_mqtts_save_btn_clicked(bool msgBox = false);
+    void on_resetEnergy_Btn_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

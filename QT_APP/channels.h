@@ -29,16 +29,17 @@ public:
 
 signals:
     void channelsExit();
-    void resetEnergy();
     void energyUpdated(const std::array<EnergyData,13> &energyData);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
+public slots:
+    void resetAccumulatedEnergy();
+
 private slots:
     void on_exit_clicked();
     void on_tempBtn_clicked(bool check = false);
-    void on_resetEnergy_Btn_clicked();
     void on_en_bt_1_clicked();
 
 private:

@@ -74,7 +74,7 @@
       <enum>QFrame::Raised</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="channels">
       <property name="sizePolicy">
@@ -147,7 +147,7 @@
              <number>0</number>
             </property>
             <property name="leftMargin">
-             <number>30</number>
+             <number>140</number>
             </property>
             <property name="topMargin">
              <number>18</number>
@@ -155,55 +155,6 @@
             <property name="rightMargin">
              <number>30</number>
             </property>
-            <item>
-             <widget class="QPushButton" name="resetEnergy_Btn">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>120</width>
-                <height>60</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>120</width>
-                <height>60</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton {
-    background-color: #1E88E5;   /* Blue */
-    color: white;               /* White text */
-    border: none;               /* No border line */
-    border-radius: 10px;        /* Rounded corners */
-    padding: 6px 20px;          /* Spacing inside */
-    font-size: 16px;            /* Font size */
-}
-
-QPushButton:hover {
-    background-color: #1565C0;  /* Darker blue on hover */
-}
-
-QPushButton:pressed {
-    background-color: #0D47A1;  /* Darkest blue when pressed */
-}
-QPushButton:focus {
-    outline: none;                 /* Remove dotted border */
-    background-color: #074475;     /* Brighter blue highlight */
-    border: 2px solid black;       /* White glow/border */
-}</string>
-              </property>
-              <property name="text">
-               <string>Reset
-Energy</string>
-              </property>
-             </widget>
-            </item>
             <item>
              <widget class="QLabel" name="label_11">
               <property name="sizePolicy">

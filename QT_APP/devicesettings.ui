@@ -194,539 +194,549 @@ QPushButton:focus {
       <enum>Qt::ClickFocus</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QVBoxLayout" name="verticalLayout_15">
        <property name="leftMargin">
-        <number>80</number>
+        <number>9</number>
        </property>
        <property name="rightMargin">
-        <number>80</number>
+        <number>9</number>
        </property>
        <item>
-        <widget class="QFrame" name="DeviceInfoFrame">
-         <property name="styleSheet">
-          <string notr="true">background: white;                /* White background */
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <property name="leftMargin">
+          <number>80</number>
+         </property>
+         <property name="rightMargin">
+          <number>80</number>
+         </property>
+         <item>
+          <widget class="QFrame" name="DeviceInfoFrame">
+           <property name="styleSheet">
+            <string notr="true">background: white;                /* White background */
     border: 1px solid #dcdcdc;        /* Light grey border */
     border-radius: 6px;</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="spacing">
+             <number>0</number>
             </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>20</height>
-             </size>
+            <property name="leftMargin">
+             <number>0</number>
             </property>
-            <property name="focusPolicy">
-             <enum>Qt::StrongFocus</enum>
+            <property name="topMargin">
+             <number>0</number>
             </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: #1E88E5;        /* Blue strip at the top */
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: #1E88E5;        /* Blue strip at the top */
     color: white;                     /* White text */
     font-size: 16px;
     font-weight: bold;
     padding: 6px;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QFrame" name="verticalFrame">
-            <property name="styleSheet">
-             <string notr="true">background: white;                /* White background */
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="verticalFrame">
+              <property name="styleSheet">
+               <string notr="true">background: white;                /* White background */
     border: 1px solid #ffffff;        /* Light grey border */
     border-radius: 6px; </string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout">
-             <property name="spacing">
-              <number>6</number>
-             </property>
-             <property name="leftMargin">
-              <number>20</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>20</number>
-             </property>
-             <property name="bottomMargin">
-              <number>5</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_3">
-               <property name="font">
-                <font>
-                 <family>Gilroy</family>
-                 <pointsize>15</pointsize>
-                </font>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout">
+               <property name="spacing">
+                <number>6</number>
                </property>
-               <property name="styleSheet">
-                <string notr="true">border-color: rgb(255, 255, 255);</string>
+               <property name="leftMargin">
+                <number>20</number>
                </property>
-               <property name="text">
-                <string>DEVICE INFO</string>
+               <property name="topMargin">
+                <number>0</number>
                </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
+               <property name="rightMargin">
+                <number>20</number>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="horizontalFrame">
-               <property name="styleSheet">
-                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+               <property name="bottomMargin">
+                <number>5</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_3">
+                 <property name="font">
+                  <font>
+                   <family>Gilroy</family>
+                   <pointsize>15</pointsize>
+                  </font>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">border-color: rgb(255, 255, 255);</string>
+                 </property>
+                 <property name="text">
+                  <string>DEVICE INFO</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="horizontalFrame">
+                 <property name="styleSheet">
+                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     font-size: 15px;
     color: black;</string>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_2">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_8">
-                  <property name="font">
-                   <font>
-                    <pointsize>-1</pointsize>
-                   </font>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <property name="spacing">
+                   <number>0</number>
                   </property>
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                  <property name="leftMargin">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string>DEVICE UUID</string>
+                  <property name="topMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="uuid">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                  <property name="rightMargin">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string/>
+                  <property name="bottomMargin">
+                   <number>0</number>
                   </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="horizontalFrame_2">
-               <property name="styleSheet">
-                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+                  <item>
+                   <widget class="QLabel" name="label_8">
+                    <property name="font">
+                     <font>
+                      <pointsize>-1</pointsize>
+                     </font>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string>DEVICE UUID</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="uuid">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="horizontalFrame_2">
+                 <property name="styleSheet">
+                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     font-size: 15px;
     color: black;</string>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_3">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_10">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <property name="spacing">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string>DEVICE IMEI</string>
+                  <property name="leftMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="imei">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                  <property name="topMargin">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string/>
+                  <property name="rightMargin">
+                   <number>0</number>
                   </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  <property name="bottomMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="horizontalFrame_3">
-               <property name="styleSheet">
-                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+                  <item>
+                   <widget class="QLabel" name="label_10">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string>DEVICE IMEI</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="imei">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="horizontalFrame_3">
+                 <property name="styleSheet">
+                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     font-size: 15px;
     color: black;</string>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_4">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_12">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <property name="spacing">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string>DEVICE IP</string>
+                  <property name="leftMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="ip">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                  <property name="topMargin">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string/>
+                  <property name="rightMargin">
+                   <number>0</number>
                   </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  <property name="bottomMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="horizontalFrame_4">
-               <property name="styleSheet">
-                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+                  <item>
+                   <widget class="QLabel" name="label_12">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string>DEVICE IP</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="ip">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="horizontalFrame_4">
+                 <property name="styleSheet">
+                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     font-size: 15px;
     color: black;</string>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_5">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_14">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_5">
+                  <property name="spacing">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string>MQTT STATUS</string>
+                  <property name="leftMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="mqtt">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                  <property name="topMargin">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string/>
+                  <property name="rightMargin">
+                   <number>0</number>
                   </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  <property name="bottomMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="horizontalFrame_5">
-               <property name="styleSheet">
-                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+                  <item>
+                   <widget class="QLabel" name="label_14">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string>MQTT STATUS</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mqtt">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="horizontalFrame_5">
+                 <property name="styleSheet">
+                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     font-size: 15px;
     color: black;</string>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_7">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_16">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <property name="spacing">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string>SFTP STATUS</string>
+                  <property name="leftMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="sftp">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                  <property name="topMargin">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string/>
+                  <property name="rightMargin">
+                   <number>0</number>
                   </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  <property name="bottomMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="horizontalFrame_6">
-               <property name="styleSheet">
-                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+                  <item>
+                   <widget class="QLabel" name="label_16">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string>SFTP STATUS</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="sftp">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="horizontalFrame_6">
+                 <property name="styleSheet">
+                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     font-size: 15px;
     color: black;</string>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_13">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_17">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_13">
+                  <property name="spacing">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string>GSM STATUS</string>
+                  <property name="leftMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="gsm">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                  <property name="topMargin">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string/>
+                  <property name="rightMargin">
+                   <number>0</number>
                   </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  <property name="bottomMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="horizontalFrame">
-               <property name="styleSheet">
-                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+                  <item>
+                   <widget class="QLabel" name="label_17">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string>GSM STATUS</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="gsm">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="horizontalFrame">
+                 <property name="styleSheet">
+                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     font-size: 15px;
     color: black;</string>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_6">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_4">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_6">
+                  <property name="spacing">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string>NTP STATUS</string>
+                  <property name="leftMargin">
+                   <number>0</number>
                   </property>
-                  <property name="textFormat">
-                   <enum>Qt::PlainText</enum>
+                  <property name="topMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="ntp">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                  <property name="rightMargin">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string/>
+                  <property name="bottomMargin">
+                   <number>0</number>
                   </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QFrame" name="horizontalFrame">
-               <property name="styleSheet">
-                <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+                  <item>
+                   <widget class="QLabel" name="label_4">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string>NTP STATUS</string>
+                    </property>
+                    <property name="textFormat">
+                     <enum>Qt::PlainText</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="ntp">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="horizontalFrame">
+                 <property name="styleSheet">
+                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     font-size: 15px;
     color: black;</string>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_8">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item>
-                 <widget class="QLabel" name="label_7">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_8">
+                  <property name="spacing">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string>MQTTs STATUS</string>
+                  <property name="leftMargin">
+                   <number>0</number>
                   </property>
-                  <property name="textFormat">
-                   <enum>Qt::PlainText</enum>
+                  <property name="topMargin">
+                   <number>0</number>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="mqtts">
-                  <property name="styleSheet">
-                   <string notr="true">border-color: rgb(230, 230, 230);</string>
+                  <property name="rightMargin">
+                   <number>0</number>
                   </property>
-                  <property name="text">
-                   <string/>
+                  <property name="bottomMargin">
+                   <number>0</number>
                   </property>
-                  <property name="alignment">
-                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-         </layout>
-        </widget>
+                  <item>
+                   <widget class="QLabel" name="label_7">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string>MQTTs STATUS</string>
+                    </property>
+                    <property name="textFormat">
+                     <enum>Qt::PlainText</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="mqtts">
+                    <property name="styleSheet">
+                     <string notr="true">border-color: rgb(230, 230, 230);</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QFrame" name="horizontalFrame_2">
@@ -740,12 +750,61 @@ QPushButton:focus {
           <property name="spacing">
            <number>6</number>
           </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
           <property name="topMargin">
            <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
           </property>
           <property name="bottomMargin">
            <number>0</number>
           </property>
+          <item>
+           <widget class="QPushButton" name="resetEnergy_Btn">
+            <property name="minimumSize">
+             <size>
+              <width>120</width>
+              <height>60</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>120</width>
+              <height>60</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}
+QPushButton:focus {
+    outline: none;                 /* Remove dotted border */
+    background-color: #074475;     /* Brighter blue highlight */
+    border: 2px solid black;       /* White glow/border */
+}</string>
+            </property>
+            <property name="text">
+             <string>Reset
+Energy</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <spacer name="horizontalSpacer_6">
             <property name="orientation">
@@ -768,6 +827,12 @@ QPushButton:focus {
              </sizepolicy>
             </property>
             <property name="minimumSize">
+             <size>
+              <width>120</width>
+              <height>60</height>
+             </size>
+            </property>
+            <property name="maximumSize">
              <size>
               <width>120</width>
               <height>60</height>
@@ -1686,8 +1751,8 @@ QPushButton:focus {
            </property>
            <property name="minimumSize">
             <size>
-             <width>121</width>
-             <height>61</height>
+             <width>120</width>
+             <height>60</height>
             </size>
            </property>
            <property name="styleSheet">

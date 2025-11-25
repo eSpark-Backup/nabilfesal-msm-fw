@@ -9,8 +9,8 @@
 #include <QDir>
 #include "toast.h"
 
-#define V_OFFSET_RESPONSE_PATH "config/v_offset_response.json"
-#define I_OFFSET_RESPONSE_PATH "config/i_offset_response.json"
+#define V_OFFSET_RESPONSE_PATH "calibration/v_offset_response.json"
+#define I_OFFSET_RESPONSE_PATH "calibration/i_offset_response.json"
 
 
 CalibrationDialog::CalibrationDialog(QWidget *parent)
@@ -114,9 +114,16 @@ void CalibrationDialog::setupTouchSpin()
 
 void CalibrationDialog::on_sendpushBtn_clicked()
 {
+    ui->sendpushBtn->clearFocus();
     auto phaseA = ui->phase_A_input->text().toDouble();
     auto phaseB = ui->phase_B_input->text().toDouble();
     auto phaseC = ui->phase_C_input->text().toDouble();
+
+    if(phaseA == 0 || phaseB == 0 || phaseC == 0)
+    {
+        Toast::show("Please enter non-zero value to proceed!", this, Toast::Warning);
+        return;
+    }
 
     QJsonObject gain;
     gain["phase_a"] = phaseA;

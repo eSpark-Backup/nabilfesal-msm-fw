@@ -581,46 +581,37 @@ void ChannelsHome::handleTempButton(bool updateTrue, double val)
 }
 
 
-void ChannelsHome::on_resetEnergy_Btn_clicked()
+void ChannelsHome::resetAccumulatedEnergy()
 {
-    ui->resetEnergy_Btn->clearFocus();
+    for (int ch = 1; ch <= 12; ++ch) {
+        for (int phIt = 0; phIt < 3; phIt++) {            
+            energy[ch].posActEnergy[phIt]  = 0.0;
+            energy[ch].negActEnergy[phIt]  = 0.0;
+            energy[ch].posReacEnergy[phIt] = 0.0;
+            energy[ch].negReacEnergy[phIt] = 0.0; 
+        }
+        if (!channelLabelMap.contains(ch)) continue;
 
-    int ret = QMessageBox::question(
-    this, "Reset Energy", "Do you want to reset energy?",QMessageBox::Ok | QMessageBox::Cancel);
+        for (auto it = channelLabelMap[ch].begin(); it != channelLabelMap[ch].end(); ++it) {
+            QString key = it.key();
+            QLabel* label = it.value();
+            if (!label) continue;
 
-    if (ret == QMessageBox::Ok) {
-        for (int ch = 1; ch <= 12; ++ch) {
-            for (int phIt = 0; phIt < 3; phIt++) {            
-                energy[ch].posActEnergy[phIt]  = 0.0;
-                energy[ch].negActEnergy[phIt]  = 0.0;
-                energy[ch].posReacEnergy[phIt] = 0.0;
-                energy[ch].negReacEnergy[phIt] = 0.0; 
-            }
-            if (!channelLabelMap.contains(ch)) continue;
-
-            for (auto it = channelLabelMap[ch].begin(); it != channelLabelMap[ch].end(); ++it) {
-                QString key = it.key();
-                QLabel* label = it.value();
-                if (!label) continue;
-
-                // Only reset energy/power labels
-                if (key.startsWith("pe_") || key.startsWith("ne_") || key.startsWith("be_"))
-                {
-                    label->setText("0.00");
-                }
+            // Only reset energy/power labels
+            if (key.startsWith("pe_") || key.startsWith("ne_") || key.startsWith("be_"))
+            {
+                label->setText("0.00");
             }
         }
+    }
 
-        if (QFile::exists(EnergyFilePath)) {
-            if (QFile::remove(EnergyFilePath))
-                Toast::show("Energy reset successfully for all channels.", this, Toast::Info);
-            else
-                Toast::show("Unable to reset energy data.", this, Toast::Error);
-        } else {
-            Toast::show("No energy file found to reset.", this, Toast::Warning);
-        }
-
-        emit resetEnergy();
+    if (QFile::exists(EnergyFilePath)) {
+        if (QFile::remove(EnergyFilePath))
+            Toast::show("Energy reset successfully for all channels.", this, Toast::Info);
+        else
+            Toast::show("Unable to reset energy data.", this, Toast::Error);
+    } else {
+        Toast::show("No energy file found to reset.", this, Toast::Warning);
     }
 }
 

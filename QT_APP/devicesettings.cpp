@@ -720,3 +720,14 @@ void DeviceSettings::on_mqtts_save_btn_clicked(bool msgBox)
     saveMqttsSettings(mqttsSettings, true);
 }
 
+
+void DeviceSettings::on_resetEnergy_Btn_clicked()
+{
+    ui->resetEnergy_Btn->clearFocus();
+
+    int ret = QMessageBox::question(
+        this, "Reset Energy", "Do you want to reset energy?",QMessageBox::Ok | QMessageBox::Cancel);
+
+    if (ret == QMessageBox::Ok) emit resetEnergy();
+}
+

@@ -375,7 +375,8 @@ void MainWindow::connectLoginSignals()
             awsMqttsHandler, &AwsMqttManager::processAwsTelemetry);
 
     // channel UI related signals
-    connect(channels, &ChannelsHome::resetEnergy, this, [this]() {
+    connect(settings, &DeviceSettings::resetEnergy, this, [this]() {
+        channels->resetAccumulatedEnergy();
         awsMqttsHandler->resetAccumulatedEnergy();
         mqttHandler->resetAccumulatedEnergy();
         sftpHandler->resetAccumulatedEnergy();

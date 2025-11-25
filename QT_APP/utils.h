@@ -21,6 +21,7 @@ bool updateSerialInConfig(const QString &AwsEp);
 QString getSignalCategoryFromFile(const QString &filePath = "/MSM/potential-pancake/MSM/bin/at_axec/responses.txt");
 QLabel *showImageFullscreenFor(const QString &imagePath, int milliseconds);
 QString getFirmwareVersion();
+QString getHardwareVersion();
 QString getLastOTAInitiated();
 QStringList getAvailableVersions();
 void setLastOTAInitiated();

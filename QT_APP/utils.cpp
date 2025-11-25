@@ -135,7 +135,9 @@ QString getDeviceImei()
         for (const QString &line : output.split("\n")) {
             QString trimmedLine = line.trimmed();
             if (trimmedLine.startsWith("imei", Qt::CaseInsensitive) ||
-                trimmedLine.contains("imei", Qt::CaseInsensitive)) {
+                trimmedLine.contains("imei", Qt::CaseInsensitive) ||
+                trimmedLine.startsWith("equipment id", Qt::CaseInsensitive) ||
+                trimmedLine.contains("equipment id", Qt::CaseInsensitive)) {
                 return trimmedLine.section(":", 1).trimmed();
             }
         }
@@ -351,6 +353,23 @@ QString getFirmwareVersion()
     }
 
     return softwareVersion;
+}
+
+QString getHardwareVersion()
+{
+    QString hardwareVersion;
+    QFile hwFile("version.json");
+    if (hwFile.open(QIODevice::ReadOnly)) {
+        const auto data = hwFile.readAll();
+        const auto doc = QJsonDocument::fromJson(data);
+        if (doc.isObject()) {
+            const auto obj = doc.object();
+            hardwareVersion = obj.value("hardware_version").toString();
+        }
+        hwFile.close();
+    }
+
+    return hardwareVersion;
 }
 
 QString getLastOTAInitiated()
