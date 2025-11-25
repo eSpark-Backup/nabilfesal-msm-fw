@@ -91,7 +91,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Send CT/I/V ratio and offsets at startup (if config present)
     startApp = true;
-    // sendRatioSettings();
     if (pollTimer) pollTimer->stop();
 
     QStringList files = {
@@ -576,6 +575,10 @@ void MainWindow::onLoadChannels()
 
 void MainWindow::onAdminLogin()
 {
+    settings->load_mqtt_settings(true);
+    settings->load_sftp_settings(true);
+    settings->load_mqtts_settings(true);
+
     isLogin = true;
     if (!settings)
         settings = new DeviceSettings;
@@ -669,6 +672,11 @@ void MainWindow::onFactoryLogin()
 
     // load fact settings (factory -> factSettings)
     connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
+        
+        factSettings->load_mqtt_settings(true);
+        factSettings->load_sftp_settings(true);
+        factSettings->load_mqtts_settings(true);
+        
         QWidget *fw = QApplication::focusWidget();
         if (fw) fw->clearFocus();
         if (!factSettings)
