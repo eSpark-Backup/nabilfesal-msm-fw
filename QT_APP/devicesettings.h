@@ -27,7 +27,6 @@ signals:
     void resetEnergy();
     void deviceInfoChanged(const DeviceInfo &info);
     void ntpSettingsChanged(const NtpSettings &settings);
-    void mqttsSettingsChanged(const QJsonObject &mqttsSetting);
 
 public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = false);

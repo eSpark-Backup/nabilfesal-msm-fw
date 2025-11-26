@@ -245,12 +245,14 @@ void MainWindow::connectChannels(ChannelsHome *ch)
 
 void MainWindow::connectFactSettings(FactSetting *fs)
 {
+    qDebug() << "-------------------------- connectFactSettings --------------------------";
     // Keep configuration reload handling the same as DeviceSettings
     connect(fs, &FactSetting::sftp_load, this, [this]() {
         sftpHandler->disconnectClient();
         QTimer::singleShot(1000, [this]() { sftpHandler->reloadSettings(); });
     });
     connect(fs, &FactSetting::mqtt_load, this, [this]() {
+        qDebug() << "-------------------------- FactSetting::mqtt_load --------------------------";
         mqttHandler->disconnectClient();
         QTimer::singleShot(1000, [this]() { mqttHandler->reloadSettings(); });
     });
@@ -322,12 +324,19 @@ void MainWindow::connectLoginSignals()
     // If AWS sends back stored configs, populate DeviceSettings fields
     connect(awsMqttsHandler, &AwsMqttManager::ntpConfigReceived,
             settings, &DeviceSettings::parse_load_store_ntp);
-    connect(awsMqttsHandler, &AwsMqttManager::sftpConfigReceived,
-            settings, &DeviceSettings::parse_load_store_sftp);
-    connect(awsMqttsHandler, &AwsMqttManager::mqttConfigReceived,
-            settings, &DeviceSettings::parse_load_store_mqtt);
-    connect(awsMqttsHandler, &AwsMqttManager::mqttsConfigReceived,
-            settings, &DeviceSettings::parse_load_store_mqtts);
+    connect(awsMqttsHandler, &AwsMqttManager::sftpConfigReceived, this, [this](const QJsonObject &config) {
+        settings->parse_load_store_sftp(config);
+        factSettings->load_sftp_settings(true);
+    });
+    connect(awsMqttsHandler, &AwsMqttManager::mqttConfigReceived, this, [this](const QJsonObject &config) {
+        settings->parse_load_store_mqtt(config);
+        factSettings->load_mqtt_settings(true);
+    });
+    connect(awsMqttsHandler, &AwsMqttManager::mqttsConfigReceived, this, [this](const QJsonObject &config) {
+        settings->parse_load_store_mqtts(config);
+        QTimer::singleShot(100, this, [this](){
+                factSettings->load_mqtts_settings(true);});  
+    });
     connect(awsMqttsHandler, &AwsMqttManager::updateAwsData, this, [this]() {
             settings->send_aws_updated_data();
             measure->send_measurement_data();
@@ -344,6 +353,13 @@ void MainWindow::connectLoginSignals()
     connect(settings, &DeviceSettings::ntpSettingsChanged,
             awsMqttsHandler, &AwsMqttManager::processNtpSettings);
     connect(settings, &DeviceSettings::mqttsSettingsChanged,
+            awsMqttsHandler, &AwsMqttManager::processMqttsSettings);
+
+    connect(factSettings, &FactSetting::mqttSettingsChanged,
+            awsMqttsHandler, &AwsMqttManager::processMqttSettings);
+    connect(factSettings, &FactSetting::sftpSettingsChanged,
+            awsMqttsHandler, &AwsMqttManager::processSftpSettings);
+    connect(factSettings, &FactSetting::mqttsSettingsChanged,
             awsMqttsHandler, &AwsMqttManager::processMqttsSettings);
     
     // When measurement settings change, notify AWS manager to process them

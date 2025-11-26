@@ -30,6 +30,7 @@ signals:
 protected:
     void showEvent(QShowEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
+    void saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages = true);
 
 public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = false);
@@ -38,6 +39,7 @@ public slots:
     void load_mqtt_settings(bool msgBox = false, bool reconnect = false);
     void load_sftp_settings(bool msgBox = false, bool reconnect = false);
     void load_mqtts_settings(bool msgBox = false, bool reconnect = false);
+    QJsonObject loadMqttsSettings(bool showMessages, bool reloadSettings = true);
     void sendOTAData(int status);
     void startOTA(const QString &selectedVersion);
 
@@ -56,6 +58,8 @@ private slots:
     void on_pushButton_2_clicked();
 
 private:
+    void apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox = true);
+
     Ui::FactSetting *ui;
     MSMKeyboard *keyboard;
     QLabel *updatingLabel = nullptr;
