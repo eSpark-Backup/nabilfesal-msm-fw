@@ -13,9 +13,9 @@
 #include "toast.h"
 
 
-#define CT_RATIO    "calibration/ct_ratio_settings.json"
-#define I_OFFSET    "calibration/i_offset_settings.json"
-#define V_OFFSET    "calibration/v_offset_settings.json"
+#define CT_RATIO    "config/ct_ratio_settings.json"
+#define I_OFFSET    "config/i_offset_settings.json"
+#define V_OFFSET    "config/v_offset_settings.json"
 
 
 Measurements::Measurements(QWidget *parent)
@@ -59,7 +59,7 @@ Measurements::Measurements(QWidget *parent)
     }
     this->installEventFilter(this);
 
-    on_load_btn_clicked();
+    on_load_btn_clicked(true);
 }
 
 Measurements::~Measurements()
@@ -105,7 +105,7 @@ void Measurements::on_back_1_clicked()
 }
 
 
-void Measurements::on_load_btn_clicked()
+void Measurements::on_load_btn_clicked(bool checked)
 {
     ui->back_1->setFocusPolicy(Qt::NoFocus);
     setFocus(Qt::OtherFocusReason);
@@ -118,6 +118,7 @@ void Measurements::on_load_btn_clicked()
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
+                if (!checked) Toast::show("CT_Ratio file not found", this, Toast::Warning);
             return;
         }
 
@@ -126,7 +127,7 @@ void Measurements::on_load_btn_clicked()
 
         QJsonDocument doc = QJsonDocument::fromJson(jsonData);
         if (doc.isNull() || !doc.isObject()) {
-            QMessageBox::critical(this, "CT Ratio Settings", "Invalid JSON format in CT Ratio settings file.");
+            QMessageBox::critical(this, "CT-Ratio Settings", "Invalid JSON format in CT Ratio settings file.");
             return;
         }
 
@@ -154,6 +155,7 @@ void Measurements::on_load_btn_clicked()
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
+                if (!checked) Toast::show("I-OFFSET file not found", this, Toast::Warning);
             return;
         }
 
@@ -190,6 +192,7 @@ void Measurements::on_load_btn_clicked()
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
+                if (!checked) Toast::show("V-OFFSET file not found", this, Toast::Warning);
             return;
         }
 
@@ -216,6 +219,14 @@ void Measurements::on_load_btn_clicked()
                 edit->setText(QString::number(val, 'f', 2));
             }
         }
+    }
+    else
+        return;
+        
+    if(!checked)
+    {
+        QString loadFile = isRatioActivated ? "CT-Ratio" : isIOffsetActivated ? "I-Offset" : "V-Offset";
+        Toast::show(QString("[%1] loaded successfully.").arg(loadFile), this, Toast::Info);
     }
 }
 
@@ -281,7 +292,7 @@ void Measurements::processSettings(const QString &key,
                                    bool updateUI,
                                    bool emitDeviceCommand)
 {
-    QString filePath = QString("calibration/%1_settings.json").arg(key);
+    QString filePath = QString("config/%1_settings.json").arg(key);
 
     QString title = key;
     title.replace("_", " ");
@@ -312,7 +323,7 @@ void Measurements::processSettings(const QString &key,
     }
 
     // Save to file
-    QDir dir("calibration");
+    QDir dir("config");
     if (!dir.exists()) dir.mkpath(".");
 
     QFile file(filePath);
@@ -469,7 +480,7 @@ void Measurements::ration_btn_clicked()
     isRatioActivated = true;
     isVOffsetActivated = false;
     isIOffsetActivated = false;
-    on_load_btn_clicked();
+    on_load_btn_clicked(true);
 }
 
 
@@ -482,7 +493,7 @@ void Measurements::i_off_btn_clicked()
     isRatioActivated = false;
     isVOffsetActivated = false;
     isIOffsetActivated = true;
-    on_load_btn_clicked();
+    on_load_btn_clicked(true);
 }
 
 
@@ -495,7 +506,7 @@ void Measurements::v_off_btn_clicked()
     isRatioActivated = false;
     isVOffsetActivated = true;
     isIOffsetActivated = false;
-    on_load_btn_clicked();
+    on_load_btn_clicked(true);
 }
 
 

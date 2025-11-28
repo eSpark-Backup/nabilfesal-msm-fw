@@ -31,7 +31,7 @@ signals:
 
 private slots:
     void on_back_1_clicked();
-    void on_load_btn_clicked();
+    void on_load_btn_clicked(bool checked = false);
     void on_save_btn_clicked();
     void on_toolButton_clicked();
     void on_toolButton_2_clicked();

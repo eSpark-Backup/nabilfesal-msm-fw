@@ -9,8 +9,8 @@
 #include <QDir>
 #include "toast.h"
 
-#define V_OFFSET_RESPONSE_PATH "calibration/v_offset_response.json"
-#define I_OFFSET_RESPONSE_PATH "calibration/i_offset_response.json"
+#define V_OFFSET_RESPONSE_PATH "config/v_offset_response.json"
+#define I_OFFSET_RESPONSE_PATH "config/i_offset_response.json"
 
 
 CalibrationDialog::CalibrationDialog(QWidget *parent)

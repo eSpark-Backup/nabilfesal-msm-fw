@@ -459,6 +459,8 @@ void AwsMqttManager::processDeviceInfo(const DeviceInfo &info)
     deviceInfoData["device_imei"] = info.imei;
     deviceInfoData["mqtt_status"] = info.mqttStatus == "Connected" ? true : false;
     deviceInfoData["sftp_status"] = info.sftpStatus == "Connected" ? true : false;
+    deviceInfoData["ntp_status"] = info.ntpStatus;
+    deviceInfoData["gsm_status"] = info.gsmStatus;
     deviceInfoData["Firmware Version"] = Utils::getFirmwareVersion();
     deviceInfoData["Hardware Version"] = Utils::getHardwareVersion();
 

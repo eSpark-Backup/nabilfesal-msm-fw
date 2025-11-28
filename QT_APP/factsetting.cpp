@@ -599,7 +599,6 @@ void FactSetting::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages)
 
 void FactSetting::apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox)
 {
-    qDebug().noquote() << QJsonDocument(mqttsSettings).toJson(QJsonDocument::Indented);
     ui->mqtts_port->setText(mqttsSettings.value("port").toString());
     ui->mqtts_endpoint->setText(mqttsSettings.value("endpoint").toString());
     ui->mqtts_interval->setText(mqttsSettings.value("interval").toString());

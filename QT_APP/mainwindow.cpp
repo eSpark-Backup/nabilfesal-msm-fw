@@ -94,11 +94,11 @@ MainWindow::MainWindow(QWidget *parent)
     if (pollTimer) pollTimer->stop();
 
     QStringList files = {
-        "calibration/v_offset_response.json",
-        "calibration/i_offset_response.json",
-        "calibration/ct_ratio_settings.json",
-        "calibration/v_offset_settings.json",
-        "calibration/i_offset_settings.json"
+        "config/v_offset_response.json",
+        "config/i_offset_response.json",
+        "config/ct_ratio_settings.json",
+        "config/v_offset_settings.json",
+        "config/i_offset_settings.json"
     };
     sendFileWithDelay(files);
     qApp->installEventFilter(this);
@@ -245,14 +245,12 @@ void MainWindow::connectChannels(ChannelsHome *ch)
 
 void MainWindow::connectFactSettings(FactSetting *fs)
 {
-    qDebug() << "-------------------------- connectFactSettings --------------------------";
     // Keep configuration reload handling the same as DeviceSettings
     connect(fs, &FactSetting::sftp_load, this, [this]() {
         sftpHandler->disconnectClient();
         QTimer::singleShot(1000, [this]() { sftpHandler->reloadSettings(); });
     });
     connect(fs, &FactSetting::mqtt_load, this, [this]() {
-        qDebug() << "-------------------------- FactSetting::mqtt_load --------------------------";
         mqttHandler->disconnectClient();
         QTimer::singleShot(1000, [this]() { mqttHandler->reloadSettings(); });
     });
@@ -920,11 +918,11 @@ void MainWindow::onChannelDataWatchdogTimeout()
         startApp = true;
 
         QStringList files = {
-            "calibration/v_offset_response.json",
-            "calibration/i_offset_response.json",
-            "calibration/ct_ratio_settings.json",
-            "calibration/v_offset_settings.json",
-            "calibration/i_offset_settings.json"
+            "config/v_offset_response.json",
+            "config/i_offset_response.json",
+            "config/ct_ratio_settings.json",
+            "config/v_offset_settings.json",
+            "config/i_offset_settings.json"
         };
         sendFileWithDelay(files);
     });    
