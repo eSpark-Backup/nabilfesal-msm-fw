@@ -304,11 +304,11 @@ void Measurements::processSettings(const QString &key,
     if (!command.isEmpty())
         data["command"] = command;
 
-    // Compare with existing file
-    if (areSettingsUnchanged(data, filePath))
-    {
-        Toast::show(QString("[%1] Settings unchanged → not saving.").arg(title),
-                    this, Toast::Warning);
+    // // Compare with existing file
+    // if (areSettingsUnchanged(data, filePath))
+    // {
+    //     Toast::show(QString("[%1] Settings unchanged → not saving.").arg(title),
+    //                 this, Toast::Warning);
 
         // Even on unchanged, UI might still need updating (load case)
         if (updateUI)
@@ -319,8 +319,8 @@ void Measurements::processSettings(const QString &key,
                     edit->setText(QString::number(settingsObj[QString("channel-%1").arg(i)].toDouble(), 'f', 2));
             }
         }
-        return;
-    }
+    //     return;
+    // }
 
     // Save to file
     QDir dir("config");

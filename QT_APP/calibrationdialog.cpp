@@ -119,7 +119,7 @@ void CalibrationDialog::on_sendpushBtn_clicked()
     auto phaseB = ui->phase_B_input->text().toDouble();
     auto phaseC = ui->phase_C_input->text().toDouble();
 
-    if(phaseA == 0 || phaseB == 0 || phaseC == 0)
+    if(phaseA == 0 && phaseB == 0 && phaseC == 0)
     {
         Toast::show("Please enter non-zero value to proceed!", this, Toast::Warning);
         return;

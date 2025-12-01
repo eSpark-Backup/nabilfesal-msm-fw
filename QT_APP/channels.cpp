@@ -365,7 +365,7 @@ void ChannelsHome::cacheChannelLabels() {
 void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
     QString suffix = QString::number(channel);
     QPushButton* chBtn = findChild<QPushButton*>("channel_bt_" + suffix);
-    auto status = json.value("status").toInt();
+    int status = json.value("status").toInt();
     if (chBtn) chBtn->setDisabled(status != 1);
 
     QJsonObject data = json.value("data").toObject();
@@ -383,24 +383,22 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
         energy[channel].negReacEnergy[phaseNum]  += reactiveEnergy.value("negative").toDouble();
     }
 
-    if (channel == m_channel)
-    {
-        double temp = json.value("temperature").toDouble();
-        handleTempButton(true, temp);
-        // QString suffix = QString::number(1);
-        QJsonObject data = json.value("data").toObject();
+    auto updateChannelLabels = [&](int ch) {
+        QString chSuffix = QString::number(ch);
+        QJsonObject chData = json.value("data").toObject();
+
         for (const QString &phase : {"phase_a", "phase_b", "phase_c"}) {
-            QJsonObject phaseObj = data.value(phase).toObject();
+            QJsonObject phaseObj = chData.value(phase).toObject();
             QString prefix = (phase == "phase_a") ? "a_" :
-                                 (phase == "phase_b") ? "b_" : "c_";
+                             (phase == "phase_b") ? "b_" : "c_";
 
             QJsonObject general = phaseObj.value("general").toObject();
             QJsonObject power = phaseObj.value("power").toObject();
 
             auto setValue = [&](const QString &key, double val) {
-                QString name = key + prefix + suffix;
-                if (channelLabelMap[1].contains(name)) {
-                    channelLabelMap[1][name]->setText(QString::number(val, 'f', 2));
+                QString name = key + prefix + chSuffix;
+                if (channelLabelMap[ch].contains(name)) {
+                    channelLabelMap[ch][name]->setText(QString::number(val, 'f', 2));
                 }
             };
 
@@ -412,36 +410,38 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
             setValue("acp_", power.value("active").toDouble());
             setValue("rp_", power.value("reactive").toDouble());
             setValue("pf_", power.value("factor").toDouble());
-           
         }
 
+        // Update energy labels
         for (const QString &phase : {"a", "b", "c"}) {
-        int phaseNum = (phase == "a") ? 0 : (phase == "b") ? 1 : 2;
-            double positiveEnergy = 0.0;
-            double negativeEnergy = 0.0;
-
-            if (energyCounter == 0) {
-                positiveEnergy = energy[channel].posActEnergy[phaseNum];
-                negativeEnergy = energy[channel].negActEnergy[phaseNum];
-            }  else if (energyCounter == 1) { 
-                positiveEnergy = energy[channel].posReacEnergy[phaseNum];
-                negativeEnergy = energy[channel].negReacEnergy[phaseNum];
-            }
-
+            int phaseNum = (phase == "a") ? 0 : (phase == "b") ? 1 : 2;
+            double positiveEnergy = (energyCounter == 0) ? energy[ch].posActEnergy[phaseNum]
+                                                         : energy[ch].posReacEnergy[phaseNum];
+            double negativeEnergy = (energyCounter == 0) ? energy[ch].negActEnergy[phaseNum]
+                                                         : energy[ch].negReacEnergy[phaseNum];
             double bidirectionalEnergy = positiveEnergy - negativeEnergy;
 
-            auto setValue = [&](const QString &key, double val) {
-                QString name = key + phase + "_1";
-                if (channelLabelMap[1].contains(name))
-                    channelLabelMap[1][name]->setText(QString::number(val, 'f', 2));
+            auto setEnergy = [&](const QString &key, double val) {
+                QString name = key + phase + "_" + chSuffix;
+                if (channelLabelMap[ch].contains(name)) {
+                    channelLabelMap[ch][name]->setText(QString::number(val, 'f', 2));
+                }
             };
 
-            setValue("pe_", positiveEnergy);
-            setValue("ne_", negativeEnergy);
-            setValue("be_", bidirectionalEnergy);
+            setEnergy("pe_", positiveEnergy);
+            setEnergy("ne_", negativeEnergy);
+            setEnergy("be_", bidirectionalEnergy);
         }
-            saveEnergyData();
+    };
+
+    // Update only the current channel temperature button
+    if (channel == m_channel) {
+        double temp = json.value("temperature").toDouble();
+        handleTempButton(true, temp);
     }
+
+    updateChannelLabels(channel);
+    saveEnergyData();
 }
 
 void ChannelsHome::on_exit_clicked()
