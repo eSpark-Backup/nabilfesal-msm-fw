@@ -278,6 +278,9 @@ void MainWindow::connectFactSettings(FactSetting *fs)
 
 void MainWindow::connectStartUpSignals()
 {
+    inActWatcher = new InactivityWatcher(this);
+    qApp->installEventFilter(inActWatcher);
+
     if (!factorySettings)
         factorySettings = new FactorySettings(hardwareVersion, softwareVersion);
 
@@ -289,6 +292,7 @@ void MainWindow::connectStartUpSignals()
 
     connect(factSettings,    &FactSetting::rebootMCM,   this, showRebootDialog);
     connect(factorySettings, &FactorySettings::rebootMCM, this, showRebootDialog);
+    connect(awsMqttsHandler, &AwsMqttManager::settingsChanged, inActWatcher, &InactivityWatcher::wakeUp);
 }
 
 

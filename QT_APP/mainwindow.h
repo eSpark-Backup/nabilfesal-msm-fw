@@ -26,6 +26,7 @@
 #include "systemexporter.h"
 #include "calibrationdialog.h"
 #include "diagnostics.h"
+#include "inactivitywatcher.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -108,7 +109,8 @@ private:
     SystemDataExporter *dataExporter = nullptr;
     CalibrationDialog *gainCalibrator = nullptr;
     Diagnostics *alerts = nullptr;
-
+    InactivityWatcher *inActWatcher = nullptr;
+    
     // managers (mostly singletons)
     settingsManager *settingsHandler = nullptr;
     mqttManager *mqttHandler = &mqttManager::instance();
