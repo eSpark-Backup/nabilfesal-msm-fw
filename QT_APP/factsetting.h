@@ -21,6 +21,7 @@ public:
     ~FactSetting();
 
 signals:
+    void rebootMCM();
     void usbExport();
     void factoryExit();
     void aws_mqtts_load();

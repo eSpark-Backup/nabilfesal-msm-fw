@@ -90,8 +90,7 @@ private:
     // Utility connection helpers
     void connectChannels(ChannelsHome *ch);
     void connectFactSettings(FactSetting *fs);
-
-    void sendRatioSettings();
+    void connectStartUpSignals();
 
 private:
     Ui::MainWindow *ui;

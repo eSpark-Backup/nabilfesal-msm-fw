@@ -17,6 +17,7 @@ public:
     ~FactorySettings();
 
 signals:
+    void rebootMCM();
     void factoryExit();
     void loadFactSettings();
     void ctRatio();

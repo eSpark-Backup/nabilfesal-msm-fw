@@ -1,6 +1,5 @@
 #include "factorysettings.h"
 #include "ui_factorysettings.h"
-#include "rebootdialog.h"
 
 FactorySettings::FactorySettings(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
@@ -35,8 +34,7 @@ void FactorySettings::on_v_cal_btn_clicked()
 
 void FactorySettings::on_reboot_btn_clicked()
 {
-    RebootDialog reboot(this);
-    reboot.exec();
+    emit rebootMCM();
 }
 
 

@@ -1,6 +1,5 @@
 #include "factsetting.h"
 #include "ui_factsetting.h"
-#include "rebootdialog.h"
 #include "utils.h"
 #include <QFile>
 #include <QJsonDocument>
@@ -261,8 +260,7 @@ void FactSetting::on_exit_btn_clicked()
 
 void FactSetting::on_reboot_btn_clicked()
 {
-    RebootDialog reboot(this);
-    reboot.exec();
+    emit rebootMCM();
 }
 
 

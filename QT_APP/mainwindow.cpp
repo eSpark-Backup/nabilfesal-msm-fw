@@ -15,6 +15,7 @@
 #include "utils.h"
 #include "factdialog.h"
 #include "toast.h"
+#include "rebootdialog.h"
 
 // -----------------------------
 // Constructor / Destructor
@@ -57,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Important: set connections between settings/managers
     connectLoginSignals();
+    connectStartUpSignals();
 
     // UI progress and polling
     setupProgressBar();
@@ -272,6 +274,23 @@ void MainWindow::connectFactSettings(FactSetting *fs)
     connect(fs, &FactSetting::runFleetProvisioning, this,
          [this]() { factSettings->runFleetProvisionerAsync(); }, Qt::UniqueConnection);
 }
+
+
+void MainWindow::connectStartUpSignals()
+{
+    if (!factorySettings)
+        factorySettings = new FactorySettings(hardwareVersion, softwareVersion);
+
+    auto showRebootDialog = [this]() {
+        awsMqttsHandler->processReboot();
+        RebootDialog reboot(this);
+        reboot.exec();
+    };
+
+    connect(factSettings,    &FactSetting::rebootMCM,   this, showRebootDialog);
+    connect(factorySettings, &FactorySettings::rebootMCM, this, showRebootDialog);
+}
+
 
 // -----------------------------
 // connectLoginSignals (restored & cleaned)
