@@ -124,10 +124,10 @@ public slots:
             QJsonObject reactiveA = energyA["reactive"].toObject();
 
             telemetry["T_C"]    = root["temperature"].toDouble();
-            telemetry["Epimp1"] = sdEnergy[1].negActEnergy[0] + sdEnergy[1].negActEnergy[1] + sdEnergy[1].negActEnergy[2];
-            telemetry["Epexp1"] = sdEnergy[1].posActEnergy[0] + sdEnergy[1].posActEnergy[1] + sdEnergy[1].posActEnergy[2];
-            telemetry["Eqimp1"] = sdEnergy[1].negReacEnergy[0] + sdEnergy[1].negReacEnergy[1] + sdEnergy[1].negReacEnergy[2];
-            telemetry["Eqexp1"] = sdEnergy[1].posReacEnergy[0] + sdEnergy[1].posReacEnergy[1] + sdEnergy[1].posReacEnergy[2];
+            telemetry["Epexp1"] = sdEnergy[1].negActEnergy[0] + sdEnergy[1].negActEnergy[1] + sdEnergy[1].negActEnergy[2];
+            telemetry["Epimp1"] = sdEnergy[1].posActEnergy[0] + sdEnergy[1].posActEnergy[1] + sdEnergy[1].posActEnergy[2];
+            telemetry["Eqexp1"] = sdEnergy[1].negReacEnergy[0] + sdEnergy[1].negReacEnergy[1] + sdEnergy[1].negReacEnergy[2];
+            telemetry["Eqimp1"] = sdEnergy[1].posReacEnergy[0] + sdEnergy[1].posReacEnergy[1] + sdEnergy[1].posReacEnergy[2];
         } 
         // =================== OUTGOING CHANNELS ===================
         else {
@@ -164,10 +164,10 @@ public slots:
             telemetry[prefix + "S"] = S_R + S_Y + S_B;
 
             telemetry[prefix + "T"]     = root["temperature"].toDouble();
-            telemetry[prefix + "Epimp"] = sdEnergy[channel].negActEnergy[0] + sdEnergy[channel].negActEnergy[1] + sdEnergy[channel].negActEnergy[2];
-            telemetry[prefix + "Epexp"] = sdEnergy[channel].posActEnergy[0] + sdEnergy[channel].posActEnergy[1] + sdEnergy[channel].posActEnergy[2];
-            telemetry[prefix + "Eqimp"] = sdEnergy[channel].negReacEnergy[0] + sdEnergy[channel].negReacEnergy[1] + sdEnergy[channel].negReacEnergy[2];
-            telemetry[prefix + "Eqexp"] = sdEnergy[channel].posReacEnergy[0] + sdEnergy[channel].posReacEnergy[1] + sdEnergy[channel].posReacEnergy[2];
+            telemetry[prefix + "Epexp"] = sdEnergy[channel].negActEnergy[0] + sdEnergy[channel].negActEnergy[1] + sdEnergy[channel].negActEnergy[2];
+            telemetry[prefix + "Epimp"] = sdEnergy[channel].posActEnergy[0] + sdEnergy[channel].posActEnergy[1] + sdEnergy[channel].posActEnergy[2];
+            telemetry[prefix + "Eqexp"] = sdEnergy[channel].negReacEnergy[0] + sdEnergy[channel].negReacEnergy[1] + sdEnergy[channel].negReacEnergy[2];
+            telemetry[prefix + "Eqimp"] = sdEnergy[channel].posReacEnergy[0] + sdEnergy[channel].posReacEnergy[1] + sdEnergy[channel].posReacEnergy[2];
         }
 
         QMap<int, QJsonObject> snapshotCopy;

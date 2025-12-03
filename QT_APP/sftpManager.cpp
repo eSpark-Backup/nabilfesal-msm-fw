@@ -357,10 +357,10 @@ void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
         QJsonObject reactiveA = energyA["reactive"].toObject();
 
         telemetry["T_C"]    = root["temperature"].toDouble();
-        telemetry["Epimp1"] = sftpEnergy[1].negActEnergy[0] + sftpEnergy[1].negActEnergy[1] + sftpEnergy[1].negActEnergy[2];
-        telemetry["Epexp1"] = sftpEnergy[1].posActEnergy[0] + sftpEnergy[1].posActEnergy[1] + sftpEnergy[1].posActEnergy[2];
-        telemetry["Eqimp1"] = sftpEnergy[1].negReacEnergy[0] + sftpEnergy[1].negReacEnergy[1] + sftpEnergy[1].negReacEnergy[2];
-        telemetry["Eqexp1"] = sftpEnergy[1].posReacEnergy[0] + sftpEnergy[1].posReacEnergy[1] + sftpEnergy[1].posReacEnergy[2];
+        telemetry["Epexp1"] = sftpEnergy[1].negActEnergy[0] + sftpEnergy[1].negActEnergy[1] + sftpEnergy[1].negActEnergy[2];
+        telemetry["Epimp1"] = sftpEnergy[1].posActEnergy[0] + sftpEnergy[1].posActEnergy[1] + sftpEnergy[1].posActEnergy[2];
+        telemetry["Eqexp1"] = sftpEnergy[1].negReacEnergy[0] + sftpEnergy[1].negReacEnergy[1] + sftpEnergy[1].negReacEnergy[2];
+        telemetry["Eqimp1"] = sftpEnergy[1].posReacEnergy[0] + sftpEnergy[1].posReacEnergy[1] + sftpEnergy[1].posReacEnergy[2];
     }
     else
     {
@@ -399,10 +399,10 @@ void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
         telemetry[prefix + "S"] = S_R + S_B + S_Y;
 
         telemetry[prefix + "T"]     = root["temperature"].toDouble();
-        telemetry[prefix + "Epimp"] = sftpEnergy[channel].negActEnergy[0] + sftpEnergy[channel].negActEnergy[1] + sftpEnergy[channel].negActEnergy[2];
-        telemetry[prefix + "Epexp"] = sftpEnergy[channel].posActEnergy[0] + sftpEnergy[channel].posActEnergy[1] + sftpEnergy[channel].posActEnergy[2];
-        telemetry[prefix + "Eqimp"] = sftpEnergy[channel].negReacEnergy[0] + sftpEnergy[channel].negReacEnergy[1] + sftpEnergy[channel].negReacEnergy[2];
-        telemetry[prefix + "Eqexp"] = sftpEnergy[channel].posReacEnergy[0] + sftpEnergy[channel].posReacEnergy[1] + sftpEnergy[channel].posReacEnergy[2];
+        telemetry[prefix + "Epexp"] = sftpEnergy[channel].negActEnergy[0] + sftpEnergy[channel].negActEnergy[1] + sftpEnergy[channel].negActEnergy[2];
+        telemetry[prefix + "Epimp"] = sftpEnergy[channel].posActEnergy[0] + sftpEnergy[channel].posActEnergy[1] + sftpEnergy[channel].posActEnergy[2];
+        telemetry[prefix + "Eqexp"] = sftpEnergy[channel].negReacEnergy[0] + sftpEnergy[channel].negReacEnergy[1] + sftpEnergy[channel].negReacEnergy[2];
+        telemetry[prefix + "Eqimp"] = sftpEnergy[channel].posReacEnergy[0] + sftpEnergy[channel].posReacEnergy[1] + sftpEnergy[channel].posReacEnergy[2];
     }
     
     QWriteLocker locker(&telemetryLock);

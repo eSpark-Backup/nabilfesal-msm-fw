@@ -316,10 +316,10 @@ void mqttManager::processIncomingJson(int channel, const QJsonObject &payload)
         QJsonObject reactiveA = energyA["reactive"].toObject();
 
         telemetry["T_C"]    = root["temperature"].toDouble();
-        telemetry["Epimp1"] = mqttEnergy[1].negActEnergy[0] + mqttEnergy[1].negActEnergy[1] + mqttEnergy[1].negActEnergy[2];
-        telemetry["Epexp1"] = mqttEnergy[1].posActEnergy[0] + mqttEnergy[1].posActEnergy[1] + mqttEnergy[1].posActEnergy[2];
-        telemetry["Eqimp1"] = mqttEnergy[1].negReacEnergy[0] + mqttEnergy[1].negReacEnergy[1] + mqttEnergy[1].negReacEnergy[2];
-        telemetry["Eqexp1"] = mqttEnergy[1].posReacEnergy[0] + mqttEnergy[1].posReacEnergy[1] + mqttEnergy[1].posReacEnergy[2];
+        telemetry["Epexp1"] = mqttEnergy[1].negActEnergy[0] + mqttEnergy[1].negActEnergy[1] + mqttEnergy[1].negActEnergy[2];
+        telemetry["Epimp1"] = mqttEnergy[1].posActEnergy[0] + mqttEnergy[1].posActEnergy[1] + mqttEnergy[1].posActEnergy[2];
+        telemetry["Eqexp1"] = mqttEnergy[1].negReacEnergy[0] + mqttEnergy[1].negReacEnergy[1] + mqttEnergy[1].negReacEnergy[2];
+        telemetry["Eqimp1"] = mqttEnergy[1].posReacEnergy[0] + mqttEnergy[1].posReacEnergy[1] + mqttEnergy[1].posReacEnergy[2];
     }
     else
     {
@@ -358,10 +358,10 @@ void mqttManager::processIncomingJson(int channel, const QJsonObject &payload)
         telemetry[prefix + "S"] = std::round((S_R + S_B + S_Y) * 100.0) / 100.0;
 
         telemetry[prefix + "T"]     = root["temperature"].toDouble();
-        telemetry[prefix + "Epimp"] = mqttEnergy[channel].negActEnergy[0] + mqttEnergy[channel].negActEnergy[1] + mqttEnergy[channel].negActEnergy[2];
-        telemetry[prefix + "Epexp"] = mqttEnergy[channel].posActEnergy[0] + mqttEnergy[channel].posActEnergy[1] + mqttEnergy[channel].posActEnergy[2];
-        telemetry[prefix + "Eqimp"] = mqttEnergy[channel].negReacEnergy[0] + mqttEnergy[channel].negReacEnergy[1] + mqttEnergy[channel].negReacEnergy[2];
-        telemetry[prefix + "Eqexp"] = mqttEnergy[channel].posReacEnergy[0] + mqttEnergy[channel].posReacEnergy[1] + mqttEnergy[channel].posReacEnergy[2];
+        telemetry[prefix + "Epexp"] = mqttEnergy[channel].negActEnergy[0] + mqttEnergy[channel].negActEnergy[1] + mqttEnergy[channel].negActEnergy[2];
+        telemetry[prefix + "Epimp"] = mqttEnergy[channel].posActEnergy[0] + mqttEnergy[channel].posActEnergy[1] + mqttEnergy[channel].posActEnergy[2];
+        telemetry[prefix + "Eqexp"] = mqttEnergy[channel].negReacEnergy[0] + mqttEnergy[channel].negReacEnergy[1] + mqttEnergy[channel].negReacEnergy[2];
+        telemetry[prefix + "Eqimp"] = mqttEnergy[channel].posReacEnergy[0] + mqttEnergy[channel].posReacEnergy[1] + mqttEnergy[channel].posReacEnergy[2];
     }
     
     QWriteLocker locker(&telemetryLock);
