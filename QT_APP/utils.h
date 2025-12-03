@@ -19,6 +19,7 @@ void rebootSystem();
 void mainSound();
 bool updateSerialInConfig(const QString &AwsEp);
 QString getSignalCategoryFromFile(const QString &filePath = "/MSM/potential-pancake/MSM/bin/at_axec/responses.txt");
+QString extractImeiFromResponses(const QString &filePath);
 QLabel *showImageFullscreenFor(const QString &imagePath, int milliseconds);
 QString getFirmwareVersion();
 QString getHardwareVersion();

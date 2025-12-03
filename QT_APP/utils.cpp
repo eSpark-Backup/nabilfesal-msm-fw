@@ -122,27 +122,82 @@ bool setNtpServers(const QStringList &servers)
 }
 
 
+QString extractImeiFromResponses(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return "UNKNOWN";
+
+    QString content = file.readAll();
+    file.close();
+
+    // Find the "AT+GSN" command block
+    QStringList lines = content.split("\n");
+    bool inGsnBlock = false;
+
+    for (QString line : lines) {
+        line = line.trimmed();
+
+        if (line.contains("command:", Qt::CaseInsensitive) &&
+            line.contains("AT+GSN", Qt::CaseInsensitive)) 
+        {
+            inGsnBlock = true;
+            continue;
+        }
+
+        if (inGsnBlock) {
+            // Skip "response:" or "AT+GSN" echo
+            if (line.isEmpty() ||
+                line.startsWith("response", Qt::CaseInsensitive) ||
+                line.compare("AT+GSN", Qt::CaseInsensitive) == 0)
+                continue;
+
+            // IMEI must be a digit-only string, typically 14–17 digits
+            if (line.contains(QRegularExpression("^\\d{14,17}$"))) {
+                return line;
+            }
+
+            // If we hit something else, exit the block
+            if (line.startsWith("command:", Qt::CaseInsensitive))
+                break;
+        }
+    }
+
+    return "UNKNOWN";
+}
+
+
 QString getDeviceImei()
 {
-    // Try modems 0,1,2 in sequence
-    for (int i = 0; i < 3; ++i) {
-        QProcess process;
-        process.start("mmcli", {"-m", QString::number(i)});
-        if (!process.waitForFinished(3000))  // 3s max
-            continue;
+    #if defined(BUILD_V3S)
+    QProcess scanProcess;
+    scanProcess.start("mmcli", {"-S"});
+    if (!scanProcess.waitForFinished(3000))
+        return "UNKNOWN";
+    if (scanProcess.exitCode() != 0)
+        return "UNKNOWN";
 
+    QProcess process;
+    process.start("mmcli", {"-m", "any"});
+    if (process.waitForFinished(3000)) {
         QString output = process.readAllStandardOutput();
+
         for (const QString &line : output.split("\n")) {
-            QString trimmedLine = line.trimmed();
-            if (trimmedLine.startsWith("imei", Qt::CaseInsensitive) ||
-                trimmedLine.contains("imei", Qt::CaseInsensitive) ||
-                trimmedLine.startsWith("equipment id", Qt::CaseInsensitive) ||
-                trimmedLine.contains("equipment id", Qt::CaseInsensitive)) {
-                return trimmedLine.section(":", 1).trimmed();
+            QString trimmed = line.trimmed();
+
+            if (trimmed.contains("imei", Qt::CaseInsensitive) ||
+                trimmed.contains("equipment id", Qt::CaseInsensitive))
+            {
+                return trimmed.section(":", 1).trimmed();
             }
         }
     }
-    return "UNKNOWN";
+
+    QString imei = extractImeiFromResponses("/MSM/potential-pancake/MSM/bin/at_axec/responses.txt");
+    #elif defined(BUILD_X86)
+    QString imei = "UNKNOWN";
+    #endif
+    return imei;
 }
 
 QString getSignalCategoryFromFile(const QString &filePath)

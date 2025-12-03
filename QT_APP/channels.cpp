@@ -364,6 +364,7 @@ void ChannelsHome::cacheChannelLabels() {
 
 void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
     QString suffix = QString::number(channel);
+    int uiIndex = 1;
     QPushButton* chBtn = findChild<QPushButton*>("channel_bt_" + suffix);
     int status = json.value("status").toInt();
     if (chBtn) chBtn->setDisabled(status != 1);
@@ -384,7 +385,7 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
     }
 
     auto updateChannelLabels = [&](int ch) {
-        QString chSuffix = QString::number(ch);
+        QString chSuffix = QString::number(1);
         QJsonObject chData = json.value("data").toObject();
 
         for (const QString &phase : {"phase_a", "phase_b", "phase_c"}) {
@@ -394,11 +395,10 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
 
             QJsonObject general = phaseObj.value("general").toObject();
             QJsonObject power = phaseObj.value("power").toObject();
-
             auto setValue = [&](const QString &key, double val) {
                 QString name = key + prefix + chSuffix;
-                if (channelLabelMap[ch].contains(name)) {
-                    channelLabelMap[ch][name]->setText(QString::number(val, 'f', 2));
+                if (channelLabelMap[uiIndex].contains(name)) {
+                    channelLabelMap[uiIndex][name]->setText(QString::number(val, 'f', 2));
                 }
             };
 
@@ -423,8 +423,8 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
 
             auto setEnergy = [&](const QString &key, double val) {
                 QString name = key + phase + "_" + chSuffix;
-                if (channelLabelMap[ch].contains(name)) {
-                    channelLabelMap[ch][name]->setText(QString::number(val, 'f', 2));
+                if (channelLabelMap[uiIndex].contains(name)) {
+                    channelLabelMap[uiIndex][name]->setText(QString::number(val, 'f', 2));
                 }
             };
 
@@ -436,11 +436,10 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
 
     // Update only the current channel temperature button
     if (channel == m_channel) {
+        updateChannelLabels(channel);
         double temp = json.value("temperature").toDouble();
         handleTempButton(true, temp);
     }
-
-    updateChannelLabels(channel);
     saveEnergyData();
 }
 
