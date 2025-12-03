@@ -96,9 +96,9 @@ private:
     void connectStartUpSignals();
 
 public:
-    mqttManager *mqttHandler = nullptr;
-    sftpManager *sftpHandler = nullptr;
-    AwsMqttManager *awsMqttsHandler = nullptr;
+    mqttManager *adminMqttHandler = nullptr;
+    sftpManager *adminSftpHandler = nullptr;
+    AwsMqttManager *adminMqttsHandler = nullptr;
 
 private:
     static MainWindow* m_instance;

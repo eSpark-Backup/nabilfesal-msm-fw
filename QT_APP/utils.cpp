@@ -28,6 +28,7 @@ void keySound() {
     });
 }
 
+
 void mainSound() {
     QProcess::startDetached("sh", {"-c", "echo 0 > /sys/class/backlight/backlight/bl_power"});
 
@@ -77,6 +78,7 @@ QJsonObject getNtpStatus()
 
     return result;
 }
+
 
 bool setNtpServers(const QStringList &servers)
 {
@@ -201,6 +203,7 @@ QString getDeviceImei()
     return imei;
 }
 
+
 QString getSignalCategoryFromFile(const QString &filePath)
 {
     QFile file(filePath);
@@ -229,6 +232,7 @@ QString getSignalCategoryFromFile(const QString &filePath)
     else return QString("Low (%1)").arg(dBm);
 }
 
+
 QString getDeviceIp()
 {
     foreach (const QNetworkInterface &iface, QNetworkInterface::allInterfaces()) {
@@ -244,6 +248,7 @@ QString getDeviceIp()
     }
     return "0.0.0.0"; // fallback if not found
 }
+
 
 QString getUid()
 {
@@ -282,23 +287,25 @@ QString getDevPassword()
 QString getMqttStatus()
 {
     auto w = MainWindow::instance();
-    if (w && w->mqttHandler && w->mqttHandler->mqttState())
+    if (w && w->adminMqttHandler && w->adminMqttHandler->mqttState())
         return "Connected";
     return "Disconnected";
 }
+
 
 QString getMqttsStatus()
 {
     auto w = MainWindow::instance();
-    if (w && w->awsMqttsHandler && w->awsMqttsHandler->awsMqttsState())
+    if (w && w->adminMqttsHandler && w->adminMqttsHandler->awsMqttsState())
         return "Connected";
     return "Disconnected";
 }
 
+
 QString getSftpStatus()
 {
     auto w = MainWindow::instance();
-    if (w && w->sftpHandler && w->sftpHandler->sftpState())
+    if (w && w->adminSftpHandler && w->adminSftpHandler->sftpState())
         return "Connected";
     return "Disconnected";
 }
@@ -391,6 +398,7 @@ QLabel *showImageFullscreenFor(const QString &imagePath, int milliseconds)
     return label;
 }
 
+
 QString getFirmwareVersion()
 {
     QString softwareVersion;
@@ -407,6 +415,7 @@ QString getFirmwareVersion()
 
     return softwareVersion;
 }
+
 
 QString getHardwareVersion()
 {
@@ -425,6 +434,7 @@ QString getHardwareVersion()
     return hardwareVersion;
 }
 
+
 QString getLastOTAInitiated()
 {
     QString otaTime;
@@ -441,6 +451,7 @@ QString getLastOTAInitiated()
 
     return otaTime;
 }
+
 
 void setLastOTAInitiated()
 {
@@ -464,6 +475,7 @@ void setLastOTAInitiated()
         file.close();
     }
 }
+
 
 QStringList getAvailableVersions()
 {
@@ -530,5 +542,4 @@ QJsonObject readJsonFile(const QString &filePath)
 
     return doc.object();
 }
-
 }
