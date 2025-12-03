@@ -15,12 +15,6 @@
 #define MQTT_PATH "config/mqtt_settings.json"
 
 
-mqttManager& mqttManager::instance()
-{
-    static mqttManager _instance;  // created on first call, shared afterwards
-    return _instance;
-}
-
 mqttManager::mqttManager(QObject *parent) : QObject(parent)
 {
     mqttClient = new QMqttClient(this);

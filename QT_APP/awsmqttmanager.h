@@ -35,8 +35,8 @@ class AwsMqttManager : public QObject
 {
     Q_OBJECT
 public:
-    static AwsMqttManager& instance();
-
+    explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
+    AwsMqttManager(const AwsMqttManager&) = delete;     // prevent copy
     bool loadAwsConfig(const QString &filePath);
     void reloadAwsMqttsSettings();
     void disconnectAwsClient();
@@ -75,9 +75,6 @@ public slots:
     void updateAccumulatedEnergy(const std::array<EnergyData,13> &energyData);
     
 private:
-    explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
-    AwsMqttManager(const AwsMqttManager&) = delete;     // prevent copy
-    AwsMqttManager& operator=(const AwsMqttManager&) = delete; // prevent assignment
     void publishMessage(const QString pubTopic, const QString &payload);
     void subscribeToTopic();
     void awsTopicsInit();

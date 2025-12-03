@@ -10,14 +10,6 @@
 
 #define SFTP_PATH "config/sftp_settings.json"
 
-
-sftpManager& sftpManager::instance()
-{
-    static sftpManager _instance;  // created on first call, shared afterwards
-    return _instance;
-}
-
-
 sftpManager::sftpManager(QObject *parent) : QObject(parent)
 {
     // existing code ...

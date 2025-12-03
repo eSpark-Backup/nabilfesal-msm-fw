@@ -31,12 +31,6 @@ bool AwsMqttManager::debugEnabled()
 }
 
 
-AwsMqttManager& AwsMqttManager::instance()
-{
-    static AwsMqttManager _instance;  // created on first call, shared afterwards
-    return _instance;
-}
-
 AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
 {
     awsMqttsClient = new QMqttClient(this);

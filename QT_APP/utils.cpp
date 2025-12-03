@@ -17,6 +17,7 @@
 #include <QLabel>
 #include <QPixmap>
 #include <QDir>
+#include "mainwindow.h"
 
 namespace Utils {
 void keySound() {
@@ -280,29 +281,26 @@ QString getDevPassword()
 
 QString getMqttStatus()
 {
-    mqttManager &mqtt = mqttManager::instance();
-    if (mqtt.mqttState())
+    auto w = MainWindow::instance();
+    if (w && w->mqttHandler && w->mqttHandler->mqttState())
         return "Connected";
-    else
-        return "Disconnected";
+    return "Disconnected";
 }
 
 QString getMqttsStatus()
 {
-    AwsMqttManager &mqtts = AwsMqttManager::instance();
-    if (mqtts.awsMqttsState())
+    auto w = MainWindow::instance();
+    if (w && w->awsMqttsHandler && w->awsMqttsHandler->awsMqttsState())
         return "Connected";
-    else
-        return "Disconnected";
+    return "Disconnected";
 }
 
 QString getSftpStatus()
 {
-    sftpManager &sftp = sftpManager::instance();
-    if (sftp.sftpState())
+    auto w = MainWindow::instance();
+    if (w && w->sftpHandler && w->sftpHandler->sftpState())
         return "Connected";
-    else
-        return "Disconnected";
+    return "Disconnected";
 }
 
 

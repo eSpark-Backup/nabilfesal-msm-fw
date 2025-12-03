@@ -9,8 +9,8 @@ class mqttManager : public QObject
 {
     Q_OBJECT
 public:
-    static mqttManager& instance();
-
+    explicit mqttManager(QObject *parent = nullptr); // private ctor
+    mqttManager(const mqttManager&) = delete;     // prevent copy
     bool loadConfig(const QString &filePath);
     void reloadSettings();
     void disconnectClient();
@@ -25,9 +25,6 @@ public slots:
     void updateAccumulatedEnergy(const std::array<EnergyData,13> &energyData);
 
 private:
-    explicit mqttManager(QObject *parent = nullptr); // private ctor
-    mqttManager(const mqttManager&) = delete;     // prevent copy
-    mqttManager& operator=(const mqttManager&) = delete; // prevent assignment
     void initializeTelemetryJson();
     void connectToBroker();
     void disconnectFromBroker();

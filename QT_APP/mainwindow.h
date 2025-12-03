@@ -37,6 +37,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    static MainWindow* instance();
+    static void setInstance(MainWindow* ptr);
     explicit MainWindow(QWidget *parent = nullptr);
     void sendFileWithDelay(const QStringList &files, int index = 0);
     ~MainWindow();
@@ -93,7 +95,13 @@ private:
     void connectFactSettings(FactSetting *fs);
     void connectStartUpSignals();
 
+public:
+    mqttManager *mqttHandler = nullptr;
+    sftpManager *sftpHandler = nullptr;
+    AwsMqttManager *awsMqttsHandler = nullptr;
+
 private:
+    static MainWindow* m_instance;
     Ui::MainWindow *ui;
 
     // major UI components (created lazily, reused instead of deleted/recreated)
@@ -110,12 +118,7 @@ private:
     CalibrationDialog *gainCalibrator = nullptr;
     Diagnostics *alerts = nullptr;
     InactivityWatcher *inActWatcher = nullptr;
-    
-    // managers (mostly singletons)
     settingsManager *settingsHandler = nullptr;
-    mqttManager *mqttHandler = &mqttManager::instance();
-    sftpManager *sftpHandler = &sftpManager::instance();
-    AwsMqttManager *awsMqttsHandler = &AwsMqttManager::instance();
 
     // state
     int progressValue = 0;

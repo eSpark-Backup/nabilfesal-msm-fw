@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
     a.installEventFilter(sound);
 
     MainWindow w;
+    MainWindow::setInstance(&w);
     w.show();
     return a.exec();
 }

@@ -11,8 +11,8 @@ class sftpManager : public QObject
 {
     Q_OBJECT
 public:
-    static sftpManager& instance();
-
+    explicit sftpManager(QObject *parent = nullptr);
+    sftpManager(const sftpManager&) = delete;
     bool loadConfig(const QString &filePath);
     void reloadSettings();
     void disconnectClient();
@@ -26,9 +26,6 @@ public slots:
     void updateAccumulatedEnergy(const std::array<EnergyData,13> &energyData);
 
 private:
-    explicit sftpManager(QObject *parent = nullptr);
-    sftpManager(const sftpManager&) = delete;
-    sftpManager& operator=(const sftpManager&) = delete;
     void connectToSftp();
     void disconnectFromSftp();
     void scheduleSftpUpload();

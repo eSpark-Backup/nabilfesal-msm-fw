@@ -17,6 +17,22 @@
 #include "toast.h"
 #include "rebootdialog.h"
 
+
+// -----------------------------
+// Singleton static pointer
+// -----------------------------
+MainWindow* MainWindow::m_instance = nullptr;
+
+MainWindow* MainWindow::instance()
+{
+    return m_instance;
+}
+
+void MainWindow::setInstance(MainWindow* ptr)
+{
+    m_instance = ptr;
+}
+
 // -----------------------------
 // Constructor / Destructor
 // -----------------------------
@@ -173,6 +189,10 @@ void MainWindow::setupLogin()
 {
     login = new LoginWidget(hardwareVersion, softwareVersion);
 
+    if(!mqttHandler) mqttHandler = new mqttManager(this);
+    if(!sftpHandler) sftpHandler = new sftpManager(this);
+    if(!awsMqttsHandler) awsMqttsHandler = new AwsMqttManager(this);
+    
     // simple routing: handlers implemented as slots
     connect(login, &LoginWidget::loadChannels, this, &MainWindow::onLoadChannels);
     connect(login, &LoginWidget::adminLoginSuccess, this, &MainWindow::onAdminLogin);
