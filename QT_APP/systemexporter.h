@@ -284,9 +284,9 @@ private slots:
         const QJsonObject obj1 = snapshotCopy.value(1);
 
         for (const QString &k : baseKeysIncoming) {
-                 if (k == "Epimp1") row << "\"" + QString::number(sdEnergy[1].negActEnergy[0] + sdEnergy[1].negActEnergy[1] + sdEnergy[1].negActEnergy[2], 'f', 2) + "\"";
-            else if (k == "Epexp1") row << "\"" + QString::number(sdEnergy[1].posActEnergy[0] + sdEnergy[1].posActEnergy[1] + sdEnergy[1].posActEnergy[2], 'f', 2) + "\"";
-            else if (k == "Eqimp1") row << "\"" + QString::number(sdEnergy[1].negReacEnergy[0] + sdEnergy[1].negReacEnergy[1] + sdEnergy[1].negReacEnergy[2], 'f', 2) + "\"";
+                 if (k == "Epexp1") row << "\"" + QString::number(sdEnergy[1].negActEnergy[0] + sdEnergy[1].negActEnergy[1] + sdEnergy[1].negActEnergy[2], 'f', 2) + "\"";
+            else if (k == "Epimp1") row << "\"" + QString::number(sdEnergy[1].posActEnergy[0] + sdEnergy[1].posActEnergy[1] + sdEnergy[1].posActEnergy[2], 'f', 2) + "\"";
+            else if (k == "Eqexp1") row << "\"" + QString::number(sdEnergy[1].negReacEnergy[0] + sdEnergy[1].negReacEnergy[1] + sdEnergy[1].negReacEnergy[2], 'f', 2) + "\"";
             else if (k == "Eqexp1") row << "\"" + QString::number(sdEnergy[1].posReacEnergy[0] + sdEnergy[1].posReacEnergy[1] + sdEnergy[1].posReacEnergy[2], 'f', 2) + "\"";
             else
                 row << "\"" + QString::number(obj1.value(k).toDouble(), 'f', 2) + "\"";
@@ -300,7 +300,7 @@ private slots:
             for (const QString &k : baseKeysOutgoing) {
                 QString fullKey;
 
-                if (k == "Epimp") {
+                if (k == "Epexp") {
                     double total =
                         sdEnergy[ch].negActEnergy[0] +
                         sdEnergy[ch].negActEnergy[1] +
@@ -308,7 +308,7 @@ private slots:
 
                     row << "\"" + QString::number(total, 'f', 2) + "\"";
                 }
-                else if (k == "Epexp") {
+                else if (k == "Epimp") {
                     double total =
                         sdEnergy[ch].posActEnergy[0] +
                         sdEnergy[ch].posActEnergy[1] +
@@ -316,7 +316,7 @@ private slots:
 
                     row << "\"" + QString::number(total, 'f', 2) + "\"";
                 }
-                else if (k == "Eqimp") {
+                else if (k == "Eqexp") {
                     double total =
                         sdEnergy[ch].negReacEnergy[0] +
                         sdEnergy[ch].negReacEnergy[1] +
@@ -324,7 +324,7 @@ private slots:
 
                     row << "\"" + QString::number(total, 'f', 2) + "\"";
                 }
-                else if (k == "Eqexp") {
+                else if (k == "Eqimp") {
                     double total =
                         sdEnergy[ch].posReacEnergy[0] +
                         sdEnergy[ch].posReacEnergy[1] +
