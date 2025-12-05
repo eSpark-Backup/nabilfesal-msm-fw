@@ -1,0 +1,225 @@
+#!/bin/sh
+set -eu
+# Simple A/B OTA updater for your LicheePi (Buildroot image)
+# Usage: ota-update <META_URL>
+# Where META_URL contains a single line: "<VERSION> <URL> <SHA256>"
+# or call with direct URL: ota-update https://host/ota-1.2.3.tar.bz2
+
+TMPDIR=/var/ota
+BOOT_PART=/dev/mmcblk0p1
+ROOT_A=/dev/mmcblk0p2
+ROOT_B=/dev/mmcblk0p3
+BOOT_MNT=/var/bootmnt
+EXTR=/var/ota_extr
+
+# tools (fall back to wget or curl)
+fetch() {
+  url=$1; out=$2
+  if command -v wget >/dev/null 2>&1; then
+    wget -q -O "$out" "$url"
+  elif command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$out" "$url"
+  else
+    echo "ERROR: need wget or curl" >&2
+    exit 2
+  fi
+}
+
+# Check args
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <META_URL or direct OTA_URL>"
+  exit 1
+fi
+
+INPUT="$1"
+mkdir -p "$TMPDIR" "$BOOT_MNT" "$EXTR"
+
+# discover active bank
+if ! command -v fw_printenv >/dev/null 2>&1; then
+  echo "ERROR: fw_printenv not available" >&2
+  exit 2
+fi
+
+ACTIVE=$(fw_printenv -n bank 2>/dev/null || true)
+if [ -z "$ACTIVE" ]; then
+  echo "No 'bank' variable found. Assuming bank=0 (A)."
+  ACTIVE=0
+fi
+
+if [ "$ACTIVE" = "0" ] || [ "$ACTIVE" = "bank_a" ]; then
+  INACTIVE_BANK=1
+  TARGET_ROOT=$ROOT_B
+  KERNEL_NAME=kernel_b
+  DTB_NAME=dtb_b
+  PREV_BANK=bank_a
+  NEW_BANK=bank_b
+else
+  INACTIVE_BANK=0
+  TARGET_ROOT=$ROOT_A
+  KERNEL_NAME=kernel_a
+  DTB_NAME=dtb_a
+  PREV_BANK=bank_b
+  NEW_BANK=bank_a
+fi
+
+echo "Active bank: $ACTIVE -> writing to inactive bank: $INACTIVE_BANK ($TARGET_ROOT)"
+
+# fetch metadata or treat input as direct OTA URL
+if echo "$INPUT" | grep -qE '^https?://'; then
+  OTA_URL="$INPUT"
+  # no metadata: skip version check, checksum must be provided as optional second arg
+  OTA_SHA256=${2:-}
+  OTA_NAME="$TMPDIR/ota.tar.bz2"
+  echo "Downloading OTA from $OTA_URL..."
+  fetch "$OTA_URL" "$OTA_NAME"
+else
+  META="$TMPDIR/meta.txt"
+  echo "Downloading metadata $INPUT..."
+  fetch "$INPUT" "$META"
+  # meta expected: "<VERSION> <URL> <SHA256>" or "URL SHA256"
+  read -r VER OTA_URL OTA_SHA256 <<EOF
+$(awk 'NF>0{print $0; exit}' "$META" || true)
+EOF
+  if [ -z "$OTA_URL" ]; then
+    echo "Invalid metadata file. Expected: VERSION URL SHA256 or URL SHA256" >&2
+    exit 2
+  fi
+  OTA_NAME="$TMPDIR/ota.tar.bz2"
+  echo "Downloading OTA $OTA_URL..."
+  fetch "$OTA_URL" "$OTA_NAME"
+fi
+
+# verify checksum if provided
+if [ -n "${OTA_SHA256:-}" ]; then
+  echo "${OTA_SHA256}  $OTA_NAME" > "$TMPDIR/ota.sha256"
+  if ! sha256sum -c "$TMPDIR/ota.sha256"; then
+    echo "Checksum failed" >&2
+    exit 2
+  fi
+  echo "Checksum OK"
+else
+  echo "No SHA256 provided — skipping verification"
+fi
+
+# extract OTA contents
+rm -rf "$EXTR" || true
+mkdir -p "$EXTR"
+echo "Extracting OTA..."
+
+case "$OTA_NAME" in
+  *.tar.bz2)
+    # BusyBox tar may not support -j, so use bunzip2 if available
+    if command -v bunzip2 >/dev/null 2>&1; then
+      bunzip2 -c "$OTA_NAME" | tar -xf - -C "$EXTR"
+    else
+      echo "bunzip2 not available, cannot extract .tar.bz2" >&2
+      exit 2
+    fi
+    ;;
+  *.tar.gz|*.tgz)
+    if command -v gunzip >/dev/null 2>&1; then
+      gunzip -c "$OTA_NAME" | tar -xf - -C "$EXTR"
+    else
+      echo "gunzip not available, cannot extract .tar.gz" >&2
+      exit 2
+    fi
+    ;;
+  *.tar)
+    tar -xf "$OTA_NAME" -C "$EXTR"
+    ;;
+  *)
+    echo "Unknown archive format: $OTA_NAME" >&2
+    exit 2
+    ;;
+esac
+
+# expected files: kernel, dtb, rootfs.ext4 OR rootfs.tar
+if [ -f "$EXTR/kernel" ]; then
+  KERNEL_FILE="$EXTR/kernel"
+elif [ -f "$EXTR/zImage" ]; then
+  KERNEL_FILE="$EXTR/zImage"
+else
+  echo "ERROR: kernel file (kernel or zImage) not found in OTA" >&2
+  ls -l "$EXTR"
+  exit 2
+fi
+
+# dtb
+if [ -f "$EXTR/dtb" ]; then
+  DTB_FILE="$EXTR/dtb"
+else
+  # try common names
+  DTB_FILE=$(ls "$EXTR"/*.dtb 2>/dev/null | head -n1 || true)
+  if [ -z "$DTB_FILE" ]; then
+    echo "ERROR: dtb not found in OTA" >&2
+    exit 2
+  fi
+fi
+
+# rootfs: prefer ext4 image, else tarball
+if [ -f "$EXTR/rootfs.ext4" ]; then
+  ROOTIMG="$EXTR/rootfs.ext4"
+  USE_IMAGE=1
+elif [ -f "$EXTR/rootfs.tar" ] || [ -f "$EXTR/rootfs.tar.bz2" ] || [ -f "$EXTR/rootfs.tar.gz" ]; then
+  USE_IMAGE=0
+  if [ -f "$EXTR/rootfs.tar" ]; then ROOTTAR="$EXTR/rootfs.tar"; fi
+  if [ -f "$EXTR/rootfs.tar.bz2" ]; then ROOTTAR="$EXTR/rootfs.tar.bz2"; fi
+  if [ -f "$EXTR/rootfs.tar.gz" ]; then ROOTTAR="$EXTR/rootfs.tar.gz"; fi
+else
+  echo "ERROR: no rootfs found (rootfs.ext4 or rootfs.tar(.bz2/.gz))" >&2
+  exit 2
+fi
+
+# Mount boot and copy kernel/dtb to inactive names
+echo "Mounting boot partition ($BOOT_PART) ..."
+mount -t vfat "$BOOT_PART" "$BOOT_MNT" || { echo "Mount boot failed"; exit 2; }
+
+echo "Copying kernel and dtb to boot partition as $KERNEL_NAME / $DTB_NAME"
+cp -f "$KERNEL_FILE" "$BOOT_MNT/$KERNEL_NAME"
+cp -f "$DTB_FILE" "$BOOT_MNT/$DTB_NAME"
+sync
+umount "$BOOT_MNT"
+
+# FLASH rootfs to inactive partition
+echo "Flashing rootfs to inactive partition $TARGET_ROOT ..."
+if [ "$USE_IMAGE" -eq 1 ]; then
+  # check size
+  PART_SZ=$(blockdev --getsz "$TARGET_ROOT" 2>/dev/null || true)
+  if [ -z "$PART_SZ" ]; then
+    echo "Cannot get partition size for $TARGET_ROOT" >&2
+    exit 2
+  fi
+  PART_BYTES=$(expr "$PART_SZ" \* 512)
+  IMG_BYTES=$(stat -c%s "$ROOTIMG")
+  if [ "$IMG_BYTES" -ge "$PART_BYTES" ]; then
+    echo "ERROR: rootfs image is too large for target partition ($IMG_BYTES >= $PART_BYTES)" >&2
+    exit 2
+  fi
+
+  # Write image
+  dd if="$ROOTIMG" of="$TARGET_ROOT" bs=4M conv=fsync status=progress || { echo "dd failed"; exit 2; }
+  # run fsck
+  e2fsck -f -y "$TARGET_ROOT" || { echo "fsck failed"; exit 2; }
+else
+  # extract tar into partition by mounting it
+  MNT=$(mktemp -d)
+  mount "$TARGET_ROOT" "$MNT" || { echo "mount target failed"; exit 2; }
+  # remove old data (careful)
+  echo "Removing old files on target rootfs (this may take time)..."
+  rm -rf "$MNT"/* "$MNT"/.[!.]* || true
+  echo "Extracting tar to $MNT ..."
+  tar -xf "$ROOTTAR" -C "$MNT"
+  sync
+  umount "$MNT"
+fi
+
+# Finalize u-boot env:
+# set prev_bank to current active bank, clear boot_success, set bank to new bank
+echo "Staging update: switching bank to $NEW_BANK (previous: $ACTIVE)"
+fw_setenv prev_bank "${ACTIVE}"
+fw_setenv boot_success 0
+fw_setenv bank "${NEW_BANK}"
+sync
+
+echo "OTA staged. Rebooting into new bank..."
+reboot

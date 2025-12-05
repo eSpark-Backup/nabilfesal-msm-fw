@@ -1,0 +1,136 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          ota_check_service
+# Required-Start:    $network $remote_fs
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Periodically check for new OTA file on SFTP and trigger update
+### END INIT INFO
+
+SERVER="ap-southeast-1.sftpcloud.io"
+USER="ofp-msm"
+PASS="root123456"
+REMOTE_DIR="ota-test"
+
+OTA_SCRIPT="/etc/ota.sh"
+LOCAL_VERSION_FILE="/MSM/potential-pancake/MSM/bin/version.json"
+PIDFILE="/var/run/ota_check_service.pid"
+LOGFILE="/var/log/ota_check_service.log"
+CHECK_INTERVAL=60  # seconds
+
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOGFILE"
+}
+
+# Extract the latest MSM_X.Y.Z.zip file by manually comparing numbers
+get_latest_remote_file() {
+    SFTP_OUTPUT=$(sshpass -p "$PASS" sftp -oBatchMode=no -b - "$USER@$SERVER" <<EOF 2>/dev/null
+ls -1 $REMOTE_DIR
+EOF
+)
+
+    echo "$SFTP_OUTPUT" | grep -E 'MSM_[0-9]+\.[0-9]+\.[0-9]+\.zip$' | sed 's|.*/||' |
+    awk -F'[_ .]' '
+    {
+        # Extract version fields
+        major=$2; minor=$3; patch=$4
+        if (major+0 > max_major || (major==max_major && minor+0 > max_minor) || (major==max_major && minor==max_minor && patch+0 > max_patch)) {
+            max_major=major; max_minor=minor; max_patch=patch; latest=$0
+        }
+    }
+    END { print latest }'
+}
+
+get_local_version() {
+    if [ -f "$LOCAL_VERSION_FILE" ]; then
+        jq -r '.software_version // empty' "$LOCAL_VERSION_FILE" 2>/dev/null
+    fi
+}
+
+check_and_update() {
+    log "Checking for new OTA..."
+
+    LATEST_FILE=$(get_latest_remote_file)
+    if [ -z "$LATEST_FILE" ]; then
+        log "No OTA files found on server."
+        return
+    fi
+
+    # Trim spaces/newlines from both versions
+    REMOTE_VERSION=$(echo "$REMOTE_VERSION" | tr -d '\r\n[:space:]')
+    LOCAL_VERSION=$(echo "$LOCAL_VERSION" | tr -d '\r\n[:space:]')
+
+    if [ -n "$REMOTE_VERSION" ] && [ "$REMOTE_VERSION" != "$LOCAL_VERSION" ]; then
+        log "New OTA detected ($REMOTE_VERSION), running update..."
+        cd /etc || return
+        sh "$OTA_SCRIPT" "$LATEST_FILE" "$SERVER" "$USER" "$PASS"
+    else
+        log "No updates found. Local=$LOCAL_VERSION Remote=$REMOTE_VERSION"
+    fi
+
+}
+
+start() {
+    if [ -f "$PIDFILE" ]; then
+        PID=$(cat "$PIDFILE")
+        if ps -p "$PID" > /dev/null 2>&1; then
+            log "Service already running."
+            return
+        fi
+    fi
+
+    log "Starting ota_check_service..."
+    (
+        while true; do
+            check_and_update
+            sleep "$CHECK_INTERVAL"
+        done
+    ) &
+    echo $! > "$PIDFILE"
+    log "Started with PID $(cat "$PIDFILE")"
+}
+
+stop() {
+    log "Stopping ota_check_service..."
+    if [ -f "$PIDFILE" ]; then
+        PID=$(cat "$PIDFILE")
+        if ps -p "$PID" > /dev/null 2>&1; then
+            kill "$PID" && log "Stopped PID $PID."
+        fi
+        rm -f "$PIDFILE"
+    else
+        log "No PID file found."
+    fi
+}
+
+status() {
+    if [ -f "$PIDFILE" ]; then
+        PID=$(cat "$PIDFILE")
+        if ps -p "$PID" > /dev/null 2>&1; then
+            echo "ota_check_service is running (PID $PID)"
+        else
+            echo "ota_check_service PID file exists but not active."
+        fi
+    else
+        echo "ota_check_service is not running."
+    fi
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart)
+        stop
+        sleep 1
+        start
+        ;;
+    status) status ;;
+    test) check_and_update ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|test}"
+        exit 1
+        ;;
+esac
+
+exit 0

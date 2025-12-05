@@ -28,6 +28,7 @@ start() {
     cd /etc/MSM_APPS
     export QT_FONT_DPI=96
     export QT_QPA_FONTDIR=/usr/share/fonts/dejavu
+    ./beeper &
     ./MSM_run
 )&
 }

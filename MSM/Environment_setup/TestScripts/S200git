@@ -1,0 +1,81 @@
+[INFO] Starting data connection via qmicli...
+[/dev/cdc-wdm0] Network started
+        Packet data handle: '2267502032'
+[/dev/cdc-wdm0] Client ID not released:
+        Service: 'wds'
+            CID: '21'
+[INFO] Launching udhcpc to acquire IP address on wwan0...
+[INFO] Restarting SNTP Deamon
+udhcpc: started, v1.37.0
+udhcpc: broadcasting discover
+udhcpc: broadcasting select for 10.242.34.251, server 10.242.34.252
+udhcpc: lease of 10.242.34.251 obtained from 10.242.34.252, lease time 7200
+deleting routers
+adding dns 39.39.39.39
+adding dns 182.176.100.89
+daemon control: got EOF
+ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8): 56 data bytes
+64 bytes from 8.8.8.8: seq=0 ttl=114 time=55.729 ms
+64 bytes from 8.8.8.8: seq=1 ttl=114 time=37.588 ms
+64 bytes from 8.8.8.8: seq=2 ttl=114 time=46.939 ms
+64 bytes from 8.8.8.8: seq=3 ttl=114 time=42.543 ms
+64 bytes from 8.8.8.8: seq=4 ttl=114 time=50.298 ms
+64 bytes from 8.8.8.8: seq=5 ttl=114 time=54.313 ms
+^C
+--- 8.8.8.8 ping statistics ---
+6 packets transmitted, 6 packets received, 0% packet loss
+round-trip min/avg/max = 37.588/47.901/55.729 ms
+#
+# cd /etc/init.d/
+# vi S200git
+### BEGIN INIT INFO
+# Provides:          git_update_reboot
+# Required-Start:    $network $remote_fs
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Pull latest updates from Git and reboot
+### END INIT INFO
+
+# Configuration
+REPO_DIR="/MSM/potential-pancake"
+BRANCH="Deployment"
+CHECK_INTERVAL=60  # seconds
+
+##script version 1.0.2
+
+# Functions
+check_and_update() {
+    cd "$REPO_DIR" || return 1
+
+    git checkout "$BRANCH" >/dev/null 2>&1 || return 1
+
+    # Fetch latest changes
+    git fetch origin "$BRANCH" >/dev/null 2>&1
+
+    LOCAL=$(git rev-parse HEAD)
+    REMOTE=$(git rev-parse origin/"$BRANCH")
+
+    if [ "$LOCAL" != "$REMOTE" ]; then
+        echo "$(date): New update found. Pulling changes..."
+        git pull origin "$BRANCH"
+        echo "$(date): Rebooting to apply updates..."
+
+        chmod +x "$REPO_DIR/MSM/init-scripts/"*
+        cp -f "$REPO_DIR/MSM/init-scripts/"* /etc/init.d/
+        ##reboot
+    else
+        echo "$(date): No updates found."
+    fi
+}
+
+# Main loop
+(
+while true; do
+    check_and_update
+    sleep "$CHECK_INTERVAL"
+done
+) &
+
+exit 0
