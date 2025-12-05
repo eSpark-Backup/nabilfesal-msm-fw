@@ -25,6 +25,7 @@
 #include "core_pkcs11_config.h"
 
 /* AWS IoT Fleet Provisioning Library. */
+#include "shadow.h"
 #include "fleet_provisioning.h"
 
 /* Demo includes. */
@@ -468,6 +469,24 @@ static bool unsubscribeFromRegisterThingResponseTopics( void )
 
 bool loadConfig(const char *path);
 
+void initializeDeviceShadow( void );
+
+/* Define your Thing Name */
+#define THING_NAME       gConfig.serial
+#define THING_NAME_LENGTH gConfig.serial_len
+
+/* Shadow topics buffer size */
+#define SHADOW_TOPIC_BUFFER_SIZE 128
+#define SHADOW_BUFFER_SIZE       512
+
+size_t outLength;
+
+/* Buffers */
+static char shadowUpdateTopic[ SHADOW_TOPIC_BUFFER_SIZE ];
+static char shadowUpdateAcceptedTopic[ SHADOW_TOPIC_BUFFER_SIZE ];
+static char shadowUpdateRejectedTopic[ SHADOW_TOPIC_BUFFER_SIZE ];
+static char shadowPayload[ SHADOW_BUFFER_SIZE ];
+
 /* This example uses a single application task, which shows that how to use
  * the Fleet Provisioning library to generate and validate AWS IoT Fleet
  * Provisioning MQTT topics, and use the coreMQTT library to communicate with
@@ -497,7 +516,11 @@ int main( int argc,
     ( void ) argc;
     ( void ) argv;
 
-    loadConfig("config.json");
+    if (argc < 2) { printf("Usage: %s <config.json>\n", argv[0]); return -1; } 
+    const char *configPath = argv[1]; printf("Loading config file: %s\n", configPath); 
+    loadConfig(configPath);
+
+    // loadConfig("config.json");
 
     do
     {
@@ -724,6 +747,8 @@ int main( int argc,
             unsubscribeFromRegisterThingResponseTopics();
         }
 
+        initializeDeviceShadow();
+
         /**** Disconnect from AWS IoT Core ************************************/
 
         /* As we have completed the provisioning workflow, we disconnect from
@@ -757,6 +782,7 @@ int main( int argc,
             {
                 LogInfo( ( "Sucessfully established connection with provisioned credentials." ) );
                 connectionEstablished = true;
+                // sleep(60);
             }
         }
 
@@ -869,6 +895,152 @@ int main( int argc,
     return ( status == true ) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 /*-----------------------------------------------------------*/
+
+MQTTContext_t mqttContext;
+/* Callback when messages arrive */
+static void eventCallback( MQTTContext_t * pMqttContext,
+                           MQTTPublishInfo_t * pPublishInfo )
+{
+    ( void ) pMqttContext;
+
+    if( pPublishInfo->topicNameLength > 0 )
+    {
+        if( strncmp( pPublishInfo->pTopicName, shadowUpdateAcceptedTopic,
+                     pPublishInfo->topicNameLength ) == 0 )
+        {
+            LogInfo( ( "✅ Shadow update accepted. Payload: %.*s",
+                       pPublishInfo->payloadLength,
+                       ( const char * ) pPublishInfo->pPayload ) );
+        }
+        else if( strncmp( pPublishInfo->pTopicName, shadowUpdateRejectedTopic,
+                          pPublishInfo->topicNameLength ) == 0 )
+        {
+            LogError( ( "❌ Shadow update rejected. Payload: %.*s",
+                        pPublishInfo->payloadLength,
+                        ( const char * ) pPublishInfo->pPayload ) );
+        }
+    }
+}
+
+void initializeDeviceShadow( void )
+{
+    ShadowStatus_t shadowStatus;
+    int written;
+    size_t outLength = 0;
+    bool result;
+
+    /* Build update topic */
+    shadowStatus = Shadow_AssembleTopicString(
+        ShadowTopicStringTypeUpdate,
+        gConfig.serial,
+        gConfig.serial_len,
+        NULL, /* classic (unnamed) shadow */
+        0,
+        shadowUpdateTopic,
+        SHADOW_TOPIC_BUFFER_SIZE,
+        &outLength
+    );
+
+    if( shadowStatus != SHADOW_SUCCESS )
+    {
+        LogError( ( "Failed to assemble Update topic string. Error=%d", shadowStatus ) );
+        return;
+    }
+
+    /* Build update/accepted topic */
+    shadowStatus = Shadow_AssembleTopicString(
+        ShadowTopicStringTypeUpdateAccepted,
+        gConfig.serial,
+        gConfig.serial_len,
+        NULL,
+        0,
+        shadowUpdateAcceptedTopic,
+        SHADOW_TOPIC_BUFFER_SIZE,
+        &outLength
+    );
+
+    if( shadowStatus != SHADOW_SUCCESS )
+    {
+        LogError( ( "Failed to assemble UpdateAccepted topic string. Error=%d", shadowStatus ) );
+        return;
+    }
+
+    /* Build update/rejected topic */
+    shadowStatus = Shadow_AssembleTopicString(
+        ShadowTopicStringTypeUpdateRejected,
+        gConfig.serial,
+        gConfig.serial_len,
+        NULL,
+        0,
+        shadowUpdateRejectedTopic,
+        SHADOW_TOPIC_BUFFER_SIZE,
+        &outLength
+    );
+
+    if( shadowStatus != SHADOW_SUCCESS )
+    {
+        LogError( ( "Failed to assemble UpdateRejected topic string. Error=%d", shadowStatus ) );
+        return;
+    }
+
+    /* Subscribe to accepted topic */
+    result = SubscribeToTopic( shadowUpdateAcceptedTopic,
+                               ( uint16_t ) strlen( shadowUpdateAcceptedTopic ) );
+    if( !result )
+    {
+        LogError( ( "Failed to subscribe to update/accepted topic." ) );
+        return;
+    }
+
+    /* Subscribe to rejected topic */
+    result = SubscribeToTopic( shadowUpdateRejectedTopic,
+                               ( uint16_t ) strlen( shadowUpdateRejectedTopic ) );
+    if( !result )
+    {
+        LogError( ( "Failed to subscribe to update/rejected topic." ) );
+        return;
+    }
+
+    LogInfo( ( "Subscribed to shadow update accepted/rejected topics." ) );
+
+    /* Prepare initial shadow document using gConfig.serial */
+    written = snprintf( shadowPayload, SHADOW_BUFFER_SIZE,
+                        "{ \"state\": {"
+                        "   \"desired\": {"
+                        "       \"deviceType\": \"IoTDevice\","
+                        "       \"serialNumber\": \"%.*s\","
+                        "       \"status\": \"provisioned\""
+                        "   },"
+                        "   \"reported\": {"
+                        "       \"deviceType\": \"IoTDevice\","
+                        "       \"serialNumber\": \"%.*s\","
+                        "       \"status\": \"online\""
+                        "   }"
+                        "} }",
+                        ( int ) gConfig.serial_len, gConfig.serial,
+                        ( int ) gConfig.serial_len, gConfig.serial );
+
+    if( ( written <= 0 ) || ( written >= SHADOW_BUFFER_SIZE ) )
+    {
+        LogError( ( "Failed to build shadow update payload. Written=%d", written ) );
+        return;
+    }
+
+    /* Publish the shadow update */
+    result = PublishToTopic( shadowUpdateTopic,
+                             ( uint16_t ) strlen( shadowUpdateTopic ),
+                             shadowPayload,
+                             ( size_t ) written );
+
+    if( !result )
+    {
+        LogError( ( "Failed to publish shadow update." ) );
+    }
+    else
+    {
+        LogInfo( ( "🌫️  Shadow update request published." ) );
+    }
+}
 
 
 bool loadConfig(const char *path)

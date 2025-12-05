@@ -16,6 +16,9 @@ include(
 set(COREPKCS11_LOCATION "${ROOT_DIR}/libraries/standard/corePKCS11")
 set(CORE_PKCS11_3RDPARTY_LOCATION "${COREPKCS11_LOCATION}/source/dependency/3rdparty")
 
+# Include Shadow library's source and header path variables.
+include( ${ROOT_DIR}/libraries/aws/device-shadow-for-aws-iot-embedded-sdk/shadowFilePaths.cmake )
+
 # Include PKCS #11 library's source and header path variables.
 include( ${COREPKCS11_LOCATION}/pkcsFilePaths.cmake )
 
@@ -35,6 +38,7 @@ add_executable( ${DEMO_NAME}
                 ${PKCS_SOURCES}
                 ${PKCS_PAL_POSIX_SOURCES}
                 ${FLEET_PROVISIONING_SOURCES} 
+                ${SHADOW_SOURCES}
                 ${JSON_SOURCES}
                 )
 
@@ -52,6 +56,7 @@ target_include_directories( ${DEMO_NAME}
                               ${PKCS_INCLUDE_PUBLIC_DIRS}
                               ${PKCS_PAL_INCLUDE_PUBLIC_DIRS}
                               ${AWS_DEMO_INCLUDE_DIRS}
+                              ${SHADOW_INCLUDE_PUBLIC_DIRS}
                               ${JSON_INCLUDE_PUBLIC_DIRS}
                               "${FLEET_PROVISIONING_INCLUDE_PUBLIC_DIRS}"
                               "${DEMOS_DIR}/pkcs11/common/include" # corePKCS11 config

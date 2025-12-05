@@ -130,7 +130,7 @@
 /**
  * @brief Timeout for MQTT_ProcessLoop function in milliseconds.
  */
-#define MQTT_PROCESS_LOOP_TIMEOUT_MS             ( 1000U )
+#define MQTT_PROCESS_LOOP_TIMEOUT_MS             ( 5000U )
 
 /**
  * @brief The maximum time interval in seconds which is allowed to elapse
