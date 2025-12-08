@@ -313,22 +313,22 @@ void MainWindow::connectStartUpSignals()
         factSettings = new FactSetting;
 
     if(!factoryMqttHandler)
-        factoryMqttHandler = new mqttManager(this);
+        factoryMqttHandler = new mqttManager(Factory, this);
 
     if(!factorySftpHandler)
-        factorySftpHandler = new sftpManager(this);
+        factorySftpHandler = new sftpManager(Factory, this);
 
     if(!factoryMqttsHandler)
-        factoryMqttsHandler = new AwsMqttManager(AwsMqttManager::Full, this);
+        factoryMqttsHandler = new AwsMqttManager(Factory, this);
 
     if(!adminMqttHandler)
-        adminMqttHandler = new mqttManager(this);
+        adminMqttHandler = new mqttManager(Admin, this);
 
     if(!adminSftpHandler)
-        adminSftpHandler = new sftpManager(this);
+        adminSftpHandler = new sftpManager(Admin, this);
 
     if(!adminMqttsHandler)
-        adminMqttsHandler = new AwsMqttManager(AwsMqttManager::Limited, this);
+        adminMqttsHandler = new AwsMqttManager(Admin, this);
     
 
     auto showRebootDialog = [this]() {

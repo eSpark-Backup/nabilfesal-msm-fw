@@ -10,10 +10,10 @@
 
 #define SFTP_PATH "config/sftp_settings.json"
 
-sftpManager::sftpManager(QObject *parent) : QObject(parent)
+sftpManager::sftpManager(Mode mode, QObject *parent) : clientMode(mode), QObject(parent)
 {
-    // existing code ...
-
+    clientMode == Mode::Factory ? tag = COLOR_TAG(F_CYAN, B_WHITE, "Factory [SFTP]")
+                                    : tag = COLOR_TAG(F_CYAN, B_WHITE, "Admin [SFTP]");
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);
     isConnected  = false;
@@ -36,7 +36,7 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
     // Process connected
     connect(process, &QProcess::started, this, [this]() {
         isConnected = true;
-        qDebug() << "[SFTP] Connected to SFTP!";
+        logDebug << "Connected to SFTP!";
         reconnectTimer->stop();   // stop retries when connected
         scheduleSftpUpload();
         publishTimer->start(intervalSec * 1000);
@@ -49,7 +49,7 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
         Q_UNUSED(status)
         isConnected = false;
         publishTimer->stop();
-        qDebug() << "[SFTP] Disconnected from SFTP.";
+        logDebug << "Disconnected from SFTP.";
         if (!reconnectTimer->isActive()) {
             reconnectTimer->start();   // start retry loop
         }
@@ -58,10 +58,10 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
     connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
         isConnected = false;
         publishTimer->stop();
-        qWarning() << "SFTP process error:" << error;
+        logWarn << "SFTP process error:" << error;
         if (!reconnectTimer->isActive()) {
             reconnectTimer->start();   // start retry loop
-            qWarning() << "[SFTP] Retrying connection...";
+            logWarn << "Retrying connection...";
         }
     });
 
@@ -83,13 +83,13 @@ sftpManager::sftpManager(QObject *parent) : QObject(parent)
 void sftpManager::scheduleSftpUpload()
 {
     if (!isConnected) {
-        qWarning() << "Skipped scheduling, SFTP not connected.";
+        logWarn << "Skipped scheduling, SFTP not connected.";
         return;
     }
 
     QString hhmm = this->schedule;
     if (hhmm.length() != 4) {
-        qWarning() << "Invalid schedule format:" << hhmm;
+        logWarn << "Invalid schedule format:" << hhmm;
         return;
     }
 
@@ -106,7 +106,7 @@ void sftpManager::scheduleSftpUpload()
     }
 
     qint64 msecToGo = now.msecsTo(scheduledTime);
-    // qDebug() << "Next SFTP upload scheduled at:" << scheduledTime
+    // logDebug << "Next SFTP upload scheduled at:" << scheduledTime
     //          << "(in" << msecToGo / 1000 << "seconds)";
 
     QTimer::singleShot(msecToGo, this, [this]() {
@@ -133,18 +133,18 @@ bool sftpManager::loadConfig(const QString &filePath)
     configPath = filePath;
     QFile file(filePath);
     if (!file.exists()) {
-        qWarning() << "Config file not found:" << filePath;
+        logWarn << "Config file not found:" << filePath;
         return false;
     }
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to open config file";
+        logWarn << "Failed to open config file";
         return false;
     }
 
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (!doc.isObject()) {
-        qWarning() << "Invalid JSON config";
+        logWarn << "Invalid JSON config";
         return false;
     }
 
@@ -159,12 +159,12 @@ bool sftpManager::loadConfig(const QString &filePath)
     schedule = obj.value("schedule").toString();
 
     // // Log the values
-    // qDebug() << "SFTP Settings Loaded:";
-    // qDebug() << "  Host:" << host;
-    // qDebug() << "  UserName:" << username;
-    // qDebug() << "  Pass:" << password;
-    // qDebug() << "  Port:" << port;
-    // qDebug() << "  Interval (sec):" << intervalSec;
+    // logDebug << "SFTP Settings Loaded:";
+    // logDebug << "  Host:" << host;
+    // logDebug << "  UserName:" << username;
+    // logDebug << "  Pass:" << password;
+    // logDebug << "  Port:" << port;
+    // logDebug << "  Interval (sec):" << intervalSec;
 
     return true;
 }
@@ -173,7 +173,7 @@ void sftpManager::reloadSettings()
 {
     configPath = SFTP_PATH;
     if (!loadConfig(configPath)) {
-        qWarning() << "No valid config found. Skipping SFTP connection.";
+        logWarn << "No valid config found. Skipping SFTP connection.";
         return;
     }
     connectToSftp();
@@ -182,7 +182,7 @@ void sftpManager::reloadSettings()
 void sftpManager::connectToSftp()
 {
     if (host.isEmpty()) {
-        qWarning() << "SFTP settings incomplete.";
+        logWarn << "SFTP settings incomplete.";
         return;
     }
 
@@ -196,12 +196,12 @@ void sftpManager::connectToSftp()
 
     process->start(program, arguments);
     if (!process->waitForStarted(5000)) {
-        qWarning() << "Failed to start SFTP process!";
-        qWarning() << "Program:" << program << "Args:" << arguments;
+        logWarn << "Failed to start SFTP process!";
+        logWarn << "Program:" << program << "Args:" << arguments;
         return;
     }
 
-    // qDebug() << "SFTP process started for" << host;
+    // logDebug << "SFTP process started for" << host;
 }
 
 
@@ -214,7 +214,7 @@ void sftpManager::disconnectClient()
 void sftpManager::disconnectFromSftp()
 {
     if (process->state() == QProcess::Running) {
-        // qDebug() << "Disconnecting SFTP...";
+        // logDebug << "Disconnecting SFTP...";
         process->write("bye\n");
         process->waitForFinished(2000);
         process->close();
@@ -227,13 +227,13 @@ void sftpManager::uploadFile(const QString &localFile, const QString &remotePath
     publishTimer->stop();
 
     if (host.isEmpty() || username.isEmpty() || password.isEmpty()) {
-        qWarning() << "SFTP config missing.";
+        logWarn << "SFTP config missing.";
         return;
     }
 
     QFileInfo fi(localFile);
     if (!fi.exists() || !fi.isFile()) {
-        qWarning() << "Local file missing:" << localFile;
+        logWarn << "Local file missing:" << localFile;
         return;
     }
 
@@ -251,7 +251,7 @@ void sftpManager::uploadFile(const QString &localFile, const QString &remotePath
     sftpProc.start("sshpass", arguments);
 
     if (!sftpProc.waitForStarted(5000)) {
-        qWarning() << "Failed to start SFTP process!";
+        logWarn << "Failed to start SFTP process!";
         return;
     }
 
@@ -407,7 +407,7 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
     bool writeHeader = !file.exists();
 
     if (!file.open(QIODevice::Append | QIODevice::Text)) {
-        qWarning() << "Could not open file for writing:" << filePath;
+        logWarn << "Could not open file for writing:" << filePath;
         return;
     }
 

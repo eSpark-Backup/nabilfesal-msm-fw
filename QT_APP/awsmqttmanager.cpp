@@ -12,11 +12,11 @@
 #include <QtNetwork/QSslConfiguration>
 #include <QProcessEnvironment>
 
-#define AWS_MQTTS_PATH "config/aws_mqtts_settings.json"
+#define AWS_MQTTS_PATH aws_path
 
 #define AWS_LOG(msg) \
     do { \
-        if (AwsMqttManager::debugEnabled()) { qDebug() << msg; } \
+        if (AwsMqttManager::debugEnabled()) { logDebug << msg; } \
     } while(0)
 
 
@@ -33,12 +33,20 @@ bool AwsMqttManager::debugEnabled()
 
 AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), QObject(parent)
 {
+    if(clientMode == Mode::Factory)
+    {
+        tag = TAG_FACTORY;
+        aws_path = "config/aws_mqtts_settings.json";
+    }
+    else
+        tag = TAG_ADMIN;
+
     awsMqttsClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);
 
     if (!loadAwsConfig(AWS_MQTTS_PATH)) {
-        qWarning() << "No valid config found. Skipping AWS MQTTS connection.";
+        logWarn << "No valid config found. Skipping AWS MQTTS connection.";
     }
 
     reconnectTimer->setInterval(5 * 1000);  // 5 seconds
@@ -56,7 +64,7 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
     // Timer: publish telemetry if connected
     connect(publishTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected) {
-            qWarning() << "Skipped publish, client not connected.";
+            logWarn << "Skipped publish, client not connected.";
             return;
         }
 
@@ -82,7 +90,7 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
     // Connected signal
     connect(awsMqttsClient, &QMqttClient::connected, this, [this]() {
         isConnected = true;
-        qDebug() << "[MQTTS] Connected to AWS IoT Core!";
+        logDebug << "[MQTTS] Connected to AWS IoT Core!";
         reconnectTimer->stop();
 
         if (intervalSec > 0) {
@@ -99,11 +107,11 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
     // Disconnected signal
     connect(awsMqttsClient, &QMqttClient::disconnected, this, [this]() {
         isConnected = false;
-        qDebug() << "[MQTTS] Disconnected from AWS IoT Core.";
+        logDebug << "[MQTTS] Disconnected from AWS IoT Core.";
         publishTimer->stop();
         if (!reconnectTimer->isActive()) {
             reconnectTimer->start();
-            qWarning() << "[AWS] Reconnection attempt...";
+            logWarn << "[AWS] Reconnection attempt...";
         }
     });
 }
@@ -113,18 +121,18 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
     configPath = filePath;
     QFile file(filePath);
     if (!file.exists()) {
-        qWarning() << "Config file not found:" << filePath;
+        logWarn << "Config file not found:" << filePath;
         return false;
     }
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to open config file";
+        logWarn << "Failed to open config file";
         return false;
     }
 
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (!doc.isObject()) {
-        qWarning() << "Invalid JSON config";
+        logWarn << "Invalid JSON config";
         return false;
     }
 
@@ -150,7 +158,7 @@ void AwsMqttManager::reloadAwsMqttsSettings()
 {
     configPath = AWS_MQTTS_PATH;
     if (!loadAwsConfig(configPath)) {
-        qWarning() << "No valid config found. Skipping AWS MQTTS connection.";
+        logWarn << "No valid config found. Skipping AWS MQTTS connection.";
         return;
     }
     connectToBroker();
@@ -166,7 +174,7 @@ bool AwsMqttManager::awsMqttsState()
 bool AwsMqttManager::loadCertificates()
 {
     if (!QSslSocket::supportsSsl()) {
-        qWarning() << "[TLS] SSL/TLS not supported on this system!";
+        logWarn << "[TLS] SSL/TLS not supported on this system!";
         return false;
     }
 
@@ -174,7 +182,7 @@ bool AwsMqttManager::loadCertificates()
     if (!caFile.open(QIODevice::ReadOnly) ||
         !certFile.open(QIODevice::ReadOnly) ||
         !keyFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "[TLS] Failed to open cert/key files";
+        logWarn << "[TLS] Failed to open cert/key files";
         return false;
     }
 
@@ -194,7 +202,7 @@ bool AwsMqttManager::loadCertificates()
     AWS_LOG("===================");
 
     if (conf.localCertificate().isNull() || conf.privateKey().isNull() || conf.caCertificates().isEmpty()) {
-        qWarning() << "[TLS] Invalid certificate, key, or CA chain.";
+        logWarn << "[TLS] Invalid certificate, key, or CA chain.";
         return false;
     }
 
@@ -210,16 +218,16 @@ bool AwsMqttManager::loadCertificates()
     connect(sslSocket,
             static_cast<void(QSslSocket::*)(const QList<QSslError>&)>(&QSslSocket::sslErrors),
             this,
-            [](const QList<QSslError> &errs) {
+            [this](const QList<QSslError> &errs) {
                 for (const auto &e : errs)
-                    qWarning() << "[TLS] SSL error:" << e.errorString();
+                    logWarn << "[TLS] SSL error:" << e.errorString();
             });
 
-    connect(sslSocket, &QSslSocket::stateChanged, this, [](QAbstractSocket::SocketState state) {
+    connect(sslSocket, &QSslSocket::stateChanged, this, [this](QAbstractSocket::SocketState state) {
         AWS_LOG( "[TLS] Socket state:" << state);
     });
-    connect(sslSocket, &QSslSocket::errorOccurred, this, [](QAbstractSocket::SocketError err) {
-        qWarning() << "[TLS] Socket error:" << err;
+    connect(sslSocket, &QSslSocket::errorOccurred, this, [this](QAbstractSocket::SocketError err) {
+        logWarn << "[TLS] Socket error:" << err;
     });
     awsMqttsClient->setTransport(sslSocket, QMqttClient::IODevice);
     return true;
@@ -229,12 +237,12 @@ bool AwsMqttManager::loadCertificates()
 void AwsMqttManager::connectToBroker()
 {
     if (host.isEmpty() || clientId.isEmpty()) {
-        qWarning() << "[AWS MQTT] Settings incomplete.";
+        logWarn << "[AWS MQTT] Settings incomplete.";
         return;
     }
 
     if (!loadCertificates()) {
-        qWarning() << "[AWS MQTT] Missing certificates. Cannot connect.";
+        logWarn << "[AWS MQTT] Missing certificates. Cannot connect.";
         return;
     }
 
@@ -275,7 +283,7 @@ void AwsMqttManager::publishMessage(const QString pubTopic, const QString &paylo
     if (awsMqttsClient->state() == QMqttClient::Connected) {
         auto id = awsMqttsClient->publish(pubTopic, payload.toUtf8(), 1);
         if (id == -1)
-            qWarning() << "Publish on [" << pubTopic << "] failed!";
+            logWarn << "Publish on [" << pubTopic << "] failed!";
     }
 }
 
@@ -290,7 +298,7 @@ void AwsMqttManager::subscribeToTopic()
         topic_sub_sftp
     };
 
-    if (clientMode == Mode::Full) {
+    if (clientMode == Mode::Factory) {
         topics << topic_sub_ctRatio
                << topic_sub_vOffset
                << topic_sub_iOffset
@@ -300,7 +308,7 @@ void AwsMqttManager::subscribeToTopic()
     for (const QString &t : topics) {
         auto *sub = awsMqttsClient->subscribe(t, 1);
         if (!sub) {
-            qWarning() << "[MQTT] Subscribe failed for topic:" << t;
+            logWarn << "[MQTT] Subscribe failed for topic:" << t;
             continue;
         }
 
@@ -313,8 +321,9 @@ void AwsMqttManager::subscribeToTopic()
             if (!doc.isNull() && doc.isObject()) {
                 QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz");
                 obj = doc.object();
-                qDebug().noquote() << "\n[" << timestamp << "] [AWS] Topic: "
-                               << topic << "Message received:" << "Parsed JSON:" << QJsonDocument(obj).toJson(QJsonDocument::Indented);
+                logDebug << "\n[" << timestamp << "] [AWS] Topic:" << topic
+                         << "Message received: Parsed JSON:\n"
+                         << QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Indented));
             }
             emit settingsChanged();
 
@@ -337,7 +346,7 @@ void AwsMqttManager::subscribeToTopic()
             } else if (topic == topic_sub_ota) {
                 otaSend(obj);
             } else {
-                qWarning() << "[MQTT] Unknown topic:" << topic;
+                logWarn << "[MQTT] Unknown topic:" << topic;
             }
         });
     }
@@ -363,7 +372,7 @@ void AwsMqttManager::awsTopicsInit()
     topic_sub_mqtts       = base_sub_topic + "/mqtts";
     topic_sub_sftp        = base_sub_topic + "/sftp";
 
-    if (clientMode == Mode::Full)
+    if (clientMode == Mode::Factory)
     {
         topic_pub_ctRatio  = base_pub_topic + "/ct_ratio";
         topic_pub_vOffset  = base_pub_topic + "/v_offset";
@@ -674,7 +683,7 @@ void AwsMqttManager::otaSend(const QJsonObject &obj)
         QString otaVersion = firstObj.value("ota_version").toString();
         emit otaReceived(otaVersion);
     } else {
-        qWarning() << "[MQTT] OTA message received but 'data' array is empty.";
+        logWarn << "[MQTT] OTA message received but 'data' array is empty.";
     }
 }
 

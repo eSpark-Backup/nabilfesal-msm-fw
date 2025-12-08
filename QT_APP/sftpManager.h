@@ -11,7 +11,7 @@ class sftpManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit sftpManager(QObject *parent = nullptr);
+    explicit sftpManager(Mode mode, QObject *parent = nullptr);
     sftpManager(const sftpManager&) = delete;
     bool loadConfig(const QString &filePath);
     void reloadSettings();
@@ -52,5 +52,9 @@ private:
 
     // Assume channel numbers start at 1
     std::array<EnergyData, 13> sftpEnergy;
+    Mode clientMode;
+
+public:
+    QString tag;
 };
 

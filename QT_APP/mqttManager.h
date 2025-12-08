@@ -9,7 +9,7 @@ class mqttManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit mqttManager(QObject *parent = nullptr); // private ctor
+    explicit mqttManager(Mode mode, QObject *parent = nullptr); // private ctor
     mqttManager(const mqttManager&) = delete;     // prevent copy
     bool loadConfig(const QString &filePath);
     void reloadSettings();
@@ -55,4 +55,8 @@ private:
 
     // Assume channel numbers start at 1
     std::array<EnergyData, 13> mqttEnergy;
+    Mode clientMode;
+
+public:
+    QString tag;
 };

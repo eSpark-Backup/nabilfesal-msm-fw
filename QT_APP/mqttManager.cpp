@@ -15,8 +15,10 @@
 #define MQTT_PATH "config/mqtt_settings.json"
 
 
-mqttManager::mqttManager(QObject *parent) : QObject(parent)
+mqttManager::mqttManager(Mode mode, QObject *parent) : clientMode(mode), QObject(parent)
 {
+    clientMode == Mode::Factory ? tag = COLOR_TAG(F_BLACK, B_WHITE, "Factory [MQTT]")
+                                    : tag = COLOR_TAG(F_BLACK, B_WHITE, "Admin - MQTT");
     mqttClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);
@@ -38,7 +40,7 @@ mqttManager::mqttManager(QObject *parent) : QObject(parent)
     // Publish timer
     connect(publishTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected) {
-            qWarning() << "Skipped publish, client not connected.";
+            logWarn << "Skipped publish, client not connected.";
             return;
         }
         QByteArray payload = buildTelemetryJson();
@@ -48,7 +50,7 @@ mqttManager::mqttManager(QObject *parent) : QObject(parent)
     // Connected
     connect(mqttClient, &QMqttClient::connected, this, [this]() {
         isConnected = true;
-        qDebug() << "[MQTT] Connected to MQTT broker!";
+        logDebug << "Connected to MQTT broker!";
 
         reconnectTimer->stop();  // stop retrying when connected
 
@@ -60,12 +62,12 @@ mqttManager::mqttManager(QObject *parent) : QObject(parent)
     // Disconnected
     connect(mqttClient, &QMqttClient::disconnected, this, [this]() {
         isConnected = false;
-        qDebug() << "[MQTT] Disconnected from MQTT broker.";
+        logDebug << "Disconnected from MQTT broker.";
 
         publishTimer->stop();
         if (!reconnectTimer->isActive()) {
             reconnectTimer->start();  // retry every 1 min
-            qWarning() << "[MQTT] Reconnection attempt...";
+            logWarn << "Reconnection attempt...";
         }
     });
 }
@@ -75,18 +77,18 @@ bool mqttManager::loadConfig(const QString &filePath)
     configPath = filePath;
     QFile file(filePath);
     if (!file.exists()) {
-        qWarning() << "Config file not found:" << filePath;
+        logWarn << "Config file not found:" << filePath;
         return false;
     }
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to open config file";
+        logWarn << "Failed to open config file";
         return false;
     }
 
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (!doc.isObject()) {
-        qWarning() << "Invalid JSON config";
+        logWarn << "Invalid JSON config";
         return false;
     }
 
@@ -108,7 +110,7 @@ void mqttManager::reloadSettings()
 {
     configPath = MQTT_PATH;
     if (!loadConfig(configPath)) {
-        qWarning() << "No valid config found. Skipping MQTT connection.";
+        logWarn << "No valid config found. Skipping MQTT connection.";
         return;
     }
     connectToBroker();
@@ -128,7 +130,7 @@ bool mqttManager::loadCertificates()
     if (!caFile.open(QIODevice::ReadOnly) ||
         !certFile.open(QIODevice::ReadOnly) ||
         !keyFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to open cert files";
+        logWarn << "Failed to open cert files";
         return false;
     }
 
@@ -150,7 +152,7 @@ bool mqttManager::loadCertificates()
 void mqttManager::connectToBroker()
 {
     if (host.isEmpty() || clientId.isEmpty() || topic.isEmpty()) {
-        qWarning() << "MQTT settings incomplete.";
+        logWarn << "MQTT settings incomplete.";
         return;
     }
     mqttClient->setHostname(host);
@@ -187,7 +189,7 @@ void mqttManager::publishMessage(const QString &payload)
     if (mqttClient->state() == QMqttClient::Connected) {
         auto id = mqttClient->publish(topic, payload.toUtf8(), 1);
         if (id == -1)
-            qWarning() << "Publish failed!";
+            logWarn << "Publish failed!";
     }
 }
 
@@ -198,13 +200,13 @@ void mqttManager::subscribeToTopic()
 
     auto sub = mqttClient->subscribe(topic, 1);
     if (!sub) {
-        qWarning() << "Subscribe failed!";
+        logWarn << "Subscribe failed!";
         return;
     }
 
     connect(sub, &QMqttSubscription::messageReceived, this,
-            [](const QMqttMessage &msg) {
-                qDebug() << "Message received:" << msg.payload();
+            [this](const QMqttMessage &msg) {
+                logDebug << "Message received:" << msg.payload();
             });
 }
 
