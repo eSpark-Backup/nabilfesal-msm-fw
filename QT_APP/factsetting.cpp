@@ -142,11 +142,18 @@ FactSetting::FactSetting(QWidget *parent)
     label->move(215, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("MQTTs_PORT", ui->mqtts_port);
+    label = new QLabel("ID", ui->mqtts_client_id);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(240, 1);
+    label->move(180, 3);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+
+    label = new QLabel("PORT", ui->mqtts_port);
+    label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
+    label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    label->adjustSize();
+    label->move(80, 3);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTTs_INTERVAL", ui->mqtts_interval);
@@ -531,6 +538,7 @@ void FactSetting::apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool ms
     ui->mqtts_endpoint->setText(mqttsSettings.value("endpoint").toString());
     ui->mqtts_interval->setText(mqttsSettings.value("interval").toString());
     ui->mqtts_endpoint->setCursorPosition(0);
+    ui->mqtts_client_id->setText(Utils::getUid());
     
     if(!msgBox)
         Toast::show("MQTTS settings loaded successfully!", this, Toast::Info);

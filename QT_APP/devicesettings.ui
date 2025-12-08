@@ -194,7 +194,7 @@ QPushButton:focus {
       <enum>Qt::ClickFocus</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QVBoxLayout" name="verticalLayout_15">
@@ -2256,7 +2256,7 @@ QPushButton:focus {
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_16">
             <property name="spacing">
-             <number>0</number>
+             <number>6</number>
             </property>
             <property name="leftMargin">
              <number>0</number>
@@ -2271,7 +2271,7 @@ QPushButton:focus {
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="label_24">
+             <widget class="QLabel" name="label_7">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -2283,6 +2283,9 @@ QPushButton:focus {
                 <width>16777215</width>
                 <height>20</height>
                </size>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
               </property>
               <property name="styleSheet">
                <string notr="true">background-color: #1E88E5;        /* Blue strip at the top */
@@ -2310,7 +2313,7 @@ QPushButton:focus {
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_17">
                <property name="spacing">
-                <number>10</number>
+                <number>5</number>
                </property>
                <property name="leftMargin">
                 <number>10</number>
@@ -2322,18 +2325,33 @@ QPushButton:focus {
                 <number>10</number>
                </property>
                <property name="bottomMargin">
-                <number>20</number>
+                <number>0</number>
                </property>
                <item>
-                <widget class="QLabel" name="label_25">
+                <widget class="QLabel" name="mqtts_fact_lbl">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>344</width>
+                   <height>26</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>344</width>
+                   <height>26</height>
+                  </size>
+                 </property>
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
                    <pointsize>15</pointsize>
                   </font>
-                 </property>
-                 <property name="focusPolicy">
-                  <enum>Qt::StrongFocus</enum>
                  </property>
                  <property name="styleSheet">
                   <string notr="true">border-color: rgb(255, 255, 255);</string>
@@ -2349,17 +2367,14 @@ QPushButton:focus {
                <item>
                 <widget class="QLineEdit" name="mqtts_endpoint">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="focusPolicy">
-                  <enum>Qt::NoFocus</enum>
-                 </property>
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <enum>Qt::ClickFocus</enum>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">background: #e6e6e6;
-    border: 1px solid #CCC;        /* Blue thin border */
+                  <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 4px;
     padding: 6px 8px;
     font-size: 15px;
@@ -2374,74 +2389,8 @@ QPushButton:focus {
                  <property name="alignment">
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                  </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
                  <property name="placeholderText">
-                  <string/>
-                 </property>
-                 <property name="cursorMoveStyle">
-                  <enum>Qt::LogicalMoveStyle</enum>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="mqtts_client_id">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="focusPolicy">
-                  <enum>Qt::NoFocus</enum>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">background: #e6e6e6;
-    border: 1px solid #CCC;        /* Blue thin border */
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 15px;
-    color: black;</string>
-                 </property>
-                 <property name="inputMask">
-                  <string/>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                 <property name="placeholderText">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="mqtts_port">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="focusPolicy">
-                  <enum>Qt::NoFocus</enum>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">background: #e6e6e6;
-    border: 1px solid #CCC;        /* Blue thin border */
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 15px;
-    color: black;</string>
-                 </property>
-                 <property name="inputMask">
-                  <string/>
-                 </property>
-                 <property name="text">
-                  <string>8883</string>
-                 </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                 <property name="placeholderText">
-                  <string/>
+                  <string notr="true"/>
                  </property>
                 </widget>
                </item>
@@ -2455,7 +2404,7 @@ QPushButton:focus {
     border: 1px solid #1E88E5;        /* Blue thin border */
     border-radius: 6px;
     padding: 6px 12px;
-    font-size: 14px;
+    font-size: 15px;
     color: black;</string>
                  </property>
                  <property name="inputMask">
@@ -2464,19 +2413,171 @@ QPushButton:focus {
                  <property name="text">
                   <string/>
                  </property>
-                 <property name="readOnly">
-                  <bool>false</bool>
-                 </property>
                  <property name="placeholderText">
                   <string/>
                  </property>
                 </widget>
                </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_11">
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QLineEdit" name="mqtts_port">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>130</width>
+                     <height>28</height>
+                    </size>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background: #e6e6e6;              /* Light grey box for info rows */
+    border: 1px solid #CCC;        /* Blue thin border */
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 15px;
+    color: black;</string>
+                   </property>
+                   <property name="text">
+                    <string>8883</string>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                   <property name="placeholderText">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="mqtts_client_id">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>220</width>
+                     <height>28</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background: #e6e6e6;
+    border: 1px solid #CCC;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 15px;
+    color: black;</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_9">
+                 <item>
+                  <widget class="QCheckBox" name="ca1">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="text">
+                    <string>CA1 cert</string>
+                   </property>
+                   <property name="checkable">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="claim">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="text">
+                    <string>Claim cert</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="key">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="text">
+                    <string>Claim key</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>30</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QCheckBox" name="devCertChkBox">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>Device Certificate</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="devKeyChkBox">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                   <property name="text">
+                    <string>Device Key</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
               </layout>
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="horizontalFrame_18">
+             <widget class="QFrame" name="horizontalFrame_6">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -2489,7 +2590,7 @@ QPushButton:focus {
                 <height>35</height>
                </size>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_27">
+              <layout class="QHBoxLayout" name="horizontalLayout_18">
                <property name="spacing">
                 <number>0</number>
                </property>
@@ -2506,19 +2607,7 @@ QPushButton:focus {
                 <number>0</number>
                </property>
                <item>
-                <widget class="QPushButton" name="mqtts_load_btn">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <family>Gilroy</family>
-                   <pointsize>-1</pointsize>
-                  </font>
-                 </property>
+                <widget class="QPushButton" name="fetch_claim_btn">
                  <property name="focusPolicy">
                   <enum>Qt::TabFocus</enum>
                  </property>
@@ -2543,15 +2632,19 @@ QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
     border: 2px solid black;       /* White glow/border */
+}
+QPushButton:disabled {
+    background-color: #A9A9A9;  /* Darkest blue when pressed */
+	color: #666666;
 }</string>
                  </property>
                  <property name="text">
-                  <string>Load</string>
+                  <string>Fetch Claim</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_7">
+                <spacer name="horizontalSpacer_2">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -2564,13 +2657,7 @@ QPushButton:focus {
                 </spacer>
                </item>
                <item>
-                <widget class="QPushButton" name="mqtts_save_btn">
-                 <property name="font">
-                  <font>
-                   <family>Gilroy</family>
-                   <pointsize>-1</pointsize>
-                  </font>
-                 </property>
+                <widget class="QPushButton" name="provision_btn">
                  <property name="focusPolicy">
                   <enum>Qt::TabFocus</enum>
                  </property>
@@ -2595,15 +2682,123 @@ QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
     border: 2px solid black;       /* White glow/border */
+}
+QPushButton:disabled {
+    background-color: #A9A9A9;  /* Darkest blue when pressed */
+	color: #666666;
 }</string>
                  </property>
                  <property name="text">
-                  <string>Save</string>
+                  <string>Provision</string>
                  </property>
                 </widget>
                </item>
               </layout>
              </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_13">
+              <item>
+               <widget class="QPushButton" name="mqtts_load_btn">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Gilroy</family>
+                  <pointsize>-1</pointsize>
+                 </font>
+                </property>
+                <property name="focusPolicy">
+                 <enum>Qt::TabFocus</enum>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}
+QPushButton:focus {
+    outline: none;                 /* Remove dotted border */
+    background-color: #074475;     /* Brighter blue highlight */
+    border: 2px solid black;       /* White glow/border */
+}</string>
+                </property>
+                <property name="text">
+                 <string>Load</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_8">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Expanding</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="mqtts_save_btn">
+                <property name="font">
+                 <font>
+                  <family>Gilroy</family>
+                  <pointsize>-1</pointsize>
+                 </font>
+                </property>
+                <property name="focusPolicy">
+                 <enum>Qt::TabFocus</enum>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">QPushButton {
+    background-color: #1E88E5;   /* Blue */
+    color: white;               /* White text */
+    border: none;               /* No border line */
+    border-radius: 10px;        /* Rounded corners */
+    padding: 6px 20px;          /* Spacing inside */
+    font-size: 16px;            /* Font size */
+}
+
+QPushButton:hover {
+    background-color: #1565C0;  /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;  /* Darkest blue when pressed */
+}
+QPushButton:focus {
+    outline: none;                 /* Remove dotted border */
+    background-color: #074475;     /* Brighter blue highlight */
+    border: 2px solid black;       /* White glow/border */
+}</string>
+                </property>
+                <property name="text">
+                 <string>Save</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>

@@ -161,25 +161,25 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->move(205, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("MQTTs_CLIENT_ID", ui->mqtts_client_id);
+    label = new QLabel("ID", ui->mqtts_client_id);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(210, 1);
+    label->move(190, 3);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("MQTTs_PORT", ui->mqtts_port);
+    label = new QLabel("PORT", ui->mqtts_port);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(240, 1);
+    label->move(80, 3);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTTs_INTERVAL", ui->mqtts_interval);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(220, 1);
+    label->move(210, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     keyboard = new MSMKeyboard(this);
@@ -192,7 +192,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
         ui->mqtt_pass, ui->mqtt_topic, ui->mqtt_int,
         ui->sftp_ip, ui->sftp_port, ui->sftp_username,
         ui->sftp_pass, ui->sftp_int, ui->sftp_sch,
-        ui->mqtts_interval
+        ui->mqtts_interval,  ui->mqtts_endpoint
     };
 
     for (QLineEdit *edit : edits) {
