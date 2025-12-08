@@ -18,6 +18,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     , ui(new Ui::DeviceSettings)
 {
     ui->setupUi(this);
+    setUiPtr(this);
     auto uid = Utils::getUid();
     ui->uuid->setText(uid);
     auto currentIp = Utils::getDeviceIp();
@@ -620,40 +621,6 @@ void DeviceSettings::parse_load_store_mqtts(const QJsonObject &payload)
 }
 
 
-
-void DeviceSettings::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages)
-{
-    QString MQTTS_CONFIG_PATH = "config/aws_mqtts_settings.json";
-    bool isJsonDiff = jsonDifferent(mqttsSetting, MQTTS_CONFIG_PATH);
-    if (!isJsonDiff) {
-        if (showMessages) Toast::show("[MQTTS] Settings unchanged, not saving into file.", this, Toast::Warning);
-        return;
-    }
-
-    QDir dir("config");
-    if (!dir.exists()) {
-        dir.mkpath(".");
-    }
-
-    QFile file(MQTTS_CONFIG_PATH);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        if(showMessages) Toast::show("Failed to save MQTTS settings!", this, Toast::Error);
-        return;
-    }
-
-    QJsonDocument doc(mqttsSetting);
-    file.write(doc.toJson(QJsonDocument::Indented));
-    file.close();
-
-    if(showMessages) 
-    {
-        Toast::show("MQTTS settings saved successfully!", this, Toast::Info);
-        emit mqttsSettingsChanged(mqttsSetting);
-    }
-    emit aws_mqtts_load();
-}
-
-
 void DeviceSettings::apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox)
 {
     ui->mqtts_port->setText(mqttsSettings.value("port").toString());
@@ -671,32 +638,6 @@ void DeviceSettings::load_mqtts_settings(bool msgBox, bool reconnect)
 {
     QJsonObject mqttsSettings = loadMqttsSettings(msgBox, reconnect);
     if (!mqttsSettings.isEmpty()) apply_mqtts_Settings(mqttsSettings, msgBox);
-}
-
-QJsonObject DeviceSettings::loadMqttsSettings(bool showMessages, bool reloadSettings)
-{
-    QString filePath = "config/aws_mqtts_settings.json";
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (!showMessages)
-            Toast::show("Failed to open MQTTS configuration file.", this, Toast::Error);
-        return {};
-    }
-
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        if (!showMessages)
-            Toast::show("Invalid MQTTS configuration file format.", this, Toast::Warning);
-        return {};
-    }
-
-    QJsonObject obj = doc.object();
-    if(reloadSettings) emit aws_mqtts_load();
-    return obj;
 }
 
 

@@ -67,6 +67,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
 
     // Setup segmented responsibilities
+    connectStartUpSignals();
     setupLogin();
     dataExporter = new SystemDataExporter(this);
     setupUsb();
@@ -74,7 +75,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Important: set connections between settings/managers
     connectLoginSignals();
-    connectStartUpSignals();
 
     // UI progress and polling
     setupProgressBar();
@@ -189,10 +189,6 @@ void MainWindow::setupLogin()
 {
     login = new LoginWidget(hardwareVersion, softwareVersion);
 
-    if(!adminMqttHandler) adminMqttHandler = new mqttManager(this);
-    if(!adminSftpHandler) adminSftpHandler = new sftpManager(this);
-    if(!adminMqttsHandler) adminMqttsHandler = new AwsMqttManager(this);
-    
     // simple routing: handlers implemented as slots
     connect(login, &LoginWidget::loadChannels, this, &MainWindow::onLoadChannels);
     connect(login, &LoginWidget::adminLoginSuccess, this, &MainWindow::onAdminLogin);
@@ -278,7 +274,7 @@ void MainWindow::connectFactSettings(FactSetting *fs)
     });
     connect(fs, &FactSetting::aws_mqtts_load, this, [fs, this]() {
         adminMqttsHandler->disconnectAwsClient();
-        fs->checkCertificates();
+        fs->checkCertificatesWrapper();
         QTimer::singleShot(1000, [this]() { adminMqttsHandler->reloadAwsMqttsSettings(); });
     });
 
@@ -292,7 +288,7 @@ void MainWindow::connectFactSettings(FactSetting *fs)
     });
 
     connect(fs, &FactSetting::runFleetProvisioning, this,
-         [this]() { factSettings->runFleetProvisionerAsync(); }, Qt::UniqueConnection);
+         [this]() { factSettings->runFleetProvisioningWrapper(); }, Qt::UniqueConnection);
 }
 
 
@@ -301,18 +297,148 @@ void MainWindow::connectStartUpSignals()
     inActWatcher = new InactivityWatcher(this);
     qApp->installEventFilter(inActWatcher);
 
+    if (!measure)
+        measure = new Measurements;
+
+    if(!gainCalibrator)
+        gainCalibrator = new CalibrationDialog;
+
     if (!factorySettings)
         factorySettings = new FactorySettings(hardwareVersion, softwareVersion);
 
+    if (!settings)
+        settings = new DeviceSettings;
+    
+    if (!factSettings)
+        factSettings = new FactSetting;
+
+    if(!factoryMqttHandler)
+        factoryMqttHandler = new mqttManager(this);
+
+    if(!factorySftpHandler)
+        factorySftpHandler = new sftpManager(this);
+
+    if(!factoryMqttsHandler)
+        factoryMqttsHandler = new AwsMqttManager(AwsMqttManager::Full, this);
+
+    if(!adminMqttHandler)
+        adminMqttHandler = new mqttManager(this);
+
+    if(!adminSftpHandler)
+        adminSftpHandler = new sftpManager(this);
+
+    if(!adminMqttsHandler)
+        adminMqttsHandler = new AwsMqttManager(AwsMqttManager::Limited, this);
+    
+
     auto showRebootDialog = [this]() {
-        adminMqttsHandler->processReboot();
+        factoryMqttsHandler->processReboot();
         RebootDialog reboot(this);
         reboot.exec();
     };
 
     connect(factSettings,    &FactSetting::rebootMCM,   this, showRebootDialog);
     connect(factorySettings, &FactorySettings::rebootMCM, this, showRebootDialog);
+    connect(factoryMqttsHandler, &AwsMqttManager::settingsChanged, inActWatcher, &InactivityWatcher::wakeUp);
     connect(adminMqttsHandler, &AwsMqttManager::settingsChanged, inActWatcher, &InactivityWatcher::wakeUp);
+
+    // navigation actions for settings
+    // -> when settings asks to view channels
+    connect(settings, &DeviceSettings::channels_view, this, [this]() {
+        isLogin = false;
+        if (!channels) channels = new ChannelsHome(hardwareVersion, softwareVersion);
+        connectChannels(channels);
+        channels->showFullScreen();
+        settings->hide();
+    });
+
+    // -> when settings requests USB export
+    connect(settings, &DeviceSettings::usbExport, this, [this]() {
+        if (usbExporter) usbExporter->show();
+    });
+
+    // exit back to login
+    connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
+        isLogin = false;
+        login->showFullScreen();
+        factorySettings->hide();
+    });
+
+    connect(factorySettings, &FactorySettings::calibrate, this, [this](bool current) {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
+        gainCalibrator->loadCalibrationScreen(current);
+        gainCalibrator->showFullScreen();
+        factorySettings->hide();
+    });
+
+    connect(this, &MainWindow::enableSendButton, gainCalibrator, &CalibrationDialog::enableButton);
+    connect(gainCalibrator, &CalibrationDialog::requestSerialCommand, measure, &Measurements::requestSerialCommand);
+
+    connect(gainCalibrator, &CalibrationDialog::exitScreen, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
+        gainCalibrator->hide();
+        factorySettings->showFullScreen();
+    });
+
+    connect(factorySettings, &FactorySettings::ctRatio, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
+        factorySettings->hide();
+        measure->showFullScreen();
+        measure->ration_btn_clicked();
+    });
+
+    connect(factorySettings, &FactorySettings::i_offset, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
+        factorySettings->hide();
+        measure->showFullScreen();
+        measure->i_off_btn_clicked();
+    });
+
+    connect(factorySettings, &FactorySettings::v_offset, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
+        factorySettings->hide();
+        measure->showFullScreen();
+        measure->v_off_btn_clicked();
+    });
+
+    // load fact settings (factory -> factSettings)
+    connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
+        
+        factSettings->load_mqtt_settings(true);
+        factSettings->load_sftp_settings(true);
+        factSettings->load_mqtts_settings(true);
+        
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
+        if (!factSettings)
+            factSettings = new FactSetting;
+        connectFactSettings(factSettings);
+        factSettings->showFullScreen();
+        factorySettings->hide();
+    });
+
+    connect(measure, &Measurements::measureExit, this, [this]() {
+        QWidget *fw = QApplication::focusWidget();
+        if (fw) fw->clearFocus();
+        factorySettings->showFullScreen();
+        measure->hide();
+    });
+
+    connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd) {
+        if (pollTimer && pollTimer->isActive()) {
+            pollTimer->stop();
+        }
+        emit requestSerialCommand(cmd);
+        waitingForCalibrationResponse = true;
+        responseWaitTimer->start(20000);
+    });
 }
 
 
@@ -336,49 +462,49 @@ void MainWindow::connectLoginSignals()
 
     // When DeviceSettings says "reload SFTP", disconnect and reload after a short delay.
     connect(settings, &DeviceSettings::sftp_load, this, [this]() {
-        adminSftpHandler->disconnectClient();
-        QTimer::singleShot(1000, [this]() { adminSftpHandler->reloadSettings(); });
+        factorySftpHandler->disconnectClient();
+        QTimer::singleShot(1000, [this]() { factorySftpHandler->reloadSettings(); });
     });
 
     // When DeviceSettings says "reload MQTT", disconnect and reload.
     connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
-        adminMqttHandler->disconnectClient();
-        QTimer::singleShot(1000, [this]() { adminMqttHandler->reloadSettings(); });
+        factoryMqttHandler->disconnectClient();
+        QTimer::singleShot(1000, [this]() { factoryMqttHandler->reloadSettings(); });
     });
 
     // AWS MQTTS reload request
     connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
     QMetaObject::invokeMethod(this, [this]() {
-        adminMqttsHandler->disconnectAwsClient();
-        if(factSettings != nullptr) factSettings->checkCertificates();
-        QTimer::singleShot(1000, [this]() { adminMqttsHandler->reloadAwsMqttsSettings(); });
+        factoryMqttsHandler->disconnectAwsClient();
+        if(factSettings != nullptr) factSettings->checkCertificatesWrapper();
+        QTimer::singleShot(1000, [this]() { factoryMqttsHandler->reloadAwsMqttsSettings(); });
         }, Qt::QueuedConnection);
     });
 
     // AWS manager may ask for reboot
-    connect(adminMqttsHandler, &AwsMqttManager::rebootRequested, this, [this]() {
+    connect(factoryMqttsHandler, &AwsMqttManager::rebootRequested, this, [this]() {
         this->close();
-        adminMqttsHandler->disconnectAwsClient();
+        factoryMqttsHandler->disconnectAwsClient();
         Utils::rebootSystem();
     },Qt::QueuedConnection);
 
     // If AWS sends back stored configs, populate DeviceSettings fields
-    connect(adminMqttsHandler, &AwsMqttManager::ntpConfigReceived,
+    connect(factoryMqttsHandler, &AwsMqttManager::ntpConfigReceived,
             settings, &DeviceSettings::parse_load_store_ntp);
-    connect(adminMqttsHandler, &AwsMqttManager::sftpConfigReceived, this, [this](const QJsonObject &config) {
+    connect(factoryMqttsHandler, &AwsMqttManager::sftpConfigReceived, this, [this](const QJsonObject &config) {
         settings->parse_load_store_sftp(config);
         factSettings->load_sftp_settings(true);
     });
-    connect(adminMqttsHandler, &AwsMqttManager::mqttConfigReceived, this, [this](const QJsonObject &config) {
+    connect(factoryMqttsHandler, &AwsMqttManager::mqttConfigReceived, this, [this](const QJsonObject &config) {
         settings->parse_load_store_mqtt(config);
         factSettings->load_mqtt_settings(true);
     });
-    connect(adminMqttsHandler, &AwsMqttManager::mqttsConfigReceived, this, [this](const QJsonObject &config) {
+    connect(factoryMqttsHandler, &AwsMqttManager::mqttsConfigReceived, this, [this](const QJsonObject &config) {
         settings->parse_load_store_mqtts(config);
         QTimer::singleShot(100, this, [this](){
                 factSettings->load_mqtts_settings(true);});  
     });
-    connect(adminMqttsHandler, &AwsMqttManager::updateAwsData, this, [this]() {
+    connect(factoryMqttsHandler, &AwsMqttManager::updateAwsData, this, [this]() {
             settings->send_aws_updated_data();
             measure->send_measurement_data();
             factSettings->sendOTAData(0);
@@ -386,64 +512,64 @@ void MainWindow::connectLoginSignals()
 
     // When settings change, notify AWS manager to process them
     connect(settings, &DeviceSettings::deviceInfoChanged,
-            adminMqttsHandler, &AwsMqttManager::processDeviceInfo);
+            factoryMqttsHandler, &AwsMqttManager::processDeviceInfo);
     connect(settings, &DeviceSettings::mqttSettingsChanged,
-            adminMqttsHandler, &AwsMqttManager::processMqttSettings);
+            factoryMqttsHandler, &AwsMqttManager::processMqttSettings);
     connect(settings, &DeviceSettings::sftpSettingsChanged,
-            adminMqttsHandler, &AwsMqttManager::processSftpSettings);
+            factoryMqttsHandler, &AwsMqttManager::processSftpSettings);
     connect(settings, &DeviceSettings::ntpSettingsChanged,
-            adminMqttsHandler, &AwsMqttManager::processNtpSettings);
+            factoryMqttsHandler, &AwsMqttManager::processNtpSettings);
     connect(settings, &DeviceSettings::mqttsSettingsChanged,
-            adminMqttsHandler, &AwsMqttManager::processMqttsSettings);
+            factoryMqttsHandler, &AwsMqttManager::processMqttsSettings);
 
     connect(factSettings, &FactSetting::mqttSettingsChanged,
-            adminMqttsHandler, &AwsMqttManager::processMqttSettings);
+            factoryMqttsHandler, &AwsMqttManager::processMqttSettings);
     connect(factSettings, &FactSetting::sftpSettingsChanged,
-            adminMqttsHandler, &AwsMqttManager::processSftpSettings);
+            factoryMqttsHandler, &AwsMqttManager::processSftpSettings);
     connect(factSettings, &FactSetting::mqttsSettingsChanged,
-            adminMqttsHandler, &AwsMqttManager::processMqttsSettings);
+            factoryMqttsHandler, &AwsMqttManager::processMqttsSettings);
     
     // When measurement settings change, notify AWS manager to process them
     connect(measure, &Measurements::ct_ratio_changed,
-            adminMqttsHandler, &AwsMqttManager::processCtRatio);
+            factoryMqttsHandler, &AwsMqttManager::processCtRatio);
     connect(measure, &Measurements::v_offset_changed,
-            adminMqttsHandler, &AwsMqttManager::processVOffset);
+            factoryMqttsHandler, &AwsMqttManager::processVOffset);
     connect(measure, &Measurements::i_offset_changed,
-            adminMqttsHandler, &AwsMqttManager::processIOffset);
+            factoryMqttsHandler, &AwsMqttManager::processIOffset);
 
     // If AWS sends back measurement config, populate measurements' fields
-    connect(adminMqttsHandler, &AwsMqttManager::ctRatioReceived,
+    connect(factoryMqttsHandler, &AwsMqttManager::ctRatioReceived,
             measure, &Measurements::parse_load_store_ctRatio);
-    connect(adminMqttsHandler, &AwsMqttManager::vOffsetReceived,
+    connect(factoryMqttsHandler, &AwsMqttManager::vOffsetReceived,
             measure, &Measurements::parse_load_store_vOffset);
-    connect(adminMqttsHandler, &AwsMqttManager::iOffsetReceived,
+    connect(factoryMqttsHandler, &AwsMqttManager::iOffsetReceived,
             measure, &Measurements::parse_load_store_iOffset);
 
 
-    connect(factSettings, &FactSetting::OTA_status, adminMqttsHandler, &AwsMqttManager::processOTA);
-    connect(adminMqttsHandler, &AwsMqttManager::otaReceived, factSettings, &FactSetting::startOTA);
+    connect(factSettings, &FactSetting::OTA_status, factoryMqttsHandler, &AwsMqttManager::processOTA);
+    connect(factoryMqttsHandler, &AwsMqttManager::otaReceived, factSettings, &FactSetting::startOTA);
 
     // Wire telemetry -> managers
     connect(this, &MainWindow::receivedChannelData,
-            adminMqttHandler, &mqttManager::processIncomingJson);
+            factoryMqttHandler, &mqttManager::processIncomingJson);
     connect(this, &MainWindow::receivedChannelData,
-            adminSftpHandler, &sftpManager::processIncomingJson);
+            factorySftpHandler, &sftpManager::processIncomingJson);
     connect(this, &MainWindow::receivedChannelData,
-            adminMqttsHandler, &AwsMqttManager::processAwsTelemetry);
+            factoryMqttsHandler, &AwsMqttManager::processAwsTelemetry);
 
     // channel UI related signals
     connect(settings, &DeviceSettings::resetEnergy, this, [this]() {
         channels->resetAccumulatedEnergy();
-        adminMqttsHandler->resetAccumulatedEnergy();
-        adminMqttHandler->resetAccumulatedEnergy();
-        adminSftpHandler->resetAccumulatedEnergy();
+        factoryMqttsHandler->resetAccumulatedEnergy();
+        factoryMqttHandler->resetAccumulatedEnergy();
+        factorySftpHandler->resetAccumulatedEnergy();
         dataExporter->resetAccumulatedEnergy();
     });
 
     connect(channels, &ChannelsHome::energyUpdated, this, [this](const std::array<EnergyData, 13> &energy) {
-        adminMqttsHandler->updateAccumulatedEnergy(energy);
-        adminMqttHandler->updateAccumulatedEnergy(energy);
-        adminSftpHandler->updateAccumulatedEnergy(energy);
+        factoryMqttsHandler->updateAccumulatedEnergy(energy);
+        factoryMqttHandler->updateAccumulatedEnergy(energy);
+        factorySftpHandler->updateAccumulatedEnergy(energy);
         dataExporter->updateAccumulatedEnergy(energy);
     });
 
@@ -647,23 +773,6 @@ void MainWindow::onAdminLogin()
     settings->load_mqtts_settings(true);
 
     isLogin = true;
-    if (!settings)
-        settings = new DeviceSettings;
-
-    // navigation actions for settings
-    // -> when settings asks to view channels
-    connect(settings, &DeviceSettings::channels_view, this, [this]() {
-        isLogin = false;
-        if (!channels) channels = new ChannelsHome(hardwareVersion, softwareVersion);
-        connectChannels(channels);
-        channels->showFullScreen();
-        settings->hide();
-    });
-
-    // -> when settings requests USB export
-    connect(settings, &DeviceSettings::usbExport, this, [this]() {
-        if (usbExporter) usbExporter->show();
-    });
 
     settings->showFullScreen();
     login->hide();
@@ -677,97 +786,6 @@ void MainWindow::onAdminLogin()
 void MainWindow::onFactoryLogin()
 {
     isLogin = true;
-    if (!measure)
-        measure = new Measurements;
-
-    if(!gainCalibrator)
-        gainCalibrator = new CalibrationDialog;
-
-    if (!factorySettings)
-        factorySettings = new FactorySettings(hardwareVersion, softwareVersion);
-
-    // exit back to login
-    connect(factorySettings, &FactorySettings::factoryExit, this, [this]() {
-        QWidget *fw = QApplication::focusWidget();
-        if (fw) fw->clearFocus();
-        isLogin = false;
-        login->showFullScreen();
-        factorySettings->hide();
-    });
-
-    connect(factorySettings, &FactorySettings::calibrate, this, [this](bool current) {
-        QWidget *fw = QApplication::focusWidget();
-        if (fw) fw->clearFocus();
-        gainCalibrator->loadCalibrationScreen(current);
-        gainCalibrator->showFullScreen();
-        factorySettings->hide();
-    });
-
-    connect(this, &MainWindow::enableSendButton, gainCalibrator, &CalibrationDialog::enableButton);
-    connect(gainCalibrator, &CalibrationDialog::requestSerialCommand, measure, &Measurements::requestSerialCommand);
-
-    connect(gainCalibrator, &CalibrationDialog::exitScreen, this, [this]() {
-        QWidget *fw = QApplication::focusWidget();
-        if (fw) fw->clearFocus();
-        gainCalibrator->hide();
-        factorySettings->showFullScreen();
-    });
-
-    connect(factorySettings, &FactorySettings::ctRatio, this, [this]() {
-        QWidget *fw = QApplication::focusWidget();
-        if (fw) fw->clearFocus();
-        factorySettings->hide();
-        measure->showFullScreen();
-        measure->ration_btn_clicked();
-    });
-
-    connect(factorySettings, &FactorySettings::i_offset, this, [this]() {
-        QWidget *fw = QApplication::focusWidget();
-        if (fw) fw->clearFocus();
-        factorySettings->hide();
-        measure->showFullScreen();
-        measure->i_off_btn_clicked();
-    });
-
-    connect(factorySettings, &FactorySettings::v_offset, this, [this]() {
-        QWidget *fw = QApplication::focusWidget();
-        if (fw) fw->clearFocus();
-        factorySettings->hide();
-        measure->showFullScreen();
-        measure->v_off_btn_clicked();
-    });
-
-    // load fact settings (factory -> factSettings)
-    connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
-        
-        factSettings->load_mqtt_settings(true);
-        factSettings->load_sftp_settings(true);
-        factSettings->load_mqtts_settings(true);
-        
-        QWidget *fw = QApplication::focusWidget();
-        if (fw) fw->clearFocus();
-        if (!factSettings)
-            factSettings = new FactSetting;
-        connectFactSettings(factSettings);
-        factSettings->showFullScreen();
-        factorySettings->hide();
-    });
-
-    connect(measure, &Measurements::measureExit, this, [this]() {
-        QWidget *fw = QApplication::focusWidget();
-        if (fw) fw->clearFocus();
-        factorySettings->showFullScreen();
-        measure->hide();
-    });
-
-    connect(measure, &Measurements::requestSerialCommand, this, [this](const QString &cmd) {
-        if (pollTimer && pollTimer->isActive()) {
-            pollTimer->stop();
-        }
-        emit requestSerialCommand(cmd);
-        waitingForCalibrationResponse = true;
-        responseWaitTimer->start(20000);
-    });
 
     factorySettings->showFullScreen();
     login->hide();
@@ -1017,18 +1035,18 @@ void MainWindow::startPingTimer()
             if (reachable){
                 //qDebug() << timestamp << "✅ Internet Connected";
                 // Reconnect clients
-                adminSftpHandler->reloadSettings();
-                adminMqttHandler->reloadSettings();
-                adminMqttsHandler->reloadAwsMqttsSettings();
+                factorySftpHandler->reloadSettings();
+                factoryMqttHandler->reloadSettings();
+                factoryMqttsHandler->reloadAwsMqttsSettings();
             } else {
                 //qDebug() << timestamp << "❌ Internet Disconnected";
 
-                adminSftpHandler->isConnected = false;
-                adminMqttHandler->isConnected = false;
-                adminMqttsHandler->isConnected = false;
-                adminSftpHandler->disconnectClient();
-                adminMqttHandler->disconnectClient();
-                adminMqttsHandler->disconnectAwsClient();
+                factorySftpHandler->isConnected = false;
+                factoryMqttHandler->isConnected = false;
+                factoryMqttsHandler->isConnected = false;
+                factorySftpHandler->disconnectClient();
+                factoryMqttHandler->disconnectClient();
+                factoryMqttsHandler->disconnectAwsClient();
             }
             settings->refreshInfo();
         }

@@ -31,7 +31,7 @@ bool AwsMqttManager::debugEnabled()
 }
 
 
-AwsMqttManager::AwsMqttManager(QObject *parent) : QObject(parent)
+AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), QObject(parent)
 {
     awsMqttsClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
@@ -287,12 +287,15 @@ void AwsMqttManager::subscribeToTopic()
         topic_sub_ntp,
         topic_sub_mqtt,
         topic_sub_mqtts,
-        topic_sub_sftp,
-        topic_sub_ctRatio,
-        topic_sub_vOffset,
-        topic_sub_iOffset,
-        topic_sub_ota
+        topic_sub_sftp
     };
+
+    if (clientMode == Mode::Full) {
+        topics << topic_sub_ctRatio
+               << topic_sub_vOffset
+               << topic_sub_iOffset
+               << topic_sub_ota;
+    }
 
     for (const QString &t : topics) {
         auto *sub = awsMqttsClient->subscribe(t, 1);
@@ -346,27 +349,32 @@ void AwsMqttManager::awsTopicsInit()
     QString base_pub_topic = "msm/" + clientId + "/pub"; //clientId to be replace with Utils::getUid()
     QString base_sub_topic = "msm/" + clientId + "/sub";
     
-    topic_pub_telemetry     = base_pub_topic + "/telemetry";
-    topic_pub_device_info   = base_pub_topic + "/device_info";
-    topic_pub_reboot        = base_pub_topic + "/reboot";
-    topic_pub_ntp           = base_pub_topic + "/ntp";
-    topic_pub_mqtt          = base_pub_topic + "/mqtt";
-    topic_pub_mqtts         = base_pub_topic + "/mqtts";
-    topic_pub_sftp          = base_pub_topic + "/sftp";
-    topic_pub_ctRatio       = base_pub_topic + "/ct_ratio";
-    topic_pub_vOffset       = base_pub_topic + "/v_offset";
-    topic_pub_iOffset       = base_pub_topic + "/i_offset";
-    topic_pub_ota           = base_pub_topic + "/ota_info";
+    topic_pub_telemetry   = base_pub_topic + "/telemetry";
+    topic_pub_device_info = base_pub_topic + "/device_info";
+    topic_pub_reboot      = base_pub_topic + "/reboot";
+    topic_pub_ntp         = base_pub_topic + "/ntp";
+    topic_pub_mqtt        = base_pub_topic + "/mqtt";
+    topic_pub_mqtts       = base_pub_topic + "/mqtts";
+    topic_pub_sftp        = base_pub_topic + "/sftp";
 
-    topic_sub_reboot        = base_sub_topic + "/reboot";
-    topic_sub_ntp           = base_sub_topic + "/ntp";
-    topic_sub_mqtt          = base_sub_topic + "/mqtt";
-    topic_sub_mqtts         = base_sub_topic + "/mqtts";
-    topic_sub_sftp          = base_sub_topic + "/sftp";
-    topic_sub_ctRatio       = base_sub_topic + "/ct_ratio";
-    topic_sub_vOffset       = base_sub_topic + "/v_offset";
-    topic_sub_iOffset       = base_sub_topic + "/i_offset";
-    topic_sub_ota           = base_sub_topic + "/ota_trigger";
+    topic_sub_reboot      = base_sub_topic + "/reboot";
+    topic_sub_ntp         = base_sub_topic + "/ntp";
+    topic_sub_mqtt        = base_sub_topic + "/mqtt";
+    topic_sub_mqtts       = base_sub_topic + "/mqtts";
+    topic_sub_sftp        = base_sub_topic + "/sftp";
+
+    if (clientMode == Mode::Full)
+    {
+        topic_pub_ctRatio  = base_pub_topic + "/ct_ratio";
+        topic_pub_vOffset  = base_pub_topic + "/v_offset";
+        topic_pub_iOffset  = base_pub_topic + "/i_offset";
+        topic_pub_ota      = base_pub_topic + "/ota_info";
+
+        topic_sub_ctRatio  = base_sub_topic + "/ct_ratio";
+        topic_sub_vOffset  = base_sub_topic + "/v_offset";
+        topic_sub_iOffset  = base_sub_topic + "/i_offset";
+        topic_sub_ota      = base_sub_topic + "/ota_trigger";
+    }
 }
 
 

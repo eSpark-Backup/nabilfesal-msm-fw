@@ -100,6 +100,10 @@ public:
     sftpManager *adminSftpHandler = nullptr;
     AwsMqttManager *adminMqttsHandler = nullptr;
 
+    mqttManager *factoryMqttHandler = nullptr;
+    sftpManager *factorySftpHandler = nullptr;
+    AwsMqttManager *factoryMqttsHandler = nullptr;
+
 private:
     static MainWindow* m_instance;
     Ui::MainWindow *ui;

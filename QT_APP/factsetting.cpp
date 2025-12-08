@@ -16,6 +16,7 @@ FactSetting::FactSetting(QWidget *parent)
     , ui(new Ui::FactSetting)
 {
     ui->setupUi(this);
+    setUiPtr(this);
     ui->stackedWidget->setCurrentIndex(0);
 
     auto firmware = Utils::getFirmwareVersion();
@@ -503,33 +504,6 @@ void FactSetting::load_mqtts_settings(bool msgBox, bool reconnect)
 }
 
 
-QJsonObject FactSetting::loadMqttsSettings(bool showMessages, bool reloadSettings)
-{
-    QString filePath = "config/aws_mqtts_settings.json";
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (!showMessages)
-            Toast::show("Failed to open MQTTS configuration file.", this, Toast::Error);
-        return {};
-    }
-
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        if (!showMessages)
-            Toast::show("Invalid MQTTS configuration file format.", this, Toast::Warning);
-        return {};
-    }
-
-    QJsonObject obj = doc.object();
-    if(reloadSettings) emit aws_mqtts_load();
-    return obj;
-}
-
-
 void FactSetting::on_mqtts_save_btn_clicked(bool msgBox)
 {
     QString mqttEndpoint = ui->mqtts_endpoint->text().trimmed();
@@ -550,50 +524,6 @@ void FactSetting::on_mqtts_save_btn_clicked(bool msgBox)
     saveMqttsSettings(mqttsSettings, true);
 }
 
-void FactSetting::on_pushButton_3_clicked()
-{
-    QString endpoint = ui->mqtts_endpoint->text();
-    if (endpoint.length() < 5) {
-        Toast::show("[Invalid Input] Endpoint must be at least 5 characters long.", this, Toast::Error);
-        return;
-    }
-    ui->pushButton_3->setEnabled(false);
-    emit runFleetProvisioning();
-}
-
-
-void FactSetting::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages)
-{
-    QString MQTTS_CONFIG_PATH = "config/aws_mqtts_settings.json";
-    bool isJsonDiff = jsonDifferent(mqttsSetting, MQTTS_CONFIG_PATH);
-    if (!isJsonDiff) {
-        if (showMessages) Toast::show("[MQTTS] Settings unchanged, not saving into file.", this, Toast::Warning);
-        return;
-    }
-
-    QDir dir("config");
-    if (!dir.exists()) {
-        dir.mkpath(".");
-    }
-
-    QFile file(MQTTS_CONFIG_PATH);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        if(showMessages) Toast::show("Failed to save MQTTS settings!", this, Toast::Error);
-        return;
-    }
-
-    QJsonDocument doc(mqttsSetting);
-    file.write(doc.toJson(QJsonDocument::Indented));
-    file.close();
-
-    if(showMessages) 
-    {
-        Toast::show("MQTTS settings saved successfully!", this, Toast::Info);
-        emit mqttsSettingsChanged(mqttsSetting);
-    }
-    emit aws_mqtts_load();
-}
-
 
 void FactSetting::apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox)
 {
@@ -607,201 +537,21 @@ void FactSetting::apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool ms
 }
 
 
-void FactSetting::runFleetProvisionerAsync()
+void FactSetting::on_provision_btn_clicked()
 {
-    QString mqttsEp = ui->mqtts_endpoint->text();
-    Utils::updateSerialInConfig(mqttsEp);
-    QString exe_path;
-    #if defined(BUILD_X86)
-        exe_path = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin";
-    #elif defined(BUILD_V3S)
-        exe_path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner";
-    #endif
-
-    QString program = exe_path + "/msm_fleet_provisioner";
-
-    QProcess *process = new QProcess(this);
-    process->setProgram(program);
-    process->setWorkingDirectory(exe_path);
-
-    QString *logBuffer = new QString();
-
-    QObject::connect(process, &QProcess::errorOccurred, [this, process](QProcess::ProcessError err) {
-        qWarning() << "[Fleet ERROR] QProcess error:" << err
-                   << "Details:" << process->errorString();
-    });
-
-    QObject::connect(process, &QProcess::readyReadStandardOutput, [this, process, logBuffer]() {
-        QByteArray output = process->readAllStandardOutput();
-        logBuffer->append(QString::fromUtf8(output));
-        qDebug().noquote() << "[Fleet STDOUT]" << output;
-    });
-
-    QObject::connect(process, &QProcess::readyReadStandardError, [this, process]() {
-        QByteArray error = process->readAllStandardError();
-        qWarning().noquote() << "[Fleet STDERR]" << error;
-    });
-
-    QObject::connect(process,
-                     QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-                     [this, process, logBuffer](int exitCode, QProcess::ExitStatus exitStatus) {
-        bool exitedNormally = (exitStatus == QProcess::NormalExit && exitCode == 0);
-        bool demoSuccess = logBuffer->contains("Demo completed successfully.");
-
-        qDebug() << "[Fleet] Finished with code:" << exitCode
-                 << "status:" << (exitStatus == QProcess::NormalExit ? "Normal" : "Crashed")
-                 << "success:" << (demoSuccess && exitedNormally);
-
-        if (demoSuccess && exitedNormally) {
-            Toast::show("[MQTTS] Fleet Provisioning Success!", this, Toast::Info);
-            checkCertificates();
-            emit aws_mqtts_load();
-        } else {
-            qWarning() << "[Fleet] Provisioning failed.";
-            Toast::show("[MQTTS] Fleet Provisioning Failed!", this, Toast::Error);
-        }
-        ui->pushButton_3->setEnabled(true);
-        delete logBuffer;
-        process->deleteLater();
-    });
-    Toast::show("[MQTTS] Fleet Provisioning Started", this, Toast::Info);
-    process->start();
-
-    // 🔹 immediate check
-    if (!process->waitForStarted(3000)) {
-        qWarning() << "[Fleet ERROR] Failed to start process:" << program
-                   << "Reason:" << process->errorString();
-        Toast::show("[MQTTS] Failed to start Fleet Provisioning!", this, Toast::Error);
-        ui->pushButton_3->setEnabled(true);
-        delete logBuffer;
-        process->deleteLater();
+    QString endpoint = ui->mqtts_endpoint->text();
+    if (endpoint.length() < 5) {
+        Toast::show("[Invalid Input] Endpoint must be at least 5 characters long.", this, Toast::Error);
+        return;
     }
+    ui->provision_btn->setEnabled(false);
+    emit runFleetProvisioning();
 }
 
 
-void FactSetting::on_pushButton_2_clicked()
+void FactSetting::on_fetch_claim_btn_clicked()
 {
-    Toast::show("[MQTTS] Starting Fetching Claim credentials", this, Toast::Info);
-    ui->pushButton_2->setEnabled(false);
-    QString claimDir = "/MSM/potential-pancake/MSM/creds/";
-#if defined(BUILD_X86)
-    claimDir = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/";
-#endif
-    QString configPath = "config/sftp_settings.json";
-
-    QFile file(configPath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        Toast::show("Failed to open SFTP config file.", this, Toast::Warning);
-        qWarning() << "Failed to open SFTP config:" << file.errorString();
-        ui->pushButton_2->setEnabled(true);
-        return;
-    }
-
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        Toast::show("Invalid SFTP configuration file format.", this, Toast::Warning);
-        ui->pushButton_2->setEnabled(true);
-        return;
-    }
-
-    QJsonObject obj = doc.object();
-    QString ip       = obj.value("ip").toString();
-    QString username = obj.value("username").toString();
-    QString password = obj.value("password").toString();
-    QString port     = obj.value("port").toString();
-
-    if (ip.isEmpty() || username.isEmpty() || password.isEmpty() || port.isEmpty()) {
-        Toast::show("Incomplete SFTP configuration.", this, Toast::Warning);
-        ui->pushButton_2->setEnabled(true);
-        return;
-    }
-
-    QDir dir(claimDir);
-    if (!dir.exists()) {
-        dir.mkpath(claimDir);
-    } else {
-        QStringList files = dir.entryList(QDir::Files);
-        for (const QString &fileName : files) {
-            QFile::remove(claimDir + fileName);
-        }
-    }
-
-    QString remotePath = "/aws_iot_core/claim_certs/";
-    QString localPath  = claimDir;
-
-    // Use full paths to binaries
-    QString sshpassPath = "/usr/bin/sshpass";
-    QString scpPath     = "/usr/bin/scp";
-
-    QStringList args = {
-        "-p", password,
-        scpPath,
-        "-r",
-        "-P", port,
-        "-o", "StrictHostKeyChecking=no",
-        QString("%1@%2:%3").arg(username, ip, remotePath),
-        localPath
-    };
-
-    QProcess *process = new QProcess(this);
-    process->setProcessChannelMode(QProcess::MergedChannels);
-
-    connect(process, &QProcess::readyReadStandardOutput, [process]() {
-        qDebug().noquote() << process->readAllStandardOutput();
-    });
-
-    connect(process, &QProcess::readyReadStandardError, [process]() {
-        qWarning().noquote() << process->readAllStandardError();
-    });
-
-    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [this, process](int exitCode, QProcess::ExitStatus status) {
-        Q_UNUSED(status);
-        if (exitCode == 0) {
-            Toast::show("Claim certificates downloaded successfully!", this, Toast::Info);
-            checkCertificates();
-        } else {
-            Toast::show("Failed to download claim certificates. Please check SFTP connection or credentials.", this, Toast::Error);
-        }
-        ui->pushButton_2->setEnabled(true);
-        process->deleteLater();
-    });
-
-    process->start(sshpassPath, args);
-
-    if (!process->waitForStarted()) {
-        Toast::show("Failed to start SFTP download process.", this, Toast::Warning);
-        process->deleteLater();
-        ui->pushButton_2->setEnabled(true);
-        return;
-    }
-}
-
-void FactSetting::checkCertificates()
-{
-    #if defined(BUILD_X86)
-        QString claimBasePath = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/claim_certs/";
-        QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
-    #elif defined(BUILD_V3S)
-        QString claimBasePath = "/MSM/potential-pancake/MSM/creds/claim_certs/";
-        QString basePath = "/MSM/potential-pancake/MSM/creds/prov_certs/";
-    #endif
-    
-    QString caPath      = claimBasePath + "AmazonRootCA1.pem";
-    QString certPath    = claimBasePath + "claim_cert.pem";
-    QString keyPath     = claimBasePath + "claim_private.key";
-    QString prvCertPath = basePath + "deviceCert.pem";
-    QString prvkeyPath  = basePath + "privateKey.pem";
-
-    ui->ca1->setChecked(QFile::exists(caPath));
-    ui->claim->setChecked(QFile::exists(certPath));
-    ui->key->setChecked(QFile::exists(keyPath));
-    ui->devCertChkBox->setChecked(QFile::exists(prvCertPath));
-    ui->devKeyChkBox->setChecked(QFile::exists(prvkeyPath));
+    fetch_claim_certs();
 }
 
 

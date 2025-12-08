@@ -16,22 +16,23 @@ class FactSetting : public settingsManager
 
 public:
     explicit FactSetting(QWidget *parent = nullptr);
-    void checkCertificates();
-    void runFleetProvisionerAsync();
+    void runFleetProvisioningWrapper() {runFleetProvisionerAsync();}
+    void checkCertificatesWrapper() {checkCertificates();}
     ~FactSetting();
 
 signals:
     void rebootMCM();
     void usbExport();
     void factoryExit();
-    void aws_mqtts_load();
     void runFleetProvisioning();
     void OTA_status(const QJsonObject &otaData);
 
 protected:
+    QString mqttConfigPath() const override { return "config/mqtt_settings.json"; }
+    QString sftpConfigPath() const override { return "config/sftp_settings.json"; }
+    QString mqttsConfigPath() const override { return "config/aws_mqtts_settings.json"; }
     void showEvent(QShowEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
-    void saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages = true);
 
 public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = false);
@@ -40,7 +41,6 @@ public slots:
     void load_mqtt_settings(bool msgBox = false, bool reconnect = false);
     void load_sftp_settings(bool msgBox = false, bool reconnect = false);
     void load_mqtts_settings(bool msgBox = false, bool reconnect = false);
-    QJsonObject loadMqttsSettings(bool showMessages, bool reloadSettings = true);
     void sendOTAData(int status);
     void startOTA(const QString &selectedVersion);
 
@@ -55,8 +55,8 @@ private slots:
     void on_OTA_pushButton_clicked();
     void on_pushButton_5_clicked();
     void on_mqtts_save_btn_clicked(bool msgBox = false);
-    void on_pushButton_3_clicked();
-    void on_pushButton_2_clicked();
+    void on_fetch_claim_btn_clicked();
+    void on_provision_btn_clicked();
 
 private:
     void apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox = true);

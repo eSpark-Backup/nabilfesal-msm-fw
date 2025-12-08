@@ -35,7 +35,12 @@ class AwsMqttManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit AwsMqttManager(QObject *parent = nullptr); // private ctor
+    enum Mode {
+        Full,       // factory with all topics
+        Limited     // admin mode with fewer topics
+    };
+
+    explicit AwsMqttManager(Mode mode, QObject *parent = nullptr); // private ctor
     AwsMqttManager(const AwsMqttManager&) = delete;     // prevent copy
     bool loadAwsConfig(const QString &filePath);
     void reloadAwsMqttsSettings();
@@ -141,5 +146,6 @@ private:
 
     // Running totals for energy
     std::array<EnergyData, 13> awsEnergy;
+    Mode clientMode;
 };
 

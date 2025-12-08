@@ -23,7 +23,6 @@ public:
 signals:
     void channels_view();
     void usbExport();
-    void aws_mqtts_load();
     void resetEnergy();
     void deviceInfoChanged(const DeviceInfo &info);
     void ntpSettingsChanged(const NtpSettings &settings);
@@ -40,7 +39,6 @@ public slots:
     void load_mqtt_settings(bool msgBox = false, bool reconnect = false);
     void load_mqtts_settings(bool msgBox = false, bool reconnect = false);
     void load_sftp_settings(bool msgBox = false, bool reconnect = false);
-    QJsonObject loadMqttsSettings(bool showMessages, bool reloadSettings = true);
 
 private slots:
     void on_channels_btn_clicked();
@@ -57,8 +55,11 @@ private slots:
     void on_resetEnergy_Btn_clicked();
 
 protected:
+    QString mqttConfigPath() const override { return "config/admin_settings/mqtt_settings.json"; }
+    QString sftpConfigPath() const override { return "config/admin_settings/sftp_settings.json"; }
+    QString mqttsConfigPath() const override { return "config/admin_settings/aws_mqtts_settings.json"; }
     bool eventFilter(QObject *obj, QEvent *event) override;
-    void saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages = true);
+    
     
 private:
     bool apply_ntp_Settings(bool msgBox= true);
