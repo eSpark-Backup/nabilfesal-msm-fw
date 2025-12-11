@@ -17,7 +17,7 @@ QString getMqttStatus();
 QString getSftpStatus();
 void rebootSystem();
 void mainSound();
-bool updateSerialInConfig(const QString &AwsEp);
+bool updateSerialInConfig(const QString &AwsEp, const QString &configJson_path);
 QString getSignalCategoryFromFile(const QString &filePath = "/MSM/potential-pancake/MSM/bin/at_axec/responses.txt");
 QString extractImeiFromResponses(const QString &filePath);
 QLabel *showImageFullscreenFor(const QString &imagePath, int milliseconds);

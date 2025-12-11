@@ -17,6 +17,8 @@ class DeviceSettings : public settingsManager
 public:
     explicit DeviceSettings(QWidget *parent = nullptr);
     void refreshInfo();
+    void runFleetProvisioningWrapper() {runFleetProvisionerAsync();}
+    void checkCertificatesWrapper() {checkCertificates();}
     ~DeviceSettings();
     DeviceInfo curDevInfo, prvDevInfo;
 
@@ -24,7 +26,7 @@ signals:
     void channels_view();
     void usbExport();
     void resetEnergy();
-    void deviceInfoChanged(const DeviceInfo &info);
+    void runFleetProvisioning();
     void ntpSettingsChanged(const NtpSettings &settings);
 
 public slots:
@@ -53,20 +55,19 @@ private slots:
     void on_pushButton_2_clicked();
     void on_mqtts_save_btn_clicked(bool msgBox = false);
     void on_resetEnergy_Btn_clicked();
+    void on_fetch_claim_btn_clicked();
+    void on_provision_btn_clicked();
 
 protected:
     QString mqttConfigPath() const override { return "config/admin_settings/mqtt_settings.json"; }
     QString sftpConfigPath() const override { return "config/admin_settings/sftp_settings.json"; }
     QString mqttsConfigPath() const override { return "config/admin_settings/aws_mqtts_settings.json"; }
+    QString configJsonPath() const override;
     bool eventFilter(QObject *obj, QEvent *event) override;
-    
     
 private:
     bool apply_ntp_Settings(bool msgBox= true);
     void parseNtpJson(const QJsonObject& data);
-    void apply_sftp_Settings(const QJsonObject &sftpSetting, bool msgBox = true);
-    void apply_mqtt_Settings(const QJsonObject &mqttSetting, bool msgBox = true);
-    void apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox = true);
     bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;

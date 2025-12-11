@@ -23,4 +23,14 @@ enum Mode {
 };
 
 
+#if defined(BUILD_X86)
+#define FLEET_PROV_SCRIPT (QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin")
+#define CERT_DIR_PATH (QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/")
+#elif defined(BUILD_V3S)
+#define FLEET_PROV_SCRIPT ("/MSM/potential-pancake/MSM/bin/fleet_provisioner")
+#define CERT_DIR_PATH (QString("/MSM/potential-pancake/MSM/creds/"))
+#endif
+#define CLAIM_PATH (CERT_DIR_PATH + "claim_certs/")
+#define PROV_PATH  (CERT_DIR_PATH + "prov_certs/")
+
 #endif // COMMON_HEADERS_H

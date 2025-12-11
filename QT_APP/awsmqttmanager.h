@@ -95,20 +95,12 @@ private:
     int intervalSec = 10;
     bool isFirstTime = true;
 
-    #if defined(BUILD_X86)
-        QString claimBasePath = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/claim_certs/";
-        QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
-        QString caPath   = basePath + "AmazonRootCA1.pem";
-    #elif defined(BUILD_V3S)
-        QString claimBasePath = "/MSM/potential-pancake/MSM/creds/claim_certs/";
-        QString basePath = "/MSM/potential-pancake/MSM/creds/prov_certs/";
-        QString caPath = "/MSM/potential-pancake/MSM/creds/claim_certs/AmazonRootCA1.pem"; //v3s
-    #endif
+    QString caPath        = CLAIM_PATH + "AmazonRootCA1.pem";
+    QString claimCertPath = CLAIM_PATH + "claim_cert.pem";
+    QString claimKeyPath  = CLAIM_PATH + "claim_private.key";
+    QString provCertPath  = PROV_PATH  + "deviceCert.pem";
+    QString provKeyPath   = PROV_PATH  + "privateKey.pem";
 
-    QString claimCertPath = claimBasePath + "claim_cert.pem";
-    QString claimKeyPath  = claimBasePath + "claim_private.key";
-    QString certPath = basePath + "deviceCert.pem";
-    QString keyPath  = basePath + "privateKey.pem";
 
     QString topic_pub_telemetry;
     QString topic_pub_device_info;
@@ -140,11 +132,11 @@ private:
     QTimer *reconnectTimer;
 
     // Running totals for energy
-    std::array<EnergyData, 13> awsEnergy;
+    static std::array<EnergyData, 13> awsEnergy;
     Mode clientMode;
 
 public:
     QString tag;
-    QString aws_path = "config/admin/aws_mqtts_settings.json";
+    QString aws_path = "config/admin_settings/aws_mqtts_settings.json";
 };
 

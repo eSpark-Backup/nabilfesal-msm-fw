@@ -1,6 +1,5 @@
 #include "awsmqttmanager.h"
 #include <QFile>
-#include <QDebug>
 #include "utils.h"
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -13,6 +12,7 @@
 #include <QProcessEnvironment>
 
 #define AWS_MQTTS_PATH aws_path
+std::array<EnergyData, 13> AwsMqttManager::awsEnergy = {};
 
 #define AWS_LOG(msg) \
     do { \
@@ -39,7 +39,14 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
         aws_path = "config/aws_mqtts_settings.json";
     }
     else
+    {
         tag = TAG_ADMIN;
+        caPath        = CERT_DIR_PATH + "admin/claim_certs/AmazonRootCA1.pem";
+        claimCertPath = CERT_DIR_PATH + "admin/claim_certs/claim_cert.pem";
+        claimKeyPath  = CERT_DIR_PATH + "admin/claim_certs/claim_private.key";
+        provCertPath  = CERT_DIR_PATH + "admin/prov_certs/deviceCert.pem";
+        provKeyPath   = CERT_DIR_PATH + "admin/prov_certs/privateKey.pem";
+    }
 
     awsMqttsClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
@@ -178,7 +185,7 @@ bool AwsMqttManager::loadCertificates()
         return false;
     }
 
-    QFile caFile(caPath), certFile(certPath), keyFile(keyPath);
+    QFile caFile(caPath), certFile(provCertPath), keyFile(provKeyPath);
     if (!caFile.open(QIODevice::ReadOnly) ||
         !certFile.open(QIODevice::ReadOnly) ||
         !keyFile.open(QIODevice::ReadOnly)) {

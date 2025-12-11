@@ -92,7 +92,7 @@ private:
 
     // Utility connection helpers
     void connectChannels(ChannelsHome *ch);
-    void connectFactSettings(FactSetting *fs);
+    void connectFactSettings();
     void connectStartUpSignals();
 
 public:

@@ -9,7 +9,8 @@ class SerialWorker : public QObject {
     Q_OBJECT
 public:
     SerialWorker(const QString &port, int baud);
-
+    void startSerial();
+    
 public slots:
     void requestChannel(int channel);
     void sendRawCommand(const QString &cmd);

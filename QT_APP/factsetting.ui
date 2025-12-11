@@ -157,7 +157,7 @@ QPushButton:focus {
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page_2">
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -754,6 +754,9 @@ QPushButton:focus {
                  </item>
                  <item>
                   <widget class="QLineEdit" name="mqtts_client_id">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -1398,6 +1401,18 @@ QPushButton:focus {
                   </property>
                   <item>
                    <widget class="QLineEdit" name="sftp_int">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>160</width>
+                      <height>33</height>
+                     </size>
+                    </property>
                     <property name="focusPolicy">
                      <enum>Qt::ClickFocus</enum>
                     </property>

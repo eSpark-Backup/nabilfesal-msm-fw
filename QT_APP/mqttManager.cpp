@@ -121,34 +121,6 @@ bool mqttManager::mqttState()
     return isConnected;
 }
 
-bool mqttManager::loadCertificates()
-{
-    QFile caFile("/etc/ssl/certs/AmazonRootCA1.pem");
-    QFile certFile("/etc/ssl/certs/deviceCert.crt");
-    QFile keyFile("/etc/ssl/certs/privateKey.key");
-
-    if (!caFile.open(QIODevice::ReadOnly) ||
-        !certFile.open(QIODevice::ReadOnly) ||
-        !keyFile.open(QIODevice::ReadOnly)) {
-        logWarn << "Failed to open cert files";
-        return false;
-    }
-
-    QSslConfiguration sslConf;
-    sslConf.addCaCertificate(QSslCertificate(&caFile));
-    sslConf.setLocalCertificate(QSslCertificate(&certFile));
-    sslConf.setPrivateKey(QSslKey(&keyFile, QSsl::Rsa, QSsl::Pem));
-
-    // secure socket
-    QSslSocket *sslSocket = new QSslSocket(this);
-    sslSocket->setSslConfiguration(sslConf);
-
-    // bind socket to mqtt client
-    mqttClient->setTransport(sslSocket, QMqttClient::IODevice);
-
-    return true;
-}
-
 void mqttManager::connectToBroker()
 {
     if (host.isEmpty() || clientId.isEmpty() || topic.isEmpty()) {

@@ -19,6 +19,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
 {
     ui->setupUi(this);
     setUiPtr(this);
+    setCertPath(CERT_DIR_PATH + "admin/claim_certs/", CERT_DIR_PATH + "admin/prov_certs/");
     auto uid = Utils::getUid();
     ui->uuid->setText(uid);
     auto currentIp = Utils::getDeviceIp();
@@ -123,7 +124,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->move(250, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("SFTP_USER", ui->sftp_username);
+    label = new QLabel("SFTP_USER", ui->sftp_user);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
@@ -137,21 +138,18 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->move(220, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
-    label = new QLabel("INTERVAL (s)", ui->sftp_int);
+    label = new QLabel("INTERVAL(s)", ui->sftp_int);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(72, 1);
+    label->move(60, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("SCHEDULE(24hr)", ui->sftp_sch);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    QFont font = label->font();
-    font.setPointSize(6);
-    label->setFont(font);
     label->adjustSize(); 
-    label->move(45, 1);
+    label->move(60, 1);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("MQTTs_ENDPOINT", ui->mqtts_endpoint);
@@ -165,7 +163,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     label->adjustSize();
-    label->move(190, 3);
+    label->move(180, 3);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     label = new QLabel("PORT", ui->mqtts_port);
@@ -190,7 +188,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
         ui->server1, ui->server2, ui->server3,
         ui->mqtt_ip, ui->mqtt_port, ui->mqtt_user,
         ui->mqtt_pass, ui->mqtt_topic, ui->mqtt_int,
-        ui->sftp_ip, ui->sftp_port, ui->sftp_username,
+        ui->sftp_ip, ui->sftp_port, ui->sftp_user,
         ui->sftp_pass, ui->sftp_int, ui->sftp_sch,
         ui->mqtts_interval,  ui->mqtts_endpoint
     };
@@ -345,26 +343,8 @@ bool DeviceSettings::apply_ntp_Settings(bool msgBox)
 
 void DeviceSettings::on_mqtt_save_btn_clicked()
 {
-    QString mqttIp      = ui->mqtt_ip->text().trimmed();
-    QString mqttPort    = ui->mqtt_port->text().trimmed();
-    QString mqttUser    = ui->mqtt_user->text().trimmed();
-    QString mqttPass    = ui->mqtt_pass->text().trimmed();
-    QString mqttTopic   = ui->mqtt_topic->text().trimmed();
-    QString mqttInterval = ui->mqtt_int->text().trimmed();
-
-    QJsonObject mqttSettings;
-    mqttSettings["ip"]       = mqttIp;
-    mqttSettings["port"]     = mqttPort;
-    mqttSettings["user"]     = mqttUser;
-    mqttSettings["password"] = mqttPass;
-    mqttSettings["topic"]    = mqttTopic;
-    mqttSettings["interval"] = mqttInterval;
-
-    if (hasEmptyField(mqttSettings)) {
-        Toast::show("Please fill in all MQTT fields before saving.", this, Toast::Warning);
-        return;
-    }
-    saveMqttSettings(mqttSettings);
+    QJsonObject mqttSettings = getMqttSettings();
+    if(!mqttSettings.isEmpty()) saveMqttSettings(mqttSettings);
 }
 
 
@@ -403,42 +383,10 @@ void DeviceSettings::parse_load_store_mqtt(const QJsonObject &payload)
 }
 
 
-void DeviceSettings::apply_mqtt_Settings(const QJsonObject &mqttSettings, bool msgBox)
-{
-    ui->mqtt_ip->setText(mqttSettings.value("ip").toString());
-    ui->mqtt_user->setText(mqttSettings.value("user").toString());
-    ui->mqtt_port->setText(mqttSettings.value("port").toString());
-    ui->mqtt_pass->setText(mqttSettings.value("password").toString());
-    ui->mqtt_topic->setText(mqttSettings.value("topic").toString());
-    ui->mqtt_int->setText(mqttSettings.value("interval").toString());
-    
-    if(!msgBox)
-        Toast::show("MQTT settings loaded successfully!", this, Toast::Info);
-}
-
-
 void DeviceSettings::on_sftp_save_btn_clicked()
 {
-    QString sftpIp       = ui->sftp_ip->text().trimmed();
-    QString sftpPort     = ui->sftp_port->text().trimmed();
-    QString sftpUser     = ui->sftp_username->text().trimmed();
-    QString sftpPass     = ui->sftp_pass->text().trimmed();
-    QString sftpInterval = ui->sftp_int->text().trimmed();
-    QString sftpSchedule = ui->sftp_sch->text().trimmed();
-
-    QJsonObject sftpSettings;
-    sftpSettings["ip"]       = sftpIp;
-    sftpSettings["port"]     = sftpPort;
-    sftpSettings["username"] = sftpUser;
-    sftpSettings["password"] = sftpPass;
-    sftpSettings["interval"] = sftpInterval;
-    sftpSettings["schedule"] = sftpSchedule;
-
-    if (hasEmptyField(sftpSettings)) {
-        Toast::show("Please fill in all SFTP fields before saving.", this, Toast::Warning);
-        return;
-    }
-    saveSftpSettings(sftpSettings);
+    QJsonObject sftpSettings = getSftpSettings();
+    if(!sftpSettings.isEmpty()) saveSftpSettings(sftpSettings);
 }
 
 
@@ -474,19 +422,6 @@ void DeviceSettings::parse_load_store_sftp(const QJsonObject &payload)
     
     saveSftpSettings(sftpSettings);
     apply_sftp_Settings(sftpSettings);
-}
-
-
-void DeviceSettings::apply_sftp_Settings(const QJsonObject &sftpSettings, bool msgBox)
-{
-    ui->sftp_ip->setText(sftpSettings.value("ip").toString());
-    ui->sftp_username->setText(sftpSettings.value("username").toString());
-    ui->sftp_pass->setText(sftpSettings.value("password").toString());
-    ui->sftp_int->setText(sftpSettings.value("interval").toString());
-    ui->sftp_sch->setText(sftpSettings.value("schedule").toString());
-    
-    if(!msgBox)
-        Toast::show("SFTP settings loaded successfully!", this, Toast::Info);
 }
 
 
@@ -621,19 +556,6 @@ void DeviceSettings::parse_load_store_mqtts(const QJsonObject &payload)
 }
 
 
-void DeviceSettings::apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox)
-{
-    ui->mqtts_port->setText(mqttsSettings.value("port").toString());
-    ui->mqtts_endpoint->setText(mqttsSettings.value("endpoint").toString());
-    ui->mqtts_interval->setText(mqttsSettings.value("interval").toString());
-    ui->mqtts_endpoint->setCursorPosition(0);
-    ui->mqtts_client_id->setText(Utils::getUid());
-    
-    if(!msgBox)
-        Toast::show("MQTTS settings loaded successfully!", this, Toast::Info);
-}
-
-
 void DeviceSettings::load_mqtts_settings(bool msgBox, bool reconnect)
 {
     QJsonObject mqttsSettings = loadMqttsSettings(msgBox, reconnect);
@@ -643,22 +565,8 @@ void DeviceSettings::load_mqtts_settings(bool msgBox, bool reconnect)
 
 void DeviceSettings::on_mqtts_save_btn_clicked(bool msgBox)
 {
-    QString mqttEndpoint = ui->mqtts_endpoint->text().trimmed();
-    QString mqttPort     = ui->mqtts_port->text().trimmed();
-    QString mqttInterval = ui->mqtts_interval->text().trimmed();
-
-    if (mqttPort != "8883") mqttPort = "8883";  //not editable
-
-    QJsonObject mqttsSettings;
-    mqttsSettings["endpoint"] = mqttEndpoint;
-    mqttsSettings["port"]     = mqttPort;
-    mqttsSettings["interval"] = mqttInterval;
-
-    if (hasEmptyField(mqttsSettings)) {
-        Toast::show("Please fill in all MQTTS fields before saving.", this, Toast::Warning);
-        return;
-    }
-    saveMqttsSettings(mqttsSettings, true);
+    QJsonObject mqttsSettings = getMqttsSettings();
+    if(!mqttsSettings.isEmpty()) saveMqttsSettings(mqttsSettings, true);
 }
 
 
@@ -670,5 +578,34 @@ void DeviceSettings::on_resetEnergy_Btn_clicked()
         this, "Reset Energy", "Do you want to reset energy?",QMessageBox::Ok | QMessageBox::Cancel);
 
     if (ret == QMessageBox::Ok) emit resetEnergy();
+}
+
+
+QString DeviceSettings::configJsonPath() const
+{
+#if defined(BUILD_X86)
+    return QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/admin_config.json";
+#elif defined(BUILD_V3S)
+    return "/MSM/potential-pancake/MSM/bin/fleet_provisioner/admin_config.json";
+#endif
+}
+
+
+
+void DeviceSettings::on_fetch_claim_btn_clicked()
+{
+    fetch_claim_certs();
+}
+
+
+void DeviceSettings::on_provision_btn_clicked()
+{
+    QString endpoint = ui->mqtts_endpoint->text();
+    if (endpoint.length() < 5) {
+        Toast::show("[Invalid Input] Endpoint must be at least 5 characters long.", this, Toast::Error);
+        return;
+    }
+    ui->provision_btn->setEnabled(false);
+    emit runFleetProvisioning();
 }
 

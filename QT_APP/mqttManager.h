@@ -43,11 +43,6 @@ private:
     QString topic;
     int intervalSec = 0;
 
-    // System certificate paths (fixed)
-    QString caPath = "/etc/certs/AmazonRootCA1.pem";
-    QString certPath = "/etc/certs/deviceCert.pem";
-    QString keyPath = "/etc/certs/privateKey.pem";
-
     QTimer *publishTimer = nullptr;
     mutable QReadWriteLock telemetryLock;
     QMap<int, QJsonObject> channelTelemetry;

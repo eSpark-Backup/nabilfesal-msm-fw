@@ -8,6 +8,40 @@
 #include <QCheckBox>
 #include <QLineEdit>
 #include <QPushButton>
+#include "devicesettings.h"
+#include "factsetting.h"
+
+QJsonObject settingsManager::getMqttSettings()
+{
+    auto Ip    = uiBase->findChild<QLineEdit*>("mqtt_ip"); 
+    auto Int   = uiBase->findChild<QLineEdit*>("mqtt_int");
+    auto Port  = uiBase->findChild<QLineEdit*>("mqtt_port");
+    auto User  = uiBase->findChild<QLineEdit*>("mqtt_user");
+    auto Pass  = uiBase->findChild<QLineEdit*>("mqtt_pass");
+    auto Topic = uiBase->findChild<QLineEdit*>("mqtt_topic");
+
+    QString mqttIp       = Ip->text().trimmed();
+    QString mqttPort     = Port->text().trimmed();
+    QString mqttUser     = User->text().trimmed();
+    QString mqttPass     = Pass->text().trimmed();
+    QString mqttTopic    = Topic->text().trimmed();
+    QString mqttInterval = Int->text().trimmed();
+
+    QJsonObject mqttSettings = getMqttSettings();
+    mqttSettings["ip"]       = mqttIp;
+    mqttSettings["port"]     = mqttPort;
+    mqttSettings["user"]     = mqttUser;
+    mqttSettings["password"] = mqttPass;
+    mqttSettings["topic"]    = mqttTopic;
+    mqttSettings["interval"] = mqttInterval;
+
+    if (hasEmptyField(mqttSettings)) {
+        Toast::show("Please fill in all MQTT fields before saving.", this, Toast::Warning);
+        return {};
+    }
+
+    return mqttSettings;
+}
 
 
 QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSettings)
@@ -36,6 +70,26 @@ QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSett
     QJsonObject mqttSettings = doc.object();
     if(reloadSettings) emit mqtt_load();
     return mqttSettings;
+}
+
+
+void settingsManager::apply_mqtt_Settings(const QJsonObject &mqttSettings, bool msgBox)
+{
+    auto mqtt_ip    = uiBase->findChild<QLineEdit*>("mqtt_ip");
+    auto mqtt_user  = uiBase->findChild<QLineEdit*>("mqtt_user");
+    auto mqtt_port  = uiBase->findChild<QLineEdit*>("mqtt_port");
+    auto mqtt_pass  = uiBase->findChild<QLineEdit*>("mqtt_pass");
+    auto mqtt_int   = uiBase->findChild<QLineEdit*>("mqtt_int");
+    auto mqtt_topic = uiBase->findChild<QLineEdit*>("mqtt_topic");
+
+    mqtt_ip->setText(mqttSettings.value("ip").toString());
+    mqtt_user->setText(mqttSettings.value("user").toString());
+    mqtt_port->setText(mqttSettings.value("port").toString());
+    mqtt_pass->setText(mqttSettings.value("password").toString());
+    mqtt_topic->setText(mqttSettings.value("topic").toString());
+    mqtt_int->setText(mqttSettings.value("interval").toString());
+    
+    if(!msgBox) Toast::show("MQTT settings loaded successfully!", this, Toast::Info);
 }
 
 
@@ -79,12 +133,11 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
         return;
     }
     
-    QDir dir("config");
+    QDir dir("config/admin_settings/");
     if (!dir.exists()) {
         dir.mkpath(".");
     }
 
-    // 3. Write to config/factory_sftp_settings.json
     QFile file(sftpConfigPath());
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         if (showMessages) Toast::show("Failed to save SFTP settings!", this, Toast::Error);
@@ -102,7 +155,37 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
     emit sftp_load();    
 }
 
+QJsonObject settingsManager::getSftpSettings()
+{
+    auto Ip   = uiBase->findChild<QLineEdit*>("sftp_ip"); 
+    auto Int  = uiBase->findChild<QLineEdit*>("sftp_int");
+    auto Sch  = uiBase->findChild<QLineEdit*>("sftp_sch");
+    auto Port = uiBase->findChild<QLineEdit*>("sftp_port");
+    auto User = uiBase->findChild<QLineEdit*>("sftp_user");
+    auto Pass = uiBase->findChild<QLineEdit*>("sftp_pass");
 
+    QString sftpIp       = Ip->text().trimmed();
+    QString sftpPort     = Port->text().trimmed();
+    QString sftpUser     = User->text().trimmed();
+    QString sftpPass     = Pass->text().trimmed();
+    QString sftpInterval = Int->text().trimmed();
+    QString sftpSchedule = Sch->text().trimmed();
+
+    QJsonObject sftpSettings;
+    sftpSettings["ip"]       = sftpIp;
+    sftpSettings["port"]     = sftpPort;
+    sftpSettings["username"] = sftpUser;
+    sftpSettings["password"] = sftpPass;
+    sftpSettings["interval"] = sftpInterval;
+    sftpSettings["schedule"] = sftpSchedule;
+
+    if (hasEmptyField(sftpSettings)) {
+        Toast::show("Please fill in all SFTP fields before saving.", this, Toast::Warning);
+        return {};
+    }
+    
+    return sftpSettings;
+}
 QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSettings)
 {
     QFile file(sftpConfigPath());
@@ -133,6 +216,50 @@ QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSett
 }
 
 
+void settingsManager::apply_sftp_Settings(const QJsonObject &sftpSettings, bool msgBox)
+{
+    auto sftp_ip    = uiBase->findChild<QLineEdit*>("sftp_ip");
+    auto sftp_user  = uiBase->findChild<QLineEdit*>("sftp_user");
+    auto sftp_pass  = uiBase->findChild<QLineEdit*>("sftp_pass");
+    auto sftp_int   = uiBase->findChild<QLineEdit*>("sftp_int");
+    auto sftp_sch   = uiBase->findChild<QLineEdit*>("sftp_sch");
+
+    sftp_ip->setText(sftpSettings.value("ip").toString());
+    sftp_user->setText(sftpSettings.value("username").toString());
+    sftp_pass->setText(sftpSettings.value("password").toString());
+    sftp_int->setText(sftpSettings.value("interval").toString());
+    sftp_sch->setText(sftpSettings.value("schedule").toString());
+    
+    if(!msgBox) Toast::show("SFTP settings loaded successfully!", this, Toast::Info);
+}
+
+
+QJsonObject settingsManager::getMqttsSettings()
+{
+    auto Port     = uiBase->findChild<QLineEdit*>("mqtts_port");
+    auto Endpoint = uiBase->findChild<QLineEdit*>("mqtts_endpoint");
+    auto Interval = uiBase->findChild<QLineEdit*>("mqtts_interval");
+
+    QString mqttsPort     = Port->text().trimmed();
+    QString mqttsEndpoint = Endpoint->text().trimmed();
+    QString mqttsInterval = Interval->text().trimmed();
+
+    if (mqttsPort != "8883") mqttsPort = "8883";  //not editable
+
+    QJsonObject mqttsSettings;
+    mqttsSettings["endpoint"] = mqttsEndpoint;
+    mqttsSettings["port"]     = mqttsPort;
+    mqttsSettings["interval"] = mqttsInterval;
+
+    if (hasEmptyField(mqttsSettings)) {
+        Toast::show("Please fill in all MQTTS fields before saving.", this, Toast::Warning);
+        return {};
+    }
+
+    return mqttsSettings;
+}
+
+
 QJsonObject settingsManager::loadMqttsSettings(bool showMessages, bool reloadSettings)
 {
     QString filePath = mqttsConfigPath();
@@ -157,6 +284,25 @@ QJsonObject settingsManager::loadMqttsSettings(bool showMessages, bool reloadSet
     QJsonObject obj = doc.object();
     if(reloadSettings) emit aws_mqtts_load();
     return obj;
+}
+
+
+void settingsManager::apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox)
+{
+    auto mqtts_port      = uiBase->findChild<QLineEdit*>("mqtts_port");
+    auto mqtts_endpoint  = uiBase->findChild<QLineEdit*>("mqtts_endpoint");
+    auto mqtts_interval  = uiBase->findChild<QLineEdit*>("mqtts_interval");
+    auto mqtts_client_id = uiBase->findChild<QLineEdit*>("mqtts_client_id");
+
+    mqtts_port->setText(mqttsSettings.value("port").toString());
+    mqtts_endpoint->setText(mqttsSettings.value("endpoint").toString());
+    mqtts_interval->setText(mqttsSettings.value("interval").toString());
+    mqtts_endpoint->setCursorPosition(0);
+    mqtts_client_id->setText(Utils::getUid());
+
+    checkCertificates();
+    
+    if(!msgBox) Toast::show("MQTTS settings loaded successfully!", this, Toast::Info);
 }
 
 
@@ -229,18 +375,17 @@ void settingsManager::runFleetProvisionerAsync()
     auto mqtts_endpoint = uiBase->findChild<QLineEdit*>("mqtts_endpoint");
     auto provision_btn = uiBase->findChild<QPushButton*>("provision_btn");
     QString mqttsEp = mqtts_endpoint->text();
-    Utils::updateSerialInConfig(mqttsEp);
-    QString exe_path;
-    #if defined(BUILD_X86)
-        exe_path = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin";
-    #elif defined(BUILD_V3S)
-        exe_path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner";
-    #endif
+    Utils::updateSerialInConfig(mqttsEp, configJsonPath());
 
+    QString exe_path = FLEET_PROV_SCRIPT;
+    QString config_file;
+    config_file = qobject_cast<DeviceSettings*>(this) ? "admin_config.json": "config.json";
     QString program = exe_path + "/msm_fleet_provisioner";
+    QStringList arguments = { config_file };
 
     QProcess *process = new QProcess(this);
     process->setProgram(program);
+    process->setArguments(arguments);
     process->setWorkingDirectory(exe_path);
 
     QString *logBuffer = new QString();
@@ -286,7 +431,6 @@ void settingsManager::runFleetProvisionerAsync()
     Toast::show("[MQTTS] Fleet Provisioning Started", this, Toast::Info);
     process->start();
 
-    // 🔹 immediate check
     if (!process->waitForStarted(3000)) {
         qWarning() << "[Fleet ERROR] Failed to start process:" << program
                    << "Reason:" << process->errorString();
@@ -303,12 +447,11 @@ void settingsManager::fetch_claim_certs()
     auto fetch_claim_btn = uiBase->findChild<QPushButton*>("fetch_claim_btn");
     Toast::show("[MQTTS] Starting Fetching Claim credentials", this, Toast::Info);
     fetch_claim_btn->setEnabled(false);
-    QString claimDir = "/MSM/potential-pancake/MSM/creds/";
-#if defined(BUILD_X86)
-    claimDir = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/";
-#endif
-    QString configPath = "config/sftp_settings.json";
+    QString claimDir = CERT_DIR_PATH;
 
+    if (qobject_cast<DeviceSettings*>(this)) {claimDir += "admin/";}
+    
+    QString configPath = sftpConfigPath();
     QFile file(configPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         Toast::show("Failed to open SFTP config file.", this, Toast::Warning);
@@ -404,19 +547,11 @@ void settingsManager::fetch_claim_certs()
 
 void settingsManager::checkCertificates()
 {
-    #if defined(BUILD_X86)
-        QString claimBasePath = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/certificates/claim_certs/";
-        QString basePath = QCoreApplication::applicationDirPath() + "/data/certs/";
-    #elif defined(BUILD_V3S)
-        QString claimBasePath = "/MSM/potential-pancake/MSM/creds/claim_certs/";
-        QString basePath = "/MSM/potential-pancake/MSM/creds/prov_certs/";
-    #endif
-    
     QString caPath      = claimBasePath + "AmazonRootCA1.pem";
     QString certPath    = claimBasePath + "claim_cert.pem";
     QString keyPath     = claimBasePath + "claim_private.key";
-    QString prvCertPath = basePath + "deviceCert.pem";
-    QString prvkeyPath  = basePath + "privateKey.pem";
+    QString prvCertPath = provBasePath  + "deviceCert.pem";
+    QString prvkeyPath  = provBasePath  + "privateKey.pem";
 
     auto ca1        = uiBase->findChild<QCheckBox*>("ca1");
     auto claim      = uiBase->findChild<QCheckBox*>("claim");

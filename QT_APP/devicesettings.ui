@@ -194,7 +194,7 @@ QPushButton:focus {
       <enum>Qt::ClickFocus</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page">
       <layout class="QVBoxLayout" name="verticalLayout_15">
@@ -956,7 +956,7 @@ QPushButton:focus {
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_11">
                <property name="spacing">
-                <number>10</number>
+                <number>5</number>
                </property>
                <property name="leftMargin">
                 <number>10</number>
@@ -972,6 +972,18 @@ QPushButton:focus {
                </property>
                <item>
                 <widget class="QLabel" name="label_15">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>345</width>
+                   <height>35</height>
+                  </size>
+                 </property>
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
@@ -1429,7 +1441,7 @@ QPushButton:focus {
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_13">
                <property name="spacing">
-                <number>10</number>
+                <number>5</number>
                </property>
                <property name="leftMargin">
                 <number>10</number>
@@ -1445,6 +1457,18 @@ QPushButton:focus {
                </property>
                <item>
                 <widget class="QLabel" name="label_23">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>344</width>
+                   <height>26</height>
+                  </size>
+                 </property>
                  <property name="font">
                   <font>
                    <family>Gilroy</family>
@@ -1520,7 +1544,7 @@ QPushButton:focus {
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="sftp_username">
+                <widget class="QLineEdit" name="sftp_user">
                  <property name="focusPolicy">
                   <enum>Qt::ClickFocus</enum>
                  </property>
@@ -1556,6 +1580,9 @@ QPushButton:focus {
                  <property name="inputMask">
                   <string/>
                  </property>
+                 <property name="text">
+                  <string/>
+                 </property>
                  <property name="placeholderText">
                   <string/>
                  </property>
@@ -1563,8 +1590,23 @@ QPushButton:focus {
                </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_22">
+                 <property name="spacing">
+                  <number>5</number>
+                 </property>
                  <item>
                   <widget class="QLineEdit" name="sftp_int">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>150</width>
+                     <height>32</height>
+                    </size>
+                   </property>
                    <property name="focusPolicy">
                     <enum>Qt::ClickFocus</enum>
                    </property>
@@ -1586,6 +1628,12 @@ QPushButton:focus {
                  </item>
                  <item>
                   <widget class="QLineEdit" name="sftp_sch">
+                   <property name="maximumSize">
+                    <size>
+                     <width>186</width>
+                     <height>32</height>
+                    </size>
+                   </property>
                    <property name="focusPolicy">
                     <enum>Qt::ClickFocus</enum>
                    </property>
@@ -2464,6 +2512,9 @@ QPushButton:focus {
                  </item>
                  <item>
                   <widget class="QLineEdit" name="mqtts_client_id">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>

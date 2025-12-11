@@ -210,7 +210,7 @@ void MainWindow::setupSerial()
 {
     serialThread = new QThread(this);
     #if defined(BUILD_X86)
-        worker = new SerialWorker("/dev/pts/2", 115200);
+        worker = new SerialWorker("/tmp/qt_port", 115200);
     #elif defined(BUILD_V3S)
         worker = new SerialWorker("/dev/ttyS1", 115200);
     #endif
@@ -261,33 +261,18 @@ void MainWindow::connectChannels(ChannelsHome *ch)
     connect(this, &MainWindow::receivedChannelData, ch, &ChannelsHome::handleChannelData);
 }
 
-void MainWindow::connectFactSettings(FactSetting *fs)
+void MainWindow::connectFactSettings()
 {
-    // Keep configuration reload handling the same as DeviceSettings
-    connect(fs, &FactSetting::sftp_load, this, [this]() {
-        adminSftpHandler->disconnectClient();
-        QTimer::singleShot(1000, [this]() { adminSftpHandler->reloadSettings(); });
-    });
-    connect(fs, &FactSetting::mqtt_load, this, [this]() {
-        adminMqttHandler->disconnectClient();
-        QTimer::singleShot(1000, [this]() { adminMqttHandler->reloadSettings(); });
-    });
-    connect(fs, &FactSetting::aws_mqtts_load, this, [fs, this]() {
-        adminMqttsHandler->disconnectAwsClient();
-        fs->checkCertificatesWrapper();
-        QTimer::singleShot(1000, [this]() { adminMqttsHandler->reloadAwsMqttsSettings(); });
-    });
+    connect(factSettings, &FactSetting::usbExport, this, [this]() {usbExporter->show();});
 
-    connect(fs, &FactSetting::usbExport, this, [this]() { usbExporter->show(); });
-
-    connect(fs, &FactSetting::factoryExit, this, [this, fs]() {
+    connect(factSettings, &FactSetting::factoryExit, this, [this]() {
         if (factorySettings) {
             factorySettings->showFullScreen();
-            fs->hide();
+            factSettings->hide();
         }
     });
 
-    connect(fs, &FactSetting::runFleetProvisioning, this,
+    connect(factSettings, &FactSetting::runFleetProvisioning, this,
          [this]() { factSettings->runFleetProvisioningWrapper(); }, Qt::UniqueConnection);
 }
 
@@ -329,6 +314,9 @@ void MainWindow::connectStartUpSignals()
 
     if(!adminMqttsHandler)
         adminMqttsHandler = new AwsMqttManager(Admin, this);
+
+    if (!channels)
+        channels = new ChannelsHome(hardwareVersion, softwareVersion);
     
 
     auto showRebootDialog = [this]() {
@@ -346,7 +334,6 @@ void MainWindow::connectStartUpSignals()
     // -> when settings asks to view channels
     connect(settings, &DeviceSettings::channels_view, this, [this]() {
         isLogin = false;
-        if (!channels) channels = new ChannelsHome(hardwareVersion, softwareVersion);
         connectChannels(channels);
         channels->showFullScreen();
         settings->hide();
@@ -417,9 +404,7 @@ void MainWindow::connectStartUpSignals()
         
         QWidget *fw = QApplication::focusWidget();
         if (fw) fw->clearFocus();
-        if (!factSettings)
-            factSettings = new FactSetting;
-        connectFactSettings(factSettings);
+        connectFactSettings();
         factSettings->showFullScreen();
         factorySettings->hide();
     });
@@ -447,50 +432,54 @@ void MainWindow::connectStartUpSignals()
 // -----------------------------
 void MainWindow::connectLoginSignals()
 {
-    // Ensure settings exists so manager <-> settings connections are present early.
-    if (!settings) {
-        settings = new DeviceSettings;
-    }
-    if (!measure)
-        measure = new Measurements;
-
-    if (!factSettings)
-        factSettings = new FactSetting;
-
-    if (!channels)
-        channels = new ChannelsHome(hardwareVersion, softwareVersion);
-
-    // When DeviceSettings says "reload SFTP", disconnect and reload after a short delay.
-    connect(settings, &DeviceSettings::sftp_load, this, [this]() {
+    connect(factSettings, &FactSetting::sftp_load, this, [this]() {
         factorySftpHandler->disconnectClient();
         QTimer::singleShot(1000, [this]() { factorySftpHandler->reloadSettings(); });
     });
-
-    // When DeviceSettings says "reload MQTT", disconnect and reload.
-    connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
+    connect(factSettings, &FactSetting::mqtt_load, this, [this]() {
         factoryMqttHandler->disconnectClient();
         QTimer::singleShot(1000, [this]() { factoryMqttHandler->reloadSettings(); });
     });
-
-    // AWS MQTTS reload request
-    connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
+    connect(factSettings, &FactSetting::aws_mqtts_load, this, [this]() {
     QMetaObject::invokeMethod(this, [this]() {
         factoryMqttsHandler->disconnectAwsClient();
-        if(factSettings != nullptr) factSettings->checkCertificatesWrapper();
-        QTimer::singleShot(1000, [this]() { factoryMqttsHandler->reloadAwsMqttsSettings(); });
+        factSettings->checkCertificatesWrapper();
+        QTimer::singleShot(1000, [this]() { 
+            qDebug() << "FactSettings::aws_mqtts_load";
+            factoryMqttsHandler->reloadAwsMqttsSettings(); });
         }, Qt::QueuedConnection);
     });
 
-    // AWS manager may ask for reboot
+
+    connect(settings, &DeviceSettings::sftp_load, this, [this]() {
+        adminSftpHandler->disconnectClient();
+        QTimer::singleShot(1000, [this]() { adminSftpHandler->reloadSettings(); });
+    });
+    connect(settings, &DeviceSettings::mqtt_load, this, [this]() {
+        adminMqttHandler->disconnectClient();
+        QTimer::singleShot(1000, [this]() { adminMqttHandler->reloadSettings(); });
+    });
+    connect(settings, &DeviceSettings::aws_mqtts_load, this, [this]() {
+    QMetaObject::invokeMethod(this, [this]() {
+        adminMqttsHandler->disconnectAwsClient();
+        settings->checkCertificatesWrapper();
+        QTimer::singleShot(1000, [this]() { 
+            qDebug() << "DeviceSettings::aws_mqtts_load";
+            adminMqttsHandler->reloadAwsMqttsSettings(); });
+        }, Qt::QueuedConnection);
+    });
+    connect(settings, &DeviceSettings::runFleetProvisioning, this,
+        [this]() { settings->runFleetProvisioningWrapper(); }, Qt::UniqueConnection);
+
     connect(factoryMqttsHandler, &AwsMqttManager::rebootRequested, this, [this]() {
         this->close();
         factoryMqttsHandler->disconnectAwsClient();
         Utils::rebootSystem();
     },Qt::QueuedConnection);
 
-    // If AWS sends back stored configs, populate DeviceSettings fields
     connect(factoryMqttsHandler, &AwsMqttManager::ntpConfigReceived,
             settings, &DeviceSettings::parse_load_store_ntp);
+
     connect(factoryMqttsHandler, &AwsMqttManager::sftpConfigReceived, this, [this](const QJsonObject &config) {
         settings->parse_load_store_sftp(config);
         factSettings->load_sftp_settings(true);
@@ -502,7 +491,7 @@ void MainWindow::connectLoginSignals()
     connect(factoryMqttsHandler, &AwsMqttManager::mqttsConfigReceived, this, [this](const QJsonObject &config) {
         settings->parse_load_store_mqtts(config);
         QTimer::singleShot(100, this, [this](){
-                factSettings->load_mqtts_settings(true);});  
+        factSettings->load_mqtts_settings(true);});  
     });
     connect(factoryMqttsHandler, &AwsMqttManager::updateAwsData, this, [this]() {
             settings->send_aws_updated_data();
@@ -511,17 +500,28 @@ void MainWindow::connectLoginSignals()
             },Qt::QueuedConnection);
 
     // When settings change, notify AWS manager to process them
-    connect(settings, &DeviceSettings::deviceInfoChanged,
+    connect(factSettings, &FactSetting::deviceInfoChanged,
             factoryMqttsHandler, &AwsMqttManager::processDeviceInfo);
-    connect(settings, &DeviceSettings::mqttSettingsChanged,
+    connect(factSettings, &FactSetting::mqttSettingsChanged,
             factoryMqttsHandler, &AwsMqttManager::processMqttSettings);
-    connect(settings, &DeviceSettings::sftpSettingsChanged,
+    connect(factSettings, &FactSetting::sftpSettingsChanged,
             factoryMqttsHandler, &AwsMqttManager::processSftpSettings);
-    connect(settings, &DeviceSettings::ntpSettingsChanged,
-            factoryMqttsHandler, &AwsMqttManager::processNtpSettings);
-    connect(settings, &DeviceSettings::mqttsSettingsChanged,
+    connect(factSettings, &FactSetting::mqttsSettingsChanged,
             factoryMqttsHandler, &AwsMqttManager::processMqttsSettings);
 
+    connect(settings, &DeviceSettings::deviceInfoChanged,
+            adminMqttsHandler, &AwsMqttManager::processDeviceInfo);
+    connect(settings, &DeviceSettings::mqttSettingsChanged,
+            adminMqttsHandler, &AwsMqttManager::processMqttSettings);
+    connect(settings, &DeviceSettings::sftpSettingsChanged,
+            adminMqttsHandler, &AwsMqttManager::processSftpSettings);
+    connect(settings, &DeviceSettings::ntpSettingsChanged,
+            adminMqttsHandler, &AwsMqttManager::processNtpSettings);
+    connect(settings, &DeviceSettings::mqttsSettingsChanged,
+            adminMqttsHandler, &AwsMqttManager::processMqttsSettings);
+
+    connect(factSettings, &FactSetting::deviceInfoChanged,
+            factoryMqttsHandler, &AwsMqttManager::processDeviceInfo);
     connect(factSettings, &FactSetting::mqttSettingsChanged,
             factoryMqttsHandler, &AwsMqttManager::processMqttSettings);
     connect(factSettings, &FactSetting::sftpSettingsChanged,
@@ -560,16 +560,20 @@ void MainWindow::connectLoginSignals()
     // channel UI related signals
     connect(settings, &DeviceSettings::resetEnergy, this, [this]() {
         channels->resetAccumulatedEnergy();
-        factoryMqttsHandler->resetAccumulatedEnergy();
-        factoryMqttHandler->resetAccumulatedEnergy();
-        factorySftpHandler->resetAccumulatedEnergy();
+        adminMqttsHandler->resetAccumulatedEnergy();
+        adminMqttHandler->resetAccumulatedEnergy();
+        adminSftpHandler->resetAccumulatedEnergy();
         dataExporter->resetAccumulatedEnergy();
     });
 
-    connect(channels, &ChannelsHome::energyUpdated, this, [this](const std::array<EnergyData, 13> &energy) {
+    connect(channels, &ChannelsHome::energyUpdated, this,
+            [this](const std::array<EnergyData, 13> &energy) {
         factoryMqttsHandler->updateAccumulatedEnergy(energy);
         factoryMqttHandler->updateAccumulatedEnergy(energy);
         factorySftpHandler->updateAccumulatedEnergy(energy);
+        adminMqttsHandler->updateAccumulatedEnergy(energy);
+        adminMqttHandler->updateAccumulatedEnergy(energy);
+        adminSftpHandler->updateAccumulatedEnergy(energy);
         dataExporter->updateAccumulatedEnergy(energy);
     });
 
@@ -758,9 +762,6 @@ void MainWindow::onLoadDiagnotiscs()
 // -----------------------------
 void MainWindow::onLoadChannels()
 {
-    if (!channels)
-        channels = new ChannelsHome(hardwareVersion, softwareVersion);
-
     connectChannels(channels);
     channels->showFullScreen();
     login->hide();
@@ -875,8 +876,6 @@ void MainWindow::handlePostProgress()
             registration = new Registration(hardwareVersion, softwareVersion);
 
             connect(registration, &Registration::registrationComplete, this, [this]() {
-                if (!channels)
-                    channels = new ChannelsHome(hardwareVersion, softwareVersion);
                 connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
                 connectChannels(channels);
                 channels->showFullScreen();
@@ -891,25 +890,13 @@ void MainWindow::handlePostProgress()
 
     connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
     
-    // Normal flow when system already configured
-    if (!settings) {
-        settings = new DeviceSettings();
-    }
-
     // load preset settings into DeviceSettings and FactSetting (original behavior)
     settings->load_mqtt_settings(true);
     settings->load_sftp_settings(true);
     settings->load_mqtts_settings(true);
-
-    if (!factSettings) {
-        factSettings = new FactSetting;
-    }
     factSettings->load_mqtt_settings(true);
     factSettings->load_sftp_settings(true);
     factSettings->load_mqtts_settings(true);
-
-    if (!channels)
-        channels = new ChannelsHome(hardwareVersion, softwareVersion);
 
     connectChannels(channels);
     channels->showFullScreen();
@@ -1018,9 +1005,6 @@ void MainWindow::showChannelsHome()
     if (usbExporter && usbExporter->isVisible()) usbExporter->hide();
 
     // Finally, show channels
-    if (!channels)
-        channels = new ChannelsHome(hardwareVersion, softwareVersion);
-
     connectChannels(channels);
     channels->showFullScreen();
 }

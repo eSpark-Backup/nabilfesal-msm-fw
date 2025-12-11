@@ -323,15 +323,8 @@ void rebootSystem()
 }
 
 
-bool updateSerialInConfig(const QString &AwsEp)
+bool updateSerialInConfig(const QString &AwsEp, const QString &configJson_path)
 {
-    QString configJson_path;
-    #if defined(BUILD_X86)
-        configJson_path = QDir::homePath() + "/Downloads/aws-iot-device-sdk-embedded-C/build/bin/config.json";
-    #elif defined(BUILD_V3S)
-        configJson_path = "/MSM/potential-pancake/MSM/bin/fleet_provisioner/config.json";
-    #endif
-
     QFile file(configJson_path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Failed to open config file for reading:" << configJson_path;
@@ -354,6 +347,11 @@ bool updateSerialInConfig(const QString &AwsEp)
         qWarning() << "UID is empty, not updating Serial!";
         return false;
     }
+    if(configJson_path == "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/config.json")
+        uid += "_factory";
+    else
+        uid += "_admin";
+
     obj["serial"] = uid;
     obj["endpoint"] = AwsEp;
 

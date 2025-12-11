@@ -6,6 +6,7 @@
 #include "mqttManager.h"
 #include "sftpManager.h"
 #include "common_headers.h"
+#include "awsmqttmanager.h"
 
 class settingsManager : public QWidget
 {
@@ -19,18 +20,26 @@ signals:
     void mqtt_load();
     void sftp_load();
     void aws_mqtts_load();
+    void deviceInfoChanged(const DeviceInfo &info);
     void mqttSettingsChanged(const QJsonObject &mqttSetting);
     void sftpSettingsChanged(const QJsonObject &sftpSetting);
     void mqttsSettingsChanged(const QJsonObject &mqttsSetting);
 
 protected:
+    QJsonObject getMqttSettings();
+    QJsonObject getSftpSettings();
+    QJsonObject getMqttsSettings();
     virtual QString mqttConfigPath() const = 0;
     virtual QString sftpConfigPath() const = 0;
     virtual QString mqttsConfigPath() const = 0;
+    virtual QString configJsonPath() const = 0;
     virtual bool eventFilter(QObject *obj, QEvent *event) = 0;
     QJsonObject loadMqttSettings(bool showMessages, bool reloadSettings = true);
     QJsonObject loadSftpSettings(bool showMessages, bool reloadSettings = true);
     QJsonObject loadMqttsSettings(bool showMessages, bool reloadSettings = true);
+    void apply_mqtt_Settings(const QJsonObject &mqttSetting, bool msgBox = true);
+    void apply_sftp_Settings(const QJsonObject &sftpSetting, bool msgBox = true);
+    void apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox = true);
     void saveMqttSettings(QJsonObject mqttSetting, bool showMessages = true);
     void saveSftpSettings(QJsonObject sftpSetting, bool showMessages = true);
     void saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages = true);
@@ -41,12 +50,20 @@ protected:
     void checkCertificates();
 
 private:
+    QString caPath      = CLAIM_PATH + "AmazonRootCA1.pem";
+    QString certPath    = CLAIM_PATH + "claim_cert.pem";
+    QString keyPath     = CLAIM_PATH + "claim_private.key";
+    QString prvCertPath = PROV_PATH  + "deviceCert.pem";
+    QString prvkeyPath  = PROV_PATH  + "privateKey.pem";
 
 protected:
     QWidget *uiBase = nullptr;
 
 public:
-    void setUiPtr(QWidget *ptr) { uiBase = ptr; }
+    QString claimBasePath, provBasePath;
+    void setUiPtr(QWidget *ptr) { uiBase = ptr;}
+    void setCertPath(const QString claimPath, const QString provPath)
+        {claimBasePath = claimPath; provBasePath = provPath;}
 
 };
 

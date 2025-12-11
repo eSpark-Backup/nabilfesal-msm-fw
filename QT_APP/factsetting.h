@@ -31,6 +31,7 @@ protected:
     QString mqttConfigPath() const override { return "config/mqtt_settings.json"; }
     QString sftpConfigPath() const override { return "config/sftp_settings.json"; }
     QString mqttsConfigPath() const override { return "config/aws_mqtts_settings.json"; }
+    QString configJsonPath() const override;
     void showEvent(QShowEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
@@ -59,8 +60,6 @@ private slots:
     void on_provision_btn_clicked();
 
 private:
-    void apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox = true);
-
     Ui::FactSetting *ui;
     MSMKeyboard *keyboard;
     QLabel *updatingLabel = nullptr;
