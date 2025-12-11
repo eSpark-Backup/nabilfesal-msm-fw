@@ -54,12 +54,16 @@ private:
     QTimer *soundTimer;
 
     void playBeep() {
+        #if defined(BUILD_V3S)
         writeSysfs("/sys/class/backlight/backlight/bl_power", "0");
+        #endif
         soundTimer->start(50); // beep for 50ms
     }
 
     void stopBeep() {
+        #if defined(BUILD_V3S)
         writeSysfs("/sys/class/backlight/backlight/bl_power", "1");
+        #endif
     }
 
     void writeSysfs(const QString &path, const QString &value) {

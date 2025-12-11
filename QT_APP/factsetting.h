@@ -44,6 +44,7 @@ public slots:
     void load_mqtts_settings(bool msgBox = false, bool reconnect = false);
     void sendOTAData(int status);
     void startOTA(const QString &selectedVersion);
+    void send_aws_updated_data() override;
 
 private slots:
     void on_next_btn_clicked();

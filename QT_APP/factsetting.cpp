@@ -517,3 +517,19 @@ QString FactSetting::configJsonPath() const
     return "/MSM/potential-pancake/MSM/bin/fleet_provisioner/config.json";
 #endif
 }
+
+
+void FactSetting::send_aws_updated_data()
+{
+    QJsonObject mqttSettings = loadMqttSettings(false, false);
+    if (!mqttSettings.isEmpty())
+        emit mqttSettingsChanged(mqttSettings);
+
+    QJsonObject sftpSettings = loadSftpSettings(false, false);
+    if (!sftpSettings.isEmpty())
+        emit sftpSettingsChanged(sftpSettings);
+
+    QJsonObject mqttsSettings = loadMqttsSettings(true, false);
+    if (!mqttsSettings.isEmpty())
+        emit mqttsSettingsChanged(mqttsSettings);
+}

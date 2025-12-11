@@ -21,20 +21,24 @@
 
 namespace Utils {
 void keySound() {
+    #if defined(BUILD_V3S)
     QProcess::startDetached("sh", {"-c", "echo 0 > /sys/class/backlight/backlight/bl_power"});
 
     QTimer::singleShot(50, [] {
         QProcess::startDetached("sh", {"-c", "echo 1 > /sys/class/backlight/backlight/bl_power"});
     });
+    #endif
 }
 
 
 void mainSound() {
+    #if defined(BUILD_V3S)
     QProcess::startDetached("sh", {"-c", "echo 0 > /sys/class/backlight/backlight/bl_power"});
 
     QTimer::singleShot(200, [] {
         QProcess::startDetached("sh", {"-c", "echo 1 > /sys/class/backlight/backlight/bl_power"});
     });
+    #endif
 }
 
 

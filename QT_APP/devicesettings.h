@@ -34,13 +34,10 @@ public slots:
     void on_sftp_load_btn_clicked(bool msgBox = false);
     void on_mqtts_load_btn_clicked(bool msgBox = false);
     void parse_load_store_ntp(const QJsonObject &payload);
-    void parse_load_store_sftp(const QJsonObject &payload);
-    void parse_load_store_mqtt(const QJsonObject &payload);
-    void parse_load_store_mqtts(const QJsonObject &payload);
-    void send_aws_updated_data();
     void load_mqtt_settings(bool msgBox = false, bool reconnect = false);
     void load_mqtts_settings(bool msgBox = false, bool reconnect = false);
     void load_sftp_settings(bool msgBox = false, bool reconnect = false);
+    void send_aws_updated_data() override;
 
 private slots:
     void on_channels_btn_clicked();

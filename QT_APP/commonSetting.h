@@ -7,6 +7,7 @@
 #include "sftpManager.h"
 #include "common_headers.h"
 #include "awsmqttmanager.h"
+#include <QJsonArray>
 
 class settingsManager : public QWidget
 {
@@ -25,10 +26,16 @@ signals:
     void sftpSettingsChanged(const QJsonObject &sftpSetting);
     void mqttsSettingsChanged(const QJsonObject &mqttsSetting);
 
+public slots:
+    void parse_load_store_sftp(const QJsonObject &payload);
+    void parse_load_store_mqtt(const QJsonObject &payload);
+    void parse_load_store_mqtts(const QJsonObject &payload);
+    
 protected:
     QJsonObject getMqttSettings();
     QJsonObject getSftpSettings();
     QJsonObject getMqttsSettings();
+    virtual void send_aws_updated_data() = 0;
     virtual QString mqttConfigPath() const = 0;
     virtual QString sftpConfigPath() const = 0;
     virtual QString mqttsConfigPath() const = 0;
