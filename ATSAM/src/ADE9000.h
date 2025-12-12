@@ -40,11 +40,23 @@
 #define ADE9000_RUN_ON 0x0001			/*DSP ON*/
 
 /*Energy Accumulation Settings*/
-#define ADE9000_EGY_TIME 0x77359 				/*Accumulate 8000 samples*/
-#define ADE9000_EP_CFG 0xE001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
+//#define ADE9000_EGY_TIME 0x77359 				/*Accumulate 8000 samples*/
+//#define ADE9000_EP_CFG 0xE001          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/
+
+#define ADE9000_EGY_TIME 0x1FFF 				/*Accumulate 8000 samples*/
+#define ADE9000_EP_CFG 0x0011          /*Enable energy accumulation, 8ksps, latch after EGYRDY*/    // EGY_LD_ACCUM
 
 /*Waveform buffer Settings*/
 #define ADE9000_WFB_CFG 0x1000			/*Neutral current samples enabled, Resampled data enabled*/
+
+
+#define ADE9000_OFFSET_CALIBRATION   0x20
+#define ADE9000_OFFSET_RMS_POWER     0x20
+#define ADE9000_OFFSET_ENERGY        0x3C
+#define ADE9000_OFFSET_PERIOD        0x01
+#define ADE9000_OFFSET_WAVEFORM      0x02
+
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Data Types
@@ -62,12 +74,30 @@ typedef enum {
     SPI_CSS9,
     SPI_CSS10,
     SPI_CSS11,
-    SPI_CSS12
+    SPI_CSS12,
 } SPI_CSS_Pin;
 
+typedef enum {
+    PHASE_A,
+    PHASE_B,
+    PHASE_C,
+    TOTAL_PHASES
+} ADE9000_phase;
+
+typedef enum {
+    VOLTAGE_PARAMETER,
+    CURRENT_PARAMETER,
+    POWER_PARAMETER,
+    ENERGY_PARAMETER,
+    PERIOD_PARAMETER,
+    WAVEFORM_PARAMETER,
+    CALIBRATION_PARAMETER,
+    INVALID_PARAMETER = 0xFF,
+} ADE9000_parameter_type;
+
 typedef struct {
-    float cal_irms_cc;
     float cal_vrms_cc;
+    float cal_irms_cc;
     float cal_power_cc;
     float cal_energy_cc;
 } Calibration_regs;
@@ -91,31 +121,25 @@ typedef struct {
 } ApparentPowerRegs;
 
 typedef struct {
-    uint64_t ActiveEnergyReg_A;
-    uint64_t ActiveEnergyReg_B;
-    uint64_t ActiveEnergyReg_C;
+    int64_t ActiveEnergyReg_A;
+    int64_t ActiveEnergyReg_B;
+    int64_t ActiveEnergyReg_C;
     float PActiveEnergyValue_kWh_A;
     float PActiveEnergyValue_kWh_B;
     float PActiveEnergyValue_kWh_C;
     float NActiveEnergyValue_kWh_A;
     float NActiveEnergyValue_kWh_B;
     float NActiveEnergyValue_kWh_C;
-    float ACC_PActiveEnergyValue_kWh_A;
-    float ACC_PActiveEnergyValue_kWh_B;
-    float ACC_PActiveEnergyValue_kWh_C;
-    float ACC_NActiveEnergyValue_kWh_A;
-    float ACC_NActiveEnergyValue_kWh_B;
-    float ACC_NActiveEnergyValue_kWh_C;
 
-    uint64_t ReactiveEnergyReg_A;
-    uint64_t ReactiveEnergyReg_B;
-    uint64_t ReactiveEnergyReg_C;
-    float ReactiveEnergyValue_kWh_A;
-    float ReactiveEnergyValue_kWh_B;
-    float ReactiveEnergyValue_kWh_C;
-    float ACC_ReactiveEnergyValue_kWh_A;
-    float ACC_ReactiveEnergyValue_kWh_B;
-    float ACC_ReactiveEnergyValue_kWh_C;
+    int64_t ReactiveEnergyReg_A;
+    int64_t ReactiveEnergyReg_B;
+    int64_t ReactiveEnergyReg_C;
+    float PReactiveEnergyValue_kWh_A;
+    float PReactiveEnergyValue_kWh_B;
+    float PReactiveEnergyValue_kWh_C;
+    float NReactiveEnergyValue_kWh_A;
+    float NReactiveEnergyValue_kWh_B;
+    float NReactiveEnergyValue_kWh_C;
 } EnergyRegs;
 
 typedef struct {
@@ -211,22 +235,35 @@ typedef struct{
     float setIOffset;
     int32_t setVOffset;
 } ChannelConfig;
-extern ChannelConfig channelConfig[12];
+extern ChannelConfig channelConfig[TOTAL_ADE9000_UNITS];
+
+extern uint32_t reg_values[TOTAL_ADE9000_UNITS][TOTAL_PHASES];            // for storing register values during calibration, can be used elsewhere if needed
 
 // *****************************************************************************
 // *****************************************************************************
 // Section: System Functions
 // *****************************************************************************
 // *****************************************************************************
+SPI_CSS_Pin get_css_pin(uint8_t channel);
 void SPI_CSS_Control(SPI_CSS_Pin pin, bool set) ;
+uint32_t ade9000_get_phase_register(uint32_t base_addr, ADE9000_phase phase, ADE9000_parameter_type parameter);
+
+
 void SPI_Write(uint16_t address, uint32_t data, bool is32Bit, SPI_CSS_Pin css_pin);
 uint32_t SPI_Read(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin);
+uint32_t SPI_Read_Energy(uint32_t address, bool is32Bit, SPI_CSS_Pin css_pin);
 
 bool IsADE9000(SPI_CSS_Pin css_pin);
 void ADE9000_Initialize(SPI_CSS_Pin css_pin);
+void ADE9000_Set_Calibration(ADE9000_parameter_type parameter, uint8_t channel_id);
 
+int32_t calculate_gain_reg_value(ADE9000_parameter_type parameter, ADE9000_phase phase, uint32_t expected_reg_value, uint8_t channel);
+void current_gain_calibration_start(float current, uint8_t channel, ADE9000_phase phase);
+void current_gain_calibration_end(float current, uint8_t channel, ADE9000_phase phase);
+void voltage_gain_calibration_start(float voltage, ADE9000_phase phase);
+void voltage_gain_calibration_end(float voltage, ADE9000_phase phase);
 //void ct_ratio_calibration(uint16_t ratio);
-void ct_ratio_calibration(uint16_t ratio, uint8_t channel, CurrentRMSRegs Data);
+void ct_ratio_calibration(uint8_t channel);
 
 void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin);
 void current_offset_write(int8_t channel, int32_t offset);
@@ -241,9 +278,9 @@ void ReadLineVoltages(VoltageRMSRegs *rmsData, LineVoltageRegs *lineData);
 void ReadCurrentRMSRegs(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin);
 void ReadPeriodRegsnValues(PeriodRegs *Data, VoltageRMSRegs *RMSData, SPI_CSS_Pin css_pin);
 
-void ReadActivePowerRegs(ActivePowerRegs *Data, SPI_CSS_Pin css_pin);
-void ReadReactivePowerRegs(ReactivePowerRegs *Data1,ApparentPowerRegs *Data2,PowerFactorRegs *Data3, SPI_CSS_Pin css_pin);
-void ReadApparentPowerRegs(ApparentPowerRegs *Data, SPI_CSS_Pin css_pin);
+void ReadActivePowerRegs(ActivePowerRegs *Data, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin);
+void ReadReactivePowerRegs(ReactivePowerRegs *Data1, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin);
+void ReadApparentPowerRegs(ApparentPowerRegs *Data, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin);
 void ReadPowerFactorRegsnValues(PowerFactorRegs *Data, VoltageRMSRegs *rmsData, CurrentRMSRegs *currentData, SPI_CSS_Pin css_pin);
 
 void ReadEnergyRegs(EnergyRegs *Data1, ActivePowerRegs *Data2, CurrentRMSRegs *CurrentData, SPI_CSS_Pin css_pin);
@@ -254,7 +291,6 @@ void ReadAngleRegsnValues(AngleRegs *Data, SPI_CSS_Pin css_pin);
 
 void ReadTempRegnValue(TemperatureRegs *Data, SPI_CSS_Pin css_pin);
 
-SPI_CSS_Pin get_css_pin(uint8_t channel);
 #endif
 
 /* *************************************************************************** */

@@ -146,7 +146,7 @@ void CLOCK_Initialize (void)
 
 
     /* Configure the APBC Bridge Clocks */
-    PM_REGS->PM_APBCMASK = 0x10114U;
+    PM_REGS->PM_APBCMASK = 0x10314U;
 
 
 

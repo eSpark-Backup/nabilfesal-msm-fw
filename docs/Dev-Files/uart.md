@@ -229,20 +229,10 @@ channel-N\n
 {
   "command": "i-calibration",
   "current": {
-    "channels": [
-      {
-        "ID": <unsigned int>,
-        "phase_a": <hex>,
-        "phase_b": <hex>,
-        "phase_c": <hex>
-      },
-      {
-        "ID": <unsigned int>,
-        "phase_a": <hex>,
-        "phase_b": <hex>,
-        "phase_c": <hex>
-      },
-    ]
+    "ID": <unsigned int>,
+    "phase_a": <hex>,
+    "phase_b": <hex>,
+    "phase_c": <hex>
   }
 }
 ```
