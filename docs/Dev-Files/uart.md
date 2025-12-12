@@ -162,7 +162,7 @@ channel-N\n
     "channel-4": 70,
     "channel-5": 200,
     "channel-6": 80,
-    "channel-7": 200,
+    "channel-7": 100,
     "channel-8": 200,
     "channel-9": 500,
     "channel-10": 200,
@@ -224,4 +224,63 @@ channel-N\n
 ### Receiving
 ```
 "Voltage Offset updated successfully!"
+```
+## Voltage Calibration
+### Transmitting
+```
+{
+  "command": "v-calibration",
+  "voltage": {
+    "phase_a": <float>,
+    "phase_b": <float>,
+    "phase_c": <float>
+  }
+}
+```
+### Receiving
+```
+{
+  "command": "v-calibration",
+  "voltage": {
+    "channels": [
+      {
+        "ID": <unsigned int>,
+        "phase_a": <hex>,
+        "phase_b": <hex>,
+        "phase_c": <hex>
+      },
+      {
+        "ID": <unsigned int>,
+        "phase_a": <hex>,
+        "phase_b": <hex>,
+        "phase_c": <hex>
+      },
+    ]
+  }
+}
+```
+## Current Calibration
+### Transmitting
+```
+{
+  "command": "i-calibration",
+  "current": {
+    "ID": <unsigned int>,
+    "phase_a": <float>,
+    "phase_b": <float>,
+    "phase_c": <float>
+  }
+}
+```
+### Receiving
+```
+{
+  "command": "i-calibration",
+  "current": {
+    "ID": <unsigned int>,
+    "phase_a": <hex>,
+    "phase_b": <hex>,
+    "phase_c": <hex>
+  }
+}
 ```

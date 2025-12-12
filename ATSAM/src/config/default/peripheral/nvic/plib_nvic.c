@@ -62,9 +62,6 @@ void NVIC_Initialize( void )
     NVIC_SetPriority(TC0_IRQn, 3);
     NVIC_EnableIRQ(TC0_IRQn);
 
-
-
-
 }
 
 void NVIC_INT_Enable( void )

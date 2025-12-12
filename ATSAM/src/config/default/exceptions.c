@@ -63,6 +63,8 @@ void __attribute__((noreturn, weak)) NonMaskableInt_Handler(void)
 #endif
     while (true)
     {
+
+
     }
 }
  

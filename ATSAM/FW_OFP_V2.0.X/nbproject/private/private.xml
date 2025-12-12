@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="2">
+        <file>
+            <url>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/ADE9000.cpp</url>
+            <bookmark id="1">
+                <name/>
+                <line>0</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/main.cpp</url>
+            <bookmark id="2">
+                <name/>
+                <line>0</line>
+                <key/>
+            </bookmark>
+        </file>
+    </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/exceptions.c</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/initialization.c</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/nvic/plib_nvic.c</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/FW_OFP_V2.0.X/disassembly/listing.disasm</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/main.cpp</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/tc/plib_tc0.c</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/startup_xc32.c</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/FW_OFP_V2.0.X/queuelogs/debugtool.txt</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/sercom/spi_master/plib_sercom0_spi_master.c</file>
-            <file>file:/C:/Program%20Files/Microchip/xc32/v4.60/pic32c/include/c++/8.3.1/bits/allocator.h</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/config/default/peripheral/port/plib_port.c</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/ADE9000.cpp</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/main.h</file>
-            <file>file:/C:/Shakaib/nabilfesal-msm-fw/nabilfesal-msm-fw/ATSAM/src/ADE9000.h</file>
+            <file>file:/C:/Users/eSpark/Documents/GitHub/nabilfesal-msm-fw/ATSAM/src/main.cpp</file>
+            <file>file:/C:/Users/eSpark/Documents/GitHub/nabilfesal-msm-fw/ATSAM/src/ADE9000.cpp</file>
         </group>
     </open-files>
 </project-private>
