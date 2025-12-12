@@ -42,6 +42,9 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     void sendFileWithDelay(const QStringList &files, int index = 0);
     ~MainWindow();
+    void refreshInfo();
+    DeviceInfo curDevInfo, prvDevInfo;
+    ConnStatus curProtState_A, prvProtState_A, curProtState_F, prvProtState_F;
 
 signals:
     void requestChannelPoll(int channel);
@@ -49,6 +52,8 @@ signals:
     void requestSerialCommand(const QString &cmd);
     void homeDetected();
     void enableSendButton();
+    void admin_deviceInfoChanged(const DeviceInfo &info);
+    void factory_deviceInfoChanged(const DeviceInfo &info);
 
 private slots:
     // USB handling
@@ -94,6 +99,9 @@ private:
     void connectChannels(ChannelsHome *ch);
     void connectFactSettings();
     void connectStartUpSignals();
+
+    bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
+    bool isConnectionDifferent(const ConnStatus &a, const ConnStatus &b);
 
 public:
     mqttManager *adminMqttHandler = nullptr;
@@ -154,6 +162,8 @@ private:
     bool BootUpSync = true;
     QStringList bootFiles;
     int bootFileIndex;
+
+    QTimer *refreshTimer = nullptr;    
 };
 
 #endif // MAINWINDOW_H

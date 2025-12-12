@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QString>
 #include <QLabel>
+#include "common_headers.h"
 
 namespace Utils {
 void keySound();
@@ -13,8 +14,9 @@ QString getDeviceImei();
 bool setNtpServers(const QStringList &servers);
 QString getUid();
 QString getDevPassword();
-QString getMqttStatus();
-QString getSftpStatus();
+QString getMqttStatus(Mode mode);
+QString getSftpStatus(Mode mode);
+QString getMqttsStatus(Mode mode);
 void rebootSystem();
 void mainSound();
 bool updateSerialInConfig(const QString &AwsEp, const QString &configJson_path);
@@ -26,7 +28,6 @@ QString getHardwareVersion();
 QString getLastOTAInitiated();
 QStringList getAvailableVersions();
 void setLastOTAInitiated();
-QString getMqttsStatus();
 QJsonObject readJsonFile(const QString &filePath);
 }
 

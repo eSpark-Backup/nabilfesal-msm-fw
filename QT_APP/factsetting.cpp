@@ -533,3 +533,16 @@ void FactSetting::send_aws_updated_data()
     if (!mqttsSettings.isEmpty())
         emit mqttsSettingsChanged(mqttsSettings);
 }
+
+
+void FactSetting::updateInfo(const DeviceInfo &f)
+{
+    auto setStatusColor = [](QLabel* label, const QString& status) {
+        QString color = (status == "Connected") ? "green" : "red";
+        label->setStyleSheet(QString("background-color: %1; border-radius: 10px;").arg(color));
+    };
+
+    setStatusColor(ui->fact_sftp_con_status,  f.conn.sftpStatus);
+    setStatusColor(ui->fact_mqtt_con_status,  f.conn.mqttStatus);
+    setStatusColor(ui->fact_mqtts_con_status, f.conn.mqttsStatus);
+}

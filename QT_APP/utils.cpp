@@ -288,30 +288,66 @@ QString getDevPassword()
 }
 
 
-QString getMqttStatus()
+QString getMqttStatus(Mode mode)
 {
     auto w = MainWindow::instance();
-    if (w && w->adminMqttHandler && w->adminMqttHandler->mqttState())
-        return "Connected";
-    return "Disconnected";
+    if (!w) return "Disconnected";
+
+    bool connected = false;
+
+    switch (mode) {
+    case Factory:
+        connected = (w->factoryMqttHandler && w->factoryMqttHandler->mqttState());
+        break;
+
+    case Admin:
+        connected = (w->adminMqttHandler && w->adminMqttHandler->mqttState());
+        break;
+    }
+
+    return connected ? "Connected" : "Disconnected";
 }
 
 
-QString getMqttsStatus()
+QString getMqttsStatus(Mode mode)
 {
     auto w = MainWindow::instance();
-    if (w && w->adminMqttsHandler && w->adminMqttsHandler->awsMqttsState())
-        return "Connected";
-    return "Disconnected";
+    if (!w) return "Disconnected";
+
+    bool connected = false;
+
+    switch (mode) {
+    case Factory:
+        connected = (w->factoryMqttsHandler && w->factoryMqttsHandler->awsMqttsState());
+        break;
+
+    case Admin:
+        connected = (w->adminMqttsHandler && w->adminMqttsHandler->awsMqttsState());
+        break;
+    }
+
+    return connected ? "Connected" : "Disconnected";
 }
 
 
-QString getSftpStatus()
+QString getSftpStatus(Mode mode)
 {
     auto w = MainWindow::instance();
-    if (w && w->adminSftpHandler && w->adminSftpHandler->sftpState())
-        return "Connected";
-    return "Disconnected";
+    if (!w) return "Disconnected";
+
+    bool connected = false;
+
+    switch (mode) {
+    case Factory:
+        connected = (w->factorySftpHandler && w->factorySftpHandler->sftpState());
+        break;
+
+    case Admin:
+        connected = (w->adminSftpHandler && w->adminSftpHandler->sftpState());
+        break;
+    }
+
+    return connected ? "Connected" : "Disconnected";
 }
 
 

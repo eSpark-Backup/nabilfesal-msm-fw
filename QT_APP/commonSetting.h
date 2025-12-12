@@ -21,7 +21,6 @@ signals:
     void mqtt_load();
     void sftp_load();
     void aws_mqtts_load();
-    void deviceInfoChanged(const DeviceInfo &info);
     void mqttSettingsChanged(const QJsonObject &mqttSetting);
     void sftpSettingsChanged(const QJsonObject &sftpSetting);
     void mqttsSettingsChanged(const QJsonObject &mqttsSetting);

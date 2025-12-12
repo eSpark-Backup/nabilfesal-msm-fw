@@ -27,11 +27,11 @@ DeviceSettings::DeviceSettings(QWidget *parent)
     ui->imei->setText(currentImei);
     auto ntpData = Utils::getNtpStatus();
     parseNtpJson(ntpData);
-    auto mqttData = Utils::getMqttStatus();
+    auto mqttData = Utils::getMqttStatus(Mode::Admin);
     ui->mqtt->setText(mqttData);
-    auto sftpData = Utils::getSftpStatus();
+    auto sftpData = Utils::getSftpStatus(Mode::Admin);
     ui->sftp->setText(sftpData);
-    ui->mqtts->setText(Utils::getMqttsStatus());
+    ui->mqtts->setText(Utils::getMqttsStatus(Mode::Admin));
 
     QTimer *timer = new QTimer(this);
 
@@ -40,10 +40,6 @@ DeviceSettings::DeviceSettings(QWidget *parent)
         ui->time_input->setText(time);
     });
     timer->start(1000);
-
-    QTimer *refreshTimer = new QTimer(this);
-    connect(refreshTimer, &QTimer::timeout, this, &DeviceSettings::refreshInfo);
-    refreshTimer->start(10 * 1000); // every 10 seconds
 
     ui->stackedWidget->setCurrentIndex(0);
     QLabel* label = new QLabel("server 1", ui->server1);
@@ -380,61 +376,6 @@ void DeviceSettings::load_sftp_settings(bool msgBox, bool reconnect)
 }
 
 
-void DeviceSettings::refreshInfo()
-{
-    curDevInfo.uuid       = Utils::getUid();
-    curDevInfo.pass       = Utils::getDevPassword();
-    curDevInfo.ip         = Utils::getDeviceIp();
-    
-    QString newImei = Utils::getDeviceImei();
-    if (newImei != "UNKNOWN" && !newImei.isEmpty()) {
-        curDevInfo.imei = newImei;
-    } else {
-        curDevInfo.imei = prvDevInfo.imei;
-    }
-
-    auto ntpData = Utils::getNtpStatus();
-    curDevInfo.date       = ntpData.value("date").toString();
-    curDevInfo.gsmStatus  = Utils::getSignalCategoryFromFile();
-
-    curDevInfo.mqttStatus = Utils::getMqttStatus();
-    curDevInfo.sftpStatus = Utils::getSftpStatus();
-    curDevInfo.mqttsStatus =Utils::getMqttsStatus();
-    curDevInfo.ntpStatus = ntpData.value("ntp_status").toString();
-
-    ui->uuid->setText(curDevInfo.uuid);
-    ui->ip->setText(curDevInfo.ip);
-    ui->imei->setText(curDevInfo.imei);
-    ui->date_input->setText(curDevInfo.date);
-    ui->gsm->setText(curDevInfo.gsmStatus);
-    ui->mqtt->setText(curDevInfo.mqttStatus);
-    ui->sftp->setText(curDevInfo.sftpStatus);
-    ui->mqtts->setText(curDevInfo.mqttsStatus);
-    ui->ntp->setText(curDevInfo.ntpStatus);
-
-    if (isDifferent(curDevInfo, prvDevInfo)) {
-        emit deviceInfoChanged(curDevInfo);
-        prvDevInfo = curDevInfo;
-    }
-    if(refreshTimer != nullptr) refreshTimer->start(10 * 1000);
-}
-
-
-bool DeviceSettings::isDifferent(const DeviceInfo &a, const DeviceInfo &b)
-{
-    return a.uuid       != b.uuid
-        || a.pass       != b.pass
-        || a.ip         != b.ip
-        || a.imei       != b.imei
-        || a.date       != b.date
-        || a.ntpStatus  != b.ntpStatus
-        || a.mqttStatus != b.mqttStatus
-        || a.sftpStatus != b.sftpStatus
-        || a.mqttsStatus != b.mqttsStatus
-        || a.gsmStatus != b.gsmStatus;
-}
-
-
 void DeviceSettings::on_export_btn_clicked()
 {
     emit usbExport();
@@ -525,7 +466,6 @@ QString DeviceSettings::configJsonPath() const
 }
 
 
-
 void DeviceSettings::on_fetch_claim_btn_clicked()
 {
     fetch_claim_certs();
@@ -543,3 +483,16 @@ void DeviceSettings::on_provision_btn_clicked()
     emit runFleetProvisioning();
 }
 
+
+void DeviceSettings::updateInfo(const DeviceInfo &a)
+{
+    ui->ip->setText(a.ip);
+    ui->gsm->setText(a.gsmStatus);
+    ui->ntp->setText(a.ntpStatus);
+    ui->uuid->setText(a.uuid);
+    ui->imei->setText(a.imei);
+    ui->date_input->setText(a.date);
+    ui->sftp->setText(a.conn.mqttStatus);
+    ui->mqtt->setText(a.conn.sftpStatus);
+    ui->mqtts->setText(a.conn.mqttsStatus);
+}

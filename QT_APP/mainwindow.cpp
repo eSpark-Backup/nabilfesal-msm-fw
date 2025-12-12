@@ -486,7 +486,7 @@ void MainWindow::connectLoginSignals()
             },Qt::QueuedConnection);
 
     // When settings change, notify AWS manager to process them
-    connect(factSettings, &FactSetting::deviceInfoChanged,
+    connect(this, &MainWindow::factory_deviceInfoChanged,
             factoryMqttsHandler, &AwsMqttManager::processDeviceInfo);
     connect(factSettings, &FactSetting::mqttSettingsChanged,
             factoryMqttsHandler, &AwsMqttManager::processMqttSettings);
@@ -501,7 +501,7 @@ void MainWindow::connectLoginSignals()
     connect(factoryMqttsHandler, &AwsMqttManager::updateAwsData,settings,
                 &DeviceSettings::send_aws_updated_data,Qt::QueuedConnection);
     
-    connect(settings, &DeviceSettings::deviceInfoChanged,
+    connect(this, &MainWindow::admin_deviceInfoChanged,
             adminMqttsHandler, &AwsMqttManager::processDeviceInfo);
     connect(settings, &DeviceSettings::mqttSettingsChanged,
             adminMqttsHandler, &AwsMqttManager::processMqttSettings);
@@ -574,6 +574,10 @@ void MainWindow::connectLoginSignals()
     // are handled where UI is shown (onAdminLogin / onFactoryLogin) to avoid double
     // connecting repeated lambdas.
     startPingTimer();
+
+    QTimer *refreshTimer = new QTimer(this);
+    connect(refreshTimer, &QTimer::timeout, this, &MainWindow::refreshInfo);
+    refreshTimer->start(10 * 1000);
 }
 
 // -----------------------------
@@ -1022,7 +1026,7 @@ void MainWindow::startPingTimer()
                 factoryMqttHandler->disconnectClient();
                 factoryMqttsHandler->disconnectAwsClient();
             }
-            settings->refreshInfo();
+            refreshInfo();
         }
     };
 
@@ -1046,3 +1050,74 @@ void MainWindow::startPingTimer()
     timer->start(5000);
 }
 
+
+void MainWindow::refreshInfo()
+{
+    bool sendBothSignal = false;
+    curDevInfo.uuid       = Utils::getUid();
+    curDevInfo.pass       = Utils::getDevPassword();
+    curDevInfo.ip         = Utils::getDeviceIp();
+    
+    QString newImei = Utils::getDeviceImei();
+    if (newImei != "UNKNOWN" && !newImei.isEmpty()) {
+        curDevInfo.imei = newImei;
+    } else {
+        curDevInfo.imei = prvDevInfo.imei;
+    }
+
+    auto ntpData = Utils::getNtpStatus();
+    curDevInfo.date      = ntpData.value("date").toString();
+    curDevInfo.gsmStatus = Utils::getSignalCategoryFromFile();
+    curDevInfo.ntpStatus = ntpData.value("ntp_status").toString();
+
+    if (isDifferent(curDevInfo, prvDevInfo)) {
+        sendBothSignal = true;
+        prvDevInfo = curDevInfo;
+    }
+
+    curProtState_A.mqttStatus = Utils::getMqttStatus(Mode::Admin);
+    curProtState_A.sftpStatus = Utils::getSftpStatus(Mode::Admin);
+    curProtState_A.mqttsStatus = Utils::getMqttsStatus(Mode::Admin);
+
+    if (sendBothSignal || isConnectionDifferent(curProtState_A, prvProtState_A))
+    {        
+        curDevInfo.conn = curProtState_A;
+        emit admin_deviceInfoChanged(curDevInfo);
+        settings->updateInfo(curDevInfo);
+        prvProtState_A = curProtState_A;
+    }
+
+    curProtState_F.mqttStatus = Utils::getMqttStatus(Mode::Factory);
+    curProtState_F.sftpStatus = Utils::getSftpStatus(Mode::Factory);
+    curProtState_F.mqttsStatus = Utils::getMqttsStatus(Mode::Factory);
+
+    if (sendBothSignal || isConnectionDifferent(curProtState_F, prvProtState_F))
+    {    
+        curDevInfo.conn = curProtState_F;
+        emit factory_deviceInfoChanged(curDevInfo);
+        factSettings->updateInfo(curDevInfo);
+        prvProtState_F = curProtState_F;
+    }
+
+    if(refreshTimer != nullptr) refreshTimer->start(10 * 1000);
+}
+
+
+bool MainWindow::isDifferent(const DeviceInfo &a, const DeviceInfo &b)
+{
+    return a.uuid       != b.uuid
+        || a.pass       != b.pass
+        || a.ip         != b.ip
+        || a.imei       != b.imei
+        || a.date       != b.date
+        || a.ntpStatus  != b.ntpStatus
+        || a.gsmStatus != b.gsmStatus;
+}
+
+
+bool MainWindow::isConnectionDifferent(const ConnStatus &a, const ConnStatus &b)
+{
+    return a.mqttStatus != b.mqttStatus
+        || a.sftpStatus != b.sftpStatus
+        || a.mqttsStatus != b.mqttsStatus;
+}

@@ -18,6 +18,7 @@ public:
     explicit FactSetting(QWidget *parent = nullptr);
     void runFleetProvisioningWrapper() {runFleetProvisionerAsync();}
     void checkCertificatesWrapper() {checkCertificates();}
+    void updateInfo(const DeviceInfo &f);
     ~FactSetting();
 
 signals:

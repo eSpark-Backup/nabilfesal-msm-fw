@@ -16,11 +16,10 @@ class DeviceSettings : public settingsManager
 
 public:
     explicit DeviceSettings(QWidget *parent = nullptr);
-    void refreshInfo();
     void runFleetProvisioningWrapper() {runFleetProvisionerAsync();}
     void checkCertificatesWrapper() {checkCertificates();}
+    void updateInfo(const DeviceInfo &a);
     ~DeviceSettings();
-    DeviceInfo curDevInfo, prvDevInfo;
 
 signals:
     void channels_view();
@@ -65,12 +64,10 @@ protected:
 private:
     bool apply_ntp_Settings(bool msgBox= true);
     void parseNtpJson(const QJsonObject& data);
-    bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
     Ui::DeviceSettings *ui;
     MSMKeyboard *keyboard;
     QString server1, server2, server3;
     NtpSettings newNtp, previousNtp;
-    QTimer *refreshTimer = nullptr;
 };
 
 #endif // DEVICESETTINGS_H

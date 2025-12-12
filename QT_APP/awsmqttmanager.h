@@ -7,6 +7,11 @@
 #include <QCoreApplication>
 #include "common_headers.h"
 
+struct ConnStatus {
+    QString mqttStatus;
+    QString sftpStatus;
+    QString mqttsStatus;
+};
 
 struct DeviceInfo {
     QString uuid;
@@ -15,10 +20,8 @@ struct DeviceInfo {
     QString imei;
     QString date;
     QString ntpStatus;
-    QString mqttStatus;
-    QString sftpStatus;
-    QString mqttsStatus;
     QString gsmStatus;
+    ConnStatus conn;
 };
 
 

@@ -11,6 +11,7 @@
 #include "devicesettings.h"
 #include "factsetting.h"
 
+
 QJsonObject settingsManager::getMqttSettings()
 {
     auto Ip    = uiBase->findChild<QLineEdit*>("mqtt_ip"); 
@@ -635,3 +636,4 @@ void settingsManager::checkCertificates()
     devCert->setChecked(QFile::exists(prvCertPath));
     devKey->setChecked(QFile::exists(prvkeyPath));
 }
+

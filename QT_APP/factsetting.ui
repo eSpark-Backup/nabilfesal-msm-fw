@@ -244,23 +244,63 @@ QPushButton:focus {
                 <number>20</number>
                </property>
                <item>
-                <widget class="QLabel" name="mqtt_fact_lbl">
-                 <property name="font">
-                  <font>
-                   <family>Gilroy</family>
-                   <pointsize>15</pointsize>
-                  </font>
+                <layout class="QHBoxLayout" name="horizontalLayout_14">
+                 <property name="topMargin">
+                  <number>0</number>
                  </property>
-                 <property name="styleSheet">
-                  <string notr="true">border-color: rgb(255, 255, 255);</string>
-                 </property>
-                 <property name="text">
-                  <string>MQTT PROTOCOL</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                </widget>
+                 <item>
+                  <spacer name="horizontalSpacer_9">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Fixed</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="fact_mqtt_con_status">
+                   <property name="maximumSize">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background-color: rgb(239, 41, 41);
+border-radius: 10px</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="mqtt_fact_lbl">
+                   <property name="font">
+                    <font>
+                     <family>Gilroy</family>
+                     <pointsize>15</pointsize>
+                    </font>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">border-color: rgb(255, 255, 255);</string>
+                   </property>
+                   <property name="text">
+                    <string>MQTT PROTOCOL</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item>
                 <widget class="QLineEdit" name="mqtt_ip">
@@ -624,35 +664,81 @@ QPushButton:focus {
                 <number>0</number>
                </property>
                <item>
-                <widget class="QLabel" name="mqtts_fact_lbl">
-                 <property name="minimumSize">
-                  <size>
-                   <width>344</width>
-                   <height>26</height>
-                  </size>
+                <layout class="QHBoxLayout" name="horizontalLayout_17">
+                 <property name="topMargin">
+                  <number>0</number>
                  </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>344</width>
-                   <height>26</height>
-                  </size>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <family>Gilroy</family>
-                   <pointsize>15</pointsize>
-                  </font>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">border-color: rgb(255, 255, 255);</string>
-                 </property>
-                 <property name="text">
-                  <string>MQTTs PROTOCOL</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                </widget>
+                 <item>
+                  <spacer name="horizontalSpacer_10">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Fixed</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>60</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="fact_mqtts_con_status">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background-color: rgb(239, 41, 41);
+border-radius: 10px</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="mqtts_fact_lbl">
+                   <property name="minimumSize">
+                    <size>
+                     <width>260</width>
+                     <height>26</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>260</width>
+                     <height>26</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Gilroy</family>
+                     <pointsize>15</pointsize>
+                    </font>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">border-color: rgb(255, 255, 255);</string>
+                   </property>
+                   <property name="text">
+                    <string>MQTTs PROTOCOL</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item>
                 <widget class="QLineEdit" name="mqtts_endpoint">
@@ -1250,23 +1336,69 @@ QPushButton:focus {
                 <number>20</number>
                </property>
                <item>
-                <widget class="QLabel" name="label_11">
-                 <property name="font">
-                  <font>
-                   <family>Gilroy</family>
-                   <pointsize>15</pointsize>
-                  </font>
+                <layout class="QHBoxLayout" name="horizontalLayout_12">
+                 <property name="topMargin">
+                  <number>0</number>
                  </property>
-                 <property name="styleSheet">
-                  <string notr="true">border-color: rgb(255, 255, 255);</string>
-                 </property>
-                 <property name="text">
-                  <string>SFTP SERVER</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                </widget>
+                 <item>
+                  <spacer name="horizontalSpacer_7">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Fixed</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>80</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="fact_sftp_con_status">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">background-color: rgb(239, 41, 41);
+border-radius: 10px</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_11">
+                   <property name="font">
+                    <font>
+                     <family>Gilroy</family>
+                     <pointsize>15</pointsize>
+                    </font>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">border-color: rgb(255, 255, 255);</string>
+                   </property>
+                   <property name="text">
+                    <string>SFTP SERVER</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item>
                 <widget class="QLineEdit" name="sftp_ip">
