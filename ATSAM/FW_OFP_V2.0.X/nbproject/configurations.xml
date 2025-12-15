@@ -199,6 +199,7 @@
       <itemPath>../src/ADE9000Calibration.h</itemPath>
       <itemPath>../src/ADE9000RegMap.h</itemPath>
       <itemPath>../src/main.h</itemPath>
+      <itemPath>../src/uart.cpp</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
@@ -214,7 +215,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>jlink</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>4.45</languageToolchainVersion>
+        <languageToolchainVersion>4.60</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
