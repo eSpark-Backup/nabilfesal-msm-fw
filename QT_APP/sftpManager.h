@@ -56,5 +56,6 @@ private:
 
 public:
     QString tag;
+    QString sftp_path = "config/admin_settings/sftp_settings.json";
 };
 

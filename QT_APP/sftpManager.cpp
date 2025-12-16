@@ -8,12 +8,19 @@
 #include <QThread>
 
 
-#define SFTP_PATH "config/sftp_settings.json"
+#define SFTP_PATH sftp_path
 
 sftpManager::sftpManager(Mode mode, QObject *parent) : clientMode(mode), QObject(parent)
 {
-    clientMode == Mode::Factory ? tag = COLOR_TAG(F_CYAN, B_WHITE, "Factory [SFTP]")
-                                    : tag = COLOR_TAG(F_CYAN, B_WHITE, "Admin [SFTP]");
+    if(clientMode == Mode::Factory)
+    {
+        tag = COLOR_TAG(F_CYAN, B_WHITE, "Factory [SFTP]");
+        sftp_path = "config/sftp_settings.json";
+    }
+    else
+    {
+        tag = COLOR_TAG(F_CYAN, B_WHITE, "Admin [SFTP]");
+    }
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);
     isConnected  = false;

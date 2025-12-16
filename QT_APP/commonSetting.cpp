@@ -28,7 +28,7 @@ QJsonObject settingsManager::getMqttSettings()
     QString mqttTopic    = Topic->text().trimmed();
     QString mqttInterval = Int->text().trimmed();
 
-    QJsonObject mqttSettings = getMqttSettings();
+    QJsonObject mqttSettings;
     mqttSettings["ip"]       = mqttIp;
     mqttSettings["port"]     = mqttPort;
     mqttSettings["user"]     = mqttUser;
@@ -102,7 +102,7 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessage
         return;
     }
 
-    QDir dir("config");
+    QDir dir("config/admin_settings");
     if (!dir.exists()) {
         dir.mkpath(".");
     }
@@ -307,6 +307,9 @@ QJsonObject settingsManager::getMqttsSettings()
 
 QJsonObject settingsManager::loadMqttsSettings(bool showMessages, bool reloadSettings)
 {
+    auto mqtts_client_id = uiBase->findChild<QLineEdit*>("mqtts_client_id");
+    mqtts_client_id->setText(Utils::getUid());
+    
     QString filePath = mqttsConfigPath();
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -360,7 +363,7 @@ void settingsManager::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessa
         return;
     }
 
-    QDir dir("config");
+    QDir dir("config/admin_settings");
     if (!dir.exists()) {
         dir.mkpath(".");
     }

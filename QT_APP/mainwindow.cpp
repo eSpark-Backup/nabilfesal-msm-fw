@@ -67,14 +67,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
 
     // Setup segmented responsibilities
-    connectStartUpSignals();
     setupLogin();
-    dataExporter = new SystemDataExporter(this);
-    setupUsb();
     setupSerial();
-
-    // Important: set connections between settings/managers
-    connectLoginSignals();
 
     // UI progress and polling
     setupProgressBar();
@@ -139,7 +133,7 @@ MainWindow::~MainWindow()
 // -----------------------------
 void MainWindow::initConfig()
 {
-    QDir dir("config");
+    QDir dir("config/admin_settings");
     if (!dir.exists())
         dir.mkpath(".");
 
@@ -422,7 +416,7 @@ void MainWindow::connectStartUpSignals()
         }
         emit requestSerialCommand(cmd);
         waitingForCalibrationResponse = true;
-        responseWaitTimer->start(20000);
+        responseWaitTimer->start(CALIBRATION_DELAY);
     });
 }
 
@@ -864,6 +858,13 @@ void MainWindow::updateProgress()
 
 void MainWindow::handlePostProgress()
 {
+     // Setup segmented responsibilities
+    connectStartUpSignals();
+    dataExporter = new SystemDataExporter(this);
+    setupUsb();
+    // Important: set connections between settings/managers
+    connectLoginSignals();
+
     // If first setup not done, show registration UI
     if (m_uid.isEmpty() || m_adminPass.isEmpty()) {
         if (!registration) {
@@ -937,7 +938,7 @@ void MainWindow::sendFileWithDelay(const QStringList &files, int index)
 
         emit requestSerialCommand(jsonString);
         waitingForCalibrationResponse = true;
-        responseWaitTimer->start(20000);
+        responseWaitTimer->start(CALIBRATION_DELAY);
     } else {
         sendFileWithDelay(files, index + 1);
     }
@@ -1016,6 +1017,9 @@ void MainWindow::startPingTimer()
                 factorySftpHandler->reloadSettings();
                 factoryMqttHandler->reloadSettings();
                 factoryMqttsHandler->reloadAwsMqttsSettings();
+                adminSftpHandler->reloadSettings();
+                adminMqttHandler->reloadSettings();
+                adminMqttsHandler->reloadAwsMqttsSettings();
             } else {
                 //qDebug() << timestamp << "❌ Internet Disconnected";
 
@@ -1024,7 +1028,13 @@ void MainWindow::startPingTimer()
                 factoryMqttsHandler->isConnected = false;
                 factorySftpHandler->disconnectClient();
                 factoryMqttHandler->disconnectClient();
-                factoryMqttsHandler->disconnectAwsClient();
+                adminMqttsHandler->disconnectAwsClient();
+                adminSftpHandler->isConnected = false;
+                adminMqttHandler->isConnected = false;
+                adminMqttsHandler->isConnected = false;
+                adminSftpHandler->disconnectClient();
+                adminMqttHandler->disconnectClient();
+                adminMqttsHandler->disconnectAwsClient();
             }
             refreshInfo();
         }

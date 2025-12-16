@@ -12,13 +12,20 @@
 #include "utils.h"
 #include <cmath>
 
-#define MQTT_PATH "config/mqtt_settings.json"
+#define MQTT_PATH mqtt_path
 
 
 mqttManager::mqttManager(Mode mode, QObject *parent) : clientMode(mode), QObject(parent)
 {
-    clientMode == Mode::Factory ? tag = COLOR_TAG(F_BLACK, B_WHITE, "Factory [MQTT]")
-                                    : tag = COLOR_TAG(F_BLACK, B_WHITE, "Admin - MQTT");
+    if(clientMode == Mode::Factory)
+    {
+        tag = COLOR_TAG(F_BLACK, B_WHITE, "Factory [MQTT]");
+        mqtt_path = "config/mqtt_settings.json";
+    }
+    else
+    {
+        tag = COLOR_TAG(F_BLACK, B_WHITE, "Admin - MQTT");
+    }
     mqttClient = new QMqttClient(this);
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);

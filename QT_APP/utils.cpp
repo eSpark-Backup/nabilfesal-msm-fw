@@ -169,7 +169,6 @@ QString extractImeiFromResponses(const QString &filePath)
                 break;
         }
     }
-
     return "UNKNOWN";
 }
 
@@ -177,29 +176,6 @@ QString extractImeiFromResponses(const QString &filePath)
 QString getDeviceImei()
 {
     #if defined(BUILD_V3S)
-    QProcess scanProcess;
-    scanProcess.start("mmcli", {"-S"});
-    if (!scanProcess.waitForFinished(3000))
-        return "UNKNOWN";
-    if (scanProcess.exitCode() != 0)
-        return "UNKNOWN";
-
-    QProcess process;
-    process.start("mmcli", {"-m", "any"});
-    if (process.waitForFinished(3000)) {
-        QString output = process.readAllStandardOutput();
-
-        for (const QString &line : output.split("\n")) {
-            QString trimmed = line.trimmed();
-
-            if (trimmed.contains("imei", Qt::CaseInsensitive) ||
-                trimmed.contains("equipment id", Qt::CaseInsensitive))
-            {
-                return trimmed.section(":", 1).trimmed();
-            }
-        }
-    }
-
     QString imei = extractImeiFromResponses("/MSM/potential-pancake/MSM/bin/at_axec/responses.txt");
     #elif defined(BUILD_X86)
     QString imei = "UNKNOWN";
@@ -387,7 +363,7 @@ bool updateSerialInConfig(const QString &AwsEp, const QString &configJson_path)
         qWarning() << "UID is empty, not updating Serial!";
         return false;
     }
-    if(configJson_path == "/home/nehalespark/Downloads/aws-iot-device-sdk-embedded-C/build/bin/config.json")
+    if(configJson_path == CONFIG_JSON_PATH)
         uid += "_factory";
     else
         uid += "_admin";

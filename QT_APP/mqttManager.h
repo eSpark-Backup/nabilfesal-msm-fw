@@ -54,4 +54,5 @@ private:
 
 public:
     QString tag;
+    QString mqtt_path = "config/admin_settings/mqtt_settings.json";
 };

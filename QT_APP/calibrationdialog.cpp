@@ -182,7 +182,7 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
         return;
     }
 
-    QDir().mkpath("config");
+    QDir().mkpath("config/admin_settings");
     const QString command = response["command"].toString();
 
     QString filePath = (command == "v-calibration")

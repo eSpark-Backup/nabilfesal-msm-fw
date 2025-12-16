@@ -492,7 +492,7 @@ void DeviceSettings::updateInfo(const DeviceInfo &a)
     ui->uuid->setText(a.uuid);
     ui->imei->setText(a.imei);
     ui->date_input->setText(a.date);
-    ui->sftp->setText(a.conn.mqttStatus);
-    ui->mqtt->setText(a.conn.sftpStatus);
+    ui->sftp->setText(a.conn.sftpStatus);
+    ui->mqtt->setText(a.conn.mqttStatus);
     ui->mqtts->setText(a.conn.mqttsStatus);
 }

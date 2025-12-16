@@ -323,7 +323,7 @@ void Measurements::processSettings(const QString &key,
     // }
 
     // Save to file
-    QDir dir("config");
+    QDir dir("config/admin_settings");
     if (!dir.exists()) dir.mkpath(".");
 
     QFile file(filePath);

@@ -148,6 +148,7 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
     QString portStr = obj.value("port").toString();
     port = portStr.toInt();
     clientId = Utils::getUid();
+    clientId += ((clientMode == Mode::Factory) ? "_factory" : "_admin");
     QString intervalSecStr = obj.value("interval").toString();
     intervalSec = intervalSecStr.toInt();
 
@@ -362,7 +363,7 @@ void AwsMqttManager::subscribeToTopic()
 
 void AwsMqttManager::awsTopicsInit()
 {
-    QString base_pub_topic = "msm/" + clientId + "/pub"; //clientId to be replace with Utils::getUid()
+    QString base_pub_topic = "msm/" + clientId + "/pub"; //clientId to be replaced
     QString base_sub_topic = "msm/" + clientId + "/sub";
     
     topic_pub_telemetry   = base_pub_topic + "/telemetry";
@@ -400,7 +401,7 @@ QByteArray AwsMqttManager::buildAwsTelemetryJson(int startIndex, int endIndex) c
 
     // ISO8601 timestamp with offset
     root["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
-    root["device_uuid"] = Utils::getUid();
+    root["device_uuid"] = clientId;
 
     QJsonArray channelsArray;
 
@@ -488,7 +489,7 @@ void AwsMqttManager::processDeviceInfo(const DeviceInfo &info)
 
     QJsonObject deviceInfoPayload;
     deviceInfoPayload["data"] = dataArray;
-    deviceInfoPayload["device_uuid"] = info.uuid;
+    deviceInfoPayload["device_uuid"] = clientId;
 
     QJsonDocument doc(deviceInfoPayload);
     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
@@ -512,7 +513,7 @@ void AwsMqttManager::processMqttSettings(const QJsonObject &mqttSetting)
     dataArray.append(brokerData);
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();
+    payload["device_uuid"] = clientId;
     payload["data"] = dataArray;
 
     QJsonDocument doc(payload);
@@ -536,7 +537,7 @@ void AwsMqttManager::processSftpSettings(const QJsonObject &sftpSetting)
     dataArray.append(serverData);
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();
+    payload["device_uuid"] = clientId;
     payload["data"] = dataArray;
 
     QJsonDocument doc(payload);
@@ -558,7 +559,7 @@ void AwsMqttManager::processNtpSettings(const NtpSettings &ntpSettings)
     dataArray.append(ntpData);
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();
+    payload["device_uuid"] = clientId;
     payload["data"] = dataArray;
 
     QJsonDocument doc(payload);
@@ -586,7 +587,7 @@ void AwsMqttManager::processMqttsSettings(const QJsonObject &mqttsSetting)
     dataArray.append(awsData);
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();
+    payload["device_uuid"] = clientId;
     payload["data"] = dataArray;
 
     QJsonDocument doc(payload);
@@ -612,7 +613,7 @@ void AwsMqttManager::processReboot()
     dataArray.append(rebootData);
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();
+    payload["device_uuid"] = clientId;
     payload["data"] = dataArray;
 
     QJsonDocument doc(payload);
@@ -626,7 +627,7 @@ void AwsMqttManager::processCtRatio(const QJsonObject &ctRatio)
     if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();
+    payload["device_uuid"] = clientId;
     QJsonArray dataArray;
     dataArray.append(ctRatio);
     payload["data"] = dataArray;
@@ -641,7 +642,7 @@ void AwsMqttManager::processVOffset(const QJsonObject &vOffset)
     if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
     
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();
+    payload["device_uuid"] = clientId;
     QJsonArray dataArray;
     dataArray.append(vOffset);
     payload["data"] = dataArray;
@@ -656,7 +657,7 @@ void AwsMqttManager::processIOffset(const QJsonObject &iOffset)
     if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();
+    payload["device_uuid"] = clientId;
     QJsonArray dataArray;
     dataArray.append(iOffset);
     payload["data"] = dataArray;
@@ -671,7 +672,7 @@ void AwsMqttManager::processOTA(const QJsonObject &otaData)
     if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
 
     QJsonObject payload;
-    payload["device_uuid"] = Utils::getUid();
+    payload["device_uuid"] = clientId;
     QJsonArray dataArray;
     dataArray.append(otaData);
     payload["data"] = dataArray;
