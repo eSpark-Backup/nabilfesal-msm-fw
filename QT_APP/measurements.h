@@ -20,6 +20,7 @@ public:
     void i_off_btn_clicked();
     void v_off_btn_clicked();
     void send_measurement_data();
+    void enableButton(bool state = true);
     ~Measurements();
     
 signals:

@@ -4,8 +4,9 @@
 #include <QTimer>
 
 SerialWorker::SerialWorker(const QString &port, int baud)
-    : portName(port), baudRate(baud) {
+    : portName(port), baudRate(baud) {}
 
+void SerialWorker::initHandler() {
     handler = new SerialHandler;
     handler->moveToThread(QThread::currentThread());
     handler->open(portName, baudRate);

@@ -537,6 +537,7 @@ void ChannelsHome::saveEnergyData()
 void ChannelsHome::on_tempBtn_clicked(bool check)
 {
     handleTempButton(check, 0.00);
+    ui->tempBtn->clearFocus();
 }
 
 

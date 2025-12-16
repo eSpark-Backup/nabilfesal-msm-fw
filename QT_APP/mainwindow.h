@@ -78,6 +78,7 @@ private slots:
     void setupProgressBar();
 
     void onChannelDataWatchdogTimeout();
+    void enableUiButton();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

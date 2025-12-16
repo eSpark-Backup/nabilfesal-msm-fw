@@ -34,12 +34,6 @@ public:
 
         // Log every 10 minutes
         m_logTimer->start(10 * 60 * 1000);
-
-        // Connect to parent data signal if available
-        if (parent) {
-            connect(parent, SIGNAL(receivedChannelData(int, QJsonObject)),
-                    this, SLOT(onNewChannelData(int, QJsonObject)));
-        }
     }
 
     QString getFilePath()

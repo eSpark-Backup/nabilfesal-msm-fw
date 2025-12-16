@@ -67,8 +67,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->hf->setText("HW: " + hardwareVersion + "  FW: " + softwareVersion);
 
     // Setup segmented responsibilities
-    setupLogin();
     setupSerial();
+    setupLogin();
 
     // UI progress and polling
     setupProgressBar();
@@ -84,13 +84,23 @@ MainWindow::MainWindow(QWidget *parent)
     connect(responseWaitTimer, &QTimer::timeout, this, [this]() {
         if (waitingForCalibrationResponse) {
             waitingForCalibrationResponse = false;
-            emit enableSendButton();
+            enableUiButton();
             Toast::show("No response from ATSAM received for calibration settings.", this, Toast::Error);
             if (!BootUpSync){
                 if (pollTimer) pollTimer->start(200);
             }
             else
             {
+                static uint8_t vol_cal_retry = 1;
+
+                if(bootFileIndex == 0 && vol_cal_retry < 3)
+                {
+                    vol_cal_retry++;
+                    bootFileIndex = -1;
+                }
+                else
+                    vol_cal_retry = 1;
+                
                 QTimer::singleShot(1000, this, [this](){
                     sendFileWithDelay(bootFiles, bootFileIndex + 1);
                 });
@@ -210,6 +220,8 @@ void MainWindow::setupSerial()
     #endif
     worker->moveToThread(serialThread);
 
+    connect(serialThread, &QThread::started, worker, &SerialWorker::initHandler);
+
     connect(this, &MainWindow::requestChannelPoll, worker, &SerialWorker::requestChannel);
     connect(this, &MainWindow::requestSerialCommand, worker, &SerialWorker::sendRawCommand);
 
@@ -252,7 +264,7 @@ void MainWindow::setupPolling()
 void MainWindow::connectChannels(ChannelsHome *ch)
 {
     connect(ch, &ChannelsHome::channelsExit, this, &MainWindow::onChannelsExit);
-    connect(this, &MainWindow::receivedChannelData, ch, &ChannelsHome::handleChannelData);
+    connect(this, &MainWindow::receivedChannelData, ch, &ChannelsHome::handleChannelData, Qt::QueuedConnection);
 }
 
 void MainWindow::connectFactSettings()
@@ -355,7 +367,6 @@ void MainWindow::connectStartUpSignals()
         factorySettings->hide();
     });
 
-    connect(this, &MainWindow::enableSendButton, gainCalibrator, &CalibrationDialog::enableButton);
     connect(gainCalibrator, &CalibrationDialog::requestSerialCommand, measure, &Measurements::requestSerialCommand);
 
     connect(gainCalibrator, &CalibrationDialog::exitScreen, this, [this]() {
@@ -522,24 +533,23 @@ void MainWindow::connectLoginSignals()
     connect(factoryMqttsHandler, &AwsMqttManager::iOffsetReceived,
             measure, &Measurements::parse_load_store_iOffset);
 
-
     connect(factSettings, &FactSetting::OTA_status, factoryMqttsHandler, &AwsMqttManager::processOTA);
     connect(factoryMqttsHandler, &AwsMqttManager::otaReceived, factSettings, &FactSetting::startOTA);
 
     // Wire telemetry -> managers
     connect(this, &MainWindow::receivedChannelData,
-            factoryMqttHandler, &mqttManager::processIncomingJson);
+            factoryMqttHandler, &mqttManager::processIncomingJson, Qt::QueuedConnection);
     connect(this, &MainWindow::receivedChannelData,
-            factorySftpHandler, &sftpManager::processIncomingJson);
+            factorySftpHandler, &sftpManager::processIncomingJson, Qt::QueuedConnection);
     connect(this, &MainWindow::receivedChannelData,
-            factoryMqttsHandler, &AwsMqttManager::processAwsTelemetry);
+            factoryMqttsHandler, &AwsMqttManager::processAwsTelemetry, Qt::QueuedConnection);
 
     connect(this, &MainWindow::receivedChannelData,
-            adminMqttHandler, &mqttManager::processIncomingJson);
+            adminMqttHandler, &mqttManager::processIncomingJson, Qt::QueuedConnection);
     connect(this, &MainWindow::receivedChannelData,
-            adminSftpHandler, &sftpManager::processIncomingJson);
+            adminSftpHandler, &sftpManager::processIncomingJson, Qt::QueuedConnection);
     connect(this, &MainWindow::receivedChannelData,
-            adminMqttsHandler, &AwsMqttManager::processAwsTelemetry);
+            adminMqttsHandler, &AwsMqttManager::processAwsTelemetry, Qt::QueuedConnection);
 
     // channel UI related signals
     connect(settings, &DeviceSettings::resetEnergy, this, [this]() {
@@ -702,7 +712,7 @@ void MainWindow::onGenericResponseReady(const QString &resp)
 {
     if (waitingForCalibrationResponse) {
         waitingForCalibrationResponse = false;
-        emit enableSendButton();
+        enableUiButton();
         responseWaitTimer->stop();
     }
 
@@ -861,6 +871,7 @@ void MainWindow::handlePostProgress()
      // Setup segmented responsibilities
     connectStartUpSignals();
     dataExporter = new SystemDataExporter(this);
+    connect(this, &MainWindow::receivedChannelData, dataExporter, &SystemDataExporter::onNewChannelData, Qt::QueuedConnection);
     setupUsb();
     // Important: set connections between settings/managers
     connectLoginSignals();
@@ -1130,4 +1141,11 @@ bool MainWindow::isConnectionDifferent(const ConnStatus &a, const ConnStatus &b)
     return a.mqttStatus != b.mqttStatus
         || a.sftpStatus != b.sftpStatus
         || a.mqttsStatus != b.mqttsStatus;
+}
+
+
+void MainWindow::enableUiButton()
+{
+    if(gainCalibrator) gainCalibrator->enableButton();
+    if(measure) measure->enableButton();
 }

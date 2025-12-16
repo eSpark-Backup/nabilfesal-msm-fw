@@ -78,6 +78,11 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #0D47A1;  /* Darkest blue when pressed */
 }
+
+QPushButton:disabled {
+	background-color: rgb(136, 138, 133);
+}
+
 QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
@@ -184,7 +189,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 01</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -326,7 +331,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 02</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -468,7 +473,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 03</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -617,7 +622,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 04</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -759,7 +764,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 05</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -901,7 +906,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 06</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1050,7 +1055,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 07</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1192,7 +1197,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 08</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1334,7 +1339,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 09</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1483,7 +1488,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 10</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1625,7 +1630,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 11</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1767,7 +1772,7 @@ border-radius: 20px;</string>
                     <string>CHANNEL 12</string>
                    </property>
                    <property name="icon">
-                    <iconset>
+                    <iconset resource="icons.qrc">
                      <normaloff>:/icons/V.png</normaloff>:/icons/V.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1903,6 +1908,11 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #0D47A1;  /* Darkest blue when pressed */
 }
+
+QPushButton:disabled {
+	background-color: rgb(136, 138, 133);
+}
+
 QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
@@ -1948,6 +1958,11 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #0D47A1;  /* Darkest blue when pressed */
 }
+
+QPushButton:disabled {
+	background-color: rgb(136, 138, 133);
+}
+
 QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
@@ -1971,6 +1986,8 @@ QPushButton:focus {
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

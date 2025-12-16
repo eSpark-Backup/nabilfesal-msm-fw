@@ -349,7 +349,7 @@ void Measurements::processSettings(const QString &key,
                 edit->setText(QString::number(settingsObj[QString("channel-%1").arg(i)].toDouble(), 'f', 2));
         }
     }
-
+    enableButton(false);
     emit requestSerialCommand(QJsonDocument(data).toJson(QJsonDocument::Compact));
 
     if (emitDeviceCommand)
@@ -552,4 +552,11 @@ void Measurements::send_measurement_data()
     measurement_json = Utils::readJsonFile(I_OFFSET);
     if (!measurement_json.isEmpty())
         emit i_offset_changed(measurement_json);
+}
+
+void Measurements::enableButton(bool state)
+{
+    ui->back_1->setEnabled(state);
+    ui->save_btn->setEnabled(state);
+    ui->load_btn->setEnabled(state);
 }
