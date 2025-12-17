@@ -106,6 +106,7 @@ bool mqttManager::loadConfig(const QString &filePath)
     QString portStr = obj.value("port").toString();
     port = portStr.toInt();
     clientId = Utils::getUid();
+    clientId += ((clientMode == Mode::Factory) ? "_factory" : "_admin");
     topic = obj.value("topic").toString();
     QString intervalSecStr = obj.value("interval").toString();
     intervalSec = intervalSecStr.toInt();
@@ -137,8 +138,8 @@ void mqttManager::connectToBroker()
     mqttClient->setHostname(host);
     mqttClient->setPort(port);
     mqttClient->setClientId(clientId);
-    if (!username.isEmpty()) mqttClient->setUsername(username);
-    if (!password.isEmpty()) mqttClient->setPassword(password);
+    mqttClient->setUsername(username);
+    mqttClient->setPassword(password);
     mqttClient->setProtocolVersion(QMqttClient::MQTT_3_1_1);
     mqttClient->setCleanSession(true);
     mqttClient->setKeepAlive(30);

@@ -31,8 +31,6 @@ QJsonObject settingsManager::getMqttSettings()
     QJsonObject mqttSettings;
     mqttSettings["ip"]       = mqttIp;
     mqttSettings["port"]     = mqttPort;
-    mqttSettings["user"]     = mqttUser;
-    mqttSettings["password"] = mqttPass;
     mqttSettings["topic"]    = mqttTopic;
     mqttSettings["interval"] = mqttInterval;
 
@@ -40,6 +38,9 @@ QJsonObject settingsManager::getMqttSettings()
         Toast::show("Please fill in all MQTT fields before saving.", this, Toast::Warning);
         return {};
     }
+
+    mqttSettings["user"]     = mqttUser;
+    mqttSettings["password"] = mqttPass;
 
     return mqttSettings;
 }

@@ -33,13 +33,10 @@ bool AwsMqttManager::debugEnabled()
 
 AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), QObject(parent)
 {
-    if(clientMode == Mode::Factory)
-    {
+    if(clientMode == Mode::Factory){
         tag = TAG_FACTORY;
         aws_path = "config/aws_mqtts_settings.json";
-    }
-    else
-    {
+    }else{
         tag = TAG_ADMIN;
         caPath        = CERT_DIR_PATH + "admin/claim_certs/AmazonRootCA1.pem";
         claimCertPath = CERT_DIR_PATH + "admin/claim_certs/claim_cert.pem";
@@ -60,13 +57,19 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
     reconnectTimer->setSingleShot(false);    // repeat until success
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
-        if (!isConnected) {
+        if (!isConnected && !isConnecting) {
             connectToBroker();
         }
     });
-    if (!reconnectTimer->isActive()) {
-        reconnectTimer->start();  // retry every 1 min
-    }
+
+    // MQTT client state logging
+    connect(awsMqttsClient, &QMqttClient::stateChanged, this, [this](QMqttClient::ClientState state) {
+        AWS_LOG("[MQTTS] Client state:" << state);
+    });
+
+    connect(awsMqttsClient, &QMqttClient::errorChanged, this, [this](QMqttClient::ClientError err) {
+        logWarn << "[MQTTS] Error:" << err;
+    });
 
     // Timer: publish telemetry if connected
     connect(publishTimer, &QTimer::timeout, this, [this]() {
@@ -91,18 +94,18 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
         AWS_LOG("\n========================================================================");
         if (!payload2.isEmpty())
         publishMessage(topic_pub_telemetry, payload2);
-
     });
 
     // Connected signal
     connect(awsMqttsClient, &QMqttClient::connected, this, [this]() {
-        isConnected = true;
+        isConnected  = true;
+        isConnecting = false;
         logDebug << "[MQTTS] Connected to AWS IoT Core!";
         reconnectTimer->stop();
 
-        if (intervalSec > 0) {
-            publishTimer->start(intervalSec*1000);
-        }
+        if (intervalSec > 0)
+            publishTimer->start(intervalSec * 1000);
+
         awsTopicsInit();
         subscribeToTopic();
         if(isFirstTime) {
@@ -113,14 +116,18 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
 
     // Disconnected signal
     connect(awsMqttsClient, &QMqttClient::disconnected, this, [this]() {
-        isConnected = false;
-        logDebug << "[MQTTS] Disconnected from AWS IoT Core.";
+        isConnected  = false;
+        isConnecting = false;
+        logWarn << "[MQTTS] Disconnected from AWS IoT Core.";
         publishTimer->stop();
+
         if (!reconnectTimer->isActive()) {
             reconnectTimer->start();
-            logWarn << "[AWS] Reconnection attempt...";
+            logWarn << "[MQTTS] Reconnection scheduled";
         }
     });
+
+    if (!reconnectTimer->isActive()) reconnectTimer->start();
 }
 
 bool AwsMqttManager::loadAwsConfig(const QString &filePath)
@@ -181,8 +188,14 @@ bool AwsMqttManager::awsMqttsState()
 
 bool AwsMqttManager::loadCertificates()
 {
+    if (sslSocket) {
+        sslSocket->disconnect(this);
+        sslSocket->deleteLater();
+        sslSocket = nullptr;
+    }
+
     if (!QSslSocket::supportsSsl()) {
-        logWarn << "[TLS] SSL/TLS not supported on this system!";
+        logWarn << "[AWS TLS] SSL/TLS not supported on this system!";
         return false;
     }
 
@@ -190,39 +203,32 @@ bool AwsMqttManager::loadCertificates()
     if (!caFile.open(QIODevice::ReadOnly) ||
         !certFile.open(QIODevice::ReadOnly) ||
         !keyFile.open(QIODevice::ReadOnly)) {
-        logWarn << "[TLS] Failed to open cert/key files";
+        logWarn << "[AWS TLS] Failed to open cert/key files";
         return false;
     }
 
-    QList<QSslCertificate> caCerts = QSslCertificate::fromData(caFile.readAll(), QSsl::Pem);
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
-    conf.setCaCertificates(caCerts);
-    conf.setLocalCertificate(QSslCertificate(certFile.readAll()));
-    conf.setPrivateKey(QSslKey(keyFile.readAll(), QSsl::Rsa, QSsl::Pem));
     conf.setProtocol(QSsl::TlsV1_2OrLater);
-
-    // --- Debug TLS config ---
-    AWS_LOG("=== TLS Config ===");
-    AWS_LOG("Subject:" << conf.localCertificate().subjectInfo(QSslCertificate::CommonName));
-    AWS_LOG("Private key valid?" << !conf.privateKey().isNull());
-    AWS_LOG("CA count:" << conf.caCertificates().size());
-    AWS_LOG("Protocol:" << conf.protocol());
-    AWS_LOG("===================");
+    conf.setCaCertificates(QSslCertificate::fromData(caFile.readAll(), QSsl::Pem));
+    conf.setLocalCertificate(QSslCertificate(certFile.readAll(), QSsl::Pem));
+    conf.setPrivateKey(QSslKey(keyFile.readAll(), QSsl::Rsa, QSsl::Pem));
 
     if (conf.localCertificate().isNull() || conf.privateKey().isNull() || conf.caCertificates().isEmpty()) {
-        logWarn << "[TLS] Invalid certificate, key, or CA chain.";
+        logWarn << "[AWS TLS] Invalid certificate/key/CA chain";
         return false;
     }
 
-    sslSocket = new QSslSocket();
+    sslSocket = new QSslSocket(this);
     sslSocket->setSslConfiguration(conf);
     sslSocket->setPeerVerifyMode(QSslSocket::VerifyPeer);
     sslSocket->setPeerVerifyName(host);
 
+    // TLS signals
     connect(sslSocket, &QSslSocket::encrypted, this, [this]() {
-        AWS_LOG("[TLS] Handshake complete (encrypted)");
+        AWS_LOG("[AWS TLS] Handshake complete (encrypted). Connecting MQTT client...");
         awsMqttsClient->connectToHost();
     });
+
     connect(sslSocket,
             static_cast<void(QSslSocket::*)(const QList<QSslError>&)>(&QSslSocket::sslErrors),
             this,
@@ -231,34 +237,39 @@ bool AwsMqttManager::loadCertificates()
                     logWarn << "[TLS] SSL error:" << e.errorString();
             });
 
-    connect(sslSocket, &QSslSocket::stateChanged, this, [this](QAbstractSocket::SocketState state) {
-        AWS_LOG( "[TLS] Socket state:" << state);
-    });
     connect(sslSocket, &QSslSocket::errorOccurred, this, [this](QAbstractSocket::SocketError err) {
         logWarn << "[TLS] Socket error:" << err;
+        isConnected  = false;
+        isConnecting = false;
     });
+
     awsMqttsClient->setTransport(sslSocket, QMqttClient::IODevice);
     return true;
 }
 
-
 void AwsMqttManager::connectToBroker()
 {
-    if (host.isEmpty() || clientId.isEmpty()) {
-        logWarn << "[AWS MQTT] Settings incomplete.";
+    if (isConnected || isConnecting) {
+        logDebug << "[AWS MQTTS] Already connected/connecting, skipping";
         return;
     }
 
-    if (!loadCertificates()) {
-        logWarn << "[AWS MQTT] Missing certificates. Cannot connect.";
-        return;
+    isConnecting = true;
+
+    if (!sslSocket) {
+        if (!loadCertificates()) {
+            logWarn << "[AWS MQTTS] TLS setup failed";
+            isConnecting = false;
+            return;
+        }
     }
 
     awsMqttsClient->setClientId(clientId);
     awsMqttsClient->setCleanSession(true);
     awsMqttsClient->setKeepAlive(30);
+
+    AWS_LOG("[TLS] Initiating encrypted connect to " << host << ":" << port);
     sslSocket->connectToHostEncrypted(host, port);
-    AWS_LOG("[TLS] Initiating encrypted connect to" << host << ":" << port);
 }
 
 

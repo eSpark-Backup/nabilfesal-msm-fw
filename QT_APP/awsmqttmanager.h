@@ -45,6 +45,7 @@ public:
     void disconnectAwsClient();
     bool awsMqttsState();
     bool isConnected = false;
+    bool isConnecting = false;
 
 signals:
     //subscribe signals
