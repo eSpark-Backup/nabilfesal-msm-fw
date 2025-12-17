@@ -839,7 +839,7 @@ void current_offset_calibration(CurrentRMSRegs *Data, SPI_CSS_Pin css_pin)
 
     ReadCurrentRMSOSRegs(&current_RMS_OS, css_pin);
     //    channelConfig[j-1].setIOffset
-    float tmp;
+    //    float tmp;
     //    tmp = pow(Data->CurrentRMSValue_A,2) + (pow(2,15)*(current_RMS_OS.CurrentRMSOSValue_A));
     //    tmp = pow(Data->CurrentRMSValue_A,2) + (pow(2,15)*(channelConfig[css_pin-1].setIOffset / 1000));
     //    tmp = pow(Data->CurrentRMSValue_A, 2) + (channelConfig[css_pin - 1].setIOffset);

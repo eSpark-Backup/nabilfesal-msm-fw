@@ -8,6 +8,7 @@
 #include "ADE9000.h" 
 #include <string>
 #include <math.h>
+// #include <queue>
 
 // *****************************************************************************
 // *****************************************************************************
@@ -171,41 +172,23 @@ void sendChannelJsonData(uint8_t channel)
                            cleanFloat(m.temperature.Temperature));
     ptr += written;
     remaining -= written;
-    const char *phases[3] = {PHASE_A_STING, PHASE_B_STING, PHASE_C_STING};
-    float rmsVoltage[3] = {m.voltageRMS.VoltageRMSValue_A, m.voltageRMS.VoltageRMSValue_B, m.voltageRMS.VoltageRMSValue_C};
-    float lineVoltage[3] = {m.lineVoltage.LineVoltage_AB, m.lineVoltage.LineVoltage_BC, m.lineVoltage.LineVoltage_CA};
-    float frequency[3] = {m.periodFrequency.FrequencyValue_A, m.periodFrequency.FrequencyValue_B, m.periodFrequency.FrequencyValue_C};
-    float current[3] = {m.currentRMS.CurrentRMSValue_A, m.currentRMS.CurrentRMSValue_B, m.currentRMS.CurrentRMSValue_C};
-    float powerFactor[3] = {m.powerFactor.PowerFactorValue_A, m.powerFactor.PowerFactorValue_B, m.powerFactor.PowerFactorValue_C};
-    float activePower[3] = {m.activePower.ActivePowerValue_A, m.activePower.ActivePowerValue_B, m.activePower.ActivePowerValue_C};
-    float reactivePower[3] = {m.reactivePower.ReactivePowerValue_A, m.reactivePower.ReactivePowerValue_B, m.reactivePower.ReactivePowerValue_C};
-    float apparentPower[3] = {m.apparentPower.ApparentPowerValue_A, m.apparentPower.ApparentPowerValue_B, m.apparentPower.ApparentPowerValue_C};
-    float posEnergy[3] = {m.activeEnergy.PActiveEnergyValue_kWh_A, m.activeEnergy.PActiveEnergyValue_kWh_B, m.activeEnergy.PActiveEnergyValue_kWh_C};
-    float negEnergy[3] = {m.activeEnergy.NActiveEnergyValue_kWh_A, m.activeEnergy.NActiveEnergyValue_kWh_B, m.activeEnergy.NActiveEnergyValue_kWh_C};
-    float reactiveposEnergy[3] = {m.activeEnergy.PReactiveEnergyValue_kWh_A, m.activeEnergy.PReactiveEnergyValue_kWh_B, m.activeEnergy.PReactiveEnergyValue_kWh_C};
-    float reactivenegEnergy[3] = {m.activeEnergy.NReactiveEnergyValue_kWh_A, m.activeEnergy.NReactiveEnergyValue_kWh_B, m.activeEnergy.NReactiveEnergyValue_kWh_C};
+    float* lineVoltage = (float*)&m.lineVoltage;
+    float* rmsVoltage = (float*)&m.voltageRMS;
+    float* frequency = (float*)&m.periodFrequency;
+    float* current = (float*)&m.currentRMS;
+    float* powerFactor = (float*)&m.powerFactor;
+    float* activePower = (float*)&m.activePower;
+    float* reactivePower = (float*)&m.reactivePower;
+    float* apparentPower = (float*)&m.apparentPower;
+    float* posEnergy = (float*)&m.activeEnergy;
+    float* negEnergy = (float*)&m.activeEnergy;
+    float* reactiveposEnergy = (float*)&m.activeEnergy;
+    float* reactivenegEnergy = (float*)&m.activeEnergy;
 
-    // reset active energy values
-    m.activeEnergy.PActiveEnergyValue_kWh_A = 0;
-    m.activeEnergy.PActiveEnergyValue_kWh_B = 0;
-    m.activeEnergy.PActiveEnergyValue_kWh_C = 0;
-    m.activeEnergy.NActiveEnergyValue_kWh_A = 0;
-    m.activeEnergy.NActiveEnergyValue_kWh_B = 0;
-    m.activeEnergy.NActiveEnergyValue_kWh_C = 0;
 
-    // reset reactive energy values
-    m.activeEnergy.PReactiveEnergyValue_kWh_A = 0;
-    m.activeEnergy.PReactiveEnergyValue_kWh_B = 0;
-    m.activeEnergy.PReactiveEnergyValue_kWh_C = 0;
-    m.activeEnergy.NReactiveEnergyValue_kWh_A = 0;
-    m.activeEnergy.NReactiveEnergyValue_kWh_B = 0;
-    m.activeEnergy.NReactiveEnergyValue_kWh_C = 0;
-
-    //    float reactiveEnergy[3] = { m.activeEnergy.ReactiveEnergyValue_kWh_A, m.activeEnergy.ReactiveEnergyValue_kWh_B, m.activeEnergy.ReactiveEnergyValue_kWh_C };
-
-    float currentTHD[3] = {m.currentTHD.CurrentTHDValue_A, m.currentTHD.CurrentTHDValue_B, m.currentTHD.CurrentTHDValue_C};
-    float voltageTHD[3] = {m.voltageTHD.VoltageTHDValue_A, m.voltageTHD.VoltageTHDValue_B, m.voltageTHD.VoltageTHDValue_C};
-    float angle[3] = {m.angleDegree.AngleValue_VA_IA, m.angleDegree.AngleValue_VB_IB, m.angleDegree.AngleValue_VC_IC};
+    float* currentTHD = (float*)&m.currentTHD;
+    float* voltageTHD = (float*)&m.voltageTHD;
+    float* angle = (float*)&m.angleDegree;
     for (int i = PHASE_A; i < TOTAL_PHASES; i++)
     {
         written = snprintf(ptr, remaining,
@@ -238,7 +221,7 @@ void sendChannelJsonData(uint8_t channel)
                            "\"angle\":%.2f"
                            "}"
                            "}%s",
-                           phases[i],
+                           ((i == PHASE_A) ? PHASE_A_STRING : ((i == PHASE_B) ? PHASE_B_STRING : PHASE_C_STRING)) ,
                            cleanFloat(lineVoltage[i]), cleanFloat(rmsVoltage[i]), cleanFloat(frequency[i]), cleanFloat(current[i]),
                            cleanFloat(powerFactor[i]), cleanFloat(activePower[i]), cleanFloat(reactivePower[i]), cleanFloat(apparentPower[i]),
                            cleanFloat(posEnergy[i]), cleanFloat(negEnergy[i]), cleanFloat(reactiveposEnergy[i]), cleanFloat(reactivenegEnergy[i]),
@@ -252,6 +235,21 @@ void sendChannelJsonData(uint8_t channel)
     ptr += written;
     // Send over UART (SERCOM2)
     SERCOM2_USART_Write((uint8_t *)jsonBuffer, ptr - jsonBuffer);
+
+    // reset active energy values
+    m.activeEnergy.PActiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.PActiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.PActiveEnergyValue_kWh_C = 0;
+    m.activeEnergy.NActiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.NActiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.NActiveEnergyValue_kWh_C = 0;
+    // reset reactive energy values
+    m.activeEnergy.PReactiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.PReactiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.PReactiveEnergyValue_kWh_C = 0;
+    m.activeEnergy.NReactiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.NReactiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.NReactiveEnergyValue_kWh_C = 0;
 }
 
 void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
@@ -515,30 +513,32 @@ void send_response_ct_ratio()
     //    SERCOM2_USART_Write((uint8_t *)buffer, count);
 }
 
-void ConvertDataToHexAndSend(const uint8_t *data, size_t size)
-{
-    char *ptr = txBuffer;
-    for (size_t i = 0; i < size; i++)
-    {
-        sprintf(ptr, "%02X", data[i]);
-        ptr += 2;
-    }
-    *ptr = '\0';
-    SERCOM2_USART_Write((uint8_t *)txBuffer, ptr - txBuffer);
-}
+// void ConvertDataToHexAndSend(const uint8_t *data, size_t size)
+// {
+//     char buffer[(size * 2) + 1];
+//     char *ptr = buffer;
+//     for (size_t i = 0; i < size; i++)
+//     {
+//         sprintf(ptr, "%02X", data[i]);
+//         ptr += 2;
+//     }
+//     *ptr = '\0';
+//     SERCOM2_USART_Write((uint8_t *)buffer, ptr - buffer);
+// }
 
-void ConvertDataToHexAndSend(const uint8_t *data, size_t size, uint8_t index)
-{
-    char *ptr = txBuffer;
-    for (size_t i = (size * (index - 1)); i < (size * index); i++)
-    {
-        sprintf(ptr, "%02X", data[i]);
-        ptr += 2;
-    }
-    *ptr++ = '\n';
-    *ptr = '\0';
-    SERCOM2_USART_Write((uint8_t *)txBuffer, ptr - txBuffer);
-}
+// void ConvertDataToHexAndSend(const uint8_t *data, size_t size, uint8_t index)
+// {
+//     char buffer[(size * 2) + 1];
+//     char *ptr = buffer;
+//     for (size_t i = (size * (index - 1)); i < (size * index); i++)
+//     {
+//         sprintf(ptr, "%02X", data[i]);
+//         ptr += 2;
+//     }
+//     *ptr++ = '\n';
+//     *ptr = '\0';
+//     SERCOM2_USART_Write((uint8_t *)buffer, ptr - buffer);
+// }
 
 // ??????ADE9000_status?????12????????
 void ConvertStatusToHexAndSend(void)
@@ -761,9 +761,9 @@ void parse_reboot_calibration_json()
         }
 
         // Extract each phase from this object
-        reg_values[id-1][PHASE_A] = extract_hex_value_from_pos(PHASE_A_STING, pos);
-        reg_values[id-1][PHASE_B] = extract_hex_value_from_pos(PHASE_B_STING, pos);
-        reg_values[id-1][PHASE_C] = extract_hex_value_from_pos(PHASE_C_STING, pos);
+        reg_values[id-1][PHASE_A] = extract_hex_value_from_pos(PHASE_A_STRING, pos);
+        reg_values[id-1][PHASE_B] = extract_hex_value_from_pos(PHASE_B_STRING, pos);
+        reg_values[id-1][PHASE_C] = extract_hex_value_from_pos(PHASE_C_STRING, pos);
 
         channel_index++;
 
@@ -791,9 +791,9 @@ void parse_v_offset_json()
     if (ch != NULL)
     {
         char key[20];
-        for (uint8_t j = 1; j < 13; j++)
+        for (uint8_t j = 0; j < SPI_CSS12; j++)
         {
-            sprintf(key, "channel-%d", j);
+            sprintf(key, "channel-%d", j + 1);
             channelConfig[j].setVOffset = extract_channel_values(key);
 
             // Write offset values to ADE9000 registers
@@ -810,12 +810,12 @@ void parse_i_offset_json()
     if (ch != NULL)
     {
         char key[20];
-        for (uint8_t j = 1; j < 13; j++)
+        for (uint8_t j = 0; j < SPI_CSS12; j++)
         {
-            sprintf(key, "channel-%d", j);
-            channelConfig[j - 1].setIOffset = extract_channel_values(key);
+            sprintf(key, "channel-%d", j + 1);
+            channelConfig[j].setIOffset = extract_channel_values(key) / 1000.0;     // value received in milliamps
             //  Write offset Values to ADE9000 registers
-            //            current_offset_write(j, channelConfig[j].setIOffset);
+            current_offset_write(j, channelConfig[j].setIOffset);
         }
         strcpy(txBuffer, "{\"command\": \"i_offset\", \"message\": \"Current Offset updated successfully!\"}");
     }
@@ -831,15 +831,15 @@ void parse_v_calibration_json()
         char key[10];
         memset(reg_values, 0, sizeof(reg_values));
 
-        voltage_gain_calibration_start(extract_phase_value(PHASE_A_STING), PHASE_A);
-        voltage_gain_calibration_start(extract_phase_value(PHASE_B_STING), PHASE_B);
-        voltage_gain_calibration_start(extract_phase_value(PHASE_C_STING), PHASE_C);
+        voltage_gain_calibration_start(extract_phase_value(PHASE_A_STRING), PHASE_A);
+        voltage_gain_calibration_start(extract_phase_value(PHASE_B_STRING), PHASE_B);
+        voltage_gain_calibration_start(extract_phase_value(PHASE_C_STRING), PHASE_C);
 
         delay_ms(5000); // wait for calibration to settle
 
-        voltage_gain_calibration_end(extract_phase_value(PHASE_A_STING), PHASE_A);
-        voltage_gain_calibration_end(extract_phase_value(PHASE_B_STING), PHASE_B);
-        voltage_gain_calibration_end(extract_phase_value(PHASE_C_STING), PHASE_C);
+        voltage_gain_calibration_end(extract_phase_value(PHASE_A_STRING), PHASE_A);
+        voltage_gain_calibration_end(extract_phase_value(PHASE_B_STRING), PHASE_B);
+        voltage_gain_calibration_end(extract_phase_value(PHASE_C_STRING), PHASE_C);
         
         // Start building JSON
         // memset(txBuffer, 0, sizeof(txBuffer));
@@ -872,9 +872,9 @@ void parse_i_calibration_json()
     if (ch != NULL)
     {
         currentCalibration.channelID = extract_int_value("\"ID\"");
-        currentCalibration.phase_a   = extract_phase_value(PHASE_A_STING);
-        currentCalibration.phase_b   = extract_phase_value(PHASE_B_STING);
-        currentCalibration.phase_c   = extract_phase_value(PHASE_C_STING);
+        currentCalibration.phase_a   = extract_phase_value(PHASE_A_STRING);
+        currentCalibration.phase_b   = extract_phase_value(PHASE_B_STRING);
+        currentCalibration.phase_c   = extract_phase_value(PHASE_C_STRING);
 
         uint8_t channel_id_absolute = currentCalibration.channelID - 1;
 
@@ -932,6 +932,22 @@ void parse_i_calibration_json()
     }
 }
 
+void ADE9000UnitDataRead(uint8_t unit)
+{
+    if (ADE9000_status[unit - 1] == 1)
+    {
+        if (ADE9000_hotplug[unit - 1] == 0)
+        {
+            ADE9000SetupForUnit((SPI_CSS_Pin)unit);
+        }
+        ADE9000MeasurementsForUnit((SPI_CSS_Pin)unit, unit);
+    }
+    else
+    {
+        ADE9000_hotplug[unit - 1] = 0;
+        ADE9000MeasurementsForUnit_NON((SPI_CSS_Pin)unit, unit);
+    }
+}
 
 
 // startup indication using onboard LEDs
@@ -966,26 +982,17 @@ int main(void)
     ADE9000Setup();
     SetupUSART();
 
+    uint8_t i = SPI_CSS1;
+
     while (true)
     {
         ADE9000_Checking();             // check ADE9000 availability
 
-        for(int i = SPI_CSS1; i <= SPI_CSS12; i++)      // loop through all 12 units
-        {
-            if (ADE9000_status[i - 1] == 1)
-            {
-                if (ADE9000_hotplug[i - 1] == 0)
-                {
-                    ADE9000SetupForUnit((SPI_CSS_Pin)i);
-                }
-                ADE9000MeasurementsForUnit((SPI_CSS_Pin)i, i);
-            }
-            else
-            {
-                ADE9000_hotplug[i - 1] = 0;
-                ADE9000MeasurementsForUnit_NON((SPI_CSS_Pin)i, i);
-            }
-        }
+        // for(int i = SPI_CSS1; i <= SPI_CSS12; i++)      // loop through all 12 units
+        // {
+            ADE9000UnitDataRead(i);
+        // }
+        i = (i % SPI_CSS12) + 1;
 
         // printADE9000ArrayBuffer(ADE9000_arrayBuffer, TOTAL_ARRAYSIZE);
 
@@ -994,5 +1001,6 @@ int main(void)
             ProcessCommand();
         }
     }
+
     return EXIT_FAILURE;
 }

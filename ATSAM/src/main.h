@@ -30,9 +30,9 @@
 #define UART_RX_BUFFER_SIZE 2048
 #define UART_TX_BUFFER_SIZE (TOTAL_ARRAYSIZE * 2 + 1)
 
-#define PHASE_A_STING   "phase_a"
-#define PHASE_B_STING   "phase_b"
-#define PHASE_C_STING   "phase_c"
+#define PHASE_A_STRING   "phase_a"
+#define PHASE_B_STRING   "phase_b"
+#define PHASE_C_STRING   "phase_c"
 
 typedef struct
 {
