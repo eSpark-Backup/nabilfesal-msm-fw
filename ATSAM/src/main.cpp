@@ -180,10 +180,25 @@ void sendChannelJsonData(uint8_t channel)
     float* activePower = (float*)&m.activePower;
     float* reactivePower = (float*)&m.reactivePower;
     float* apparentPower = (float*)&m.apparentPower;
-    float* posEnergy = (float*)&m.activeEnergy;
-    float* negEnergy = (float*)&m.activeEnergy;
-    float* reactiveposEnergy = (float*)&m.activeEnergy;
-    float* reactivenegEnergy = (float*)&m.activeEnergy;
+    float posEnergy[3] = {m.activeEnergy.PActiveEnergyValue_kWh_A, m.activeEnergy.PActiveEnergyValue_kWh_B, m.activeEnergy.PActiveEnergyValue_kWh_C};
+    float negEnergy[3] = {m.activeEnergy.NActiveEnergyValue_kWh_A, m.activeEnergy.NActiveEnergyValue_kWh_B, m.activeEnergy.NActiveEnergyValue_kWh_C};
+    float reactiveposEnergy[3] = {m.activeEnergy.PReactiveEnergyValue_kWh_A, m.activeEnergy.PReactiveEnergyValue_kWh_B, m.activeEnergy.PReactiveEnergyValue_kWh_C};
+    float reactivenegEnergy[3] = {m.activeEnergy.NReactiveEnergyValue_kWh_A, m.activeEnergy.NReactiveEnergyValue_kWh_B, m.activeEnergy.NReactiveEnergyValue_kWh_C};
+
+    // reset active energy values
+    m.activeEnergy.PActiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.PActiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.PActiveEnergyValue_kWh_C = 0;
+    m.activeEnergy.NActiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.NActiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.NActiveEnergyValue_kWh_C = 0;
+    // reset reactive energy values
+    m.activeEnergy.PReactiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.PReactiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.PReactiveEnergyValue_kWh_C = 0;
+    m.activeEnergy.NReactiveEnergyValue_kWh_A = 0;
+    m.activeEnergy.NReactiveEnergyValue_kWh_B = 0;
+    m.activeEnergy.NReactiveEnergyValue_kWh_C = 0;
 
 
     float* currentTHD = (float*)&m.currentTHD;
@@ -235,21 +250,6 @@ void sendChannelJsonData(uint8_t channel)
     ptr += written;
     // Send over UART (SERCOM2)
     SERCOM2_USART_Write((uint8_t *)jsonBuffer, ptr - jsonBuffer);
-
-    // reset active energy values
-    m.activeEnergy.PActiveEnergyValue_kWh_A = 0;
-    m.activeEnergy.PActiveEnergyValue_kWh_B = 0;
-    m.activeEnergy.PActiveEnergyValue_kWh_C = 0;
-    m.activeEnergy.NActiveEnergyValue_kWh_A = 0;
-    m.activeEnergy.NActiveEnergyValue_kWh_B = 0;
-    m.activeEnergy.NActiveEnergyValue_kWh_C = 0;
-    // reset reactive energy values
-    m.activeEnergy.PReactiveEnergyValue_kWh_A = 0;
-    m.activeEnergy.PReactiveEnergyValue_kWh_B = 0;
-    m.activeEnergy.PReactiveEnergyValue_kWh_C = 0;
-    m.activeEnergy.NReactiveEnergyValue_kWh_A = 0;
-    m.activeEnergy.NReactiveEnergyValue_kWh_B = 0;
-    m.activeEnergy.NReactiveEnergyValue_kWh_C = 0;
 }
 
 void ADE9000MeasurementsForUnit(SPI_CSS_Pin cssPin, uint8_t unitIndex)
