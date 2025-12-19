@@ -525,6 +525,20 @@ void FactSetting::send_aws_updated_data()
     QJsonObject mqttsSettings = loadMqttsSettings(true, false);
     if (!mqttsSettings.isEmpty())
         emit mqttsSettingsChanged(mqttsSettings);
+
+    NtpSettings ntp;
+    auto ntpData = Utils::getNtpStatus();
+    if (ntpData.contains("ntp_servers") && ntpData["ntp_servers"].isArray()) {
+        QJsonArray serverArray = ntpData["ntp_servers"].toArray();
+        for (const auto &val : serverArray) {
+        QString server = val.toString().trimmed();
+        if (!server.isEmpty())
+            ntp.servers.append(server);
+    }
+
+    if (!ntp.servers.isEmpty())
+        emit ntpSettingsChanged(ntp);
+    }
 }
 
 

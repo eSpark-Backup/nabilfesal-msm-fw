@@ -327,6 +327,7 @@ void MainWindow::connectStartUpSignals()
 
     auto showRebootDialog = [this]() {
         factoryMqttsHandler->processReboot();
+        adminMqttsHandler->processReboot();
         RebootDialog reboot(this);
         reboot.exec();
     };
@@ -513,7 +514,7 @@ void MainWindow::connectLoginSignals()
     connect(adminMqttsHandler, &AwsMqttManager::sftpConfigReceived,  settings, &DeviceSettings::parse_load_store_sftp);
     connect(adminMqttsHandler, &AwsMqttManager::mqttConfigReceived,  settings, &DeviceSettings::parse_load_store_mqtt);
     connect(adminMqttsHandler, &AwsMqttManager::mqttsConfigReceived, settings, &DeviceSettings::parse_load_store_mqtts);
-    connect(factoryMqttsHandler, &AwsMqttManager::updateAwsData,settings,
+    connect(adminMqttsHandler, &AwsMqttManager::updateAwsData,settings,
                 &DeviceSettings::send_aws_updated_data,Qt::QueuedConnection);
     
     connect(this, &MainWindow::admin_deviceInfoChanged,

@@ -26,7 +26,6 @@ signals:
     void usbExport();
     void resetEnergy();
     void runFleetProvisioning();
-    void ntpSettingsChanged(const NtpSettings &settings);
 
 public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = false);

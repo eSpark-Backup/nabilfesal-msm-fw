@@ -365,8 +365,6 @@ bool updateSerialInConfig(const QString &AwsEp, const QString &configJson_path)
     }
     if(configJson_path == CONFIG_JSON_PATH)
         uid += "_factory";
-    else
-        uid += "_admin";
 
     obj["serial"] = uid;
     obj["endpoint"] = AwsEp;

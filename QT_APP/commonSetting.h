@@ -24,6 +24,7 @@ signals:
     void mqttSettingsChanged(const QJsonObject &mqttSetting);
     void sftpSettingsChanged(const QJsonObject &sftpSetting);
     void mqttsSettingsChanged(const QJsonObject &mqttsSetting);
+    void ntpSettingsChanged(const NtpSettings &settings);
 
 public slots:
     void parse_load_store_sftp(const QJsonObject &payload);
