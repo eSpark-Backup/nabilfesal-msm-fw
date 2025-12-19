@@ -28,6 +28,20 @@ QJsonObject settingsManager::getMqttSettings()
     QString mqttTopic    = Topic->text().trimmed();
     QString mqttInterval = Int->text().trimmed();
 
+    bool ok;
+    int mqttInt = mqttInterval.toInt(&ok);
+
+    if (!ok || mqttInt == 0) {
+        Toast::show("Please enter a valid number", this, Toast::Warning);
+        return {};
+    }
+
+    if((mqttInt <= 60 && mqttInt % 5 != 0) || (mqttInt > 60 && mqttInt % 300 != 0))
+    {
+        Toast::show("Interval must be divisible by 5 seconds (≤1 min) or 5 minutes (>1 min)", this, Toast::Warning);
+        return {};
+    }
+
     QJsonObject mqttSettings;
     mqttSettings["ip"]       = mqttIp;
     mqttSettings["port"]     = mqttPort;
@@ -195,6 +209,20 @@ QJsonObject settingsManager::getSftpSettings()
     QString sftpInterval = Int->text().trimmed();
     QString sftpSchedule = Sch->text().trimmed();
 
+    bool ok;
+    int sftpInt = sftpInterval.toInt(&ok);
+
+    if (!ok || sftpInt == 0) {
+        Toast::show("Please enter a valid number", this, Toast::Warning);
+        return {};
+    }
+
+    if((sftpInt<= 60 && sftpInt % 5 != 0) || (sftpInt > 60 && sftpInt % 300 != 0))
+    {
+        Toast::show("Interval must be divisible by 5 seconds (≤1 min) or 5 minutes (>1 min)", this, Toast::Warning);
+        return {};
+    }
+
     QJsonObject sftpSettings;
     sftpSettings["ip"]       = sftpIp;
     sftpSettings["port"]     = sftpPort;
@@ -269,7 +297,7 @@ void settingsManager::parse_load_store_sftp(const QJsonObject &payload)
     QJsonObject sftpPayload = dataArray.at(0).toObject();
     QJsonObject sftpSettings;
     sftpSettings["ip"]       = sftpPayload.value("server_ip").toString();
-    sftpSettings["port"]     = QString::number(sftpPayload.value("server_port").toInt());
+    sftpSettings["port"]     = "22"; //QString::number(sftpPayload.value("server_port").toInt());
     sftpSettings["username"] = sftpPayload.value("username").toString();
     sftpSettings["password"] = sftpPayload.value("password").toString();
     sftpSettings["interval"] = QString::number(sftpPayload.value("data_interval").toInt());
@@ -289,6 +317,20 @@ QJsonObject settingsManager::getMqttsSettings()
     QString mqttsPort     = Port->text().trimmed();
     QString mqttsEndpoint = Endpoint->text().trimmed();
     QString mqttsInterval = Interval->text().trimmed();
+    
+    bool ok;
+    int mqttsInt = mqttsInterval.toInt(&ok);
+
+    if (!ok || mqttsInt == 0) {
+        Toast::show("Please enter a valid number", this, Toast::Warning);
+        return {};
+    }
+
+    if((mqttsInt <= 60 && mqttsInt % 5 != 0) || (mqttsInt> 60 && mqttsInt % 300 != 0))
+    {
+        Toast::show("Interval must be divisible by 5 seconds (≤1 min) or 5 minutes (>1 min)", this, Toast::Warning);
+        return {};
+    }
 
     if (mqttsPort != "8883") mqttsPort = "8883";  //not editable
 
@@ -309,7 +351,9 @@ QJsonObject settingsManager::getMqttsSettings()
 QJsonObject settingsManager::loadMqttsSettings(bool showMessages, bool reloadSettings)
 {
     auto mqtts_client_id = uiBase->findChild<QLineEdit*>("mqtts_client_id");
-    mqtts_client_id->setText(Utils::getUid());
+    QString uid = Utils::getUid();
+    uid += ((qobject_cast<FactSetting*>(this)) ? "_factory" : "");
+    mqtts_client_id->setText(uid);
     
     QString filePath = mqttsConfigPath();
     QFile file(filePath);
@@ -347,7 +391,9 @@ void settingsManager::apply_mqtts_Settings(const QJsonObject &mqttsSettings, boo
     mqtts_endpoint->setText(mqttsSettings.value("endpoint").toString());
     mqtts_interval->setText(mqttsSettings.value("interval").toString());
     mqtts_endpoint->setCursorPosition(0);
-    mqtts_client_id->setText(Utils::getUid());
+    QString uid = Utils::getUid();
+    uid += ((qobject_cast<FactSetting*>(this)) ? "_factory" : "");
+    mqtts_client_id->setText(uid);
 
     checkCertificates();
     
@@ -400,7 +446,7 @@ void settingsManager::parse_load_store_mqtts(const QJsonObject &payload)
         QJsonObject mqttsPayload = dataArray.at(0).toObject();
         QJsonObject mqttsSetting;
         mqttsSetting["endpoint"] = mqttsPayload.value("broker_ip").toString();
-        mqttsSetting["port"]     = QString::number(mqttsPayload.value("broker_port").toInt());
+        mqttsSetting["port"]     = "8883"; //QString::number(mqttsPayload.value("broker_port").toInt());
         mqttsSetting["interval"] = QString::number(mqttsPayload.value("data_interval").toInt());
 
         saveMqttsSettings(mqttsSetting);

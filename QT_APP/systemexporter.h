@@ -31,9 +31,13 @@ public:
 
         connect(m_logTimer, &QTimer::timeout, this, &SystemDataExporter::exportSnapshot);
 
-
         // Log every 10 minutes
-        m_logTimer->start(10 * 60 * 1000);
+        Utils::startAlignedTimer( this,
+            m_logTimer, 10 * 60,     // 10 minutes in seconds
+            [this]() {
+                exportSnapshot();    // first aligned snapshot
+            }
+        );
     }
 
     QString getFilePath()

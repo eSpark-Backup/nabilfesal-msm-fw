@@ -70,6 +70,7 @@ public slots:
     void processSftpSettings(const QJsonObject &sftpSetting);
     void processNtpSettings(const NtpSettings &ntpSettings);
     void processMqttsSettings(const QJsonObject &mqttsSetting);
+    void publishTelemetry();
     void processReboot();
     void processCtRatio(const QJsonObject &ctRatio);
     void processVOffset(const QJsonObject &vOffset);

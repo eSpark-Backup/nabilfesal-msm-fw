@@ -29,6 +29,8 @@ QString getLastOTAInitiated();
 QStringList getAvailableVersions();
 void setLastOTAInitiated();
 QJsonObject readJsonFile(const QString &filePath);
+void startAlignedTimer( QObject* context, QTimer* timer,
+    int intervalSeconds, std::function<void()> firstTickCallback = nullptr);
 }
 
 #endif // UTILS_H

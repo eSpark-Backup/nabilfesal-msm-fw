@@ -313,15 +313,22 @@ void FactSetting::on_sftp_save_btn_clicked()
 void FactSetting::on_OTA_pushButton_clicked()
 {
     QString selVersion = ui->comboBox->currentText();
+    ui->OTA_pushButton->clearFocus();
     startOTA(selVersion);
 }
 
 void FactSetting::startOTA(const QString &selectedVersion)
-{    
+{
     if (selectedVersion.isEmpty()) {
         Toast::show("No OTA version selected.", this, Toast::Warning);
         return;
     }
+
+    int ret = QMessageBox::question(
+        this, "Over-The-Air", QString("Do you want to OTA to %1?").arg(selectedVersion), QMessageBox::Yes | QMessageBox::No);
+
+    if (ret != QMessageBox::Yes) return;
+
     QString updatingImagePath = ":/icons/updating.png";
     updatingLabel = Utils::showImageFullscreenFor(updatingImagePath, -1);
 
@@ -441,22 +448,8 @@ void FactSetting::load_mqtts_settings(bool msgBox, bool reconnect)
 
 void FactSetting::on_mqtts_save_btn_clicked(bool msgBox)
 {
-    QString mqttEndpoint = ui->mqtts_endpoint->text().trimmed();
-    QString mqttPort     = ui->mqtts_port->text().trimmed();
-    QString mqttInterval = ui->mqtts_interval->text().trimmed();
-
-    if (mqttPort != "8883") mqttPort = "8883";  //not editable
-
-    QJsonObject mqttsSettings;
-    mqttsSettings["endpoint"] = mqttEndpoint;
-    mqttsSettings["port"]     = mqttPort;
-    mqttsSettings["interval"] = mqttInterval;
-
-    if (hasEmptyField(mqttsSettings)) {
-        Toast::show("Please fill in all MQTTS fields before saving.", this, Toast::Warning);
-        return;
-    }
-    saveMqttsSettings(mqttsSettings, true);
+    QJsonObject mqttsSettings = getMqttsSettings();
+    if(!mqttsSettings.isEmpty()) saveMqttsSettings(mqttsSettings, true);
 }
 
 

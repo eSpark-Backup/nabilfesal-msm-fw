@@ -59,12 +59,20 @@ mqttManager::mqttManager(Mode mode, QObject *parent) : clientMode(mode), QObject
         isConnected = true;
         logDebug << "Connected to MQTT broker!";
 
-        reconnectTimer->stop();  // stop retrying when connected
+        reconnectTimer->stop();
 
         if (intervalSec > 0) {
-            publishTimer->start(intervalSec * 1000);
+            Utils::startAlignedTimer( this,
+                publishTimer, intervalSec,
+                [this]() {
+                    if (!isConnected) return;
+                    QByteArray payload = buildTelemetryJson();
+                    publishMessage(payload);
+                }
+            );
         }
     });
+
 
     // Disconnected
     connect(mqttClient, &QMqttClient::disconnected, this, [this]() {
@@ -106,7 +114,7 @@ bool mqttManager::loadConfig(const QString &filePath)
     QString portStr = obj.value("port").toString();
     port = portStr.toInt();
     clientId = Utils::getUid();
-    clientId += ((clientMode == Mode::Factory) ? "_factory" : "_admin");
+    clientId += ((clientMode == Mode::Factory) ? "_factory" : "");
     topic = obj.value("topic").toString();
     QString intervalSecStr = obj.value("interval").toString();
     intervalSec = intervalSecStr.toInt();

@@ -478,7 +478,15 @@ void MainWindow::connectLoginSignals()
         Utils::rebootSystem();
     },Qt::QueuedConnection);
 
+    connect(adminMqttsHandler, &AwsMqttManager::rebootRequested, this, [this]() {
+        this->close();
+        factoryMqttsHandler->disconnectAwsClient();
+        Utils::rebootSystem();
+    },Qt::QueuedConnection);
+
     connect(factoryMqttsHandler, &AwsMqttManager::ntpConfigReceived,
+            settings, &DeviceSettings::parse_load_store_ntp);
+    connect(adminMqttsHandler, &AwsMqttManager::ntpConfigReceived,
             settings, &DeviceSettings::parse_load_store_ntp);
 
     connect(factoryMqttsHandler, &AwsMqttManager::sftpConfigReceived,  factSettings, &FactSetting::parse_load_store_sftp);
@@ -499,6 +507,8 @@ void MainWindow::connectLoginSignals()
             factoryMqttsHandler, &AwsMqttManager::processSftpSettings);
     connect(factSettings, &FactSetting::mqttsSettingsChanged,
             factoryMqttsHandler, &AwsMqttManager::processMqttsSettings);
+    connect(settings, &DeviceSettings::ntpSettingsChanged,
+            factoryMqttsHandler, &AwsMqttManager::processNtpSettings); // ntp is in admin but sent for factory too
 
     connect(adminMqttsHandler, &AwsMqttManager::sftpConfigReceived,  settings, &DeviceSettings::parse_load_store_sftp);
     connect(adminMqttsHandler, &AwsMqttManager::mqttConfigReceived,  settings, &DeviceSettings::parse_load_store_mqtt);

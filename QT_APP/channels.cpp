@@ -63,7 +63,9 @@ ChannelsHome::ChannelsHome(QString hardwareVersion, QString softwareVersion, QWi
 
     ui->stackedWidget->setCurrentIndex(0);
 
-    loadEnergyData();
+    QTimer *energySaveTimer = new QTimer(this);
+    connect(energySaveTimer, &QTimer::timeout, this, &ChannelsHome::saveEnergyData);
+    energySaveTimer->start(2 * 1000);
 }
 
 
@@ -440,7 +442,6 @@ void ChannelsHome::updateChannelUI(int channel, const QJsonObject &json) {
         double temp = json.value("temperature").toDouble();
         handleTempButton(true, temp);
     }
-    saveEnergyData();
 }
 
 void ChannelsHome::on_exit_clicked()

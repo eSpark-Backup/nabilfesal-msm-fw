@@ -78,39 +78,26 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
             return;
         }
 
-        int totalChannels = channelTelemetry.size();
-        int mid = totalChannels / 2;
-
-        QByteArray payload1 = buildAwsTelemetryJson(0, mid);
-        AWS_LOG("\n========================================================================");
-        AWS_LOG("Publishing first half of telemetry (" << 0 << "-" << mid-1 << ") : payload" << payload1);
-        AWS_LOG("\n========================================================================");
-        if (!payload1.isEmpty())
-        publishMessage(topic_pub_telemetry, payload1);
-        // Publish second half
-        QByteArray payload2 = buildAwsTelemetryJson(mid, totalChannels);
-        AWS_LOG("\n========================================================================");
-        AWS_LOG("Publishing second half of telemetry (" << mid << "-" << totalChannels-1 << "):  payload" << payload2);
-        AWS_LOG("\n========================================================================");
-        if (!payload2.isEmpty())
-        publishMessage(topic_pub_telemetry, payload2);
+        publishTelemetry();
     });
 
-    // Connected signal
     connect(awsMqttsClient, &QMqttClient::connected, this, [this]() {
-        isConnected  = true;
-        isConnecting = false;
-        logDebug << "[MQTTS] Connected to AWS IoT Core!";
-        reconnectTimer->stop();
+    isConnected  = true;
+    isConnecting = false;
+    logDebug << "[MQTTS] Connected to AWS IoT Core!";
+    reconnectTimer->stop();
 
-        if (intervalSec > 0)
-            publishTimer->start(intervalSec * 1000);
+    if (intervalSec > 0) {
+        Utils::startAlignedTimer( this,
+            publishTimer, intervalSec,
+            [this]() {if (isConnected) publishTelemetry();});
+    }
 
-        awsTopicsInit();
-        subscribeToTopic();
-        if(isFirstTime) {
-            isFirstTime = false;
-            emit updateAwsData();
+    awsTopicsInit();
+    subscribeToTopic();
+    if(isFirstTime) {
+        isFirstTime = false;
+        emit updateAwsData();
         }
     });
 
@@ -155,7 +142,7 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
     QString portStr = obj.value("port").toString();
     port = portStr.toInt();
     clientId = Utils::getUid();
-    clientId += ((clientMode == Mode::Factory) ? "_factory" : "_admin");
+    clientId += ((clientMode == Mode::Factory) ? "_factory" : "");
     QString intervalSecStr = obj.value("interval").toString();
     intervalSec = intervalSecStr.toInt();
 
@@ -429,6 +416,21 @@ QByteArray AwsMqttManager::buildAwsTelemetryJson(int startIndex, int endIndex) c
 
     QJsonDocument doc(root);
     return doc.toJson(QJsonDocument::Compact);
+}
+
+
+void AwsMqttManager::publishTelemetry()
+{
+    int totalChannels = channelTelemetry.size();
+    int mid = totalChannels / 2;
+
+    QByteArray payload1 = buildAwsTelemetryJson(0, mid);
+    if (!payload1.isEmpty())
+        publishMessage(topic_pub_telemetry, payload1);
+
+    QByteArray payload2 = buildAwsTelemetryJson(mid, totalChannels);
+    if (!payload2.isEmpty())
+        publishMessage(topic_pub_telemetry, payload2);
 }
 
 

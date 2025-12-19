@@ -12,70 +12,64 @@
 
 sftpManager::sftpManager(Mode mode, QObject *parent) : clientMode(mode), QObject(parent)
 {
-    if(clientMode == Mode::Factory)
-    {
+    if (clientMode == Mode::Factory) {
         tag = COLOR_TAG(F_CYAN, B_WHITE, "Factory [SFTP]");
         sftp_path = "config/sftp_settings.json";
-    }
-    else
-    {
+    } else {
         tag = COLOR_TAG(F_CYAN, B_WHITE, "Admin [SFTP]");
     }
+
     publishTimer = new QTimer(this);
     reconnectTimer = new QTimer(this);
     isConnected  = false;
-
     process = new QProcess(this);
 
-    reconnectTimer->setInterval(5 * 60 * 1000);   // 5 minute
-    reconnectTimer->setSingleShot(false);     // keep retrying
+    reconnectTimer->setInterval(5 * 60 * 1000);   // 5 minutes
+    reconnectTimer->setSingleShot(false);         // keep retrying
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
-        if (!isConnected) {
-            connectToSftp();
-        }
+        if (!isConnected) connectToSftp();
     });
 
-    if (!reconnectTimer->isActive()) {
-        reconnectTimer->start();  // retry every 1 min
-    }
+    if (!reconnectTimer->isActive()) reconnectTimer->start();
 
     // Process connected
     connect(process, &QProcess::started, this, [this]() {
         isConnected = true;
         logDebug << "Connected to SFTP!";
-        reconnectTimer->stop();   // stop retries when connected
+        reconnectTimer->stop();
         scheduleSftpUpload();
-        publishTimer->start(intervalSec * 1000);
+        Utils::startAlignedTimer( this,
+            publishTimer, intervalSec,
+            [this]() {
+                if (!m_filePath.isEmpty()) {
+                    exportTelemetryToCsv(m_filePath);
+                }
+            }
+        );
     });
 
     // Process disconnected
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [this](int exitCode, QProcess::ExitStatus status) {
-        Q_UNUSED(exitCode)
-        Q_UNUSED(status)
+            this, [this](int, QProcess::ExitStatus) {
         isConnected = false;
         publishTimer->stop();
         logDebug << "Disconnected from SFTP.";
-        if (!reconnectTimer->isActive()) {
-            reconnectTimer->start();   // start retry loop
-        }
+        if (!reconnectTimer->isActive()) reconnectTimer->start();
     });
 
     connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
         isConnected = false;
         publishTimer->stop();
         logWarn << "SFTP process error:" << error;
-        if (!reconnectTimer->isActive()) {
-            reconnectTimer->start();   // start retry loop
-            logWarn << "Retrying connection...";
-        }
+        if (!reconnectTimer->isActive()) reconnectTimer->start();
     });
 
     // Publish CSV timer
     connect(publishTimer, &QTimer::timeout, this, [this]() {
         if (m_filePath.isEmpty()) {
             QString uid = Utils::getUid();
+            uid += ((clientMode == Mode::Factory) ? "_factory" : "");
             QDir dir("data/" + uid);
             dir.mkpath(".");
             m_filePath = QString("data/%1/%1-%2.csv")
@@ -118,6 +112,7 @@ void sftpManager::scheduleSftpUpload()
 
     QTimer::singleShot(msecToGo, this, [this]() {
         QString uid = Utils::getUid();
+        uid += ((clientMode == Mode::Factory) ? "_factory" : "");
         QString uploadFilePath = "/FromOFP/" + uid;
 
         uploadFile(m_filePath, uploadFilePath);
@@ -419,9 +414,8 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
     }
 
     QTextStream out(&file);
-    out.setCodec("UTF-16");  // matches your file encoding
+    out.setCodec("UTF-16");
 
-    // Fixed key order per channel
     QStringList baseKeysIncoming_Modified = {
         "V(R)","In1(R1)","In1(RPF)",
         "V(Y)","In1(Y1)","In1(YPF)",
@@ -453,12 +447,7 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
         QStringList header;
         header << "\"Date\"" << "\"Time\"" << "\"IP\"";
 
-        // Channel 1 (incoming)
-        for (const QString &k : baseKeysIncoming_Modified) {
-            header << "\"" + k + "\"";
-        }
-
-        // Channels 2–12 (outgoing)
+        for (const QString &k : baseKeysIncoming_Modified) header << "\"" + k + "\"";
         for (int ch = 2; ch <= 12; ++ch) {
             int idx = ch - 1;
             for (const QString &k : baseKeysOutgoing_Modified) {
@@ -492,12 +481,8 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
             int idx = ch - 1;
             const auto obj = channelTelemetry.value(ch);
             for (const QString &k : baseKeysOutgoing) {
-                QString fullKey;
-                if (k.startsWith("PF_"))
-                    fullKey = k + QString::number(idx);
-                else
-                    fullKey = QString("F%1_%2").arg(idx).arg(k);
-
+                QString fullKey = (k.startsWith("PF_")) ? k + QString::number(idx)
+                                                         : QString("F%1_%2").arg(idx).arg(k);
                 row << "\"" + QString::number(obj.value(fullKey).toDouble(), 'f', 4) + "\"";
             }
         }

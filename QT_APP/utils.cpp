@@ -556,4 +556,35 @@ QJsonObject readJsonFile(const QString &filePath)
 
     return doc.object();
 }
+
+void startAlignedTimer(
+    QObject* context,
+    QTimer* timer,
+    int intervalSeconds,
+    std::function<void()> firstTickCallback
+) {
+    if (!context || !timer || intervalSeconds <= 0) {
+        qDebug() << "Invalid parameters to startAlignedTimer";
+        return;
+    }
+
+    QDateTime now = QDateTime::currentDateTime();
+    qint64 secondsSinceEpoch = now.toSecsSinceEpoch();
+    qint64 nextAligned =
+        ((secondsSinceEpoch / intervalSeconds) + 1) * intervalSeconds;
+
+    int initialDelayMs =
+        static_cast<int>((nextAligned - secondsSinceEpoch) * 1000);
+
+    QTimer::singleShot(initialDelayMs, context, [=]() {
+        // First aligned callback
+        if (firstTickCallback) {
+            firstTickCallback();
+        }
+
+        // Start repeating timer aligned to clock
+        timer->start(intervalSeconds * 1000);
+    });
+}
+
 }

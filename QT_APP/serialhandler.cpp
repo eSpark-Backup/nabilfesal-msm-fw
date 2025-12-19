@@ -58,12 +58,7 @@ void SerialHandler::handleReadyRead() {
                 }
             }
 
-            if (currentChannel < 1 || currentChannel > 12) {
-                qWarning() << "!!!!!!!!!! Received JSON for invalid channel: " << currentChannel << " !!!!!!!!!!";
-                        //    << "Data:" << QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
-                return;  // optionally skip emitting
-            }
-
+            if (currentChannel < 1 || currentChannel > 12)  return;
             emit jsonResponseReady(currentChannel, obj);
         }
     }
