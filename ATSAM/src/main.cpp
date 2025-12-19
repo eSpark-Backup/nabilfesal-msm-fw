@@ -79,7 +79,7 @@ uint32_t reg_values[TOTAL_ADE9000_UNITS][TOTAL_PHASES];
 
 
 
-volatile uint32_t msCounter = 0;            // ticks count from tc0
+volatile uint64_t msCounter = 0;            // ticks count from tc0
 
 // *****************************************************************************
 // *****************************************************************************
@@ -93,18 +93,26 @@ static inline float cleanFloat(float x)
 
 void timer_callback(TC_TIMER_STATUS status, uintptr_t context)
 {
+    static volatile uint64_t timestamp = msCounter;
     msCounter++;
+
+    // check if uart data receive timed out
+    if((msCounter - timestamp) > UART_TIMEOUT_CHECK_INTERVAL)
+    {
+        timestamp = msCounter;
+        CheckUSART_Timeout();
+    }
 }
 
-uint32_t get_msCounter(void)
+uint64_t get_msCounter(void)
 {
     return msCounter;
 }
 
-void delay_ms(uint32_t milliseconds)
+void delay_ms(uint64_t milliseconds)
 {
-    uint32_t start = msCounter;
-    while ((msCounter - start) < milliseconds);
+    uint64_t start = get_msCounter();
+    while ((get_msCounter() - start) < milliseconds);
 }
 
 void storeIEEE754InBuffer(float floatValue, uint8_t *buffer, uint16_t index)

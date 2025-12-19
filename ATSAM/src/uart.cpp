@@ -5,6 +5,9 @@ char rxBuffer[UART_RX_BUFFER_SIZE];
 char txBuffer[UART_TX_BUFFER_SIZE];
 size_t rxSize = 0;
 volatile bool rxComplete = false;
+volatile bool rxStarted = false;
+volatile bool rxTimedout = false;
+volatile uint64_t rxStartTimestamp = 0;
 
 
 #ifdef __cplusplus // Provide C++ Compatibility
@@ -137,37 +140,61 @@ void ProcessCommand(void)
     }
 
     strcat(txBuffer, "\n");
-
     SERCOM2_USART_Write(txBuffer, strlen(txBuffer));
 
     memset(rxBuffer, 0, UART_RX_BUFFER_SIZE);
     rxSize = 0;
     rxComplete = false;
 
-    SERCOM2_USART_Read((void *)rxBuffer, 1);
+    StartUSART_Reading();
 }
 
 void USART_ReadCallback(uintptr_t context)
 {
-    // Check for newline character
-    if (rxBuffer[rxSize] == '\n')
+    char received = rxBuffer[rxSize];
+
+    if (received == '\n')
     {
         rxComplete = true;
     }
     else
     {
+        // SERCOM2_USART_Write(&rxBuffer[rxSize], 1);          // for debug
         rxSize++;
-        if (rxSize < UART_RX_BUFFER_SIZE)
+
+        // prevent overflow
+        if (rxSize >= UART_RX_BUFFER_SIZE)
         {
-            SERCOM2_USART_Read((void *)&rxBuffer[rxSize], 1);
+            rxSize = 0;
         }
+        StartUSART_Reading();
     }
+}
+
+void CheckUSART_Timeout(void)
+{
+    if(((get_msCounter() - rxStartTimestamp) > UART_READ_TIMEOUT) && rxStarted)
+    {
+        SERCOM2_USART_ReadAbort();      // abort hardware uart reception
+
+        rxStarted = false;              // remove reception flag
+        rxSize = 0;                     // reset the size counter
+        StartUSART_Reading();           // restart uart reception
+    }
+}
+
+void StartUSART_Reading(void)
+{
+    rxStartTimestamp = get_msCounter();
+    SERCOM2_USART_Read((void *)&rxBuffer[rxSize], 1);
+    rxStarted = true;
 }
 
 void SetupUSART(void)
 {
+    memset(rxBuffer, 0, UART_RX_BUFFER_SIZE);
     SERCOM2_USART_ReadCallbackRegister(USART_ReadCallback, 0);
-    SERCOM2_USART_Read((void *)rxBuffer, 1);
+    StartUSART_Reading();
 }
 
 #ifdef __cplusplus  // Provide C++ Compatibility
