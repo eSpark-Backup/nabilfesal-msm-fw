@@ -36,11 +36,11 @@ QJsonObject settingsManager::getMqttSettings()
         return {};
     }
 
-    if((mqttInt <= 60 && mqttInt % 5 != 0) || (mqttInt > 60 && mqttInt % 300 != 0))
-    {
-        Toast::show("Interval must be divisible by 5 seconds (≤1 min) or 5 minutes (>1 min)", this, Toast::Warning);
-        return {};
-    }
+    // if((mqttInt <= 60 && mqttInt % 5 != 0) || (mqttInt > 60 && mqttInt % 300 != 0))
+    // {
+    //     Toast::show("Interval must be divisible by 5 seconds (≤1 min) or 5 minutes (>1 min)", this, Toast::Warning);
+    //     return {};
+    // }
 
     QJsonObject mqttSettings;
     mqttSettings["ip"]       = mqttIp;
@@ -326,11 +326,11 @@ QJsonObject settingsManager::getMqttsSettings()
         return {};
     }
 
-    if((mqttsInt <= 60 && mqttsInt % 5 != 0) || (mqttsInt> 60 && mqttsInt % 300 != 0))
-    {
-        Toast::show("Interval must be divisible by 5 seconds (≤1 min) or 5 minutes (>1 min)", this, Toast::Warning);
-        return {};
-    }
+    // if((mqttsInt <= 60 && mqttsInt % 5 != 0) || (mqttsInt> 60 && mqttsInt % 300 != 0))
+    // {
+    //     Toast::show("Interval must be divisible by 5 seconds (≤1 min) or 5 minutes (>1 min)", this, Toast::Warning);
+    //     return {};
+    // }
 
     if (mqttsPort != "8883") mqttsPort = "8883";  //not editable
 

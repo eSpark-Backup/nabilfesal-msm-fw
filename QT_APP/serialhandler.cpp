@@ -29,9 +29,17 @@ void SerialHandler::sendCommand(const QString &command, int channel) {
 
 void SerialHandler::handleReadyRead() {
     buffer.append(serial.readAll());
-    if (buffer.endsWith("}\n")) {
+
+    if (buffer.endsWith("}\n") || buffer.endsWith("\n")) {
+
         QByteArray raw = buffer.trimmed();
-        // Replace invalid JSON tokens (NaN, Inf, -Inf) with null
+        buffer.clear();
+
+        if (raw == "again") {
+            emit stringResponseReady("{\"error\":\"Command failed, try again!\"}");
+            return;
+        }
+
         QByteArray sanitized = raw;
         sanitized.replace("NaN", "null");
         sanitized.replace("nan", "null");
@@ -42,7 +50,6 @@ void SerialHandler::handleReadyRead() {
 
         QJsonParseError err;
         QJsonDocument doc = QJsonDocument::fromJson(sanitized, &err);
-        buffer.clear();
 
         if (err.error == QJsonParseError::NoError && doc.isObject()) {
             QJsonObject obj = doc.object();
@@ -58,7 +65,7 @@ void SerialHandler::handleReadyRead() {
                 }
             }
 
-            if (currentChannel < 1 || currentChannel > 12)  return;
+            if (currentChannel < 1 || currentChannel > 12) return;
             emit jsonResponseReady(currentChannel, obj);
         }
     }
