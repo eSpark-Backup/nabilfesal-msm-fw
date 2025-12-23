@@ -144,7 +144,7 @@ void CalibrationDialog::on_sendpushBtn_clicked()
     }
 
     QString jsonString = QString::fromUtf8(QJsonDocument(rootObj).toJson(QJsonDocument::Compact));
-    qDebug().noquote() << "Calibration JSON:" << jsonString;
+    // qDebug().noquote() << "Calibration JSON:" << jsonString;
     emit requestSerialCommand(jsonString);
     ui->sendpushBtn->setEnabled(false);
     ui->backPushBtn->setEnabled(false);

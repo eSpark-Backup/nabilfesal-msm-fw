@@ -314,21 +314,19 @@ void FactSetting::on_OTA_pushButton_clicked()
 {
     QString selVersion = ui->comboBox->currentText();
     ui->OTA_pushButton->clearFocus();
-    startOTA(selVersion);
-}
-
-void FactSetting::startOTA(const QString &selectedVersion)
-{
-    if (selectedVersion.isEmpty()) {
+    if (selVersion.isEmpty()) {
         Toast::show("No OTA version selected.", this, Toast::Warning);
         return;
     }
 
     int ret = QMessageBox::question(
-        this, "Over-The-Air", QString("Do you want to OTA to %1?").arg(selectedVersion), QMessageBox::Yes | QMessageBox::No);
-
+        this, "Over-The-Air", QString("Do you want to OTA to %1?").arg(selVersion), QMessageBox::Yes | QMessageBox::No);
     if (ret != QMessageBox::Yes) return;
+    startOTA(selVersion);
+}
 
+void FactSetting::startOTA(const QString &selectedVersion)
+{
     QString updatingImagePath = ":/icons/updating.png";
     updatingLabel = Utils::showImageFullscreenFor(updatingImagePath, -1);
 

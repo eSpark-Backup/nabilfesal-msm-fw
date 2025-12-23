@@ -228,8 +228,7 @@ void MainWindow::setupSerial()
     connect(worker, &SerialWorker::channelDataReady, this,
             &MainWindow::onChannelDataReady);
 
-    connect(worker, &SerialWorker::genericResponseReady, this,
-            &MainWindow::onGenericResponseReady);
+    connect(worker, &SerialWorker::genericResponseReady, this, &MainWindow::onGenericResponseReady);
 
     serialThread->start();
 }
@@ -508,7 +507,7 @@ void MainWindow::connectLoginSignals()
             factoryMqttsHandler, &AwsMqttManager::processSftpSettings);
     connect(factSettings, &FactSetting::mqttsSettingsChanged,
             factoryMqttsHandler, &AwsMqttManager::processMqttsSettings);
-    connect(settings, &DeviceSettings::ntpSettingsChanged,
+    connect(factSettings, &DeviceSettings::ntpSettingsChanged,
             factoryMqttsHandler, &AwsMqttManager::processNtpSettings); // ntp is in admin but sent for factory too
 
     connect(adminMqttsHandler, &AwsMqttManager::sftpConfigReceived,  settings, &DeviceSettings::parse_load_store_sftp);
@@ -523,10 +522,12 @@ void MainWindow::connectLoginSignals()
             adminMqttsHandler, &AwsMqttManager::processMqttSettings);
     connect(settings, &DeviceSettings::sftpSettingsChanged,
             adminMqttsHandler, &AwsMqttManager::processSftpSettings);
-    connect(settings, &DeviceSettings::ntpSettingsChanged,
-            adminMqttsHandler, &AwsMqttManager::processNtpSettings);
     connect(settings, &DeviceSettings::mqttsSettingsChanged,
             adminMqttsHandler, &AwsMqttManager::processMqttsSettings);
+    connect(settings, &DeviceSettings::ntpSettingsChanged, this, [this](const NtpSettings &settings) {
+        adminMqttsHandler->processNtpSettings(settings);
+        factoryMqttsHandler->processNtpSettings(settings);
+    });
     
     // When measurement settings change, notify AWS manager to process them
     connect(measure, &Measurements::ct_ratio_changed,
@@ -593,6 +594,8 @@ void MainWindow::connectLoginSignals()
     QTimer *refreshTimer = new QTimer(this);
     connect(refreshTimer, &QTimer::timeout, this, &MainWindow::refreshInfo);
     refreshTimer->start(10 * 1000);
+
+    scheduleGSMReset();
 }
 
 // -----------------------------
@@ -1159,4 +1162,41 @@ void MainWindow::enableUiButton()
 {
     if(gainCalibrator) gainCalibrator->enableButton();
     if(measure) measure->enableButton();
+}
+
+
+void MainWindow::scheduleGSMReset()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    QDateTime scheduledTime = nextSundayAt0400();
+
+    qint64 msecToGo = now.msecsTo(scheduledTime);
+
+    qDebug() << "Next GSM reset scheduled at:"
+             << scheduledTime
+             << "(in" << msecToGo / 1000 << "seconds)";
+
+    QTimer::singleShot(msecToGo, this, [this]() {
+
+        QString script_path = "/etc/init.d/gsm";
+        Toast::show("Resetting GSM!", this, Toast::Info);
+        QProcess::execute(script_path, {"restart"});
+        scheduleGSMReset(); // Reschedule next Sunday
+    });
+}
+
+
+QDateTime MainWindow::nextSundayAt0400()
+{
+    QDateTime now = QDateTime::currentDateTime();
+
+    QDate today = now.date();
+    int daysUntilSunday =
+        (7 - today.dayOfWeek()) % 7; // Qt: Monday=1, Sunday=7
+
+    if (daysUntilSunday == 0 && now.time() >= QTime(4, 0))
+        daysUntilSunday = 7;
+
+    QDate nextSunday = today.addDays(daysUntilSunday);
+    return QDateTime(nextSunday, QTime(4, 0), Qt::LocalTime);
 }

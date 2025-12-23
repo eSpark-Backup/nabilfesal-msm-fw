@@ -517,9 +517,10 @@ void Measurements::parse_load_store_generic(const QJsonObject &payload, const QS
 
     QJsonObject inner = dataArray.first().toObject();
     QJsonObject settingsObj = inner[key].toObject();
-    if (settingsObj.isEmpty()) return;
+    QString command = inner["command"].toString();
+    if (settingsObj.isEmpty() || command.isEmpty()) return;
 
-    processSettings(key, settingsObj, "", true, true);
+    processSettings(key, settingsObj, command, true, false);
 }
 
 

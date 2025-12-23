@@ -104,6 +104,9 @@ private:
     bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
     bool isConnectionDifferent(const ConnStatus &a, const ConnStatus &b);
 
+    void scheduleGSMReset();
+    QDateTime nextSundayAt0400();
+
 public:
     mqttManager *adminMqttHandler = nullptr;
     sftpManager *adminSftpHandler = nullptr;
