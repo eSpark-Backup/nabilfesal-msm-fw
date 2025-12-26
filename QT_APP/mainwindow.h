@@ -154,7 +154,9 @@ private:
 
     QTimer *channelDataWatchdog;
     const int WATCHDOG_TIMEOUT_MS = 100000;
-    const int CALIBRATION_DELAY = 7000;
+    int CALIBRATION_DELAY = 6000;
+    uint8_t cal_retry_count = 1;
+    QString last_cmd;
 
     QTimer *responseWaitTimer = nullptr;
     bool waitingForCalibrationResponse = false;

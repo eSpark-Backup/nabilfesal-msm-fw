@@ -21,13 +21,29 @@ Registration::Registration(QString hardwareVersion, QString softwareVersion, QWi
     QToolButton *toggleButton = new QToolButton(ui->admin_pass);
     toggleButton->setCursor(Qt::ArrowCursor);
     toggleButton->setIcon(QIcon(":/icons/eye.png"));
-    toggleButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
-    toggleButton->setIconSize(QSize(30, 30));
+    toggleButton->setIconSize(QSize(24, 24));
+    toggleButton->setStyleSheet(R"(
+        QToolButton {
+            background: transparent;
+            border: none;
+            padding: 10px;
+        }
+        QToolButton:hover {
+            background: transparent;
+        }
+        QToolButton:pressed {
+            background: transparent;
+        }
+        QToolButton:focus {
+            background: transparent;
+            outline: none;
+        }
+    )");
     toggleButton->setFocusPolicy(Qt::StrongFocus);
 
     // Set button size and position inside the line edit
     int frameWidth = ui->admin_pass->style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-    QSize buttonSize = QSize(30, 30);
+    QSize buttonSize = QSize(60, 60);
     toggleButton->setFixedSize(buttonSize);
     toggleButton->move(ui->admin_pass->rect().right() - buttonSize.width() - frameWidth,
                        (ui->admin_pass->rect().height() - buttonSize.height()) / 2);
@@ -45,13 +61,29 @@ Registration::Registration(QString hardwareVersion, QString softwareVersion, QWi
     QToolButton *toggleButton2 = new QToolButton(ui->confirm_pass);
     toggleButton2->setCursor(Qt::ArrowCursor);
     toggleButton2->setIcon(QIcon(":/icons/eye.png"));
-    toggleButton2->setStyleSheet("QToolButton { border: none; padding: 0px; }");
-    toggleButton2->setIconSize(QSize(30, 30));
+    toggleButton2->setIconSize(QSize(24, 24));
+    toggleButton2->setStyleSheet(R"(
+        QToolButton {
+            background: transparent;
+            border: none;
+            padding: 10px;
+        }
+        QToolButton:hover {
+            background: transparent;
+        }
+        QToolButton:pressed {
+            background: transparent;
+        }
+        QToolButton:focus {
+            background: transparent;
+            outline: none;
+        }
+    )");
     toggleButton2->setFocusPolicy(Qt::StrongFocus);
 
     // Set button size and position inside the line edit
     int frameWidth2 = ui->confirm_pass->style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-    QSize buttonSize2 = QSize(30, 30);
+    QSize buttonSize2 = QSize(60, 60);
     toggleButton2->setFixedSize(buttonSize2);
     toggleButton2->move(ui->confirm_pass->rect().right() - buttonSize2.width() - frameWidth2,
                        (ui->confirm_pass->rect().height() - buttonSize2.height()) / 2);

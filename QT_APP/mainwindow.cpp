@@ -84,27 +84,26 @@ MainWindow::MainWindow(QWidget *parent)
     connect(responseWaitTimer, &QTimer::timeout, this, [this]() {
         if (waitingForCalibrationResponse) {
             waitingForCalibrationResponse = false;
-            enableUiButton();
-            Toast::show("No response from ATSAM received for calibration settings.", this, Toast::Error);
-            if (!BootUpSync){
-                if (pollTimer) pollTimer->start(200);
+            if(cal_retry_count < 3)
+            {
+                cal_retry_count++;
+                Toast::show("No response from ATSAM, trying again!", this, Toast::Warning);
             }
             else
             {
-                static uint8_t vol_cal_retry = 1;
-
-                if(bootFileIndex == 0 && vol_cal_retry < 3)
-                {
-                    vol_cal_retry++;
-                    bootFileIndex = -1;
-                }
+                Toast::show("No response from ATSAM received for calibration settings.", this, Toast::Error);
+                enableUiButton();
+                cal_retry_count = 1;
+                if(BootUpSync) bootFileIndex += 1;
                 else
-                    vol_cal_retry = 1;
-                
-                QTimer::singleShot(1000, this, [this](){
-                    sendFileWithDelay(bootFiles, bootFileIndex + 1);
-                });
+                {
+                    if (pollTimer) pollTimer->start(200); return;
+                }
             }
+                QTimer::singleShot(1000, this, [this](){
+                    BootUpSync ? sendFileWithDelay(bootFiles, bootFileIndex) :
+                                        measure->requestSerialCommand(last_cmd);
+                });                
         }
     });
 
@@ -426,7 +425,12 @@ void MainWindow::connectStartUpSignals()
             pollTimer->stop();
         }
         emit requestSerialCommand(cmd);
+        last_cmd = cmd;
         waitingForCalibrationResponse = true;
+        if (cmd == "set-ct-ratio" || cmd == "set-v-offset" || cmd == "set-i-offset")
+            CALIBRATION_DELAY = 2000;
+        else
+            CALIBRATION_DELAY = 6000;
         responseWaitTimer->start(CALIBRATION_DELAY);
     });
 }
@@ -728,6 +732,7 @@ void MainWindow::onGenericResponseReady(const QString &resp)
         waitingForCalibrationResponse = false;
         enableUiButton();
         responseWaitTimer->stop();
+        cal_retry_count = 1;
     }
 
     if (resp.trimmed().startsWith("{") || resp.trimmed().startsWith("[")) {
@@ -963,6 +968,7 @@ void MainWindow::sendFileWithDelay(const QStringList &files, int index)
 
         emit requestSerialCommand(jsonString);
         waitingForCalibrationResponse = true;
+        CALIBRATION_DELAY = index > 1? 2000 : 6000;
         responseWaitTimer->start(CALIBRATION_DELAY);
     } else {
         sendFileWithDelay(files, index + 1);

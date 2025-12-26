@@ -38,5 +38,6 @@
         <file>icons/right-arrow.png</file>
         <file>icons/left-arrow.png</file>
         <file>icons/updating.png</file>
+        <file>icons/smallBattery.png</file>
     </qresource>
 </RCC>

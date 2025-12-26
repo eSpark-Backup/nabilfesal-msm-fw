@@ -58,7 +58,7 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected && !isConnecting) {
-            connectToBroker();
+            reloadAwsMqttsSettings();
         }
     });
 
@@ -237,7 +237,6 @@ bool AwsMqttManager::loadCertificates()
 void AwsMqttManager::connectToBroker()
 {
     if (isConnected || isConnecting) {
-        logDebug << "[AWS MQTTS] Already connected/connecting, skipping";
         return;
     }
 

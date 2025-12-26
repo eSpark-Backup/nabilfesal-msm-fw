@@ -561,28 +561,27 @@ void startAlignedTimer(
     int intervalSeconds,
     std::function<void()> firstTickCallback
 ) {
-    if (!context || !timer || intervalSeconds <= 0) {
-        qDebug() << "Invalid parameters to startAlignedTimer";
+    if (!context || !timer || intervalSeconds <= 0)
         return;
-    }
 
-    QDateTime now = QDateTime::currentDateTime();
-    qint64 secondsSinceEpoch = now.toSecsSinceEpoch();
-    qint64 nextAligned =
-        ((secondsSinceEpoch / intervalSeconds) + 1) * intervalSeconds;
+    timer->stop();
+    timer->setTimerType(Qt::PreciseTimer);
 
-    int initialDelayMs =
-        static_cast<int>((nextAligned - secondsSinceEpoch) * 1000);
+    const qint64 intervalMs = intervalSeconds * 1000;
+
+    qint64 nowMs = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
+    qint64 nextAlignedMs =
+        ((nowMs / intervalMs) + 1) * intervalMs;
+
+    int initialDelayMs = int(nextAlignedMs - nowMs);
 
     QTimer::singleShot(initialDelayMs, context, [=]() {
-        // First aligned callback
-        if (firstTickCallback) {
+        if (firstTickCallback)
             firstTickCallback();
-        }
 
-        // Start repeating timer aligned to clock
-        timer->start(intervalSeconds * 1000);
+        timer->start(intervalMs);
     });
 }
+
 
 }

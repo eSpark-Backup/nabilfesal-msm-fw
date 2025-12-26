@@ -74,7 +74,7 @@
       <enum>QFrame::Raised</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="channels">
       <property name="sizePolicy">
@@ -1773,16 +1773,22 @@ QPushButton:focus {
              </item>
              <item>
               <widget class="QFrame" name="horizontalFrame">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="minimumSize">
                 <size>
-                 <width>200</width>
-                 <height>60</height>
+                 <width>400</width>
+                 <height>75</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>1000</width>
-                 <height>500</height>
+                 <width>400</width>
+                 <height>75</height>
                 </size>
                </property>
                <property name="focusPolicy">
@@ -1795,16 +1801,16 @@ background-color: #D9D9D9;</string>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_2">
                 <property name="spacing">
-                 <number>60</number>
+                 <number>20</number>
                 </property>
                 <property name="leftMargin">
                  <number>20</number>
                 </property>
                 <property name="topMargin">
-                 <number>5</number>
+                 <number>0</number>
                 </property>
                 <property name="rightMargin">
-                 <number>25</number>
+                 <number>20</number>
                 </property>
                 <property name="bottomMargin">
                  <number>0</number>
@@ -1820,13 +1826,13 @@ background-color: #D9D9D9;</string>
                   <property name="minimumSize">
                    <size>
                     <width>100</width>
-                    <height>10</height>
+                    <height>70</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>100</width>
-                    <height>50</height>
+                    <height>70</height>
                    </size>
                   </property>
                   <property name="font">
@@ -1868,13 +1874,13 @@ background-color: #D9D9D9;</string>
                   <property name="minimumSize">
                    <size>
                     <width>100</width>
-                    <height>50</height>
+                    <height>70</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>100</width>
-                    <height>50</height>
+                    <height>70</height>
                    </size>
                   </property>
                   <property name="font">
@@ -1913,13 +1919,13 @@ background-color: #D9D9D9;</string>
                   <property name="minimumSize">
                    <size>
                     <width>100</width>
-                    <height>10</height>
+                    <height>70</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>100</width>
-                    <height>50</height>
+                    <height>70</height>
                    </size>
                   </property>
                   <property name="baseSize">
@@ -2075,7 +2081,7 @@ background-color: #D9D9D9;</string>
              </size>
             </property>
             <property name="currentIndex">
-             <number>1</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="general">
              <property name="sizePolicy">
@@ -7179,7 +7185,7 @@ border-radius: 20px;</string>
                        <number>5</number>
                       </property>
                       <property name="rightMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="bottomMargin">
                        <number>5</number>
@@ -7192,26 +7198,26 @@ border-radius: 20px;</string>
                         <item>
                          <widget class="QLabel" name="label_158">
                           <property name="sizePolicy">
-                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-image: url(:/icons/battery.png);</string>
+image: url(:/icons/smallBattery.png);</string>
                           </property>
                           <property name="text">
                            <string/>
@@ -7234,13 +7240,13 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
@@ -7271,7 +7277,7 @@ image: url(:/icons/battery.png);</string>
                          <number>10</number>
                         </property>
                         <property name="rightMargin">
-                         <number>10</number>
+                         <number>15</number>
                         </property>
                         <item>
                          <widget class="QLabel" name="label_160">
@@ -7283,20 +7289,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>7</pointsize>
+                            <pointsize>8</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -7317,20 +7323,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>18</pointsize>
+                            <pointsize>17</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -7379,7 +7385,7 @@ border-radius: 20px;</string>
                        <number>5</number>
                       </property>
                       <property name="rightMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="bottomMargin">
                        <number>5</number>
@@ -7392,26 +7398,26 @@ border-radius: 20px;</string>
                         <item>
                          <widget class="QLabel" name="label_161">
                           <property name="sizePolicy">
-                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-image: url(:/icons/battery.png);</string>
+image: url(:/icons/smallBattery.png);</string>
                           </property>
                           <property name="text">
                            <string/>
@@ -7428,13 +7434,13 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
@@ -7465,7 +7471,7 @@ image: url(:/icons/battery.png);</string>
                          <number>10</number>
                         </property>
                         <property name="rightMargin">
-                         <number>10</number>
+                         <number>15</number>
                         </property>
                         <item>
                          <widget class="QLabel" name="label_163">
@@ -7477,20 +7483,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>7</pointsize>
+                            <pointsize>8</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -7511,20 +7517,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>18</pointsize>
+                            <pointsize>17</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -7573,7 +7579,7 @@ border-radius: 20px;</string>
                        <number>5</number>
                       </property>
                       <property name="rightMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="bottomMargin">
                        <number>5</number>
@@ -7593,19 +7599,19 @@ border-radius: 20px;</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>4</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-image: url(:/icons/battery.png);</string>
+image: url(:/icons/smallBattery.png);</string>
                           </property>
                           <property name="text">
                            <string/>
@@ -7622,13 +7628,13 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
@@ -7671,20 +7677,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>7</pointsize>
+                            <pointsize>8</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -7705,20 +7711,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>18</pointsize>
+                            <pointsize>17</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -7774,7 +7780,7 @@ border-radius: 20px;</string>
                        <number>5</number>
                       </property>
                       <property name="rightMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="bottomMargin">
                        <number>5</number>
@@ -7794,19 +7800,19 @@ border-radius: 20px;</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-image: url(:/icons/battery.png);</string>
+image: url(:/icons/smallBattery.png);</string>
                           </property>
                           <property name="text">
                            <string/>
@@ -7823,13 +7829,13 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
@@ -7872,20 +7878,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>7</pointsize>
+                            <pointsize>8</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -7906,20 +7912,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>18</pointsize>
+                            <pointsize>17</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -7968,7 +7974,7 @@ border-radius: 20px;</string>
                        <number>5</number>
                       </property>
                       <property name="rightMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="bottomMargin">
                        <number>5</number>
@@ -7988,13 +7994,13 @@ border-radius: 20px;</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
@@ -8017,13 +8023,13 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
@@ -8066,20 +8072,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>7</pointsize>
+                            <pointsize>8</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -8100,20 +8106,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>18</pointsize>
+                            <pointsize>17</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -8162,7 +8168,7 @@ border-radius: 20px;</string>
                        <number>5</number>
                       </property>
                       <property name="rightMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="bottomMargin">
                        <number>5</number>
@@ -8182,19 +8188,19 @@ border-radius: 20px;</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-image: url(:/icons/battery.png);</string>
+image: url(:/icons/smallBattery.png);</string>
                           </property>
                           <property name="text">
                            <string/>
@@ -8211,13 +8217,13 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
@@ -8260,20 +8266,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>150</width>
+                            <width>175</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>7</pointsize>
+                            <pointsize>8</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -8294,7 +8300,7 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
@@ -8307,7 +8313,7 @@ image: url(:/icons/battery.png);</string>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>18</pointsize>
+                            <pointsize>17</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -8363,7 +8369,7 @@ border-radius: 20px;</string>
                        <number>5</number>
                       </property>
                       <property name="rightMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="bottomMargin">
                        <number>5</number>
@@ -8383,19 +8389,19 @@ border-radius: 20px;</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-image: url(:/icons/battery.png);</string>
+image: url(:/icons/smallBattery.png);</string>
                           </property>
                           <property name="text">
                            <string/>
@@ -8412,13 +8418,13 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
@@ -8449,7 +8455,7 @@ image: url(:/icons/battery.png);</string>
                          <number>10</number>
                         </property>
                         <property name="rightMargin">
-                         <number>10</number>
+                         <number>35</number>
                         </property>
                         <item>
                          <widget class="QLabel" name="label_178">
@@ -8461,20 +8467,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>150</width>
+                            <width>180</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>150</width>
+                            <width>180</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>7</pointsize>
+                            <pointsize>8</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -8482,6 +8488,9 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="text">
                            <string>PHASE A - BIDIRECTIONAL ENERGY</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                           </property>
                          </widget>
                         </item>
@@ -8495,20 +8504,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>18</pointsize>
+                            <pointsize>17</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -8557,7 +8566,7 @@ border-radius: 20px;</string>
                        <number>5</number>
                       </property>
                       <property name="rightMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="bottomMargin">
                        <number>5</number>
@@ -8565,6 +8574,15 @@ border-radius: 20px;</string>
                       <item>
                        <layout class="QVBoxLayout" name="verticalLayout_131">
                         <property name="spacing">
+                         <number>0</number>
+                        </property>
+                        <property name="sizeConstraint">
+                         <enum>QLayout::SetMinimumSize</enum>
+                        </property>
+                        <property name="leftMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
                          <number>0</number>
                         </property>
                         <item>
@@ -8577,19 +8595,19 @@ border-radius: 20px;</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-image: url(:/icons/battery.png);</string>
+image: url(:/icons/smallBattery.png);</string>
                           </property>
                           <property name="text">
                            <string/>
@@ -8606,13 +8624,13 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
@@ -8622,7 +8640,8 @@ image: url(:/icons/battery.png);</string>
                            </font>
                           </property>
                           <property name="styleSheet">
-                           <string notr="true">border-color: rgb(255, 255, 255);</string>
+                           <string notr="true">border-color: rgb(255, 255, 255);
+</string>
                           </property>
                           <property name="text">
                            <string>kWh</string>
@@ -8643,7 +8662,7 @@ image: url(:/icons/battery.png);</string>
                          <number>10</number>
                         </property>
                         <property name="rightMargin">
-                         <number>10</number>
+                         <number>35</number>
                         </property>
                         <item>
                          <widget class="QLabel" name="label_181">
@@ -8655,20 +8674,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>150</width>
+                            <width>180</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>150</width>
+                            <width>180</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>7</pointsize>
+                            <pointsize>8</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -8689,20 +8708,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>18</pointsize>
+                            <pointsize>17</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -8751,7 +8770,7 @@ border-radius: 20px;</string>
                        <number>5</number>
                       </property>
                       <property name="rightMargin">
-                       <number>5</number>
+                       <number>0</number>
                       </property>
                       <property name="bottomMargin">
                        <number>5</number>
@@ -8771,19 +8790,19 @@ border-radius: 20px;</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>50</height>
                            </size>
                           </property>
                           <property name="styleSheet">
                            <string notr="true">border-color: rgb(255, 255, 255);
-image: url(:/icons/battery.png);</string>
+image: url(:/icons/smallBattery.png);</string>
                           </property>
                           <property name="text">
                            <string/>
@@ -8800,13 +8819,13 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>60</width>
+                            <width>40</width>
                             <height>20</height>
                            </size>
                           </property>
@@ -8837,7 +8856,7 @@ image: url(:/icons/battery.png);</string>
                          <number>10</number>
                         </property>
                         <property name="rightMargin">
-                         <number>10</number>
+                         <number>35</number>
                         </property>
                         <item>
                          <widget class="QLabel" name="label_184">
@@ -8849,20 +8868,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>150</width>
+                            <width>180</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>150</width>
+                            <width>180</width>
                             <height>15</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>7</pointsize>
+                            <pointsize>8</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">
@@ -8883,20 +8902,20 @@ image: url(:/icons/battery.png);</string>
                           </property>
                           <property name="minimumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="maximumSize">
                            <size>
-                            <width>145</width>
+                            <width>180</width>
                             <height>30</height>
                            </size>
                           </property>
                           <property name="font">
                            <font>
                             <family>Gilroy</family>
-                            <pointsize>18</pointsize>
+                            <pointsize>17</pointsize>
                            </font>
                           </property>
                           <property name="styleSheet">

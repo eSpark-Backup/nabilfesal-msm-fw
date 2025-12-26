@@ -508,14 +508,17 @@ void ChannelsHome::loadEnergyData()
 
 void ChannelsHome::saveEnergyData()
 {
-    QJsonObject root;
+    QJsonObject root, chObj;
+    bool energyChanged = false;
 
     for (int chIt = 1; chIt <= 12; chIt++) {
-        QJsonObject chObj;
         for (int phIt = 0; phIt < 3; phIt++) {
+            energyChanged |= clampOrReset(energy[chIt].posActEnergy[phIt]);
+            energyChanged |= clampOrReset(energy[chIt].negActEnergy[phIt]);
+            energyChanged |= clampOrReset(energy[chIt].posReacEnergy[phIt]);
+            energyChanged |= clampOrReset(energy[chIt].negReacEnergy[phIt]);
 
             QString phaseKey = (phIt == 0) ? "a" : (phIt == 1) ? "b" : "c";
-
             QJsonObject phObj;
             phObj["activePositive"]   = energy[chIt].posActEnergy[phIt];
             phObj["activeNegative"]   = energy[chIt].negActEnergy[phIt];
@@ -526,9 +529,11 @@ void ChannelsHome::saveEnergyData()
         root[QString::number(chIt)] = chObj;
     }
 
+    if (energyChanged)  emit energyUpdated(energy);
+
     QFile file(EnergyFilePath);
-    if (file.open(QIODevice::WriteOnly)){
-        file.write(QJsonDocument(root).toJson());
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
         file.flush();
         file.close();
     }

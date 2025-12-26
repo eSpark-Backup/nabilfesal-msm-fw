@@ -36,7 +36,7 @@ mqttManager::mqttManager(Mode mode, QObject *parent) : clientMode(mode), QObject
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
         if (!isConnected) {
-            connectToBroker();
+            reloadSettings();
         }
     });
 

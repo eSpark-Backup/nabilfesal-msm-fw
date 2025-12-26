@@ -13,6 +13,10 @@
 #include <QSwipeGesture>
 #include "common_headers.h"
 
+
+constexpr double MAX_ENERGY = 1e9;
+constexpr double MIN_ENERGY = -1e9;
+
 namespace Ui {
 class ChannelsHome;
 }
@@ -54,6 +58,9 @@ private:
     int findNextActiveChannel(int startChannel, int direction);
     void saveEnergyData();
     void handleTempButton(bool updateTrue = false, double val = 0.00);
+    inline bool clampOrReset(double &value)
+    { if (value >= MAX_ENERGY || value <= MIN_ENERGY) {
+        value = 0.0;  return true; }  return false; }
 
 private:
     Ui::ChannelsHome *ui;

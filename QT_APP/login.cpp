@@ -25,12 +25,28 @@ LoginWidget::LoginWidget(QString hardwareVersion, QString softwareVersion, QWidg
     QToolButton *toggleButton = new QToolButton(ui->passwordLineEdit);
     toggleButton->setCursor(Qt::ArrowCursor);
     toggleButton->setIcon(QIcon(":/icons/eye.png"));
-    toggleButton->setStyleSheet("QToolButton { border: none; padding: 5px; }");
-    toggleButton->setIconSize(QSize(50, 50));
+    toggleButton->setIconSize(QSize(24, 24));
+    toggleButton->setStyleSheet(R"(
+        QToolButton {
+            background: transparent;
+            border: none;
+            padding: 10px;
+        }
+        QToolButton:hover {
+            background: transparent;
+        }
+        QToolButton:pressed {
+            background: transparent;
+        }
+        QToolButton:focus {
+            background: transparent;
+            outline: none;
+        }
+    )");
     toggleButton->setFocusPolicy(Qt::StrongFocus);
 
     int frameWidth = ui->passwordLineEdit->style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-    QSize buttonSize = QSize(30, 30);
+    QSize buttonSize = QSize(60, 60);
     toggleButton->setFixedSize(buttonSize);
     toggleButton->move(ui->passwordLineEdit->rect().right() - buttonSize.width() - frameWidth,
                        (ui->passwordLineEdit->rect().height() - buttonSize.height()) / 2);

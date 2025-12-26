@@ -28,7 +28,7 @@ sftpManager::sftpManager(Mode mode, QObject *parent) : clientMode(mode), QObject
     reconnectTimer->setSingleShot(false);         // keep retrying
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
-        if (!isConnected) connectToSftp();
+        if (!isConnected) reloadSettings();
     });
 
     if (!reconnectTimer->isActive()) reconnectTimer->start();
@@ -350,7 +350,6 @@ void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
         QJsonObject activeA   = energyA["active"].toObject();
         QJsonObject reactiveA = energyA["reactive"].toObject();
 
-        telemetry["T_C"]    = root["temperature"].toDouble();
         telemetry["Epexp1"] = sftpEnergy[1].negActEnergy[0] + sftpEnergy[1].negActEnergy[1] + sftpEnergy[1].negActEnergy[2];
         telemetry["Epimp1"] = sftpEnergy[1].posActEnergy[0] + sftpEnergy[1].posActEnergy[1] + sftpEnergy[1].posActEnergy[2];
         telemetry["Eqexp1"] = sftpEnergy[1].negReacEnergy[0] + sftpEnergy[1].negReacEnergy[1] + sftpEnergy[1].negReacEnergy[2];
@@ -392,7 +391,6 @@ void sftpManager::processIncomingJson(int channel, const QJsonObject &payload)
         telemetry[prefix + "Q"] = Q_R + Q_B + Q_Y;
         telemetry[prefix + "S"] = S_R + S_B + S_Y;
 
-        telemetry[prefix + "T"]     = root["temperature"].toDouble();
         telemetry[prefix + "Epexp"] = sftpEnergy[channel].negActEnergy[0] + sftpEnergy[channel].negActEnergy[1] + sftpEnergy[channel].negActEnergy[2];
         telemetry[prefix + "Epimp"] = sftpEnergy[channel].posActEnergy[0] + sftpEnergy[channel].posActEnergy[1] + sftpEnergy[channel].posActEnergy[2];
         telemetry[prefix + "Eqexp"] = sftpEnergy[channel].negReacEnergy[0] + sftpEnergy[channel].negReacEnergy[1] + sftpEnergy[channel].negReacEnergy[2];
@@ -420,7 +418,7 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
         "V(R)","In1(R1)","In1(RPF)",
         "V(Y)","In1(Y1)","In1(YPF)",
         "V(B)","In1(B1)","In1(BPF)",
-        "P1","Q1","S1","T(*C)",
+        "P1","Q1","S1",
         "Epimp1","Epexp1","Eqimp1","Eqexp1"
     };
 
@@ -428,17 +426,17 @@ void sftpManager::exportTelemetryToCsv(const QString &filePath)
         "V_R","In1_R1","In1_RPF",
         "V_Y","In1_Y1","In1_YPF",
         "V_B","In1_B1","In1_BPF",
-        "P1","Q1","S1","T_C",
+        "P1","Q1","S1",
         "Epimp1","Epexp1","Eqimp1","Eqexp1"
     };
 
     QStringList baseKeysOutgoing_Modified = {
-        "R","PF(R","Y","PF(Y","B","PF(B","P","Q","S","T",
+        "R","PF(R","Y","PF(Y","B","PF(B","P","Q","S",
         "Epimp","Epexp","Eqimp","Eqexp"
     };
 
     QStringList baseKeysOutgoing = {
-        "R","PF_R","Y","PF_Y","B","PF_B","P","Q","S","T",
+        "R","PF_R","Y","PF_Y","B","PF_B","P","Q","S",
         "Epimp","Epexp","Eqimp","Eqexp"
     };
 
