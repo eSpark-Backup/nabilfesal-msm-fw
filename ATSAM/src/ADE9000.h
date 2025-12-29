@@ -75,6 +75,7 @@ typedef enum {
     SPI_CSS10,
     SPI_CSS11,
     SPI_CSS12,
+    SPI_CSS_MAX
 } SPI_CSS_Pin;
 
 typedef enum {
