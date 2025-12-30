@@ -31,6 +31,9 @@ void setLastOTAInitiated();
 QJsonObject readJsonFile(const QString &filePath);
 void startAlignedTimer( QObject* context, QTimer* timer,
     int intervalSeconds, std::function<void()> firstTickCallback = nullptr);
+QString getEncryptionKey();
+QString getCpuSerial();
+QString generateEncryptionKey();
 }
 
 #endif // UTILS_H

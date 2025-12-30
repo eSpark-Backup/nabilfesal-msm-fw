@@ -1,13 +1,14 @@
-#include "calibrationdialog.h"
-#include "ui_calibrationdialog.h"
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include "utils.h"
-#include <QRegularExpressionValidator>
-#include "measurements.h"
 #include <QDir>
 #include "toast.h"
+#include "utils.h"
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include "measurements.h"
+#include "encryptionhelper.h"
+#include "calibrationdialog.h"
+#include "ui_calibrationdialog.h"
+#include <QRegularExpressionValidator>
 
 #define V_OFFSET_RESPONSE_PATH "config/v_offset_response.json"
 #define I_OFFSET_RESPONSE_PATH "config/i_offset_response.json"
@@ -212,7 +213,11 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
         modifiedResponse["command"] = "reboot-calibration";
 
         if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            file.write(QJsonDocument(modifiedResponse).toJson(QJsonDocument::Indented));
+            QJsonDocument doc(modifiedResponse);
+            QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+            QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+            file.write(encryptedData);
+            file.close();
             Toast::show("Voltage Calibrated successfully", this, Toast::Info);
         }
         return;
@@ -259,7 +264,10 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
         };
 
         if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            file.write(QJsonDocument(finalObj).toJson(QJsonDocument::Indented));
+            QJsonDocument doc(finalObj);
+            QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+            QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+            file.write(encryptedData);
             file.close();
             Toast::show("Current Calibrated successfully", this, Toast::Info);
         }

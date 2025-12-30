@@ -1,15 +1,16 @@
 #include "commonSetting.h"
 #include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonParseError>
 #include <QDir>
 #include "toast.h"
 #include <QCheckBox>
 #include <QLineEdit>
 #include <QPushButton>
-#include "devicesettings.h"
+#include <QJsonObject>
 #include "factsetting.h"
+#include <QJsonDocument>
+#include <QJsonParseError>
+#include "devicesettings.h"
+#include "encryptionhelper.h"
 
 
 QJsonObject settingsManager::getMqttSettings()
@@ -63,6 +64,7 @@ QJsonObject settingsManager::getMqttSettings()
 QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSettings)
 {
     QFile file(mqttConfigPath());
+    EncryptionHelper::check_and_encrypt_files(mqttConfigPath(), "MQTT", showMessages, this);
     if (!file.exists()) {
         if(!showMessages) Toast::show("No MQTT settings Found!", this, Toast::Warning);
         return {};
@@ -73,11 +75,17 @@ QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSett
         return {};
     }
 
-    QByteArray data = file.readAll();
+    QByteArray encryptedData = file.readAll();
     file.close();
 
+    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    if (decryptedData.isEmpty()) {
+        if (!showMessages) Toast::show("Failed to decrypt MQTT settings (wrong password or corrupted file)", this, Toast::Error);
+        return {};
+    }
+
     QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
     if (doc.isNull() || !doc.isObject()) {
         if (!showMessages) Toast::show("[MQTT] Invalid JSON format: " + parseError.errorString(), this, Toast::Error);
         return {};
@@ -129,7 +137,9 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessage
     }
 
     QJsonDocument doc(mqttSetting);
-    file.write(doc.toJson(QJsonDocument::Indented));
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+    QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+    file.write(encryptedData);
     file.close();
 
     if(showMessages) 
@@ -170,7 +180,7 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
         if (showMessages) Toast::show("[SFTP] Settings unchanged, not saving into file.", this, Toast::Warning);
         return;
     }
-    
+
     QDir dir("config/admin_settings/");
     if (!dir.exists()) {
         dir.mkpath(".");
@@ -183,15 +193,18 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
     }
 
     QJsonDocument doc(sftpSetting);
-    file.write(doc.toJson(QJsonDocument::Indented));
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+    QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+    file.write(encryptedData);
     file.close();
 
     if (showMessages) {
         Toast::show("SFTP settings saved successfully!", this, Toast::Info);
         emit sftpSettingsChanged(sftpSetting);
     }
-    emit sftp_load();    
+    emit sftp_load();
 }
+
 
 QJsonObject settingsManager::getSftpSettings()
 {
@@ -238,9 +251,12 @@ QJsonObject settingsManager::getSftpSettings()
     
     return sftpSettings;
 }
+
+
 QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSettings)
 {
     QFile file(sftpConfigPath());
+    EncryptionHelper::check_and_encrypt_files(sftpConfigPath(), "SFTP", showMessages, this);
     if (!file.exists()) {
         if (!showMessages) Toast::show("No SFTP settings found!", this, Toast::Warning);
         return {};
@@ -251,13 +267,20 @@ QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSett
         return {};
     }
 
-    QByteArray data = file.readAll();
+    QByteArray encryptedData = file.readAll();
     file.close();
 
+    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    if (decryptedData.isEmpty()) {
+        if (!showMessages) Toast::show("Failed to decrypt SFTP settings (wrong password or corrupted file)", this, Toast::Error);
+        return {};
+    }
+
     QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
     if (doc.isNull() || !doc.isObject()) {
-        if (!showMessages) Toast::show("[SFTP] Invalid JSON format: " + parseError.errorString(), this, Toast::Error);
+        if (!showMessages)
+            Toast::show("[SFTP] Invalid JSON format: " + parseError.errorString(), this, Toast::Error);
         return {};
     }
 
@@ -357,17 +380,25 @@ QJsonObject settingsManager::loadMqttsSettings(bool showMessages, bool reloadSet
     
     QString filePath = mqttsConfigPath();
     QFile file(filePath);
+    EncryptionHelper::check_and_encrypt_files(filePath, "MQTTS", showMessages, this);
+
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         if (!showMessages)
             Toast::show("Failed to open MQTTS configuration file.", this, Toast::Error);
         return {};
     }
 
-    QByteArray data = file.readAll();
+    QByteArray encryptedData = file.readAll();
     file.close();
 
+    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    if (decryptedData.isEmpty()) {
+        if (!showMessages) Toast::show("Failed to decrypt MQTTS settings (wrong password or corrupted file)", this, Toast::Error);
+        return {};
+    }
+
     QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
         if (!showMessages)
             Toast::show("Invalid MQTTS configuration file format.", this, Toast::Warning);
@@ -422,7 +453,9 @@ void settingsManager::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessa
     }
 
     QJsonDocument doc(mqttsSetting);
-    file.write(doc.toJson(QJsonDocument::Indented));
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+    QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+    file.write(encryptedData);
     file.close();
 
     if(showMessages) 

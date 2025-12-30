@@ -2,21 +2,21 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QTimer>
-#include <QThread>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QDir>
 #include <QFile>
 #include <QDebug>
-#include <QMessageBox>
-#include <QKeyEvent>
-#include <QApplication>
+#include <QTimer>
 #include "utils.h"
-#include "factdialog.h"
 #include "toast.h"
+#include <QThread>
+#include <QKeyEvent>
+#include <QJsonObject>
+#include <QMessageBox>
+#include "factdialog.h"
+#include <QApplication>
+#include <QJsonDocument>
 #include "rebootdialog.h"
-
+#include "encryptionhelper.h"
 
 // -----------------------------
 // Singleton static pointer
@@ -113,6 +113,9 @@ MainWindow::MainWindow(QWidget *parent)
     // Send CT/I/V ratio and offsets at startup (if config present)
     startApp = true;
     if (pollTimer) pollTimer->stop();
+
+    EncryptionHelper::check_and_encrypt_files("config/v_offset_response.json", "V_Offset_Response", true, this);
+    EncryptionHelper::check_and_encrypt_files("config/i_offset_response.json", "I_Offset_Response", true, this);
 
     QStringList files = {
         "config/v_offset_response.json",
@@ -322,7 +325,7 @@ void MainWindow::connectStartUpSignals()
     if (!channels)
         channels = new ChannelsHome(hardwareVersion, softwareVersion);
     
-
+    Utils::getEncryptionKey();
     auto showRebootDialog = [this]() {
         factoryMqttsHandler->processReboot();
         adminMqttsHandler->processReboot();
@@ -887,7 +890,7 @@ void MainWindow::updateProgress()
 
 void MainWindow::handlePostProgress()
 {
-     // Setup segmented responsibilities
+    // Setup segmented responsibilities
     connectStartUpSignals();
     dataExporter = new SystemDataExporter(this);
     connect(this, &MainWindow::receivedChannelData, dataExporter, &SystemDataExporter::onNewChannelData, Qt::QueuedConnection);
@@ -913,6 +916,7 @@ void MainWindow::handlePostProgress()
         return;
     }
 
+    EncryptionHelper::check_and_encrypt_files("config/project.json", "project.json", true, this);
     connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
     
     // load preset settings into DeviceSettings and FactSetting (original behavior)

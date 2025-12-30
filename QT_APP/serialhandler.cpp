@@ -1,5 +1,4 @@
 #include "serialhandler.h"
-#include <QEventLoop>
 #include <QTimer>
 #include <QJsonDocument>
 #include <QJsonParseError>

@@ -6,6 +6,7 @@
 #include "utils.h"
 #include <QDir>
 #include <QThread>
+#include "encryptionhelper.h"
 
 
 #define SFTP_PATH sftp_path
@@ -134,6 +135,7 @@ bool sftpManager::loadConfig(const QString &filePath)
 {
     configPath = filePath;
     QFile file(filePath);
+
     if (!file.exists()) {
         logWarn << "Config file not found:" << filePath;
         return false;
@@ -143,8 +145,16 @@ bool sftpManager::loadConfig(const QString &filePath)
         return false;
     }
 
-    QByteArray data = file.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QByteArray encryptedData = file.readAll();
+    file.close();
+
+    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    if (decryptedData.isEmpty()) {
+        logWarn << "Failed to decrypt config file - wrong password or corrupted file";
+        return false;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
     if (!doc.isObject()) {
         logWarn << "Invalid JSON config";
         return false;
@@ -170,6 +180,7 @@ bool sftpManager::loadConfig(const QString &filePath)
 
     return true;
 }
+
 
 void sftpManager::reloadSettings()
 {

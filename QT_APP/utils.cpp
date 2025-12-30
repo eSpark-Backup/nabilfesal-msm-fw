@@ -18,6 +18,8 @@
 #include <QPixmap>
 #include <QDir>
 #include "mainwindow.h"
+#include "encryptionhelper.h"
+
 
 namespace Utils {
 void keySound() {
@@ -555,6 +557,7 @@ QJsonObject readJsonFile(const QString &filePath)
     return doc.object();
 }
 
+
 void startAlignedTimer(
     QObject* context,
     QTimer* timer,
@@ -583,5 +586,48 @@ void startAlignedTimer(
     });
 }
 
+
+QString getEncryptionKey()
+{
+    static bool isKeyFetched = false;
+    static QString key;
+    if(!isKeyFetched || key.isEmpty())
+    {
+        key = generateEncryptionKey();
+        isKeyFetched = true;
+    }
+    qDebug() << "getEncryptionKey: " << key;
+    return key;
+}
+
+
+QString getCpuSerial()
+{
+    QFile file("/proc/cpuinfo");
+    if (!file.open(QIODevice::ReadOnly))
+        return "";
+
+    while (!file.atEnd()) {
+        QString line = file.readLine();
+        if (line.startsWith("Serial")) {
+            return line.section(':', 1).trimmed();
+        }
+    }
+    return "";
+}
+
+
+QString generateEncryptionKey()
+{
+    QString uid = getUid();
+    QString cpuSerial = getCpuSerial();   // empty on PC is OK
+    QString salt = "MSM@ADMIN@2025";      // NEVER change
+
+    if (uid.isEmpty()) return "";
+    QByteArray material = (uid + cpuSerial + salt).toUtf8();
+    QByteArray hash = QCryptographicHash::hash(
+        material, QCryptographicHash::Sha256);
+    return hash.toHex(); // 32 bytes → AES‑256
+}
 
 }

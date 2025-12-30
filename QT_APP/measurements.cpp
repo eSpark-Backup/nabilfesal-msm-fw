@@ -1,16 +1,17 @@
-#include "measurements.h"
-#include "ui_measurements.h"
-#include "factdialog.h"
-#include "utils.h"
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QDebug>
-#include <QMessageBox>
 #include <QDir>
 #include <QFile>
-#include <QKeyEvent>
+#include <QDebug>
 #include "toast.h"
+#include "utils.h"
+#include <QKeyEvent>
+#include <QJsonArray>
+#include <QMessageBox>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include "factdialog.h"
+#include "measurements.h"
+#include "ui_measurements.h"
+#include "encryptionhelper.h"
 
 
 #define CT_RATIO    "config/ct_ratio_settings.json"
@@ -115,6 +116,7 @@ void Measurements::on_load_btn_clicked(bool checked)
             label->setText("%");
         }
         QFile file(CT_RATIO);
+        EncryptionHelper::check_and_encrypt_files(CT_RATIO, "CT_RATIO", checked, this);
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -122,10 +124,16 @@ void Measurements::on_load_btn_clicked(bool checked)
             return;
         }
 
-        QByteArray jsonData = file.readAll();
+        QByteArray encryptedData = file.readAll();
         file.close();
 
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        if (decryptedData.isEmpty()) {
+            if (!checked) Toast::show("Failed to decrypt CT_RATIO settings (wrong password or corrupted file)", this, Toast::Error);
+            return;
+        }
+
+        QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
         if (doc.isNull() || !doc.isObject()) {
             QMessageBox::critical(this, "CT-Ratio Settings", "Invalid JSON format in CT Ratio settings file.");
             return;
@@ -152,6 +160,7 @@ void Measurements::on_load_btn_clicked(bool checked)
             label->setText("mA");
         }
         QFile file(I_OFFSET);
+        EncryptionHelper::check_and_encrypt_files(I_OFFSET, "I_OFFSET", checked, this);
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -159,10 +168,16 @@ void Measurements::on_load_btn_clicked(bool checked)
             return;
         }
 
-        QByteArray jsonData = file.readAll();
+        QByteArray encryptedData = file.readAll();
         file.close();
 
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        if (decryptedData.isEmpty()) {
+            if (!checked) Toast::show("Failed to decrypt I_OFFSET settings (wrong password or corrupted file)", this, Toast::Error);
+            return;
+        }
+
+        QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
         if (doc.isNull() || !doc.isObject()) {
             QMessageBox::critical(this, "I-Offset Settings", "Invalid JSON format in I-Offset settings file.");
             return;
@@ -189,6 +204,7 @@ void Measurements::on_load_btn_clicked(bool checked)
             label->setText("V");
         }
         QFile file(V_OFFSET);
+        EncryptionHelper::check_and_encrypt_files(V_OFFSET, "V_OFFSET", checked, this);
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -196,10 +212,16 @@ void Measurements::on_load_btn_clicked(bool checked)
             return;
         }
 
-        QByteArray jsonData = file.readAll();
+        QByteArray encryptedData = file.readAll();
         file.close();
 
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        if (decryptedData.isEmpty()) {
+            if (!checked) Toast::show("Failed to decrypt V_OFFSET settings (wrong password or corrupted file)", this, Toast::Error);
+            return;
+        }
+
+        QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
         if (doc.isNull() || !doc.isObject()) {
             QMessageBox::critical(this, "V-Offset Settings", "Invalid JSON format in V-Offset settings file.");
             return;
@@ -334,7 +356,10 @@ void Measurements::processSettings(const QString &key,
         return;
     }
 
-    file.write(QJsonDocument(data).toJson(QJsonDocument::Indented));
+    QJsonDocument doc(data);
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+    QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+    file.write(encryptedData);
     file.close();
 
     Toast::show(QString("[%1] Settings saved to file.").arg(title),
