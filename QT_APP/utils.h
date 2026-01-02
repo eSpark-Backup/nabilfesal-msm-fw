@@ -34,6 +34,7 @@ void startAlignedTimer( QObject* context, QTimer* timer,
 QString getEncryptionKey();
 QString getCpuSerial();
 QString generateEncryptionKey();
+bool copyUidToUidJson();
 }
 
 #endif // UTILS_H

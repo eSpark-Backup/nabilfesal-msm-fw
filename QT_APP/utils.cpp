@@ -234,7 +234,11 @@ QString getDeviceIp()
 
 QString getUid()
 {
-    QFile file("config/project.json");
+    QFile prj_file("config/project.json");
+    if (!EncryptionHelper::isEncrypted(prj_file)) Utils::copyUidToUidJson();
+    EncryptionHelper::check_and_encrypt_files("config/project.json", "project.json", true, nullptr);
+
+    QFile file("config/uid.json");
     if (file.open(QIODevice::ReadOnly)) {
         QByteArray data = file.readAll();
         QJsonDocument doc = QJsonDocument::fromJson(data);
@@ -596,7 +600,6 @@ QString getEncryptionKey()
         key = generateEncryptionKey();
         isKeyFetched = true;
     }
-    qDebug() << "getEncryptionKey: " << key;
     return key;
 }
 
@@ -629,5 +632,48 @@ QString generateEncryptionKey()
         material, QCryptographicHash::Sha256);
     return hash.toHex(); // 32 bytes → AES‑256
 }
+
+bool copyUidToUidJson()
+{
+    QFile inFile("config/project.json");
+    if (!inFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open config/project.json";
+        return false;
+    }
+
+    QByteArray data = inFile.readAll();
+    inFile.close();
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        qWarning() << "Invalid JSON in project.json";
+        return false;
+    }
+
+    QJsonObject obj = doc.object();
+    QString uid = obj.value("uid").toString();
+    if (uid.isEmpty()) {
+        qWarning() << "UID not found in project.json";
+        return false;
+    }
+
+    QJsonObject uidObj;
+    uidObj.insert("uid", uid);
+    QJsonDocument uidDoc(uidObj);
+
+    QFile outFile("config/uid.json");
+    if (!outFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        qWarning() << "Failed to create uid.json";
+        return false;
+    }
+
+    outFile.write(uidDoc.toJson(QJsonDocument::Indented));
+    outFile.close();
+
+    qDebug() << "uid.json created successfully with UID:" << uid;
+    return true;
+}
+
 
 }

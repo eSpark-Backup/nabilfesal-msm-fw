@@ -2,14 +2,16 @@
 #include <QFile>
 #include "utils.h"
 #include <QJsonArray>
-#include <QJsonDocument>
 #include <QJsonObject>
-#include <QtMqtt/QMqttSubscription>
-#include <QtNetwork/QSslSocket>
-#include <QtNetwork/QSslCertificate>
+#include <QJsonDocument>
 #include <QtNetwork/QSslKey>
-#include <QtNetwork/QSslConfiguration>
+#include "encryptionhelper.h"
 #include <QProcessEnvironment>
+#include <QtNetwork/QSslSocket>
+#include <QtMqtt/QMqttSubscription>
+#include <QtNetwork/QSslCertificate>
+#include <QtNetwork/QSslConfiguration>
+
 
 #define AWS_MQTTS_PATH aws_path
 std::array<EnergyData, 13> AwsMqttManager::awsEnergy = {};
@@ -125,15 +127,24 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
         logWarn << "Config file not found:" << filePath;
         return false;
     }
-    if (!file.open(QIODevice::ReadOnly)) {
-        logWarn << "Failed to open config file";
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        logWarn << "Failed to open MQTTS config file";
         return false;
     }
 
-    QByteArray data = file.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (!doc.isObject()) {
-        logWarn << "Invalid JSON config";
+    QByteArray encryptedData = file.readAll();
+    file.close();
+
+    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    if (decryptedData.isEmpty()) {
+        logWarn << "Failed to decrypt MQTTS settings (wrong password or corrupted file)";
+        return false;
+    }
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        logWarn << "Invalid MQTTS config file format.";
         return false;
     }
 

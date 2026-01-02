@@ -1,19 +1,19 @@
 #include "login.h"
 #include "ui_login.h"
-#include <QMessageBox>
-#include <QDebug>
-#include <QLineEdit>
-#include <QTimer>
-#include <QToolButton>
-#include <QStyle>
-#include "utils.h"
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QDebug>
-#include <QMessageBox>
 #include <QDir>
 #include <QFile>
+#include <QDebug>
+#include <QTimer>
+#include <QStyle>
+#include "utils.h"
+#include <QLineEdit>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QToolButton>
+#include <QMessageBox>
+#include <QMessageBox>
+#include <QJsonDocument>
+#include "encryptionhelper.h"
 
 LoginWidget::LoginWidget(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
@@ -117,9 +117,11 @@ bool LoginWidget::eventFilter(QObject *obj, QEvent *event)
 void LoginWidget::on_loginButton_clicked()
 {
     QFile file("config/project.json");
-    if (file.open(QIODevice::ReadOnly)) {
-        QByteArray data = file.readAll();
-        QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QByteArray encryptedData = file.readAll();
+        file.close();
+        QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
         if (doc.isObject()) {
             QJsonObject obj = doc.object();
             QString adminPass = obj.value("admin").toString();

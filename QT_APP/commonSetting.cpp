@@ -620,7 +620,7 @@ void settingsManager::fetch_claim_certs()
         return;
     }
 
-    QJsonObject obj = doc.object();
+    QJsonObject obj  = doc.object();
     QString ip       = obj.value("ip").toString();
     QString username = obj.value("username").toString();
     QString password = obj.value("password").toString();

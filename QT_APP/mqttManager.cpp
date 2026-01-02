@@ -1,16 +1,17 @@
 #include "mqttManager.h"
 #include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QDebug>
-#include <QtMqtt/QMqttClient>
-#include <QtMqtt/QMqttSubscription>
-#include <QtNetwork/QSslSocket>
-#include <QtNetwork/QSslCertificate>
-#include <QtNetwork/QSslKey>
-#include <QtNetwork/QSslConfiguration>
-#include "utils.h"
 #include <cmath>
+#include <QDebug>
+#include "utils.h"
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QtNetwork/QSslKey>
+#include "encryptionhelper.h"
+#include <QtMqtt/QMqttClient>
+#include <QtNetwork/QSslSocket>
+#include <QtMqtt/QMqttSubscription>
+#include <QtNetwork/QSslCertificate>
+#include <QtNetwork/QSslConfiguration>
 
 #define MQTT_PATH mqtt_path
 
@@ -95,15 +96,24 @@ bool mqttManager::loadConfig(const QString &filePath)
         logWarn << "Config file not found:" << filePath;
         return false;
     }
-    if (!file.open(QIODevice::ReadOnly)) {
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         logWarn << "Failed to open config file";
         return false;
     }
 
-    QByteArray data = file.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (!doc.isObject()) {
-        logWarn << "Invalid JSON config";
+    QByteArray encryptedData = file.readAll();
+    file.close();
+
+    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    if (decryptedData.isEmpty()) {
+        logWarn << "Failed to decrypt MQTT settings (wrong password or corrupted file)";
+        return false;
+    }
+
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        logWarn << "Invalid MQTT config file format.";
         return false;
     }
 

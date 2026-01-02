@@ -163,16 +163,24 @@ void MainWindow::initConfig()
         }
     }
 
-    if (file.open(QIODevice::ReadOnly)) {
-        const auto data = file.readAll();
-        const auto doc = QJsonDocument::fromJson(data);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        const auto encryptedData = file.readAll();
+        file.close();
+        QByteArray decryptedData = encryptedData;
+        if (EncryptionHelper::isEncrypted(file))
+            decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        QJsonParseError parseError;
+        QJsonDocument doc1 = QJsonDocument::fromJson(decryptedData, &parseError);
+        if (parseError.error != QJsonParseError::NoError || !doc1.isObject()) {
+            qDebug() << "Invalid config/project.json file format.";
+        }
+        const auto doc = QJsonDocument::fromJson(decryptedData);
         if (doc.isObject()) {
             const auto obj = doc.object();
             m_uid = obj.value("uid").toString();
             m_adminPass = obj.value("admin").toString();
             m_factoryPass = obj.value("factory").toString();
         }
-        file.close();
     }
 
     QFile hwFile("version.json");
@@ -916,7 +924,6 @@ void MainWindow::handlePostProgress()
         return;
     }
 
-    EncryptionHelper::check_and_encrypt_files("config/project.json", "project.json", true, this);
     connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
     
     // load preset settings into DeviceSettings and FactSetting (original behavior)

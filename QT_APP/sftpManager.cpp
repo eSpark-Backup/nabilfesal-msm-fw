@@ -140,8 +140,8 @@ bool sftpManager::loadConfig(const QString &filePath)
         logWarn << "Config file not found:" << filePath;
         return false;
     }
-    if (!file.open(QIODevice::ReadOnly)) {
-        logWarn << "Failed to open config file";
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        logWarn << "Failed to open SFTP config file";
         return false;
     }
 
@@ -150,13 +150,13 @@ bool sftpManager::loadConfig(const QString &filePath)
 
     QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
-        logWarn << "Failed to decrypt config file - wrong password or corrupted file";
+        logWarn << "Failed to decrypt SFTP config file (wrong password or corrupted file)";
         return false;
     }
 
     QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
     if (!doc.isObject()) {
-        logWarn << "Invalid JSON config";
+        logWarn << "Invalid SFTP config file format.";
         return false;
     }
 
