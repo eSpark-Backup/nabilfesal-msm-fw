@@ -156,80 +156,12 @@ bool EncryptionHelper::isEncrypted(QFile &file)
 }
 
 
-// QString EncryptionHelper::getEncryptionKey()
-// {
-//     QString uid = getUid();
-//     QString cpuSerial = getCpuSerial();   // empty on PC is OK
-//     QString salt = "MSM@ADMIN@2025";      // NEVER change
-
-//     if (uid.isEmpty()) return "";
-//     QByteArray material = (uid + cpuSerial + salt).toUtf8();
-//     QByteArray hash = QCryptographicHash::hash(
-//         material, QCryptographicHash::Sha256);
-//     return hash.toHex(); // 32 bytes → AES‑256
-// }
-
-
-// void EncryptionHelper::storeEncryptionPassword(const QString &password)
-// {
-//     if (password.isEmpty()) return;
-
-//     QByteArray salt(SALT_SIZE, 0);
-//     QByteArray iv(IV_SIZE, 0);
-//     RAND_bytes(reinterpret_cast<unsigned char*>(salt.data()), SALT_SIZE);
-//     RAND_bytes(reinterpret_cast<unsigned char*>(iv.data()), IV_SIZE);
-
-//     QByteArray key;
-//     if (!deriveKey(password, salt, key)) {
-//         qWarning() << "Failed to derive key for storing encryption password";
-//         return;
-//     }
-
-//     QByteArray encPassword = encrypt(password.toUtf8(), password); // encrypt with itself
-
-//     QFile file(ENC_KEY_PATH);
-//     if (!file.open(QIODevice::WriteOnly)) {
-//         qWarning() << "Failed to open key storage:" << ENC_KEY_PATH;
-//         return;
-//     }
-
-//     QDataStream out(&file);
-//     out << salt << iv << encPassword;  // store salt + iv + ciphertext
-//     file.close();
-// }
-
-
-// QString EncryptionHelper::readEncryptionPassword()
-// {
-//     QFile file(ENC_KEY_PATH);
-//     if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
-//         qWarning() << "Encryption key not found:" << ENC_KEY_PATH;
-//         return {};
-//     }
-
-//     QByteArray salt, iv, encPassword;
-//     QDataStream in(&file);
-//     in >> salt >> iv >> encPassword;
-//     file.close();
-
-//     // Derive the same key used during encryption
-//     // This assumes you know the UID-based password used initially
-//     QString keyPassword = getEncryptionPassword(); 
-//     QByteArray key;
-//     if (!deriveKey(keyPassword, salt, key)) {
-//         qWarning() << "Failed to derive key for reading encryption password";
-//         return {};
-//     }
-
-//     QByteArray decrypted = decrypt(encPassword, keyPassword); // use real key
-//     return QString(decrypted);
-// }
-
-
 void EncryptionHelper::check_and_encrypt_files(const QString &file_path, const QString &arg, bool showMessages, QWidget* parent)
 {
     QFile file(file_path);
-    if (!isEncrypted(file)) {
+    bool isEncryptedFile = isEncrypted(file);
+
+    if (!isEncryptedFile) {
         if (!file.open(QIODevice::ReadOnly)) {
             if (showMessages) Toast::show(QString("Failed to read unencrypted %1 file!").arg(arg), parent, Toast::Error);
             return;
@@ -247,7 +179,17 @@ void EncryptionHelper::check_and_encrypt_files(const QString &file_path, const Q
             if (showMessages) Toast::show(QString("Failed to write encrypted %1 file!").arg(arg), parent, Toast::Error);
             return;
         }
-        file.write(encrypted);
+        
+        qint64 written = file.write(encrypted);
+        if (written != encrypted.size()) {
+            if (showMessages) Toast::show(QString("Failed to write full encrypted %1 file!").arg(arg), parent, Toast::Error);
+            file.close();
+            return;
+        }
+
+        if (!file.flush()) {
+            qWarning() << "Failed to flush encrypted file to disk";
+        }
         file.close();
 
         qDebug() << QString("%1 file was unencrypted, auto-encrypted successfully.").arg(arg);

@@ -235,8 +235,14 @@ QString getDeviceIp()
 QString getUid()
 {
     QFile prj_file("config/project.json");
-    if (!EncryptionHelper::isEncrypted(prj_file)) Utils::copyUidToUidJson();
-    EncryptionHelper::check_and_encrypt_files("config/project.json", "project.json", true, nullptr);
+    if (!prj_file.exists()) return {};
+        if (!EncryptionHelper::isEncrypted(prj_file)){
+            if (!Utils::copyUidToUidJson()) {
+                return QString();
+            }
+            EncryptionHelper::check_and_encrypt_files("config/project.json",
+                                                 "project.json", true, nullptr);
+        }
 
     QFile file("config/uid.json");
     if (file.open(QIODevice::ReadOnly)) {
@@ -245,9 +251,9 @@ QString getUid()
         if (doc.isObject()) {
             QJsonObject obj = doc.object();
             auto uid = obj.value("uid").toString();
+            file.close();
             return uid;
         }
-        file.close();
     }
     return QString();
 }
@@ -622,7 +628,20 @@ QString getCpuSerial()
 
 QString generateEncryptionKey()
 {
-    QString uid = getUid();
+    QString uid;
+    QFile file("config/uid.json");
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+        if (doc.isObject()) {
+            QJsonObject obj = doc.object();
+            uid = obj.value("uid").toString();
+            file.close();
+            return uid;
+        }
+    }
+    else
+        return QString();
     QString cpuSerial = getCpuSerial();   // empty on PC is OK
     QString salt = "MSM@ADMIN@2025";      // NEVER change
 
@@ -633,45 +652,53 @@ QString generateEncryptionKey()
     return hash.toHex(); // 32 bytes → AES‑256
 }
 
+
 bool copyUidToUidJson()
 {
     QFile inFile("config/project.json");
     if (!inFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "Failed to open config/project.json";
         return false;
     }
-
-    QByteArray data = inFile.readAll();
-    inFile.close();
 
     QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    QJsonDocument doc = QJsonDocument::fromJson(inFile.readAll(), &parseError);
+    inFile.close();
+
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        qWarning() << "Invalid JSON in project.json";
         return false;
     }
 
-    QJsonObject obj = doc.object();
-    QString uid = obj.value("uid").toString();
-    if (uid.isEmpty()) {
-        qWarning() << "UID not found in project.json";
+    QString projectUid = doc.object().value("uid").toString();
+    if (projectUid.isEmpty()) {
         return false;
+    }
+
+    QFile uidFile("config/uid.json");
+    if (uidFile.exists()) {
+        if (uidFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QJsonDocument existingDoc = QJsonDocument::fromJson(uidFile.readAll(), &parseError);
+            uidFile.close();
+
+            if (parseError.error == QJsonParseError::NoError && existingDoc.isObject()) {
+                QString existingUid = existingDoc.object().value("uid").toString();
+                if (existingUid == projectUid) {
+                    return true; // UID already up-to-date
+                }
+            }
+        }
     }
 
     QJsonObject uidObj;
-    uidObj.insert("uid", uid);
-    QJsonDocument uidDoc(uidObj);
+    uidObj.insert("uid", projectUid);
 
-    QFile outFile("config/uid.json");
-    if (!outFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        qWarning() << "Failed to create uid.json";
+    if (!uidFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
         return false;
     }
 
-    outFile.write(uidDoc.toJson(QJsonDocument::Indented));
-    outFile.close();
+    uidFile.write(QJsonDocument(uidObj).toJson(QJsonDocument::Indented));
+    uidFile.close();
 
-    qDebug() << "uid.json created successfully with UID:" << uid;
+    qDebug() << "uid.json updated with UID:" << projectUid;
     return true;
 }
 

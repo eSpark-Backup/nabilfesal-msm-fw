@@ -158,7 +158,7 @@ void MainWindow::initConfig()
         };
 
         if (file.open(QIODevice::WriteOnly)) {
-            file.write(QJsonDocument(defaultSettings).toJson(QJsonDocument::Indented));
+            file.write(QJsonDocument(defaultSettings).toJson(QJsonDocument::Compact));
             file.close();
         }
     }
