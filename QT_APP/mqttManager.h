@@ -51,6 +51,7 @@ private:
     // Assume channel numbers start at 1
     std::array<EnergyData, 13> mqttEnergy;
     Mode clientMode;
+    QMutex mqttMutex;
 
 public:
     QString tag;

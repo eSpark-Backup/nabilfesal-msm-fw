@@ -65,22 +65,26 @@ public slots:
         QJsonObject phaseB = data["phase_b"].toObject();
         QJsonObject phaseC = data["phase_c"].toObject();
 
-        // Accumulate energy for the current channel
-        sdEnergy[channel].negActEnergy[0] += phaseA["energy"].toObject()["active"].toObject()["negative"].toDouble();
-        sdEnergy[channel].negActEnergy[1] += phaseB["energy"].toObject()["active"].toObject()["negative"].toDouble();
-        sdEnergy[channel].negActEnergy[2] += phaseC["energy"].toObject()["active"].toObject()["negative"].toDouble();
+        if(channel >= 1 && channel <= 12)
+        {
+            QMutexLocker locker(&sysExpMutex);
+            // Accumulate energy for the current channel
+            sdEnergy[channel].negActEnergy[0] += phaseA["energy"].toObject()["active"].toObject()["negative"].toDouble();
+            sdEnergy[channel].negActEnergy[1] += phaseB["energy"].toObject()["active"].toObject()["negative"].toDouble();
+            sdEnergy[channel].negActEnergy[2] += phaseC["energy"].toObject()["active"].toObject()["negative"].toDouble();
 
-        sdEnergy[channel].posActEnergy[0] += phaseA["energy"].toObject()["active"].toObject()["positive"].toDouble();
-        sdEnergy[channel].posActEnergy[1] += phaseB["energy"].toObject()["active"].toObject()["positive"].toDouble();
-        sdEnergy[channel].posActEnergy[2] += phaseC["energy"].toObject()["active"].toObject()["positive"].toDouble();
+            sdEnergy[channel].posActEnergy[0] += phaseA["energy"].toObject()["active"].toObject()["positive"].toDouble();
+            sdEnergy[channel].posActEnergy[1] += phaseB["energy"].toObject()["active"].toObject()["positive"].toDouble();
+            sdEnergy[channel].posActEnergy[2] += phaseC["energy"].toObject()["active"].toObject()["positive"].toDouble();
 
-        sdEnergy[channel].negReacEnergy[0] += phaseA["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
-        sdEnergy[channel].negReacEnergy[1] += phaseB["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
-        sdEnergy[channel].negReacEnergy[2] += phaseC["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+            sdEnergy[channel].negReacEnergy[0] += phaseA["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+            sdEnergy[channel].negReacEnergy[1] += phaseB["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
+            sdEnergy[channel].negReacEnergy[2] += phaseC["energy"].toObject()["reactive"].toObject()["negative"].toDouble();
 
-        sdEnergy[channel].posReacEnergy[0] += phaseA["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
-        sdEnergy[channel].posReacEnergy[1] += phaseB["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
-        sdEnergy[channel].posReacEnergy[2] += phaseC["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+            sdEnergy[channel].posReacEnergy[0] += phaseA["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+            sdEnergy[channel].posReacEnergy[1] += phaseB["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+            sdEnergy[channel].posReacEnergy[2] += phaseC["energy"].toObject()["reactive"].toObject()["positive"].toDouble();
+        }
 
         QJsonObject telemetry;
 
@@ -196,6 +200,7 @@ public slots:
 
     void updateAccumulatedEnergy(const std::array<EnergyData,13> &data)
     {
+        QMutexLocker locker(&sysExpMutex);
         sdEnergy = data;
     }
 
@@ -388,4 +393,5 @@ private:
 
     // Accumultion
     std::array<EnergyData, 13> sdEnergy;
+    QMutex sysExpMutex;
 };

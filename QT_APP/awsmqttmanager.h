@@ -139,6 +139,7 @@ private:
     // Running totals for energy
     static std::array<EnergyData, 13> awsEnergy;
     Mode clientMode;
+    QMutex mqttsMutex;
 
 public:
     QString tag;

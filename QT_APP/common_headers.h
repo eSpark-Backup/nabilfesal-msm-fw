@@ -4,6 +4,7 @@
 #include <array>
 #include <QMetaType>
 #include "logs.h"
+#include <QMutex>
 
 struct EnergyData {
     double posActEnergy[3]  = {0.0,0.0,0.0};

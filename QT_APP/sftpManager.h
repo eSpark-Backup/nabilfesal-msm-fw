@@ -53,6 +53,7 @@ private:
     // Assume channel numbers start at 1
     std::array<EnergyData, 13> sftpEnergy;
     Mode clientMode;
+    QMutex sftpMutex;
 
 public:
     QString tag;

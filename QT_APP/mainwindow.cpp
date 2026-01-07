@@ -573,6 +573,9 @@ void MainWindow::connectLoginSignals()
         adminMqttsHandler->resetAccumulatedEnergy();
         adminMqttHandler->resetAccumulatedEnergy();
         adminSftpHandler->resetAccumulatedEnergy();
+        factoryMqttsHandler->resetAccumulatedEnergy();
+        factoryMqttHandler->resetAccumulatedEnergy();
+        factorySftpHandler->resetAccumulatedEnergy();
         dataExporter->resetAccumulatedEnergy();
     });
 
@@ -597,7 +600,7 @@ void MainWindow::connectLoginSignals()
 
     QTimer *refreshTimer = new QTimer(this);
     connect(refreshTimer, &QTimer::timeout, this, &MainWindow::refreshInfo);
-    refreshTimer->start(10 * 1000);
+    refreshTimer->start(5 * 1000);
 
     scheduleGSMReset();
 }
@@ -1119,7 +1122,6 @@ void MainWindow::refreshInfo()
     curProtState_A.mqttStatus = Utils::getMqttStatus(Mode::Admin);
     curProtState_A.sftpStatus = Utils::getSftpStatus(Mode::Admin);
     curProtState_A.mqttsStatus = Utils::getMqttsStatus(Mode::Admin);
-
     if (sendBothSignal || isConnectionDifferent(curProtState_A, prvProtState_A))
     {        
         curDevInfo.conn = curProtState_A;
