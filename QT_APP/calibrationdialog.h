@@ -37,9 +37,11 @@ private:
     NumKeyboard *keyboard;
 
     bool isCurrentData;
-    const int minValue = 1;
+    const int minValue = 0;
     const int maxValue = 12;
-    int value = 1;
+    int value = 0;
+    int lastID = 1;
+    int channel;
 };
 
 #endif // CALIBRATIONDIALOG_H
