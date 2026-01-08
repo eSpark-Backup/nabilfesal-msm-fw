@@ -99,16 +99,16 @@ void CalibrationDialog::showEvent(QShowEvent *event)
 
 void CalibrationDialog::setupTouchSpin()
 {
-    ui->valueDisplay->setText(QString::number(value));
+    ui->valueDisplay->setText(!value? "All": QString::number(value));
 
     connect(ui->plusBtn, &QPushButton::clicked, this, [=]() {
         value = (value >= maxValue) ? minValue : value + 1;
-        ui->valueDisplay->setText(QString::number(value));
+        ui->valueDisplay->setText(!value? "All": QString::number(value));
     });
 
     connect(ui->minusBtn, &QPushButton::clicked, this, [=]() {
         value = (value <= minValue) ? maxValue : value - 1;
-        ui->valueDisplay->setText(QString::number(value));
+        ui->valueDisplay->setText(!value? "All": QString::number(value));
     });
 }
 
@@ -134,7 +134,7 @@ void CalibrationDialog::on_sendpushBtn_clicked()
     QJsonObject rootObj;
     if(isCurrentData)
     {
-        gain["ID"] = ui->valueDisplay->text().toInt();
+        gain["ID"] = !value?lastID:value;
         rootObj["command"] = "i-calibration";
         rootObj["current"] = gain;
     }
@@ -149,6 +149,8 @@ void CalibrationDialog::on_sendpushBtn_clicked()
     emit requestSerialCommand(jsonString);
     ui->sendpushBtn->setEnabled(false);
     ui->backPushBtn->setEnabled(false);
+    ui->plusBtn->setEnabled(false);
+    ui->minusBtn->setEnabled(false);
 }
 
 
@@ -160,8 +162,26 @@ void CalibrationDialog::on_backPushBtn_clicked()
 
 void CalibrationDialog::enableButton()
 {
-    ui->sendpushBtn->setEnabled(true);
-    ui->backPushBtn->setEnabled(true);
+    if (ui->sendpushBtn->isEnabled()) return;
+    if(isCurrentData && value == 0 && lastID < 12)
+    {
+        QTimer::singleShot(500, this, [this](){
+            if (value == 0) lastID++;
+            on_sendpushBtn_clicked(); 
+            });
+    }
+    else
+    {
+        ui->sendpushBtn->setEnabled(true);
+        ui->backPushBtn->setEnabled(true);
+        ui->plusBtn->setEnabled(true);
+        ui->minusBtn->setEnabled(true);
+
+        if(lastID == 12)
+            QTimer::singleShot(1000, this, [this](){
+                lastID = 1;
+                });
+    }
 }
 
 
@@ -269,7 +289,7 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
             QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
             file.write(encryptedData);
             file.close();
-            Toast::show("Current Calibrated successfully", this, Toast::Info);
+            Toast::show(QString("Channel: %1 Current Calibrated successfully").arg(!value?lastID:value), this, Toast::Info);
         }
     }
 }

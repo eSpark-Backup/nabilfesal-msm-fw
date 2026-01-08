@@ -81,20 +81,51 @@ MainWindow::MainWindow(QWidget *parent)
 
     responseWaitTimer = new QTimer(this);
     responseWaitTimer->setSingleShot(true);
+
     connect(responseWaitTimer, &QTimer::timeout, this, [this]() {
         if (waitingForCalibrationResponse) {
+
+            QJsonDocument doc = QJsonDocument::fromJson(last_cmd.toUtf8());
+            QJsonObject rootObj = doc.object();
+
+            QString command = "calibration";
+            int id = -1;
+            QString msg = "No response from ATSAM, trying again!";
+
+            if (rootObj.contains("command") && rootObj["command"].isString()) {
+                command = rootObj["command"].toString();
+            }
+
+            if (command == "i-calibration" && rootObj.contains("current") && rootObj["current"].isObject()) {
+                QJsonObject currentObj = rootObj["current"].toObject();
+                if (currentObj.contains("ID") && currentObj["ID"].isDouble()) {
+                    id = currentObj["ID"].toInt();
+                }
+            }
+
             waitingForCalibrationResponse = false;
             if(cal_retry_count < 3)
             {
                 cal_retry_count++;
-                Toast::show("No response from ATSAM, trying again!", this, Toast::Warning);
+                if(id == -1)
+                    msg = QString("[ %1 ] No response from ATSAM, trying again!").arg(command);
+                else
+                    msg = QString("%1 [%2] No response from ATSAM, trying again!").arg(command).arg(id);
+
+                Toast::show(msg, this, Toast::Warning);
             }
             else
             {
-                Toast::show("No response from ATSAM received for calibration settings.", this, Toast::Error);
+                 if(id == -1)
+                    msg = QString("No response from ATSAM received for %1 settings.").arg(command);
+                else
+                    msg = QString("%1 [%2] No response from ATSAM, trying again!").arg(command).arg(id);
+
+                Toast::show(msg, this, Toast::Error);
                 enableUiButton();
                 cal_retry_count = 1;
-                if(BootUpSync) bootFileIndex += 1;
+                if(BootUpSync)
+                    bootFileIndex += 1;
                 else
                 {
                     if (pollTimer) pollTimer->start(200); return;
@@ -581,6 +612,9 @@ void MainWindow::connectLoginSignals()
         adminMqttsHandler->resetAccumulatedEnergy();
         adminMqttHandler->resetAccumulatedEnergy();
         adminSftpHandler->resetAccumulatedEnergy();
+        factoryMqttsHandler->resetAccumulatedEnergy();
+        factoryMqttHandler->resetAccumulatedEnergy();
+        factorySftpHandler->resetAccumulatedEnergy();
         dataExporter->resetAccumulatedEnergy();
     });
 
@@ -605,7 +639,7 @@ void MainWindow::connectLoginSignals()
 
     QTimer *refreshTimer = new QTimer(this);
     connect(refreshTimer, &QTimer::timeout, this, &MainWindow::refreshInfo);
-    refreshTimer->start(10 * 1000);
+    refreshTimer->start(5 * 1000);
 
     scheduleGSMReset();
 }
@@ -1127,7 +1161,6 @@ void MainWindow::refreshInfo()
     curProtState_A.mqttStatus = Utils::getMqttStatus(Mode::Admin);
     curProtState_A.sftpStatus = Utils::getSftpStatus(Mode::Admin);
     curProtState_A.mqttsStatus = Utils::getMqttsStatus(Mode::Admin);
-
     if (sendBothSignal || isConnectionDifferent(curProtState_A, prvProtState_A))
     {        
         curDevInfo.conn = curProtState_A;

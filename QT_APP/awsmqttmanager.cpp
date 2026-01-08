@@ -472,26 +472,28 @@ void AwsMqttManager::processAwsTelemetry(int channel, const QJsonObject &payload
 
              // Get energy object
             QJsonObject energyObj = phaseObj["energy"].toObject();
-
-            QJsonObject active = energyObj["active"].toObject();
+            QJsonObject active   = energyObj["active"].toObject();
             QJsonObject reactive = energyObj["reactive"].toObject();
 
-            // Accumulate into class variables
-            awsEnergy[channel].posActEnergy[phaseNum] += active["positive"].toDouble();
-            awsEnergy[channel].negActEnergy[phaseNum] += active["negative"].toDouble();
-            awsEnergy[channel].posReacEnergy[phaseNum] += reactive["positive"].toDouble();
-            awsEnergy[channel].negReacEnergy[phaseNum] += reactive["negative"].toDouble();
+            if(channel >= 1 && channel <= 12)
+            {
+                QMutexLocker locker(&mqttsMutex);
+                // Accumulate into class variables
+                awsEnergy[channel].posActEnergy[phaseNum] += active["positive"].toDouble();
+                awsEnergy[channel].negActEnergy[phaseNum] += active["negative"].toDouble();
+                awsEnergy[channel].posReacEnergy[phaseNum] += reactive["positive"].toDouble();
+                awsEnergy[channel].negReacEnergy[phaseNum] += reactive["negative"].toDouble();
 
+                // Update JSON with accumulated totals
+                active["positive"] = awsEnergy[channel].posActEnergy[phaseNum];
+                active["negative"] = awsEnergy[channel].negActEnergy[phaseNum];
+                reactive["positive"] = awsEnergy[channel].posReacEnergy[phaseNum];
+                reactive["negative"] = awsEnergy[channel].negReacEnergy[phaseNum];
 
-            // Update JSON with accumulated totals
-            active["positive"] = awsEnergy[channel].posActEnergy[phaseNum];
-            active["negative"] = awsEnergy[channel].negActEnergy[phaseNum];
-            reactive["positive"] = awsEnergy[channel].posReacEnergy[phaseNum];
-            reactive["negative"] = awsEnergy[channel].negReacEnergy[phaseNum];
-
-            energyObj["active"] = active;
-            energyObj["reactive"] = reactive;
-            phaseObj["energy"] = energyObj;
+                energyObj["active"] = active;
+                energyObj["reactive"] = reactive;
+                phaseObj["energy"] = energyObj;
+            }
             
             dataObj[phase] = phaseObj;
         }
@@ -746,5 +748,6 @@ void AwsMqttManager::resetAccumulatedEnergy()
 
 void AwsMqttManager::updateAccumulatedEnergy(const std::array<EnergyData,13> &data)
 {
+    QMutexLocker locker(&mqttsMutex);
     awsEnergy = data;
 }

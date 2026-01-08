@@ -511,6 +511,7 @@ void ChannelsHome::saveEnergyData()
     QJsonObject root, chObj;
     bool energyChanged = false;
 
+    emit energyUpdated(energy);
     for (int chIt = 1; chIt <= 12; chIt++) {
         for (int phIt = 0; phIt < 3; phIt++) {
             energyChanged |= clampOrReset(energy[chIt].posActEnergy[phIt]);
@@ -529,7 +530,6 @@ void ChannelsHome::saveEnergyData()
         root[QString::number(chIt)] = chObj;
     }
 
-    if (energyChanged)  emit energyUpdated(energy);
 
     QFile file(EnergyFilePath);
     if (file.open(QIODevice::WriteOnly)) {
