@@ -124,10 +124,7 @@ void Measurements::on_load_btn_clicked(bool checked)
             return;
         }
 
-        QByteArray encryptedData = file.readAll();
-        file.close();
-
-        QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(CT_RATIO, Utils::getEncryptionKey());
         if (decryptedData.isEmpty()) {
             if (!checked) Toast::show("Failed to decrypt CT_RATIO settings (wrong password or corrupted file)", this, Toast::Error);
             return;
@@ -168,10 +165,7 @@ void Measurements::on_load_btn_clicked(bool checked)
             return;
         }
 
-        QByteArray encryptedData = file.readAll();
-        file.close();
-
-        QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(I_OFFSET, Utils::getEncryptionKey());
         if (decryptedData.isEmpty()) {
             if (!checked) Toast::show("Failed to decrypt I_OFFSET settings (wrong password or corrupted file)", this, Toast::Error);
             return;
@@ -212,10 +206,7 @@ void Measurements::on_load_btn_clicked(bool checked)
             return;
         }
 
-        QByteArray encryptedData = file.readAll();
-        file.close();
-
-        QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(V_OFFSET, Utils::getEncryptionKey());
         if (decryptedData.isEmpty()) {
             if (!checked) Toast::show("Failed to decrypt V_OFFSET settings (wrong password or corrupted file)", this, Toast::Error);
             return;
@@ -345,7 +336,7 @@ void Measurements::processSettings(const QString &key,
     // }
 
     // Save to file
-    QDir dir("config/admin_settings");
+    QDir dir(CONFIG_ADMIN_PATH);
     if (!dir.exists()) dir.mkpath(".");
 
     QFile file(filePath);

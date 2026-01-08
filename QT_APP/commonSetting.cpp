@@ -75,10 +75,7 @@ QJsonObject settingsManager::loadMqttSettings(bool showMessages, bool reloadSett
         return {};
     }
 
-    QByteArray encryptedData = file.readAll();
-    file.close();
-
-    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(mqttConfigPath(), Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
         if (!showMessages) Toast::show("Failed to decrypt MQTT settings (wrong password or corrupted file)", this, Toast::Error);
         return {};
@@ -125,7 +122,7 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessage
         return;
     }
 
-    QDir dir("config/admin_settings");
+    QDir dir(CONFIG_ADMIN_PATH);
     if (!dir.exists()) {
         dir.mkpath(".");
     }
@@ -267,10 +264,7 @@ QJsonObject settingsManager::loadSftpSettings(bool showMessages, bool reloadSett
         return {};
     }
 
-    QByteArray encryptedData = file.readAll();
-    file.close();
-
-    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(sftpConfigPath(), Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
         if (!showMessages) Toast::show("Failed to decrypt SFTP settings (wrong password or corrupted file)", this, Toast::Error);
         return {};
@@ -388,10 +382,7 @@ QJsonObject settingsManager::loadMqttsSettings(bool showMessages, bool reloadSet
         return {};
     }
 
-    QByteArray encryptedData = file.readAll();
-    file.close();
-
-    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
         if (!showMessages) Toast::show("Failed to decrypt MQTTS settings (wrong password or corrupted file)", this, Toast::Error);
         return {};
@@ -441,7 +432,7 @@ void settingsManager::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessa
         return;
     }
 
-    QDir dir("config/admin_settings");
+    QDir dir(CONFIG_ADMIN_PATH);
     if (!dir.exists()) {
         dir.mkpath(".");
     }
@@ -713,10 +704,15 @@ void settingsManager::checkCertificates()
         return;
     }
 
+    bool isDevCertPresent = QFile::exists(prvCertPath);
+    bool isDevKeyPresent = QFile::exists(prvkeyPath);
     ca1->setChecked(QFile::exists(caPath));
     claim->setChecked(QFile::exists(certPath));
     key->setChecked(QFile::exists(keyPath));
-    devCert->setChecked(QFile::exists(prvCertPath));
-    devKey->setChecked(QFile::exists(prvkeyPath));
+    devCert->setChecked(isDevCertPresent);
+    devKey->setChecked(isDevKeyPresent);
+
+    if (isDevCertPresent) EncryptionHelper::check_and_encrypt_files(prvCertPath, "Device Cert", true, this);
+    if (isDevKeyPresent)  EncryptionHelper::check_and_encrypt_files(prvkeyPath, "Device Key", true, this);
 }
 

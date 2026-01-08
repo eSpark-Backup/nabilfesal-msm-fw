@@ -17,11 +17,9 @@ class EncryptionHelper
 {
 public:
     static bool isEncrypted(QFile &file);
-    static QString getEncryptionPassword();
-    static QString readEncryptionPassword();
-    static void storeEncryptionPassword(const QString &password);
     static QByteArray encrypt(const QByteArray &plainText, const QString &password);
     static QByteArray decrypt(const QByteArray &cipherText, const QString &password);
+    static QByteArray readAndDecryptFile(const QString &path,const QString &password);
     static void check_and_encrypt_files(const QString &file_path,
                                 const QString &arg, bool showMessages, QWidget* parent);
 

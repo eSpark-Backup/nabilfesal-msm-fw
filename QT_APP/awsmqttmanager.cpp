@@ -132,10 +132,8 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
         return false;
     }
 
-    QByteArray encryptedData = file.readAll();
-    file.close();
 
-    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
         logWarn << "Failed to decrypt MQTTS settings (wrong password or corrupted file)";
         return false;
@@ -197,6 +195,9 @@ bool AwsMqttManager::loadCertificates()
         return false;
     }
 
+    EncryptionHelper::check_and_encrypt_files(provCertPath, "Load Device Cert", true, nullptr);
+    EncryptionHelper::check_and_encrypt_files(provKeyPath, "Load Device Key", true, nullptr);
+
     QFile caFile(caPath), certFile(provCertPath), keyFile(provKeyPath);
     if (!caFile.open(QIODevice::ReadOnly) ||
         !certFile.open(QIODevice::ReadOnly) ||
@@ -205,11 +206,23 @@ bool AwsMqttManager::loadCertificates()
         return false;
     }
 
+    QByteArray certDecryptedData = EncryptionHelper::readAndDecryptFile(provCertPath, Utils::getEncryptionKey());
+    if (certDecryptedData.isEmpty()) {
+        logWarn << "Failed to decrypt Device Cert File settings (wrong password or corrupted file)";
+        return false;
+    }
+
+    QByteArray KeyDecryptedData = EncryptionHelper::readAndDecryptFile(provKeyPath, Utils::getEncryptionKey());
+    if (KeyDecryptedData.isEmpty()) {
+        logWarn << "Failed to decrypt Device Key File settings (wrong password or corrupted file)";
+        return false;
+    }
+
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
     conf.setProtocol(QSsl::TlsV1_2OrLater);
     conf.setCaCertificates(QSslCertificate::fromData(caFile.readAll(), QSsl::Pem));
-    conf.setLocalCertificate(QSslCertificate(certFile.readAll(), QSsl::Pem));
-    conf.setPrivateKey(QSslKey(keyFile.readAll(), QSsl::Rsa, QSsl::Pem));
+    conf.setLocalCertificate(QSslCertificate(certDecryptedData, QSsl::Pem));
+    conf.setPrivateKey(QSslKey(KeyDecryptedData, QSsl::Rsa, QSsl::Pem));
 
     if (conf.localCertificate().isNull() || conf.privateKey().isNull() || conf.caCertificates().isEmpty()) {
         logWarn << "[AWS TLS] Invalid certificate/key/CA chain";

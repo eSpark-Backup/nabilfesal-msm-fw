@@ -116,11 +116,9 @@ bool LoginWidget::eventFilter(QObject *obj, QEvent *event)
 
 void LoginWidget::on_loginButton_clicked()
 {
-    QFile file("config/project.json");
+    QFile file(PROJECT_JSON_PATH);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QByteArray encryptedData = file.readAll();
-        file.close();
-        QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(PROJECT_JSON_PATH, Utils::getEncryptionKey());
         QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
         if (doc.isObject()) {
             QJsonObject obj = doc.object();

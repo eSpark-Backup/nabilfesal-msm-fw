@@ -35,4 +35,7 @@ enum Mode {
 #define CLAIM_PATH (CERT_DIR_PATH + "claim_certs/")
 #define PROV_PATH  (CERT_DIR_PATH + "prov_certs/")
 
+#define PROJECT_JSON_PATH "config/project.json"
+#define CONFIG_ADMIN_PATH "config/admin_settings"
+
 #endif // COMMON_HEADERS_H

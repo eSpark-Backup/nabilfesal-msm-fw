@@ -156,7 +156,7 @@ void Registration::on_pushButton_clicked()
         return;
     }
 
-    QFile file("config/project.json");
+    QFile file(PROJECT_JSON_PATH);
 
     if (!file.open(QIODevice::ReadOnly)) {
         QMessageBox::critical(this, "Registration", "Failed to open project.json for reading.");
@@ -183,7 +183,7 @@ void Registration::on_pushButton_clicked()
     }
 
     QJsonDocument newDoc(projectSettings);
-    file.write(newDoc.toJson(QJsonDocument::Indented));
+    file.write(newDoc.toJson(QJsonDocument::Compact));
     file.close();
 
     QMessageBox::information(this, "Registration", "Registration successful!");

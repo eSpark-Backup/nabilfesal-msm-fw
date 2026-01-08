@@ -11,7 +11,7 @@ static constexpr int KEY_SIZE     = 32; // AES-256
 static constexpr int IV_SIZE      = 12; // GCM recommended
 static constexpr int TAG_SIZE     = 16;
 static constexpr int PBKDF2_ITERS = 100000;
-
+static const QByteArray ENC_MAGIC = "ENCv1:";
 
 static const QString ENC_KEY_PATH = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
                                     + "/encryption_key.bin";
@@ -87,15 +87,20 @@ QByteArray EncryptionHelper::encrypt(const QByteArray &plainText, const QString 
     out.append(cipherText);
     out.append(tag);
 
-    return out.toBase64();
+    return ENC_MAGIC + out.toBase64();
 }
 
 
 QByteArray EncryptionHelper::decrypt(const QByteArray &cipherText, const QString &password)
 {
-    if (cipherText.isEmpty() || password.isEmpty()) return {};
+    if (cipherText.isEmpty() || password.isEmpty())
+        return {};
 
-    QByteArray decoded = QByteArray::fromBase64(cipherText);
+    if (!cipherText.startsWith(ENC_MAGIC))
+        return cipherText;
+
+    QByteArray payload = cipherText.mid(ENC_MAGIC.size());
+    QByteArray decoded = QByteArray::fromBase64(payload);
     if (decoded.size() < SALT_SIZE + IV_SIZE + TAG_SIZE) return {};
 
     QByteArray salt = decoded.left(SALT_SIZE);
@@ -142,23 +147,37 @@ QByteArray EncryptionHelper::decrypt(const QByteArray &cipherText, const QString
 }
 
 
-bool EncryptionHelper::isEncrypted(QFile &file)
+QByteArray EncryptionHelper::readAndDecryptFile(
+    const QString &path,
+    const QString &password)
 {
-    if (!file.exists() || !file.open(QIODevice::ReadOnly))
-        return false;
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return {};
 
-    QByteArray firstBytes = file.peek(64);
+    QByteArray data = file.readAll();
     file.close();
 
-    if (firstBytes.startsWith('{') || firstBytes.startsWith("\n{"))
-        return false; // plain JSON
-    return true; // assume encrypted
+    return decrypt(data, password);
+}
+
+
+bool EncryptionHelper::isEncrypted(QFile &file)
+{
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    QByteArray firstBytes = file.peek(ENC_MAGIC.size());
+    file.close();
+
+    return firstBytes == ENC_MAGIC;
 }
 
 
 void EncryptionHelper::check_and_encrypt_files(const QString &file_path, const QString &arg, bool showMessages, QWidget* parent)
 {
     QFile file(file_path);
+    if (!file.exists()) return;
     bool isEncryptedFile = isEncrypted(file);
 
     if (!isEncryptedFile) {
@@ -172,9 +191,9 @@ void EncryptionHelper::check_and_encrypt_files(const QString &file_path, const Q
         QByteArray encrypted = encrypt(plain, Utils::getEncryptionKey());
         if (encrypted.isEmpty()) {
             if (showMessages) Toast::show(QString("Failed to encrypt existing %1 file!").arg(arg), parent, Toast::Error);
+            qDebug() << "Failed to encrypt existing " << arg << " file!";
             return;
         }
-
         if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             if (showMessages) Toast::show(QString("Failed to write encrypted %1 file!").arg(arg), parent, Toast::Error);
             return;

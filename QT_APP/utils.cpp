@@ -1,23 +1,24 @@
 #include "utils.h"
-#include <QProcess>
-#include <QJsonArray>
-#include <QDateTime>
-#include <QStringList>
-#include <QThread>
-#include <QNetworkInterface>
-#include <QHostAddress>
+#include <QDir>
 #include <QFile>
 #include <QTimer>
-#include <QJsonDocument>
+#include <QLabel>
+#include <cstdlib>
+#include <QPixmap>
+#include <QThread>
+#include <QProcess>
+#include <QDateTime>
+#include <QJsonArray>
+#include <QStringList>
 #include <QJsonObject>
+#include <QHostAddress>
+#include "mainwindow.h"
 #include "mqttManager.h"
 #include "sftpManager.h"
+#include <QJsonDocument>
 #include "awsmqttmanager.h"
-#include <cstdlib>
-#include <QLabel>
-#include <QPixmap>
-#include <QDir>
-#include "mainwindow.h"
+#include "common_headers.h"
+#include <QNetworkInterface>
 #include "encryptionhelper.h"
 
 
@@ -234,13 +235,13 @@ QString getDeviceIp()
 
 QString getUid()
 {
-    QFile prj_file("config/project.json");
+    QFile prj_file(PROJECT_JSON_PATH);
     if (!prj_file.exists()) return {};
         if (!EncryptionHelper::isEncrypted(prj_file)){
             if (!Utils::copyUidToUidJson()) {
                 return QString();
             }
-            EncryptionHelper::check_and_encrypt_files("config/project.json",
+            EncryptionHelper::check_and_encrypt_files(PROJECT_JSON_PATH,
                                                  "project.json", true, nullptr);
         }
 
@@ -261,7 +262,7 @@ QString getUid()
 
 QString getDevPassword()
 {
-    QFile file("config/project.json");
+    QFile file(PROJECT_JSON_PATH);
     if (file.open(QIODevice::ReadOnly)) {
         QByteArray data = file.readAll();
         QJsonDocument doc = QJsonDocument::fromJson(data);
@@ -655,7 +656,7 @@ QString generateEncryptionKey()
 
 bool copyUidToUidJson()
 {
-    QFile inFile("config/project.json");
+    QFile inFile(PROJECT_JSON_PATH);
     if (!inFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return false;
     }
@@ -695,7 +696,7 @@ bool copyUidToUidJson()
         return false;
     }
 
-    uidFile.write(QJsonDocument(uidObj).toJson(QJsonDocument::Indented));
+    uidFile.write(QJsonDocument(uidObj).toJson(QJsonDocument::Compact));
     uidFile.close();
 
     qDebug() << "uid.json updated with UID:" << projectUid;

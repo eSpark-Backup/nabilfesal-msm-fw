@@ -114,9 +114,6 @@ MainWindow::MainWindow(QWidget *parent)
     startApp = true;
     if (pollTimer) pollTimer->stop();
 
-    EncryptionHelper::check_and_encrypt_files("config/v_offset_response.json", "V_Offset_Response", true, this);
-    EncryptionHelper::check_and_encrypt_files("config/i_offset_response.json", "I_Offset_Response", true, this);
-
     QStringList files = {
         "config/v_offset_response.json",
         "config/i_offset_response.json",
@@ -145,11 +142,11 @@ MainWindow::~MainWindow()
 // -----------------------------
 void MainWindow::initConfig()
 {
-    QDir dir("config/admin_settings");
+    QDir dir(CONFIG_ADMIN_PATH);
     if (!dir.exists())
         dir.mkpath(".");
 
-    QFile file("config/project.json");
+    QFile file(PROJECT_JSON_PATH);
     if (!file.exists()) {
         QJsonObject defaultSettings {
             {"uid", ""},
@@ -167,8 +164,8 @@ void MainWindow::initConfig()
         const auto encryptedData = file.readAll();
         file.close();
         QByteArray decryptedData = encryptedData;
-        if (EncryptionHelper::isEncrypted(file))
-            decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+        if (!EncryptionHelper::isEncrypted(file)) Utils::getUid();
+        decryptedData = EncryptionHelper::readAndDecryptFile(PROJECT_JSON_PATH, Utils::getEncryptionKey());
         QJsonParseError parseError;
         QJsonDocument doc1 = QJsonDocument::fromJson(decryptedData, &parseError);
         if (parseError.error != QJsonParseError::NoError || !doc1.isObject()) {
@@ -967,10 +964,10 @@ void MainWindow::sendFileWithDelay(const QStringList &files, int index)
         return;
     }
 
-    QByteArray jsonData = file.readAll();
-    file.close();
 
-    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    EncryptionHelper::check_and_encrypt_files(filePath, filePath.toUpper(), true, this);
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
     if (!doc.isNull() && doc.isObject()) {
         QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
 

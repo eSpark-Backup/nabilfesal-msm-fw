@@ -145,10 +145,7 @@ bool sftpManager::loadConfig(const QString &filePath)
         return false;
     }
 
-    QByteArray encryptedData = file.readAll();
-    file.close();
-
-    QByteArray decryptedData = EncryptionHelper::decrypt(encryptedData, Utils::getEncryptionKey());
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
         logWarn << "Failed to decrypt SFTP config file (wrong password or corrupted file)";
         return false;
