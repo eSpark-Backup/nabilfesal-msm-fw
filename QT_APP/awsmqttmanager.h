@@ -17,7 +17,7 @@ struct DeviceInfo {
     QString uuid;
     QString pass;
     QString ip;
-    QString imei;
+    QString imei = "UNKNOWN";
     QString date;
     QString ntpStatus;
     QString gsmStatus;

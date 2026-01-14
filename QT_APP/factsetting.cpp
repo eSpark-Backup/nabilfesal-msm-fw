@@ -1,15 +1,16 @@
 #include "factsetting.h"
 #include "ui_factsetting.h"
-#include "utils.h"
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonParseError>
-#include <QMessageBox>
 #include <QDir>
-#include <QProcess>
+#include <QFile>
 #include <QScreen>
+#include "utils.h"
 #include "toast.h"
+#include <QProcess>
+#include <QMessageBox>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QJsonParseError>
+
 
 FactSetting::FactSetting(QWidget *parent)
     : settingsManager(parent)

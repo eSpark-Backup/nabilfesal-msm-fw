@@ -264,8 +264,13 @@ QString getDevPassword()
 {
     QFile file(PROJECT_JSON_PATH);
     if (file.open(QIODevice::ReadOnly)) {
-        QByteArray data = file.readAll();
-        QJsonDocument doc = QJsonDocument::fromJson(data);
+        QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(PROJECT_JSON_PATH, Utils::getEncryptionKey());
+        if (decryptedData.isEmpty()) return QString();
+
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
+        if (parseError.error != QJsonParseError::NoError || !doc.isObject()) return QString();
+        
         if (doc.isObject()) {
             QJsonObject obj = doc.object();
             auto uid = obj.value("admin").toString();

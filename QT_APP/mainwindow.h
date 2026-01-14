@@ -2,30 +2,30 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QThread>
-#include <QTimer>
 #include <QMap>
-#include <QJsonObject>
+#include <QTimer>
 #include <QMutex>
 #include <atomic>
+#include <QThread>
+#include <QJsonObject>
 
 #include "login.h"
 #include "channels.h"
-#include "devicesettings.h"
-#include "registration.h"
-#include "factorysettings.h"
-#include "usbexporter.h"
 #include "usbwatcher.h"
+#include "usbexporter.h"
+#include "mqttManager.h"
 #include "factsetting.h"
+#include "sftpManager.h"
+#include "registration.h"
 #include "measurements.h"
 #include "serialworker.h"
-#include "mqttManager.h"
-#include "awsmqttmanager.h"
-#include "sftpManager.h"
+#include "httpsManager.h"
 #include "commonSetting.h"
+#include "awsmqttmanager.h"
 #include "systemexporter.h"
+#include "devicesettings.h"
+#include "factorysettings.h"
 #include "calibrationdialog.h"
-#include "diagnostics.h"
 #include "inactivitywatcher.h"
 
 QT_BEGIN_NAMESPACE
@@ -66,12 +66,10 @@ private slots:
     void onGenericResponseReady(const QString &resp);
 
     // Login / navigation
-    void onLoadDiagnotiscs();
     void onLoadChannels();
     void onAdminLogin();
     void onFactoryLogin();
     void onChannelsExit();
-    void onDiagExit();
 
     // Progress management
     void updateProgress();
@@ -132,9 +130,9 @@ private:
     Measurements *measure = nullptr;
     SystemDataExporter *dataExporter = nullptr;
     CalibrationDialog *gainCalibrator = nullptr;
-    Diagnostics *alerts = nullptr;
     InactivityWatcher *inActWatcher = nullptr;
     settingsManager *settingsHandler = nullptr;
+    HttpsManager *httpsHandler = nullptr;
 
     // state
     int progressValue = 0;

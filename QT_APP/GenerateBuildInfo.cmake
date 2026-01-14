@@ -28,7 +28,6 @@ string(TIMESTAMP BUILD_TIME "%H:%M:%S")
 file(WRITE ${OUTPUT_FILE} "
 #pragma once
 
-#define BUILD_VERSION \"${PROJECT_VERSION}\"
 #define BUILD_DATE \"${BUILD_DATE}\"
 #define BUILD_TIME \"${BUILD_TIME}\"
 #define BUILD_AUTHOR \"${GIT_AUTHOR}\"
