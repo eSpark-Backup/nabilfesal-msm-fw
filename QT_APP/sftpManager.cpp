@@ -167,6 +167,8 @@ bool sftpManager::loadConfig(const QString &filePath)
     intervalSec = intervalSecStr.toInt();
     schedule = obj.value("schedule").toString();
 
+    if (schedule.isEmpty()) schedule = "0100";
+
     // // Log the values
     // logDebug << "SFTP Settings Loaded:";
     // logDebug << "  Host:" << host;

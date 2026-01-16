@@ -1574,6 +1574,9 @@ border-radius: 10px</string>
     font-size: 15px;
     color: black;</string>
                     </property>
+                    <property name="text">
+                     <string>0100</string>
+                    </property>
                     <property name="placeholderText">
                      <string/>
                     </property>

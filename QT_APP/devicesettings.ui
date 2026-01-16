@@ -1645,6 +1645,9 @@ QPushButton:focus {
     font-size: 15px;
     color: black;</string>
                    </property>
+                   <property name="text">
+                    <string>0100</string>
+                   </property>
                   </widget>
                  </item>
                 </layout>

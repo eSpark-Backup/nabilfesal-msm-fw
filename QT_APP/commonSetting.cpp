@@ -114,7 +114,7 @@ void settingsManager::apply_mqtt_Settings(const QJsonObject &mqttSettings, bool 
 }
 
 
-void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessages)
+void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessages, bool emitLoad)
 {
     bool isJsonDiff = jsonDifferent(mqttSetting, mqttConfigPath());
     if (!isJsonDiff) {
@@ -144,7 +144,23 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessage
         Toast::show("MQTT settings saved successfully!", this, Toast::Info);
         emit mqttSettingsChanged(mqttSetting);
     }
-    emit mqtt_load();
+
+    if (emitLoad)
+        emit mqtt_load();
+}
+
+
+void settingsManager::parse_mqtt_from_http(const QJsonObject &mqttObj)
+{
+    QJsonObject mqttSettings;
+    mqttSettings["ip"]       = mqttObj.value("broker_ip").toString();
+    mqttSettings["port"]     = QString::number(mqttObj.value("broker_port").toInt());
+    mqttSettings["user"]     = mqttObj.value("broker_user").toString();
+    mqttSettings["password"] = mqttObj.value("broker_pass").toString();
+    mqttSettings["topic"]    = mqttObj.value("mqtt_topic").toString();
+    mqttSettings["interval"] = QString::number(mqttObj.value("data_interval").toInt());
+
+    saveMqttSettings(mqttSettings, false, false);
 }
 
 
@@ -170,7 +186,7 @@ void settingsManager::parse_load_store_mqtt(const QJsonObject &payload)
 }
 
 
-void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessages)
+void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessages, bool emitLoad)
 {
     bool isJsonDiff = jsonDifferent(sftpSetting, sftpConfigPath());
     if (!isJsonDiff) {
@@ -199,7 +215,9 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
         Toast::show("SFTP settings saved successfully!", this, Toast::Info);
         emit sftpSettingsChanged(sftpSetting);
     }
-    emit sftp_load();
+    
+    if (emitLoad)
+        emit sftp_load();
 }
 
 
@@ -219,6 +237,8 @@ QJsonObject settingsManager::getSftpSettings()
     QString sftpInterval = Int->text().trimmed();
     QString sftpSchedule = Sch->text().trimmed();
 
+    if (sftpSchedule.isEmpty()) sftpSchedule = "0100";
+
     bool ok;
     int sftpInt = sftpInterval.toInt(&ok);
 
@@ -233,6 +253,8 @@ QJsonObject settingsManager::getSftpSettings()
         return {};
     }
 
+    if (sftpSchedule.isEmpty()) sftpSchedule = "0100";
+
     QJsonObject sftpSettings;
     sftpSettings["ip"]       = sftpIp;
     sftpSettings["port"]     = sftpPort;
@@ -240,6 +262,7 @@ QJsonObject settingsManager::getSftpSettings()
     sftpSettings["password"] = sftpPass;
     sftpSettings["interval"] = sftpInterval;
     sftpSettings["schedule"] = sftpSchedule;
+
 
     if (hasEmptyField(sftpSettings)) {
         Toast::show("Please fill in all SFTP fields before saving.", this, Toast::Warning);
@@ -303,6 +326,24 @@ void settingsManager::apply_sftp_Settings(const QJsonObject &sftpSettings, bool 
 }
 
 
+void settingsManager::parse_sftp_from_http(const QJsonObject &sftpObj)
+{
+    QJsonObject sftpSettings;
+    
+    auto sftp_sch            = uiBase->findChild<QLineEdit*>("sftp_sch");
+    sftpSettings["ip"]       = sftpObj.value("server_ip").toString();
+    sftpSettings["port"]     = "22"; //QString::number(sftpObj.value("server_port").toInt());
+    sftpSettings["username"] = sftpObj.value("username").toString();
+    sftpSettings["password"] = sftpObj.value("password").toString();
+    sftpSettings["interval"] = QString::number(sftpObj.value("data_interval").toInt());
+    sftpSettings["schedule"] = sftp_sch->text().trimmed();
+    
+    if (sftpSettings["schedule"] == "") sftpSettings["schedule"] = "0100";
+
+    saveSftpSettings(sftpSettings, false, true);
+}
+
+
 void settingsManager::parse_load_store_sftp(const QJsonObject &payload)
 {
     QJsonArray dataArray = payload.value("data").toArray();
@@ -310,7 +351,7 @@ void settingsManager::parse_load_store_sftp(const QJsonObject &payload)
         qWarning() << "[SFTP] 'data' array is incomplete";
         return;
     }
-    auto sftp_sch     = uiBase->findChild<QLineEdit*>("sftp_sch");
+    auto sftp_sch = uiBase->findChild<QLineEdit*>("sftp_sch");
     QJsonObject sftpPayload = dataArray.at(0).toObject();
     QJsonObject sftpSettings;
     sftpSettings["ip"]       = sftpPayload.value("server_ip").toString();
@@ -319,6 +360,8 @@ void settingsManager::parse_load_store_sftp(const QJsonObject &payload)
     sftpSettings["password"] = sftpPayload.value("password").toString();
     sftpSettings["interval"] = QString::number(sftpPayload.value("data_interval").toInt());
     sftpSettings["schedule"] = sftp_sch->text().trimmed();
+    
+    if (sftpSettings["schedule"] == "") sftpSettings["schedule"] = "0100";
     
     saveSftpSettings(sftpSettings);
     apply_sftp_Settings(sftpSettings);
@@ -423,7 +466,7 @@ void settingsManager::apply_mqtts_Settings(const QJsonObject &mqttsSettings, boo
 }
 
 
-void settingsManager::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages)
+void settingsManager::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages, bool emitLoad)
 {
     QString MQTTS_CONFIG_PATH = mqttsConfigPath();
     bool isJsonDiff = jsonDifferent(mqttsSetting, MQTTS_CONFIG_PATH);
@@ -454,7 +497,21 @@ void settingsManager::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessa
         Toast::show("MQTTS settings saved successfully!", this, Toast::Info);
         emit mqttsSettingsChanged(mqttsSetting);
     }
-    emit aws_mqtts_load();
+
+    if (emitLoad)
+        emit aws_mqtts_load();
+}
+
+
+void settingsManager::parse_mqtts_from_http(const QJsonObject &mqttsObj)
+{
+    QJsonObject mqttsSetting;
+
+    mqttsSetting["endpoint"] = mqttsObj.value("broker_ip").toString();
+    mqttsSetting["port"]     = "8883"; //QString::number(mqttsObj.value("broker_port").toInt());
+    mqttsSetting["interval"] = QString::number(mqttsObj.value("data_interval").toInt());
+
+    saveMqttsSettings(mqttsSetting, false, false);
 }
 
 

@@ -78,6 +78,8 @@ private slots:
     void onChannelDataWatchdogTimeout();
     void enableUiButton();
 
+    void processHttpResponse(const QJsonObject &respObj, int httpCode);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
@@ -101,6 +103,7 @@ private:
 
     bool isDifferent(const DeviceInfo &a, const DeviceInfo &b);
     bool isConnectionDifferent(const ConnStatus &a, const ConnStatus &b);
+    bool isValidConfigBlock(const QJsonObject &root, const QString &key);
 
     void scheduleGSMReset();
     QDateTime nextSundayAt0400();

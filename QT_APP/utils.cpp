@@ -610,6 +610,7 @@ QString getEncryptionKey()
     if(!isKeyFetched || key.isEmpty())
     {
         key = generateEncryptionKey();
+        if (key.isEmpty()) return QString();
         isKeyFetched = true;
     }
     return key;

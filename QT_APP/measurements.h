@@ -48,9 +48,12 @@ private slots:
     void on_toolButton_12_clicked();
 
 public slots:
-    void parse_load_store_vOffset(const QJsonObject &payload);
-    void parse_load_store_iOffset(const QJsonObject &payload);
-    void parse_load_store_ctRatio(const QJsonObject &payload);
+    void parse_ctRatio_from_http(const QJsonObject &ctRatioObj);
+    void parse_vOffset_from_http(const QJsonObject &vOffsetObj);
+    void parse_iOffset_from_http(const QJsonObject &iOffsetObj);
+    void parse_load_store_vOffset(const QJsonObject &ctRatioPayload);
+    void parse_load_store_iOffset(const QJsonObject &vOffsetPayload);
+    void parse_load_store_ctRatio(const QJsonObject &iOffsetPayload);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;

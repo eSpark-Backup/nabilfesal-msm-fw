@@ -27,6 +27,9 @@ signals:
     void ntpSettingsChanged(const NtpSettings &settings);
 
 public slots:
+    void parse_mqtt_from_http(const QJsonObject &mqttObj);
+    void parse_sftp_from_http(const QJsonObject &sftpObj);
+    void parse_mqtts_from_http(const QJsonObject &mqttsObj);
     void parse_load_store_sftp(const QJsonObject &payload);
     void parse_load_store_mqtt(const QJsonObject &payload);
     void parse_load_store_mqtts(const QJsonObject &payload);
@@ -47,9 +50,9 @@ protected:
     void apply_mqtt_Settings(const QJsonObject &mqttSetting, bool msgBox = true);
     void apply_sftp_Settings(const QJsonObject &sftpSetting, bool msgBox = true);
     void apply_mqtts_Settings(const QJsonObject &mqttsSettings, bool msgBox = true);
-    void saveMqttSettings(QJsonObject mqttSetting, bool showMessages = true);
-    void saveSftpSettings(QJsonObject sftpSetting, bool showMessages = true);
-    void saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages = true);
+    void saveMqttSettings(QJsonObject mqttSetting, bool showMessages = true, bool emitLoad = true);
+    void saveSftpSettings(QJsonObject sftpSetting, bool showMessages = true, bool emitLoad = true);
+    void saveMqttsSettings(QJsonObject mqttsSetting, bool showMessages = true, bool emitLoad = true);
     bool jsonDifferent(const QJsonObject &a, const QString &path);
     bool hasEmptyField(const QJsonObject &obj);
     void fetch_claim_certs();

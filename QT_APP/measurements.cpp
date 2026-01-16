@@ -539,20 +539,40 @@ void Measurements::parse_load_store_generic(const QJsonObject &payload, const QS
     processSettings(key, settingsObj, command, true, false);
 }
 
-
-void Measurements::parse_load_store_ctRatio(const QJsonObject &payload)
+/* =========================
+ * MQTTS PAYLOAD PARSER
+ * ========================= */
+void Measurements::parse_load_store_ctRatio(const QJsonObject &ctRatioPayload)
 {
-    parse_load_store_generic(payload, "ct_ratio");
+    parse_load_store_generic(ctRatioPayload, "ct_ratio");
 }
 
-void Measurements::parse_load_store_vOffset(const QJsonObject &payload)
+void Measurements::parse_load_store_vOffset(const QJsonObject &vOffsetPayload)
 {
-    parse_load_store_generic(payload, "v_offset");
+    parse_load_store_generic(vOffsetPayload, "v_offset");
 }
 
-void Measurements::parse_load_store_iOffset(const QJsonObject &payload)
+void Measurements::parse_load_store_iOffset(const QJsonObject &vOffsetPayload)
 {
-    parse_load_store_generic(payload, "i_offset");
+    parse_load_store_generic(vOffsetPayload, "i_offset");
+}
+
+/* =========================
+ * HTTP PAYLOAD PARSER
+ * ========================= */
+void Measurements::parse_ctRatio_from_http(const QJsonObject &ctRatioObj)
+{
+    parse_load_store_generic(ctRatioObj, "ct_ratio");
+}
+
+void Measurements::parse_vOffset_from_http(const QJsonObject &vOffsetObj)
+{
+    parse_load_store_generic(vOffsetObj, "v_offset");
+}
+
+void Measurements::parse_iOffset_from_http(const QJsonObject &iOffsetObj)
+{
+    parse_load_store_generic(iOffsetObj, "i_offset");
 }
 
 

@@ -283,6 +283,16 @@ void DeviceSettings::on_ntp_save_btn_clicked()
 }
 
 
+void DeviceSettings::parse_ntp_from_http(const QJsonObject &ntpObj)
+{
+    server1 = ntpObj.value("server_1").toString();
+    server2 = ntpObj.value("server_2").toString();
+    server3 = ntpObj.value("server_3").toString();
+
+    apply_ntp_Settings(false);
+}
+
+
 void DeviceSettings::parse_load_store_ntp(const QJsonObject &payload)
 {
     QJsonArray dataArray = payload.value("data").toArray();

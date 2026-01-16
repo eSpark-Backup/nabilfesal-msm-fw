@@ -85,20 +85,29 @@ void HttpsManager::postJson(const QJsonObject &payload)
             reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
         QByteArray respData = reply->readAll();
-        QJsonDocument jsonResp = QJsonDocument::fromJson(respData);
+        QJsonParseError err;
+        QJsonDocument jsonResp = QJsonDocument::fromJson(respData, &err);
+
+        if (err.error != QJsonParseError::NoError) {
+            emit requestFailed("Invalid JSON response", httpCode);
+            reply->deleteLater();
+            return;
+        }
+
 
         QJsonObject obj = jsonResp.object();
 
         qDebug() << "HTTP CODE:" << httpCode;
         qDebug().noquote() << QJsonDocument(obj).toJson(QJsonDocument::Indented);
-
-        /* ===== Documented API Responses ===== */
+        bool httpSuccess = false;
+        /* ===== HTTPs API Responses ===== */
         switch (httpCode)
         {
         case 200:   // Registered
         case 201:   // UUID Created
         case 202:   // Device Assigned
             emit requestFinished(obj, httpCode);
+            httpSuccess = true;
             break;
 
         case 400:   // Missing fields
@@ -106,12 +115,16 @@ void HttpsManager::postJson(const QJsonObject &payload)
         case 409:   // UUID conflict
         case 500:   // Server error
             emit requestFailed(obj["message"].toString(), httpCode);
+            httpSuccess = false;
             break;
 
         default:
             emit requestFailed("Unknown HTTP response", httpCode);
+            httpSuccess = true;
             break;
         }
+        Toast::show(obj["message"].toString(),
+                            nullptr, httpSuccess ? Toast::Info : Toast::Error);
 
         reply->deleteLater();
     });
@@ -120,7 +133,7 @@ void HttpsManager::postJson(const QJsonObject &payload)
             this, [reply](const QList<QSslError> &errors) {
         for (const auto &e : errors)
             qDebug() << "[SSL ERROR]" << e.errorString();
-        reply->ignoreSslErrors(); // ⚠️ testing only
+        reply->ignoreSslErrors(); // for testing only
     });
 }
 
@@ -132,9 +145,9 @@ void HttpsManager::send_Payload()
 {
     QJsonObject payload;
 
-    payload["device_uuid"] = "ESP90000005";            // ESP90000005
-    payload["device_imei"] = "865788062388016";        // From docs
-    payload["device_pass"] = "abc123";                 // From docs
+    payload["device_uuid"] = Utils::getUid() + "_factory";
+    payload["device_imei"] = Utils::getDeviceImei();
+    payload["device_pass"] = Utils::getDevPassword();
 
     qDebug().noquote() << "Sending payload:"
              << QJsonDocument(payload).toJson(QJsonDocument::Indented);
@@ -154,12 +167,12 @@ void HttpsManager::connect_https()
 
     connect(this, &HttpsManager::requestFinished,
             this, [](const QJsonObject &resp, int code) {
-        qDebug() << "SUCCESS (" << code << ")";
+        qDebug() << "HTTPs SUCCESS (" << code << ")";
     });
 
     connect(this, &HttpsManager::requestFailed,
             this, [](const QString &err, int code) {
-        qDebug() << "FAILED (" << code << "):" << err;
+        qDebug() << "HTTPs FAILED (" << code << "):" << err;
     });
 
     send_Payload();

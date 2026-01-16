@@ -371,6 +371,8 @@ void MainWindow::connectStartUpSignals()
         reboot.exec();
     };
 
+    connect(httpsHandler, &HttpsManager::requestFinished, this, &MainWindow::processHttpResponse);
+
     connect(factSettings,    &FactSetting::rebootMCM,   this, showRebootDialog);
     connect(factorySettings, &FactorySettings::rebootMCM, this, showRebootDialog);
     connect(factoryMqttsHandler, &AwsMqttManager::settingsChanged, inActWatcher, &InactivityWatcher::wakeUp);
@@ -474,8 +476,6 @@ void MainWindow::connectStartUpSignals()
             CALIBRATION_DELAY = 6000;
         responseWaitTimer->start(CALIBRATION_DELAY);
     });
-
-    httpsHandler->connect_https();
 }
 
 
@@ -928,6 +928,7 @@ void MainWindow::handlePostProgress()
             registration = new Registration(hardwareVersion, softwareVersion);
 
             connect(registration, &Registration::registrationComplete, this, [this]() {
+                httpsHandler->connect_https();
                 connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
                 connectChannels(channels);
                 channels->showFullScreen();
@@ -1231,4 +1232,51 @@ QDateTime MainWindow::nextSundayAt0400()
 
     QDate nextSunday = today.addDays(daysUntilSunday);
     return QDateTime(nextSunday, QTime(4, 0), Qt::LocalTime);
+}
+
+
+bool MainWindow::isValidConfigBlock(const QJsonObject &root, const QString &key)
+{
+    if (!root.contains(key))
+        return false;
+
+    QJsonValue v = root.value(key);
+    if (!v.isObject())
+        return false;
+
+    return !v.toObject().isEmpty();
+}
+
+
+void MainWindow::processHttpResponse(const QJsonObject &respObj, int httpCode)
+{
+    QJsonObject root = respObj.value("data").toObject();
+
+    if (isValidConfigBlock(root, "ntp")) {
+        settings->parse_ntp_from_http(root.value("ntp").toObject());
+    }
+
+    if (isValidConfigBlock(root, "mqtt")) {
+        factSettings->parse_mqtt_from_http(root.value("mqtt").toObject());
+    }
+
+    if (isValidConfigBlock(root, "sftp")) {
+        factSettings->parse_sftp_from_http(root.value("sftp").toObject());
+    }
+
+    if (isValidConfigBlock(root, "mqtts")) {
+        factSettings->parse_mqtts_from_http(root.value("mqtts").toObject());
+    }
+
+    if (isValidConfigBlock(root, "ct_ratio")) {
+        measure->parse_ctRatio_from_http(root.value("ct_ratio").toObject());
+    }
+
+    if (isValidConfigBlock(root, "v_offset")) {
+        measure->parse_vOffset_from_http(root.value("v_offset").toObject());
+    }
+
+    if (isValidConfigBlock(root, "i_offset")) {
+        measure->parse_iOffset_from_http(root.value("i_offset").toObject());
+    }
 }

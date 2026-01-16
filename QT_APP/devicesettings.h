@@ -31,6 +31,7 @@ public slots:
     void on_mqtt_load_btn_clicked(bool msgBox = false);
     void on_sftp_load_btn_clicked(bool msgBox = false);
     void on_mqtts_load_btn_clicked(bool msgBox = false);
+    void parse_ntp_from_http(const QJsonObject &ntpObj);
     void parse_load_store_ntp(const QJsonObject &payload);
     void load_mqtt_settings(bool msgBox = false, bool reconnect = false);
     void load_mqtts_settings(bool msgBox = false, bool reconnect = false);
