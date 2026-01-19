@@ -1,5 +1,6 @@
-#include "usbwatcher.h"
 #include <QDebug>
+#include "usbwatcher.h"
+#include <QStorageInfo>
 
 UsbWatcher::UsbWatcher(QObject *parent) : QObject(parent) {
     m_mountPath.clear();
@@ -9,40 +10,37 @@ UsbWatcher::UsbWatcher(QObject *parent) : QObject(parent) {
     timer->start(2000); // check every 2 sec
 }
 
-void UsbWatcher::checkUsb() {
-    QFile file("/proc/mounts");
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        return;
-    }
-
+void UsbWatcher::checkUsb()
+{
     QString foundDevice;
     QString foundPath;
 
-    QString line = file.readAll();
-    QStringList lines = line.split('\n');
-    for (const QString &l : lines) {
-        if (l.contains("/media/")) {
-            QStringList parts = l.split(" ");
-            if (parts.size() >= 2) {
-                foundDevice = parts[0];
-                foundPath   = parts[1];
-                break;
-            }
-        }
+    for (const QStorageInfo &storage : QStorageInfo::mountedVolumes()) {
+        if (!storage.isValid() || !storage.isReady())
+            continue;
+
+        const QString root = storage.rootPath();
+        if (!root.startsWith("/media") && !root.startsWith("/run/media"))
+            continue;
+
+        // simple FS type filter
+        QString fsType = storage.fileSystemType().toLower();
+        if (!(fsType == "vfat" || fsType == "exfat" || fsType == "ntfs"))
+            continue;
+
+        foundDevice = QString::fromUtf8(storage.device());
+        foundPath   = root;
+        break; // track first USB found
     }
 
-    // case: new device plugged in
     if (!foundDevice.isEmpty() && m_deviceName.isEmpty()) {
         m_deviceName = foundDevice;
         m_mountPath  = foundPath;
         emit usbMounted(m_deviceName, m_mountPath);
     }
-    // case: device removed
     else if (foundDevice.isEmpty() && !m_deviceName.isEmpty()) {
         emit usbUnmounted();
         m_deviceName.clear();
         m_mountPath.clear();
     }
-    // case: still same device (do nothing)
 }

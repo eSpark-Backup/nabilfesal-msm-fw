@@ -928,7 +928,7 @@ void MainWindow::handlePostProgress()
             registration = new Registration(hardwareVersion, softwareVersion);
 
             connect(registration, &Registration::registrationComplete, this, [this]() {
-                httpsHandler->connect_https();
+                httpsHandler->connect_https(this);
                 connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
                 connectChannels(channels);
                 channels->showFullScreen();

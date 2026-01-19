@@ -657,11 +657,14 @@ void settingsManager::fetch_claim_certs()
         return;
     }
 
-    QByteArray data = file.readAll();
-    file.close();
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(configPath, Utils::getEncryptionKey());
+    if (decryptedData.isEmpty()) {
+        Toast::show("Failed to decrypt SFTP config file.", this, Toast::Error);
+        return;
+    }
 
     QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
         Toast::show("Invalid SFTP configuration file format.", this, Toast::Warning);
         fetch_claim_btn->setEnabled(true);

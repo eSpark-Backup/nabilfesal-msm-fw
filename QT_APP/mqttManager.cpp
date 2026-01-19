@@ -25,7 +25,7 @@ mqttManager::mqttManager(Mode mode, QObject *parent) : clientMode(mode), QObject
     }
     else
     {
-        tag = COLOR_TAG(F_BLACK, B_WHITE, "Admin - MQTT");
+        tag = COLOR_TAG(F_BLACK, B_WHITE, "Admin [MQTT]");
     }
     mqttClient = new QMqttClient(this);
     publishTimer = new QTimer(this);

@@ -19,7 +19,7 @@ public:
     explicit HttpsManager(QObject *parent = nullptr);
     ~HttpsManager();
 
-    void connect_https();
+    void connect_https(QWidget *parent = nullptr);
     void setUrl(const QString &url);
     void setClientCertificates(const QString &caPath,
         const QString &clientCertPath = QString(), const QString &clientKeyPath = QString());
@@ -34,6 +34,7 @@ private:
     QNetworkAccessManager *manager;
     QSslConfiguration sslConfig;
     QString endpointUrl;
+    QWidget *uiMain = nullptr;
 };
 
 #endif // HTTPSMANAGER_H

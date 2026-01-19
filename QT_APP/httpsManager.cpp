@@ -124,7 +124,7 @@ void HttpsManager::postJson(const QJsonObject &payload)
             break;
         }
         Toast::show(obj["message"].toString(),
-                            nullptr, httpSuccess ? Toast::Info : Toast::Error);
+                            uiMain, httpSuccess ? Toast::Info : Toast::Error);
 
         reply->deleteLater();
     });
@@ -159,10 +159,9 @@ void HttpsManager::send_Payload()
 /* =========================
  * CONNECT + START
  * ========================= */
-void HttpsManager::connect_https()
+void HttpsManager::connect_https(QWidget *parent)
 {
-    qDebug() << "Connecting to EIN Cloud HTTPS API";
-
+    uiMain = parent;
     endpointUrl = "https://api.eincloud.ai/api/devices/verify";
 
     connect(this, &HttpsManager::requestFinished,
