@@ -68,6 +68,7 @@ private slots:
     void onLoadChannels();
     void onAdminLogin();
     void onFactoryLogin();
+    void onUsbLogin();
     void onChannelsExit();
 
     // Progress management

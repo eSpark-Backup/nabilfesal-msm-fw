@@ -25,7 +25,7 @@ void UsbWatcher::checkUsb()
 
         // simple FS type filter
         QString fsType = storage.fileSystemType().toLower();
-        if (!(fsType == "vfat" || fsType == "exfat" || fsType == "ntfs"))
+        if (!(fsType.contains("fat") || fsType == "vfat" || fsType == "exfat" || fsType == "ntfs" || fsType.contains("fuse")))
             continue;
 
         foundDevice = QString::fromUtf8(storage.device());

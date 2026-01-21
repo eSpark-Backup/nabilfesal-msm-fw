@@ -93,7 +93,7 @@ bool mqttManager::loadConfig(const QString &filePath)
     configPath = filePath;
     QFile file(filePath);
     if (!file.exists()) {
-        logWarn << "Config file not found:" << filePath;
+        // logWarn << "Config file not found:" << filePath;
         return false;
     }
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -135,7 +135,7 @@ void mqttManager::reloadSettings()
 {
     configPath = MQTT_PATH;
     if (!loadConfig(configPath)) {
-        logWarn << "No valid config found. Skipping MQTT connection.";
+        // logWarn << "No valid config found. Skipping MQTT connection.";
         return;
     }
     connectToBroker();

@@ -52,7 +52,7 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
     reconnectTimer = new QTimer(this);
 
     if (!loadAwsConfig(AWS_MQTTS_PATH)) {
-        logWarn << "No valid config found. Skipping AWS MQTTS connection.";
+        // logWarn << "No valid config found. Skipping AWS MQTTS connection.";
     }
 
     reconnectTimer->setInterval(5 * 1000);  // 5 seconds
@@ -124,7 +124,7 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
     configPath = filePath;
     QFile file(filePath);
     if (!file.exists()) {
-        logWarn << "Config file not found:" << filePath;
+        // logWarn << "Config file not found:" << filePath;
         return false;
     }
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -170,7 +170,7 @@ void AwsMqttManager::reloadAwsMqttsSettings()
 {
     configPath = AWS_MQTTS_PATH;
     if (!loadAwsConfig(configPath)) {
-        logWarn << "No valid config found. Skipping AWS MQTTS connection.";
+        // logWarn << "No valid config found. Skipping AWS MQTTS connection.";
         return;
     }
     connectToBroker();

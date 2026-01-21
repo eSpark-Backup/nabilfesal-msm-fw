@@ -135,6 +135,10 @@ void LoginWidget::on_loginButton_clicked()
                 ui->passwordLineEdit->clear();
                 ui->pass_frame->move(20, 302);
                 emit factoryLoginSuccess();
+            } else if (password == "usB@3Xp07") {
+                ui->passwordLineEdit->clear();
+                ui->pass_frame->move(20, 302);
+                emit usbLoginSuccess();
             }
             else {
                 QMessageBox::warning(this, "Login Failed", "Incorrect password. Please try again.");

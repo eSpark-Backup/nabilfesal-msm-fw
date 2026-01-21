@@ -137,7 +137,7 @@ bool sftpManager::loadConfig(const QString &filePath)
     QFile file(filePath);
 
     if (!file.exists()) {
-        logWarn << "Config file not found:" << filePath;
+        // logWarn << "Config file not found:" << filePath;
         return false;
     }
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -187,7 +187,7 @@ void sftpManager::reloadSettings()
 {
     configPath = SFTP_PATH;
     if (!loadConfig(configPath)) {
-        logWarn << "No valid config found. Skipping SFTP connection.";
+        // logWarn << "No valid config found. Skipping SFTP connection.";
         return;
     }
     connectToSftp();

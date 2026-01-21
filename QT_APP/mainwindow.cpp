@@ -235,6 +235,7 @@ void MainWindow::setupLogin()
     connect(login, &LoginWidget::loadChannels, this, &MainWindow::onLoadChannels);
     connect(login, &LoginWidget::adminLoginSuccess, this, &MainWindow::onAdminLogin);
     connect(login, &LoginWidget::factoryLoginSuccess, this, &MainWindow::onFactoryLogin);
+    connect(login, &LoginWidget::usbLoginSuccess, this, &MainWindow::onUsbLogin);
 }
 
 void MainWindow::setupUsb()
@@ -820,6 +821,14 @@ void MainWindow::onLoadChannels()
     login->hide();
 }
 
+void MainWindow::onUsbLogin()
+{
+    if (usbDetected) {
+        usbExporter->show();
+        usbDetected = false;
+    }
+}
+
 void MainWindow::onAdminLogin()
 {
     settings->load_mqtt_settings(true);
@@ -830,11 +839,6 @@ void MainWindow::onAdminLogin()
 
     settings->showFullScreen();
     login->hide();
-
-    if (usbDetected) {
-        usbExporter->show();
-        usbDetected = false;
-    }
 }
 
 void MainWindow::onFactoryLogin()
@@ -843,11 +847,6 @@ void MainWindow::onFactoryLogin()
 
     factorySettings->showFullScreen();
     login->hide();
-
-    if (usbDetected) {
-        usbExporter->show();
-        usbDetected = false;
-    }
 }
 
 void MainWindow::onChannelsExit()
