@@ -19,6 +19,7 @@ public:
     void runFleetProvisioningWrapper() {runFleetProvisionerAsync();}
     void checkCertificatesWrapper() {checkCertificates();}
     void updateInfo(const DeviceInfo &f);
+    void getAvailableVersionsFromSFTP();
     ~FactSetting();
 
 signals:
@@ -56,7 +57,7 @@ private slots:
     void on_mqtt_save_btn_clicked();
     void on_sftp_save_btn_clicked();
     void on_OTA_pushButton_clicked();
-    void on_pushButton_5_clicked();
+    void on_ota_version_btn_clicked();
     void on_mqtts_save_btn_clicked(bool msgBox = false);
     void on_fetch_claim_btn_clicked();
     void on_provision_btn_clicked();
@@ -65,6 +66,10 @@ private:
     Ui::FactSetting *ui;
     MSMKeyboard *keyboard;
     QLabel *updatingLabel = nullptr;
+    bool m_isFetchingVersions = false;
+    QString m_sftpOutput;
+
+    void finishFetchingVersions(const QStringList &versionList);
 };
 
 #endif // FACTSETTING_H

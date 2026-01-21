@@ -1999,7 +1999,7 @@ QPushButton:focus {
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="pushButton_5">
+                   <widget class="QPushButton" name="ota_version_btn">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -2036,6 +2036,10 @@ QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
     border: 2px solid black;       /* White glow/border */
+}
+QPushButton:disabled {
+    background-color: #A9A9A9;  /* Darkest blue when pressed */
+	color: #666666;
 }</string>
                     </property>
                     <property name="text">

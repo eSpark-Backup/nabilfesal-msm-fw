@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonParseError>
+#include "encryptionhelper.h"
 
 
 FactSetting::FactSetting(QWidget *parent)
@@ -39,16 +40,7 @@ FactSetting::FactSetting(QWidget *parent)
         ui->ota_last_time->setText("N/A");
     }
 
-    auto versionList = Utils::getAvailableVersions();
-    ui->comboBox->clear();
-
-    for (const QString &version : versionList) {
-        QString cleanVersion = version;
-        if (cleanVersion.startsWith("MSM_"))
-            cleanVersion.remove(0, 4);
-        
-        ui->comboBox->addItem(cleanVersion);
-    }
+    on_ota_version_btn_clicked();
 
     QLabel* label = new QLabel("MQTT_IP", ui->mqtt_ip);
     label->setStyleSheet("QLabel { color: gray; padding-left: 0px; padding-right: 0px; border: 0px solid gray;}");
@@ -326,6 +318,7 @@ void FactSetting::on_OTA_pushButton_clicked()
     startOTA(selVersion);
 }
 
+
 void FactSetting::startOTA(const QString &selectedVersion)
 {
     QString updatingImagePath = ":/icons/updating.png";
@@ -333,23 +326,28 @@ void FactSetting::startOTA(const QString &selectedVersion)
 
     QString otaFileName = QString("MSM_%1.zip").arg(selectedVersion);
 
-    QFile file("config/sftp_settings.json");
+    QFile file(sftpConfigPath());
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Failed to open SFTP config:" << file.errorString();
         return;
     }
 
-    QByteArray data = file.readAll();
-    file.close();
+    EncryptionHelper::check_and_encrypt_files(sftpConfigPath(), "Fact SFTP", false, nullptr);
+
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(sftpConfigPath(), Utils::getEncryptionKey());
+    if (decryptedData.isEmpty()) {
+        qWarning() << "Failed to decrypt Fact SFTP config file (wrong password or corrupted file)";
+        return;
+    }
 
     QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
     if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
         qWarning() << "Invalid SFTP config JSON:" << parseError.errorString();
         return;
     }
 
-    QJsonObject obj = doc.object();
+    QJsonObject obj  = doc.object();
     QString ip       = obj.value("ip").toString();
     QString username = obj.value("username").toString();
     QString password = obj.value("password").toString();
@@ -417,18 +415,112 @@ void FactSetting::startOTA(const QString &selectedVersion)
 }
 
 
-void FactSetting::on_pushButton_5_clicked()
+void FactSetting::on_ota_version_btn_clicked()
 {
-    auto versionList = Utils::getAvailableVersions();
-    ui->comboBox->clear();
+    if (m_isFetchingVersions)
+        return;
+    
+    m_isFetchingVersions = true;
+    ui->ota_version_btn->setEnabled(false);
+    getAvailableVersionsFromSFTP();
+}
 
-    for (const QString &version : versionList) {
-        QString cleanVersion = version;
-        if (cleanVersion.startsWith("MSM_"))
-            cleanVersion.remove(0, 4);
 
-        ui->comboBox->addItem(cleanVersion);
+void FactSetting::getAvailableVersionsFromSFTP()
+{
+    // --- Load config ---
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(sftpConfigPath(), Utils::getEncryptionKey());
+    if (decryptedData.isEmpty()) {
+        qWarning() << "Failed to decrypt SFTP config";
+        finishFetchingVersions({});
+        return;
     }
+
+    QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
+    if (!doc.isObject()) {
+        qWarning() << "Invalid SFTP JSON";
+        finishFetchingVersions({});
+        return;
+    }
+
+    QJsonObject obj = doc.object();
+    QString ip       = obj.value("ip").toString();
+    QString username = obj.value("username").toString();
+    QString password = obj.value("password").toString();
+
+    if (ip.isEmpty() || username.isEmpty() || password.isEmpty()) {
+        qWarning() << "Incomplete SFTP configuration";
+        finishFetchingVersions({});
+        return;
+    }
+
+    // --- Start sshpass + sftp asynchronously ---
+    QProcess *process = new QProcess(this);
+    m_sftpOutput.clear();
+
+    QStringList args;
+    args << "-p" << password
+         << "sftp"
+         << "-o" << "StrictHostKeyChecking=no"
+         << "-o" << "UserKnownHostsFile=/dev/null"
+         << QString("%1@%2").arg(username, ip);
+
+    connect(process, &QProcess::started, this, [process]() {
+        process->write("ls /ota-test\n");
+        process->write("bye\n");
+        process->closeWriteChannel();
+    });
+
+    connect(process, &QProcess::readyReadStandardOutput, this, [this, process]() {
+        m_sftpOutput += process->readAllStandardOutput();
+    });
+
+    connect(process, &QProcess::readyReadStandardError, this, [process]() {
+        qWarning() << process->readAllStandardError();
+    });
+
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this, [this, process](int exitCode, QProcess::ExitStatus status) {
+
+        Q_UNUSED(exitCode)
+        Q_UNUSED(status)
+
+        QString output = m_sftpOutput;
+        m_sftpOutput.clear();
+
+        QStringList versionList;
+
+        output.replace("sftp> ", "");
+        QStringList tokens = output.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+
+        for (QString f : tokens) {
+            if (!f.endsWith(".zip")) continue;
+            f = QFileInfo(f).fileName();
+            if (!f.startsWith("MSM_")) continue;
+            f.remove(0, 4);
+            f.chop(4);
+            versionList << f;
+        }
+
+        versionList.removeDuplicates();
+        versionList.sort();
+
+        finishFetchingVersions(versionList);
+        process->deleteLater();
+    });
+
+    process->start("sshpass", args);
+}
+
+
+void FactSetting::finishFetchingVersions(const QStringList &versionList)
+{
+    m_isFetchingVersions = false;
+    ui->ota_version_btn->setEnabled(true);
+
+    ui->comboBox->clear();
+    for (const QString &v : versionList)
+        ui->comboBox->addItem(v);
 }
 
 
