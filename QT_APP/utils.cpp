@@ -586,19 +586,34 @@ void startAlignedTimer(
     timer->stop();
     timer->setTimerType(Qt::PreciseTimer);
 
-    const qint64 intervalMs = intervalSeconds * 1000;
+    QDateTime now = QDateTime::currentDateTimeUtc();
 
-    qint64 nowMs = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
-    qint64 nextAlignedMs =
-        ((nowMs / intervalMs) + 1) * intervalMs;
+    int totalSeconds = now.time().hour() * 3600 +
+                       now.time().minute() * 60 +
+                       now.time().second();
 
-    int initialDelayMs = int(nextAlignedMs - nowMs);
+    int nextAlignedSeconds = ((totalSeconds / intervalSeconds) + 1) * intervalSeconds;
+
+    if (nextAlignedSeconds >= 24 * 3600) {
+        nextAlignedSeconds -= 24 * 3600;
+        now = now.addDays(1);
+    }
+
+    int hours = nextAlignedSeconds / 3600;
+    int minutes = (nextAlignedSeconds % 3600) / 60;
+    int seconds = nextAlignedSeconds % 60;
+
+    QDateTime nextAligned(now.date(), QTime(hours, minutes, seconds), Qt::UTC);
+
+    int initialDelayMs = int(now.msecsTo(nextAligned));
+    if (initialDelayMs < 0)
+        initialDelayMs = 0; // Safety fallback
 
     QTimer::singleShot(initialDelayMs, context, [=]() {
         if (firstTickCallback)
             firstTickCallback();
 
-        timer->start(intervalMs);
+        timer->start(intervalSeconds * 1000);
     });
 }
 
