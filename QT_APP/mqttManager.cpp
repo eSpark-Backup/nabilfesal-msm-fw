@@ -101,6 +101,8 @@ bool mqttManager::loadConfig(const QString &filePath)
         return false;
     }
 
+    EncryptionHelper::check_and_encrypt_files(filePath, "MQTT", false, nullptr);
+
     QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
         logWarn << "Failed to decrypt MQTT settings (wrong password or corrupted file)";

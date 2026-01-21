@@ -98,7 +98,7 @@ void HttpsManager::postJson(const QJsonObject &payload)
         QJsonObject obj = jsonResp.object();
 
         qDebug() << "HTTP CODE:" << httpCode;
-        qDebug().noquote() << QJsonDocument(obj).toJson(QJsonDocument::Indented);
+        // qDebug().noquote() << QJsonDocument(obj).toJson(QJsonDocument::Indented);
         bool httpSuccess = false;
         /* ===== HTTPs API Responses ===== */
         switch (httpCode)
@@ -141,13 +141,13 @@ void HttpsManager::postJson(const QJsonObject &payload)
 /* =========================
  * PAYLOAD (DOC MATCH)
  * ========================= */
-void HttpsManager::send_Payload()
+void HttpsManager::send_Payload(const QString &uid, const QString &pw)
 {
     QJsonObject payload;
 
-    payload["device_uuid"] = Utils::getUid() + "_factory";
+    payload["device_uuid"] = uid + "_factory";
     payload["device_imei"] = Utils::getDeviceImei();
-    payload["device_pass"] = Utils::getDevPassword();
+    payload["device_pass"] = pw;
 
     qDebug().noquote() << "Sending payload:"
              << QJsonDocument(payload).toJson(QJsonDocument::Indented);
@@ -159,20 +159,20 @@ void HttpsManager::send_Payload()
 /* =========================
  * CONNECT + START
  * ========================= */
-void HttpsManager::connect_https(QWidget *parent)
+void HttpsManager::connect_https(QWidget *parent, const QString &uid, const QString &pw)
 {
     uiMain = parent;
     endpointUrl = "https://api.eincloud.ai/api/devices/verify";
 
-    connect(this, &HttpsManager::requestFinished,
-            this, [](const QJsonObject &resp, int code) {
-        qDebug() << "HTTPs SUCCESS (" << code << ")";
-    });
+    // connect(this, &HttpsManager::requestFinished,
+    //         this, [](const QJsonObject &resp, int code) {
+    //     qDebug() << "HTTPs SUCCESS (" << code << ")";
+    // });
 
     connect(this, &HttpsManager::requestFailed,
             this, [](const QString &err, int code) {
         qDebug() << "HTTPs FAILED (" << code << "):" << err;
     });
 
-    send_Payload();
+    send_Payload(uid, pw);
 }

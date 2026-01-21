@@ -19,7 +19,6 @@
 #include "registration.h"
 #include "measurements.h"
 #include "serialworker.h"
-#include "httpsManager.h"
 #include "commonSetting.h"
 #include "awsmqttmanager.h"
 #include "systemexporter.h"
@@ -135,7 +134,6 @@ private:
     CalibrationDialog *gainCalibrator = nullptr;
     InactivityWatcher *inActWatcher = nullptr;
     settingsManager *settingsHandler = nullptr;
-    HttpsManager *httpsHandler = nullptr;
 
     // state
     int progressValue = 0;

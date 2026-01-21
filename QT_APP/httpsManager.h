@@ -19,12 +19,12 @@ public:
     explicit HttpsManager(QObject *parent = nullptr);
     ~HttpsManager();
 
-    void connect_https(QWidget *parent = nullptr);
+    void connect_https(QWidget *parent, const QString &uid, const QString &pw);
     void setUrl(const QString &url);
     void setClientCertificates(const QString &caPath,
         const QString &clientCertPath = QString(), const QString &clientKeyPath = QString());
     void postJson(const QJsonObject &payload);
-    void send_Payload();
+    void send_Payload(const QString &uid, const QString &pw);
 
 signals:
     void requestFinished(const QJsonObject &response, int httpCode);

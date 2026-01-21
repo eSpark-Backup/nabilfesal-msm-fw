@@ -135,7 +135,10 @@ void settingsManager::saveMqttSettings(QJsonObject mqttSetting, bool showMessage
 
     QJsonDocument doc(mqttSetting);
     QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
-    QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+    QString encryptKey = Utils::getEncryptionKey();
+    QByteArray encryptedData = jsonData;
+    if(!encryptKey.isEmpty())
+        QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
     file.write(encryptedData);
     file.close();
 
@@ -160,7 +163,7 @@ void settingsManager::parse_mqtt_from_http(const QJsonObject &mqttObj)
     mqttSettings["topic"]    = mqttObj.value("mqtt_topic").toString();
     mqttSettings["interval"] = QString::number(mqttObj.value("data_interval").toInt());
 
-    saveMqttSettings(mqttSettings, false, false);
+    saveMqttSettings(mqttSettings, false, true);
 }
 
 
@@ -207,7 +210,10 @@ void settingsManager::saveSftpSettings(QJsonObject sftpSetting, bool showMessage
 
     QJsonDocument doc(sftpSetting);
     QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
-    QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+    QString encryptKey = Utils::getEncryptionKey();
+    QByteArray encryptedData = jsonData;
+    if(!encryptKey.isEmpty())
+        QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
     file.write(encryptedData);
     file.close();
 
@@ -488,7 +494,10 @@ void settingsManager::saveMqttsSettings(QJsonObject mqttsSetting, bool showMessa
 
     QJsonDocument doc(mqttsSetting);
     QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
-    QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+    QString encryptKey = Utils::getEncryptionKey();
+    QByteArray encryptedData = jsonData;
+    if(!encryptKey.isEmpty())
+        QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
     file.write(encryptedData);
     file.close();
 
@@ -511,7 +520,7 @@ void settingsManager::parse_mqtts_from_http(const QJsonObject &mqttsObj)
     mqttsSetting["port"]     = "8883"; //QString::number(mqttsObj.value("broker_port").toInt());
     mqttsSetting["interval"] = QString::number(mqttsObj.value("data_interval").toInt());
 
-    saveMqttsSettings(mqttsSetting, false, false);
+    saveMqttsSettings(mqttsSetting, false, true);
 }
 
 
@@ -543,7 +552,12 @@ bool settingsManager::jsonDifferent(const QJsonObject &a, const QString &path)
         return true; // return empty object if not found
     }
 
-    QJsonDocument old = QJsonDocument::fromJson(file.readAll());
+    QByteArray decryptedData = file.readAll();
+    if (EncryptionHelper::isEncrypted(file))
+    {
+        decryptedData = EncryptionHelper::readAndDecryptFile(path, Utils::getEncryptionKey());
+    }
+    QJsonDocument old = QJsonDocument::fromJson(decryptedData);
     file.close();
     QJsonObject b = old.object();
 

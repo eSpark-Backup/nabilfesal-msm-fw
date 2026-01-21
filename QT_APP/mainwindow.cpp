@@ -324,9 +324,6 @@ void MainWindow::connectStartUpSignals()
     inActWatcher = new InactivityWatcher(this);
     qApp->installEventFilter(inActWatcher);
 
-    if (!httpsHandler)
-        httpsHandler = new HttpsManager;
-
     if (!measure)
         measure = new Measurements;
 
@@ -363,6 +360,11 @@ void MainWindow::connectStartUpSignals()
     if (!channels)
         channels = new ChannelsHome(hardwareVersion, softwareVersion);
     
+    if (!dataExporter)
+        dataExporter = new SystemDataExporter(this);
+    
+    connect(this, &MainWindow::receivedChannelData, dataExporter, &SystemDataExporter::onNewChannelData, Qt::QueuedConnection);
+    
     Utils::getEncryptionKey();
     auto showRebootDialog = [this]() {
         factoryMqttsHandler->processReboot();
@@ -370,8 +372,6 @@ void MainWindow::connectStartUpSignals()
         RebootDialog reboot(this);
         reboot.exec();
     };
-
-    connect(httpsHandler, &HttpsManager::requestFinished, this, &MainWindow::processHttpResponse);
 
     connect(factSettings,    &FactSetting::rebootMCM,   this, showRebootDialog);
     connect(factorySettings, &FactorySettings::rebootMCM, this, showRebootDialog);
@@ -643,7 +643,7 @@ void MainWindow::connectLoginSignals()
 
     QTimer *refreshTimer = new QTimer(this);
     connect(refreshTimer, &QTimer::timeout, this, &MainWindow::refreshInfo);
-    refreshTimer->start(5 * 1000);
+    refreshTimer->start(10 * 1000);
 
     scheduleGSMReset();
 }
@@ -914,21 +914,17 @@ void MainWindow::updateProgress()
 
 void MainWindow::handlePostProgress()
 {
-    // Setup segmented responsibilities
     connectStartUpSignals();
-    dataExporter = new SystemDataExporter(this);
-    connect(this, &MainWindow::receivedChannelData, dataExporter, &SystemDataExporter::onNewChannelData, Qt::QueuedConnection);
-    setupUsb();
-    // Important: set connections between settings/managers
     connectLoginSignals();
-
+    setupUsb();
     // If first setup not done, show registration UI
     if (m_uid.isEmpty() || m_adminPass.isEmpty()) {
         if (!registration) {
             registration = new Registration(hardwareVersion, softwareVersion);
 
+            connect(registration, &Registration::requestResp, this, &MainWindow::processHttpResponse);
+
             connect(registration, &Registration::registrationComplete, this, [this]() {
-                httpsHandler->connect_https(this);
                 connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
                 connectChannels(channels);
                 channels->showFullScreen();
@@ -940,6 +936,8 @@ void MainWindow::handlePostProgress()
         hide();
         return;
     }
+    
+
 
     connect(this, &MainWindow::homeDetected, this, &MainWindow::showChannelsHome);
     
@@ -1250,6 +1248,7 @@ bool MainWindow::isValidConfigBlock(const QJsonObject &root, const QString &key)
 
 void MainWindow::processHttpResponse(const QJsonObject &respObj, int httpCode)
 {
+    initConfig();
     QJsonObject root = respObj.value("data").toObject();
 
     if (isValidConfigBlock(root, "ntp")) {

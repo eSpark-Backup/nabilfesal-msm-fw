@@ -1,15 +1,16 @@
 #include "registration.h"
 #include "ui_registration.h"
-#include "utils.h"
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QDebug>
-#include <QMessageBox>
 #include <QDir>
 #include <QFile>
-#include <QToolButton>
 #include <QStyle>
+#include <QDebug>
+#include "utils.h"
+#include "toast.h"
+#include <QJsonArray>
+#include <QToolButton>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include "encryptionhelper.h"
 
 Registration::Registration(QString hardwareVersion, QString softwareVersion, QWidget *parent)
     : QWidget(parent)
@@ -142,52 +143,67 @@ bool Registration::eventFilter(QObject *obj, QEvent *event)
 
 void Registration::on_pushButton_clicked()
 {
-    QString uid = ui->uid->text().trimmed();
-    QString pass = ui->admin_pass->text().trimmed();
+    uid = ui->uid->text().trimmed();
+    pass = ui->admin_pass->text().trimmed();
     QString confirm = ui->confirm_pass->text().trimmed();
 
     if (uid.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {
-        QMessageBox::warning(this, "Registration", "All fields are required.");
+        Toast::show("All fields are required!", this, Toast::Warning);
         return;
     }
     
     if (pass != confirm) {
-        QMessageBox::warning(this, "Registration", "Passwords do not match.");
+        Toast::show("Passwords do not match!", this, Toast::Warning);
         return;
     }
 
-    QFile file(PROJECT_JSON_PATH);
+    if (!httpsHandler)
+    {
+        httpsHandler = new HttpsManager(this);
 
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, "Registration", "Failed to open project.json for reading.");
-        return;
+    connect(httpsHandler, &HttpsManager::requestFinished, this, [this](const QJsonObject &response, int httpCode) {
+
+        QFile file(PROJECT_JSON_PATH);
+
+         if (!file.open(QIODevice::ReadOnly)) {
+            qDebug() << "Failed to open project.json for reading.";
+            return;
+        }
+
+        QByteArray data = file.readAll();
+        file.close();
+
+        QJsonParseError parseError;
+        QByteArray decryptedData = data;
+        if (EncryptionHelper::isEncrypted(file))
+            decryptedData = EncryptionHelper::readAndDecryptFile(PROJECT_JSON_PATH, Utils::getEncryptionKey());
+        QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
+        if (doc.isNull() || !doc.isObject()) {
+            qDebug() << "Invalid JSON format: " << parseError.errorString();
+            return;
+        }
+
+        QJsonObject projectSettings = doc.object();
+        projectSettings["uid"] = uid;
+        projectSettings["admin"] = pass;
+
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            qDebug() << "Failed to open project.json for writing.";
+            return;
+        }
+
+        QJsonDocument newDoc(projectSettings);
+        file.write(newDoc.toJson(QJsonDocument::Compact));
+        file.close();
+
+        Toast::show("Registration successful!", this, Toast::Info);
+        emit requestResp(response, httpCode);
+        emit registrationComplete();
+        this->close();
+        
+        }, Qt::UniqueConnection);
     }
 
-    QByteArray data = file.readAll();
-    file.close();
-
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (doc.isNull() || !doc.isObject()) {
-        QMessageBox::critical(this, "Registration", "Invalid JSON format: " + parseError.errorString());
-        return;
-    }
-
-    QJsonObject projectSettings = doc.object();
-    projectSettings["uid"] = uid;
-    projectSettings["admin"] = pass;
-
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QMessageBox::critical(this, "Registration", "Failed to open project.json for writing.");
-        return;
-    }
-
-    QJsonDocument newDoc(projectSettings);
-    file.write(newDoc.toJson(QJsonDocument::Compact));
-    file.close();
-
-    QMessageBox::information(this, "Registration", "Registration successful!");
-    emit registrationComplete();
-    this->close();
+    httpsHandler->connect_https(this, uid, pass);
 }
 

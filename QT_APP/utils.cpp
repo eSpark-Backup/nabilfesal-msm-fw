@@ -644,7 +644,6 @@ QString generateEncryptionKey()
             QJsonObject obj = doc.object();
             uid = obj.value("uid").toString();
             file.close();
-            return uid;
         }
     }
     else

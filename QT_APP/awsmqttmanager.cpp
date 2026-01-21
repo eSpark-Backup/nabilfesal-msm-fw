@@ -132,6 +132,7 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
         return false;
     }
 
+    EncryptionHelper::check_and_encrypt_files(filePath, "MQTTS", false, nullptr);
 
     QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {

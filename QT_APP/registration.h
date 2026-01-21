@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "msmkeyboard.h"
+#include "httpsManager.h"
 
 
 namespace Ui {
@@ -19,6 +20,7 @@ public:
 
 signals:
     void registrationComplete();
+    void requestResp(const QJsonObject &response, int httpCode);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
@@ -29,6 +31,9 @@ private slots:
 private:
     Ui::Registration *ui;
     MSMKeyboard *keyboard;
+    HttpsManager *httpsHandler = nullptr;
+    QString uid, pass;
+
 };
 
 #endif // REGISTRATION_H

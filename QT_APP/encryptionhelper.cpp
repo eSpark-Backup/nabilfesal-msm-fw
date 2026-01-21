@@ -191,7 +191,6 @@ void EncryptionHelper::check_and_encrypt_files(const QString &file_path, const Q
         QByteArray encrypted = encrypt(plain, Utils::getEncryptionKey());
         if (encrypted.isEmpty()) {
             if (showMessages) Toast::show(QString("Failed to encrypt existing %1 file!").arg(arg), parent, Toast::Error);
-            qDebug() << "Failed to encrypt existing " << arg << " file!";
             return;
         }
         if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -211,6 +210,6 @@ void EncryptionHelper::check_and_encrypt_files(const QString &file_path, const Q
         }
         file.close();
 
-        qDebug() << QString("%1 file was unencrypted, auto-encrypted successfully.").arg(arg);
+        // qDebug() << QString("%1 file was unencrypted, auto-encrypted successfully.").arg(arg);
     }
 }
