@@ -307,6 +307,9 @@
      </property>
      <item>
       <widget class="QPushButton" name="pushButton">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -344,6 +347,10 @@ QPushButton:focus {
     outline: none;                 /* Remove dotted border */
     background-color: #074475;     /* Brighter blue highlight */
     border: 2px solid black;       /* White glow/border */
+}
+
+QPushButton:disabled {
+	background-color: rgb(136, 138, 133);
 }</string>
        </property>
        <property name="text">

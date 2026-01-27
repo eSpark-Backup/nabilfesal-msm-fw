@@ -13,9 +13,7 @@ static constexpr int TAG_SIZE     = 16;
 static constexpr int PBKDF2_ITERS = 100000;
 static const QByteArray ENC_MAGIC = "ENCv1:";
 
-static const QString ENC_KEY_PATH = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
-                                    + "/encryption_key.bin";
-                                    
+
 bool EncryptionHelper::deriveKey(
     const QString &password,
     const QByteArray &salt,
@@ -99,7 +97,11 @@ QByteArray EncryptionHelper::decrypt(const QByteArray &cipherText, const QString
     if (!cipherText.startsWith(ENC_MAGIC))
         return cipherText;
 
-    QByteArray payload = cipherText.mid(ENC_MAGIC.size());
+    QByteArray payload = cipherText.mid(ENC_MAGIC.size()).trimmed();
+
+    if (payload.endsWith('#'))
+        payload.chop(1);
+
     QByteArray decoded = QByteArray::fromBase64(payload);
     if (decoded.size() < SALT_SIZE + IV_SIZE + TAG_SIZE) return {};
 
@@ -162,14 +164,13 @@ QByteArray EncryptionHelper::readAndDecryptFile(
 }
 
 
-bool EncryptionHelper::isEncrypted(QFile &file)
+bool EncryptionHelper::isEncrypted(const QString &filePath)
 {
+    QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly))
         return false;
-
     QByteArray firstBytes = file.peek(ENC_MAGIC.size());
     file.close();
-
     return firstBytes == ENC_MAGIC;
 }
 
@@ -178,7 +179,7 @@ void EncryptionHelper::check_and_encrypt_files(const QString &file_path, const Q
 {
     QFile file(file_path);
     if (!file.exists()) return;
-    bool isEncryptedFile = isEncrypted(file);
+    bool isEncryptedFile = isEncrypted(file_path);
 
     if (!isEncryptedFile) {
         if (!file.open(QIODevice::ReadOnly)) {

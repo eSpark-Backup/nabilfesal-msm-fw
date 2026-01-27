@@ -142,17 +142,19 @@ MainWindow::MainWindow(QWidget *parent)
     showFullScreen();
 
     // Send CT/I/V ratio and offsets at startup (if config present)
+    if (!m_uid.isEmpty()) {
     startApp = true;
-    if (pollTimer) pollTimer->stop();
+        if (pollTimer) pollTimer->stop();
 
-    QStringList files = {
-        "config/v_offset_response.json",
-        "config/i_offset_response.json",
-        "config/ct_ratio_settings.json",
-        "config/v_offset_settings.json",
-        "config/i_offset_settings.json"
-    };
-    sendFileWithDelay(files);
+        QStringList files = {
+            "config/v_offset_response.json",
+            "config/i_offset_response.json",
+            "config/ct_ratio_settings.json",
+            "config/v_offset_settings.json",
+            "config/i_offset_settings.json"
+        };
+        sendFileWithDelay(files);
+        }
     qApp->installEventFilter(this);
 }
 
@@ -184,31 +186,51 @@ void MainWindow::initConfig()
             {"admin", ""},
             {"factory", "admin@441322@"}
         };
-
         if (file.open(QIODevice::WriteOnly)) {
-            file.write(QJsonDocument(defaultSettings).toJson(QJsonDocument::Compact));
+            QByteArray jsonData = QJsonDocument(defaultSettings).toJson(QJsonDocument::Compact);
+            file.write(jsonData);
             file.close();
+        } else {
+            qDebug() << "ERROR: Failed to create default file!";
         }
     }
 
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const auto encryptedData = file.readAll();
         file.close();
-        QByteArray decryptedData = encryptedData;
-        if (!EncryptionHelper::isEncrypted(file)) Utils::getUid();
-        decryptedData = EncryptionHelper::readAndDecryptFile(PROJECT_JSON_PATH, Utils::getEncryptionKey());
+        
+        bool isFileEncrypted = EncryptionHelper::isEncrypted(PROJECT_JSON_PATH);        
+        QByteArray decryptedData;
+        
+        if (isFileEncrypted) {
+            QString encKey = Utils::getEncryptionKey();
+            decryptedData = EncryptionHelper::readAndDecryptFile(PROJECT_JSON_PATH, encKey);
+        } else {
+            decryptedData = encryptedData;
+            Utils::getUid();
+        }
+        
         QJsonParseError parseError;
         QJsonDocument doc1 = QJsonDocument::fromJson(decryptedData, &parseError);
+        
+        if (parseError.error != QJsonParseError::NoError) {
+            qDebug() << "JSON PARSE ERROR:" << parseError.errorString();
+        }
+        
+        if (!doc1.isObject()) {
+            qDebug() << "ERROR: Parsed JSON is not an object!";
+        }
+        
         if (parseError.error != QJsonParseError::NoError || !doc1.isObject()) {
             qDebug() << "Invalid config/project.json file format.";
-        }
-        const auto doc = QJsonDocument::fromJson(decryptedData);
-        if (doc.isObject()) {
-            const auto obj = doc.object();
+        } else {
+            const auto obj = doc1.object();
             m_uid = obj.value("uid").toString();
             m_adminPass = obj.value("admin").toString();
             m_factoryPass = obj.value("factory").toString();
         }
+    } else {
+        qDebug() << "ERROR: Failed to open " << PROJECT_JSON_PATH << " file for reading!";
     }
 
     QFile hwFile("version.json");
@@ -366,7 +388,6 @@ void MainWindow::connectStartUpSignals()
     
     connect(this, &MainWindow::receivedChannelData, dataExporter, &SystemDataExporter::onNewChannelData, Qt::QueuedConnection);
     
-    Utils::getEncryptionKey();
     auto showRebootDialog = [this]() {
         factoryMqttsHandler->processReboot();
         adminMqttsHandler->processReboot();
@@ -443,7 +464,7 @@ void MainWindow::connectStartUpSignals()
         measure->v_off_btn_clicked();
     });
 
-    // load fact settings (factory -> factSettings)
+    connectFactSettings();
     connect(factorySettings, &FactorySettings::loadFactSettings, this, [this]() {
         
         factSettings->load_mqtt_settings(true);
@@ -452,7 +473,6 @@ void MainWindow::connectStartUpSignals()
         
         QWidget *fw = QApplication::focusWidget();
         if (fw) fw->clearFocus();
-        connectFactSettings();
         factSettings->showFullScreen();
         factorySettings->hide();
     });
@@ -799,9 +819,6 @@ void MainWindow::onGenericResponseReady(const QString &resp)
                     sendFileWithDelay(bootFiles, bootFileIndex + 1);
                 });
             }
-        } else {
-            // qDebug() << "Invalid JSON response:" << resp;
-            // qDebug() << "Parse error:" << parseError.errorString();
         }
     }
 

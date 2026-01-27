@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <QPixmap>
 #include <QThread>
+#include <unistd.h>
 #include <QProcess>
 #include <QDateTime>
 #include <QJsonArray>
@@ -237,7 +238,7 @@ QString getUid()
 {
     QFile prj_file(PROJECT_JSON_PATH);
     if (!prj_file.exists()) return {};
-        if (!EncryptionHelper::isEncrypted(prj_file)){
+        if (!EncryptionHelper::isEncrypted(PROJECT_JSON_PATH)){
             if (!Utils::copyUidToUidJson()) {
                 return QString();
             }
@@ -622,7 +623,7 @@ QString getEncryptionKey()
 {
     static bool isKeyFetched = false;
     static QString key;
-    if(!isKeyFetched || key.isEmpty())
+    if(!isKeyFetched)
     {
         key = generateEncryptionKey();
         if (key.isEmpty()) return QString();
@@ -659,15 +660,18 @@ QString generateEncryptionKey()
             QJsonObject obj = doc.object();
             uid = obj.value("uid").toString();
             file.close();
+            if (uid.isEmpty()) return QString();
         }
     }
     else
+    {
         return QString();
-    QString cpuSerial = getCpuSerial();   // empty on PC is OK
+    }
+    // QString cpuSerial = getCpuSerial();   // empty on PC is OK
     QString salt = "MSM@ADMIN@2025";      // NEVER change
 
-    if (uid.isEmpty()) return "";
-    QByteArray material = (uid + cpuSerial + salt).toUtf8();
+    if (uid.isEmpty()) return QString();
+    QByteArray material = (uid + salt).toUtf8(); //(uid + cpuSerial + salt)
     QByteArray hash = QCryptographicHash::hash(
         material, QCryptographicHash::Sha256);
     return hash.toHex(); // 32 bytes → AES‑256
@@ -693,7 +697,6 @@ bool copyUidToUidJson()
     if (projectUid.isEmpty()) {
         return false;
     }
-
     QFile uidFile("config/uid.json");
     if (uidFile.exists()) {
         if (uidFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -708,17 +711,39 @@ bool copyUidToUidJson()
             }
         }
     }
-
     QJsonObject uidObj;
     uidObj.insert("uid", projectUid);
-
     if (!uidFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
         return false;
     }
-
-    uidFile.write(QJsonDocument(uidObj).toJson(QJsonDocument::Compact));
+    QByteArray payload = QJsonDocument(uidObj).toJson(QJsonDocument::Compact);
+    qint64 written = uidFile.write(payload);
+    if (written != payload.size()) {
+        qWarning() << "Incomplete write to uid.json";
+        uidFile.close();
+        return false;
+    }
+    
+    // CRITICAL: Flush to OS buffers
+    if (!uidFile.flush()) {
+        qWarning() << "uid.json flush failed";
+        uidFile.close();
+        return false;
+    }
+    
+    // CRITICAL: Sync to actual storage device
+    int fd = uidFile.handle();
+    if (fd != -1) {
+        if (fsync(fd) != 0) {
+            qWarning() << "uid.json fsync failed";
+            uidFile.close();
+            return false;
+        }
+    }
+    
     uidFile.close();
-
+    sync();
+    
     qDebug() << "uid.json updated with UID:" << projectUid;
     return true;
 }

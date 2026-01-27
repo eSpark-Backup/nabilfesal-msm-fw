@@ -553,7 +553,7 @@ bool settingsManager::jsonDifferent(const QJsonObject &a, const QString &path)
     }
 
     QByteArray decryptedData = file.readAll();
-    if (EncryptionHelper::isEncrypted(file))
+    if (EncryptionHelper::isEncrypted(path))
     {
         decryptedData = EncryptionHelper::readAndDecryptFile(path, Utils::getEncryptionKey());
     }

@@ -88,14 +88,14 @@ void HttpsManager::postJson(const QJsonObject &payload)
         QJsonParseError err;
         QJsonDocument jsonResp = QJsonDocument::fromJson(respData, &err);
 
+        QJsonObject obj = jsonResp.object();
+
         if (err.error != QJsonParseError::NoError) {
             emit requestFailed("Invalid JSON response", httpCode);
             reply->deleteLater();
+            emit requestFinished(obj, httpCode);
             return;
         }
-
-
-        QJsonObject obj = jsonResp.object();
 
         qDebug() << "HTTP CODE:" << httpCode;
         // qDebug().noquote() << QJsonDocument(obj).toJson(QJsonDocument::Indented);

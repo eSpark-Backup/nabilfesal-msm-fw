@@ -6,6 +6,7 @@
 #include <QDebug>
 #include "utils.h"
 #include "toast.h"
+#include <unistd.h>
 #include <QJsonArray>
 #include <QToolButton>
 #include <QJsonObject>
@@ -143,6 +144,7 @@ bool Registration::eventFilter(QObject *obj, QEvent *event)
 
 void Registration::on_pushButton_clicked()
 {
+    ui->pushButton->setEnabled(false);
     uid = ui->uid->text().trimmed();
     pass = ui->admin_pass->text().trimmed();
     QString confirm = ui->confirm_pass->text().trimmed();
@@ -162,24 +164,33 @@ void Registration::on_pushButton_clicked()
         httpsHandler = new HttpsManager(this);
 
     connect(httpsHandler, &HttpsManager::requestFinished, this, [this](const QJsonObject &response, int httpCode) {
-
-        QFile file(PROJECT_JSON_PATH);
-
-         if (!file.open(QIODevice::ReadOnly)) {
-            qDebug() << "Failed to open project.json for reading.";
+        ui->pushButton->setEnabled(true);
+        if (httpCode == 0)
+        {
+            Toast::show("Network Problem, please try again!", this, Toast::Error, 3000);
             return;
         }
-
-        QByteArray data = file.readAll();
-        file.close();
-
-        QJsonParseError parseError;
-        QByteArray decryptedData = data;
-        if (EncryptionHelper::isEncrypted(file))
+        QByteArray decryptedData;
+        
+        QFile checkFile(PROJECT_JSON_PATH);
+        bool isEncrypted = EncryptionHelper::isEncrypted(PROJECT_JSON_PATH);
+        
+        if (isEncrypted) {
             decryptedData = EncryptionHelper::readAndDecryptFile(PROJECT_JSON_PATH, Utils::getEncryptionKey());
+        } else {
+            QFile file(PROJECT_JSON_PATH);
+            if (!file.open(QIODevice::ReadOnly)) {
+                qDebug() << "Failed to open project.json for reading.";
+                return;
+            }
+            decryptedData = file.readAll();
+            file.close();
+        }
+  
+        QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(decryptedData, &parseError);
         if (doc.isNull() || !doc.isObject()) {
-            qDebug() << "Invalid JSON format: " << parseError.errorString();
+            qDebug() << "Invalid JSON format:" << parseError.errorString();
             return;
         }
 
@@ -187,6 +198,7 @@ void Registration::on_pushButton_clicked()
         projectSettings["uid"] = uid;
         projectSettings["admin"] = pass;
 
+        QFile file(PROJECT_JSON_PATH);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             qDebug() << "Failed to open project.json for writing.";
             return;
@@ -194,9 +206,15 @@ void Registration::on_pushButton_clicked()
 
         QJsonDocument newDoc(projectSettings);
         file.write(newDoc.toJson(QJsonDocument::Compact));
+        file.flush();
+        if (file.handle() != -1) {
+            fsync(file.handle());
+        }
         file.close();
 
-        Toast::show("Registration successful!", this, Toast::Info);
+        Toast::show("Registration successful!", this, Toast::Info, 6000);
+        QString uidd = Utils::getUid();
+        QString encKey = Utils::getEncryptionKey();
         emit requestResp(response, httpCode);
         emit registrationComplete();
         this->close();
