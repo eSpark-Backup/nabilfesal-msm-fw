@@ -151,17 +151,23 @@ void Registration::on_pushButton_clicked()
 
     if (uid.isEmpty() || pass.isEmpty() || confirm.isEmpty()) {
         Toast::show("All fields are required!", this, Toast::Warning);
+        ui->pushButton->setEnabled(true);
         return;
     }
     
     if (pass != confirm) {
         Toast::show("Passwords do not match!", this, Toast::Warning);
+        ui->pushButton->setEnabled(true);
         return;
     }
 
     if (!httpsHandler)
     {
         httpsHandler = new HttpsManager(this);
+
+    connect(httpsHandler, &HttpsManager::requestFailed, this, [this](const QString &errorString, int httpCode) {
+        ui->pushButton->setEnabled(true);
+    }, Qt::UniqueConnection);
 
     connect(httpsHandler, &HttpsManager::requestFinished, this, [this](const QJsonObject &response, int httpCode) {
         ui->pushButton->setEnabled(true);

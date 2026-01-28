@@ -619,6 +619,40 @@ void startAlignedTimer(
 }
 
 
+void exportAlignedTimer(
+    QObject* context,
+    int intervalMinutes,
+    std::function<void()> callback
+) {
+    auto scheduleNext = [=]() {
+        QDateTime now = QDateTime::currentDateTime();
+
+        QTime t = now.time();
+        int minute = t.minute();
+        int nextMinute =
+            ((minute / intervalMinutes) + 1) * intervalMinutes;
+
+        QDateTime next = now;
+
+        if (nextMinute >= 60) {
+            next = next.addSecs(3600 - minute * 60 - t.second());
+            next.setTime(QTime(next.time().hour(), 0, 0));
+        } else {
+            next.setTime(QTime(t.hour(), nextMinute, 0));
+        }
+
+        int delayMs = qMax(0LL, now.msecsTo(next));
+
+        QTimer::singleShot(delayMs, context, [=]() {
+            callback();
+            exportAlignedTimer(context, intervalMinutes, callback);
+        });
+    };
+
+    scheduleNext();
+}
+
+
 QString getEncryptionKey()
 {
     static bool isKeyFetched = false;
@@ -744,7 +778,7 @@ bool copyUidToUidJson()
     uidFile.close();
     sync();
     
-    qDebug() << "uid.json updated with UID:" << projectUid;
+    // qDebug() << "uid.json updated with UID:" << projectUid;
     return true;
 }
 

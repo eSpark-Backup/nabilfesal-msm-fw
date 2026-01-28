@@ -97,7 +97,7 @@ void HttpsManager::postJson(const QJsonObject &payload)
             return;
         }
 
-        qDebug() << "HTTP CODE:" << httpCode;
+        // qDebug() << "HTTP CODE:" << httpCode;
         // qDebug().noquote() << QJsonDocument(obj).toJson(QJsonDocument::Indented);
         bool httpSuccess = false;
         /* ===== HTTPs API Responses ===== */
@@ -120,7 +120,7 @@ void HttpsManager::postJson(const QJsonObject &payload)
 
         default:
             emit requestFailed("Unknown HTTP response", httpCode);
-            httpSuccess = true;
+            httpSuccess = false;
             break;
         }
         Toast::show(obj["message"].toString(),
@@ -146,11 +146,11 @@ void HttpsManager::send_Payload(const QString &uid, const QString &pw)
     QJsonObject payload;
 
     payload["device_uuid"] = uid + "_factory";
-    payload["device_imei"] = Utils::getDeviceImei();
+    payload["device_imei"] = "865788062395581"; //Utils::getDeviceImei();
     payload["device_pass"] = pw;
 
-    qDebug().noquote() << "Sending payload:"
-             << QJsonDocument(payload).toJson(QJsonDocument::Indented);
+    // qDebug().noquote() << "Sending payload:"
+    //          << QJsonDocument(payload).toJson(QJsonDocument::Indented);
 
     postJson(payload);
 }

@@ -428,10 +428,16 @@ void FactSetting::on_ota_version_btn_clicked()
 
 void FactSetting::getAvailableVersionsFromSFTP()
 {
-    // --- Load config ---
-    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(sftpConfigPath(), Utils::getEncryptionKey());
+    QString filePath = sftpConfigPath();
+    QFile file(filePath);
+    if (!file.exists()) {
+        qWarning() << "SFTP config file not found for OTA versions";
+        return;
+    }
+
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
-        qWarning() << "Failed to decrypt SFTP config";
+        qWarning() << "Failed to decrypt SFTP config for versions";
         finishFetchingVersions({});
         return;
     }

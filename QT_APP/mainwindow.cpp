@@ -1219,9 +1219,9 @@ void MainWindow::scheduleGSMReset()
 
     qint64 msecToGo = now.msecsTo(scheduledTime);
 
-    qDebug() << "Next GSM reset scheduled at:"
-             << scheduledTime
-             << "(in" << msecToGo / 1000 << "seconds)";
+    // qDebug() << "Next GSM reset scheduled at:"
+    //          << scheduledTime
+    //          << "(in" << msecToGo / 1000 << "seconds)";
 
     QTimer::singleShot(msecToGo, this, [this]() {
 
