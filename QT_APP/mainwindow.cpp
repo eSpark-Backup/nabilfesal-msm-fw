@@ -113,6 +113,8 @@ MainWindow::MainWindow(QWidget *parent)
                     msg = QString("%1 [%2] No response from ATSAM, trying again!").arg(command).arg(id);
 
                 Toast::show(msg, this, Toast::Warning);
+                enableUiButton();
+                qDebug() << "Retry count:" << cal_retry_count << " for command:" << command << " ID:" << id;
             }
             else
             {
@@ -812,9 +814,15 @@ void MainWindow::onGenericResponseReady(const QString &resp)
                 gainCalibrator->parse_and_save_response(obj);
             else
             {
-                bool ok = obj.contains("message");
-                Toast::show(obj[ok ? "message" : "error"].toString(),
-                            this, ok ? Toast::Info : Toast::Error);
+                if(gainCalibrator)
+                    gainCalibrator->parse_and_save_response(obj);
+                // qDebug() << "BootUpSync response:" << obj;
+                // qDebug() << "BootupSync value: " << BootUpSync << "GainCalibrator ptr:" << gainCalibrator;
+                // bool ok = obj.contains("message");
+                // Toast::show(obj[ok ? "message" : "error"].isString() ? obj[ok ? "message" : "error"].toString() : "Unknown response",
+                //             this, ok ? Toast::Info : Toast::Error);
+                // // Toast::show("BootUp not synced", this, Toast::Info, 3000);
+                // qDebug() << "Scheduling next file send with index:" << bootFileIndex + 1;
                 QTimer::singleShot(1000, this, [this](){
                     sendFileWithDelay(bootFiles, bootFileIndex + 1);
                 });
@@ -975,7 +983,7 @@ void MainWindow::sendFileWithDelay(const QStringList &files, int index)
     BootUpSync = true;
     bootFiles = files;
     bootFileIndex = index;
-    if (index >= files.size()) {
+    if (index >= files.size() || index < 0) {
         BootUpSync = false;
         startApp = false;
         responseWaitTimer->stop();
@@ -999,9 +1007,10 @@ void MainWindow::sendFileWithDelay(const QStringList &files, int index)
     }
 
 
-    EncryptionHelper::check_and_encrypt_files(filePath, filePath.toUpper(), true, this);
-    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
-    QJsonDocument doc = QJsonDocument::fromJson(decryptedData);
+    // EncryptionHelper::check_and_encrypt_files(filePath, filePath.toUpper(), true, this);
+    // QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
+    QByteArray fileData = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(fileData);
     if (!doc.isNull() && doc.isObject()) {
         QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
 

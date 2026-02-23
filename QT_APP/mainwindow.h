@@ -168,7 +168,7 @@ private:
     // Boot calibration declarations 
     bool BootUpSync = true;
     QStringList bootFiles;
-    int bootFileIndex;
+    int bootFileIndex = 0;
 
     QTimer *refreshTimer = nullptr;    
 };

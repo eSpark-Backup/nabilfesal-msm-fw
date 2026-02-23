@@ -196,9 +196,13 @@ void CalibrationDialog::loadCalibrationScreen(bool isEnable)
 
 void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
 {
+
+    qDebug() << "Calibration Response Received:" << QJsonDocument(response).toJson(QJsonDocument::Indented);
     if(response.contains("error"))
     {
-        QString err = response.value("error").toString();
+        // QString err = response.value("error").toString();
+        QString err = response["error"].isString() ? response["error"].toString() : "Unknown error received from device.";
+        // QString err = "Unknown error received from device.";
         Toast::show(err, this, Toast::Error);
         return;
     }
@@ -235,8 +239,8 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
         if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             QJsonDocument doc(modifiedResponse);
             QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
-            QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
-            file.write(encryptedData);
+            // QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+            file.write(jsonData);
             file.close();
             Toast::show("Voltage Calibrated successfully", this, Toast::Info);
         }
@@ -286,8 +290,8 @@ void CalibrationDialog::parse_and_save_response(const QJsonObject &response)
         if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             QJsonDocument doc(finalObj);
             QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
-            QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
-            file.write(encryptedData);
+            // QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+            file.write(jsonData);
             file.close();
             Toast::show(QString("Channel: %1 Current Calibrated successfully").arg(!value?lastID:value), this, Toast::Info);
         }

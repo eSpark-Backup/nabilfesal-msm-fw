@@ -116,7 +116,7 @@ void Measurements::on_load_btn_clicked(bool checked)
             label->setText("%");
         }
         QFile file(CT_RATIO);
-        EncryptionHelper::check_and_encrypt_files(CT_RATIO, "CT_RATIO", checked, this);
+        // EncryptionHelper::check_and_encrypt_files(CT_RATIO, "CT_RATIO", checked, this);
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -157,7 +157,7 @@ void Measurements::on_load_btn_clicked(bool checked)
             label->setText("mA");
         }
         QFile file(I_OFFSET);
-        EncryptionHelper::check_and_encrypt_files(I_OFFSET, "I_OFFSET", checked, this);
+        // EncryptionHelper::check_and_encrypt_files(I_OFFSET, "I_OFFSET", checked, this);
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -198,7 +198,7 @@ void Measurements::on_load_btn_clicked(bool checked)
             label->setText("V");
         }
         QFile file(V_OFFSET);
-        EncryptionHelper::check_and_encrypt_files(V_OFFSET, "V_OFFSET", checked, this);
+        // EncryptionHelper::check_and_encrypt_files(V_OFFSET, "V_OFFSET", checked, this);
         if (!file.open(QIODevice::ReadOnly)) {
             for (QLineEdit *edit : edits)
                 edit->setText("0.00");
@@ -349,8 +349,8 @@ void Measurements::processSettings(const QString &key,
 
     QJsonDocument doc(data);
     QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
-    QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
-    file.write(encryptedData);
+    // QByteArray encryptedData = EncryptionHelper::encrypt(jsonData, Utils::getEncryptionKey());
+    file.write(jsonData);
     file.close();
 
     Toast::show(QString("[%1] Settings saved to file.").arg(title),
