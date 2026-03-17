@@ -75,13 +75,16 @@ QJsonObject getNtpStatus()
     // service check (non-blocking better done in background thread)
     QProcess process;
     process.start("/etc/init.d/S48sntp", {"status"});
-    if (process.waitForFinished(500)) { // timeout 500ms
-        QString output = process.readAllStandardOutput();
-        result["ntp_status"] = output.contains("SUCCESS", Qt::CaseInsensitive)
-                                   ? "Running"
-                                   : "Stopped";
+    QProcess onlineProcess;
+    onlineProcess.start("ping", {"-c", "1", "-W", "1", "8.8.8.8"});
+    if (process.waitForFinished(15000) && onlineProcess.waitForFinished(15000)) {
+        int exitCode = process.exitCode();
+        int onlineExitCode = onlineProcess.exitCode();
+        result["ntp_status"] = (exitCode == 0 && onlineExitCode == 0) ? "Running" : "Stopped";
+        qDebug() << "NTP status exit code:" << exitCode;
     } else {
-        result["ntp_status"] = "UNKNOWN";
+        result["ntp_status"] = "Disconnected";
+        qDebug() << "NTP status: process timed out";
     }
 
     return result;
@@ -190,11 +193,20 @@ QString getDeviceImei()
 
 QString getSignalCategoryFromFile(const QString &filePath)
 {
+    // Check if file was modified more than 100 seconds ago
+    QFileInfo fileInfo(filePath);
+    if (fileInfo.exists()) {
+        QDateTime lastModified = fileInfo.lastModified();
+        qint64 secondsElapsed = lastModified.secsTo(QDateTime::currentDateTime());
+        if (secondsElapsed > 60) {
+            return "Disconnected";
+        }
+    }
+
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return "UNKNOWN";
     }
-
     QString content = QString::fromUtf8(file.readAll());
     file.close();
 
@@ -209,7 +221,6 @@ QString getSignalCategoryFromFile(const QString &filePath)
         return "UNKNOWN";
 
     int dBm = -113 + (2 * rssi);
-
     if (dBm >= -70) return QString("Strong (%1)").arg(dBm);
     else if (dBm >= -85) return QString("Normal (%1)").arg(dBm);
     else if (dBm >= -100) return QString("Weak (%1)").arg(dBm);

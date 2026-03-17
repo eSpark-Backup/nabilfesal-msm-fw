@@ -665,7 +665,9 @@ void MainWindow::connectLoginSignals()
     startPingTimer();
 
     QTimer *refreshTimer = new QTimer(this);
-    connect(refreshTimer, &QTimer::timeout, this, &MainWindow::refreshInfo);
+    connect(refreshTimer, &QTimer::timeout, this, [this]() {
+        refreshInfo(false);  
+    });
     refreshTimer->start(10 * 1000);
 
     scheduleGSMReset();
@@ -1093,57 +1095,91 @@ void MainWindow::startPingTimer()
         if (reachable != previousStatus) {
             previousStatus = reachable;
             QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
-            if (reachable){
-                //qDebug() << timestamp << "✅ Internet Connected";
-                // Reconnect clients
+            if (reachable) {
+                qDebug() << timestamp << "Internet Connected";
                 factorySftpHandler->reloadSettings();
                 factoryMqttHandler->reloadSettings();
                 factoryMqttsHandler->reloadAwsMqttsSettings();
                 adminSftpHandler->reloadSettings();
                 adminMqttHandler->reloadSettings();
                 adminMqttsHandler->reloadAwsMqttsSettings();
+                refreshInfo(true);
             } else {
-                //qDebug() << timestamp << "❌ Internet Disconnected";
-
+                qDebug() << timestamp << "Internet Disconnected";
                 factorySftpHandler->isConnected = false;
                 factoryMqttHandler->isConnected = false;
                 factoryMqttsHandler->isConnected = false;
                 factorySftpHandler->disconnectClient();
                 factoryMqttHandler->disconnectClient();
-                adminMqttsHandler->disconnectAwsClient();
+                factoryMqttsHandler->disconnectAwsClient();
                 adminSftpHandler->isConnected = false;
                 adminMqttHandler->isConnected = false;
                 adminMqttsHandler->isConnected = false;
                 adminSftpHandler->disconnectClient();
                 adminMqttHandler->disconnectClient();
                 adminMqttsHandler->disconnectAwsClient();
+                refreshInfo(false);
             }
-            refreshInfo();
+        }
+
+        // Retry any individually disconnected clients even if overall status unchanged
+        if (reachable) {
+            if (!adminMqttsHandler->isConnected)  adminMqttsHandler->reloadAwsMqttsSettings();
+            if (!adminMqttHandler->isConnected)   adminMqttHandler->reloadSettings();
+            if (!adminSftpHandler->isConnected)   adminSftpHandler->reloadSettings();
+            if (!factoryMqttsHandler->isConnected) factoryMqttsHandler->reloadAwsMqttsSettings();
+            if (!factoryMqttHandler->isConnected)  factoryMqttHandler->reloadSettings();
+            if (!factorySftpHandler->isConnected)  factorySftpHandler->reloadSettings();
         }
     };
 
-    // Connect socket signals to handlePingResult
-    connect(&socket, &QTcpSocket::connected, this, [this, handlePingResult]() {
-        handlePingResult(true);
-        socket.abort(); // close connection after success
-    });
+    int *consecutiveFailures = new int(0); // heap-allocated so inner lambda can safely mutate
 
-    connect(&socket, &QTcpSocket::errorOccurred, this, [this, handlePingResult](QAbstractSocket::SocketError) {
-        handlePingResult(false);
-        socket.abort(); // ensure socket is reset after failure
-    });
-
-    // Timer to trigger periodic pings
     QTimer *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, [this]() {
-        socket.abort(); // reset any previous connection
-        socket.connectToHost("8.8.8.8", 53); // start async connection
+    connect(timer, &QTimer::timeout, this, [this, handlePingResult, consecutiveFailures]() {
+        QProcess *pingProcess = new QProcess(this);
+
+        connect(pingProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                this, [this, pingProcess, handlePingResult, consecutiveFailures](int exitCode, QProcess::ExitStatus) {
+
+            if (exitCode == 0) {
+                *consecutiveFailures = 0;
+                qDebug() << "Ping successful";
+                handlePingResult(true);
+            } else {
+                (*consecutiveFailures)++;
+                qDebug() << "Ping failed. Consecutive failures:" << *consecutiveFailures;
+                handlePingResult(false);
+
+                if (*consecutiveFailures >= 18) {
+                    qDebug() << "WARNING: 18 consecutive ping failures (~90s) - restarting GSM modem...";
+
+                    QProcess *gsmRestart = new QProcess(this);
+                    connect(gsmRestart, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                            this, [gsmRestart](int gsmExitCode, QProcess::ExitStatus) {
+                        if (gsmExitCode == 0) {
+                            qDebug() << "GSM modem restarted successfully";
+                        } else {
+                            qDebug() << "GSM modem restart failed with exit code:" << gsmExitCode;
+                        }
+                        gsmRestart->deleteLater();
+                    });
+
+                    gsmRestart->start("/etc/init.d/gsm", {"restart"});
+                    *consecutiveFailures = 0;
+                }
+            }
+
+            pingProcess->deleteLater();
+        });
+
+        pingProcess->start("ping", {"-c", "1", "-W", "1", "8.8.8.8"});
     });
     timer->start(5000);
 }
 
 
-void MainWindow::refreshInfo()
+void MainWindow::refreshInfo(bool isOnline)
 {
     bool sendBothSignal = false;
     curDevInfo.uuid       = Utils::getUid();
@@ -1161,6 +1197,7 @@ void MainWindow::refreshInfo()
     curDevInfo.date      = ntpData.value("date").toString();
     curDevInfo.gsmStatus = Utils::getSignalCategoryFromFile();
     curDevInfo.ntpStatus = ntpData.value("ntp_status").toString();
+    // curDevInfo.ntpStatus = "Online";
 
     if (isDifferent(curDevInfo, prvDevInfo)) {
         sendBothSignal = true;

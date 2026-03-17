@@ -227,10 +227,12 @@ void sftpManager::disconnectClient()
 
 void sftpManager::disconnectFromSftp()
 {
-    if (process->state() == QProcess::Running) {
+    if (process && process->state() == QProcess::Running) {
         // logDebug << "Disconnecting SFTP...";
         process->write("bye\n");
-        process->waitForFinished(2000);
+        if (!process->waitForFinished(2000)) {
+            process->kill(); // force kill if graceful exit timed out
+        }
         process->close();
     }
 }

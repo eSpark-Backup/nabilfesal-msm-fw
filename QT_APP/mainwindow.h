@@ -41,7 +41,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     void sendFileWithDelay(const QStringList &files, int index = 0);
     ~MainWindow();
-    void refreshInfo();
+    void refreshInfo(bool isOnline);
     DeviceInfo curDevInfo, prvDevInfo;
     ConnStatus curProtState_A, prvProtState_A, curProtState_F, prvProtState_F;
 
