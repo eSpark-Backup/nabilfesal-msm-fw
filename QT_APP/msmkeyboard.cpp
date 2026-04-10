@@ -69,6 +69,10 @@ MSMKeyboard::~MSMKeyboard()
 
 void MSMKeyboard::setTarget(QLineEdit *lineEdit)
 {
+    // Disconnect previous target first
+    if (targetLineEdit) {
+        disconnect(targetLineEdit, nullptr, this, nullptr);
+    }
     targetLineEdit = lineEdit;
 
     if (targetLineEdit) {
@@ -102,7 +106,12 @@ void MSMKeyboard::numberClicked()
     if (text == "&&") text = "&";
 
     ui->key_input->insert(text);
-    showPopup(clickedButton, text);
+
+    if (shiftEnabled) {
+        // shiftEnabled = false;
+        on_shift_clicked(); // revert visuals
+    }
+    // showPopup(clickedButton, text);
 }
 
 void MSMKeyboard::letterClicked()
@@ -113,7 +122,9 @@ void MSMKeyboard::letterClicked()
     QString text = clickedButton->text();
     ui->key_input->insert(text);
 
-    showPopup(clickedButton, text);
+
+
+    // showPopup(clickedButton, text);
 }
 
 void MSMKeyboard::on_backspace_clicked()

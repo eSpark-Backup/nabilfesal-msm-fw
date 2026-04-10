@@ -7,7 +7,7 @@ UsbWatcher::UsbWatcher(QObject *parent) : QObject(parent) {
     m_deviceName.clear();
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &UsbWatcher::checkUsb);
-    timer->start(2000); // check every 2 sec
+    timer->start(5000); // check every 2 sec
 }
 
 void UsbWatcher::checkUsb()

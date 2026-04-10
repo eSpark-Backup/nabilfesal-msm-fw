@@ -38,6 +38,7 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
     if(clientMode == Mode::Factory){
         tag = TAG_FACTORY;
         aws_path = "config/aws_mqtts_settings.json";
+        configPath = aws_path;
     }else{
         tag = TAG_ADMIN;
         caPath        = CERT_DIR_PATH + "admin/claim_certs/AmazonRootCA1.pem";
@@ -45,6 +46,8 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
         claimKeyPath  = CERT_DIR_PATH + "admin/claim_certs/claim_private.key";
         provCertPath  = CERT_DIR_PATH + "admin/prov_certs/deviceCert.pem";
         provKeyPath   = CERT_DIR_PATH + "admin/prov_certs/privateKey.pem";
+        aws_path = "config/admin_settings/aws_mqtts_settings.json";
+        configPath = aws_path;
     }
 
     awsMqttsClient = new QMqttClient(this);
@@ -121,10 +124,12 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
 
 bool AwsMqttManager::loadAwsConfig(const QString &filePath)
 {
-    configPath = filePath;
-    QFile file(filePath);
+    // configPath = filePath;
+    // filePath = this->configPath;
+    logDebug <<"Loading AWS MQTTS config from:" << configPath;
+    QFile file(configPath);
     if (!file.exists()) {
-        // logWarn << "Config file not found:" << filePath;
+        logWarn << "Config file not found:" << configPath;
         return false;
     }
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -132,9 +137,9 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
         return false;
     }
 
-    EncryptionHelper::check_and_encrypt_files(filePath, "MQTTS", false, nullptr);
+    EncryptionHelper::check_and_encrypt_files(configPath, "MQTTS", false, nullptr);
 
-    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(configPath, Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
         logWarn << "Failed to decrypt MQTTS settings (wrong password or corrupted file)";
         return false;
@@ -169,8 +174,12 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
 void AwsMqttManager::reloadAwsMqttsSettings()
 {
     configPath = AWS_MQTTS_PATH;
+    // if(isConnecting) {
+    //     return;
+    // }
+    // disconnectAwsClient();
     if (!loadAwsConfig(configPath)) {
-        // logWarn << "No valid config found. Skipping AWS MQTTS connection.";
+        logWarn << "No valid config found. Skipping AWS MQTTS connection.";
         return;
     }
     connectToBroker();
@@ -302,6 +311,7 @@ void AwsMqttManager::disconnectFromBroker()
         awsMqttsClient->disconnectFromHost();
 
     if (sslSocket) {
+        sslSocket->abort();
         sslSocket->disconnectFromHost();
         sslSocket->close();
     }

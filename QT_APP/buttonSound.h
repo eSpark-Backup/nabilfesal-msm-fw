@@ -8,6 +8,8 @@
 #include <QTimer>
 #include <QKeyEvent>
 #include <QApplication>
+#include <QThread>
+#include <chrono>
 
 class ButtonSound : public QObject {
     Q_OBJECT
@@ -52,12 +54,30 @@ protected:
 
 private:
     QTimer *soundTimer;
+    std::atomic<bool> m_beeping{false};
 
+
+    // void playBeep() {
+    //     if (!soundTimer->isActive()) {
+    //         #if defined(BUILD_V3S)
+    //         writeSysfs("/sys/class/backlight/backlight/bl_power", "0");
+    //         #endif
+    //         soundTimer->start(200); // beep for 50ms
+    //     }
+    // }
     void playBeep() {
+        if (m_beeping.exchange(true)) return; // already beeping, skip
+
         #if defined(BUILD_V3S)
         writeSysfs("/sys/class/backlight/backlight/bl_power", "0");
         #endif
-        soundTimer->start(50); // beep for 50ms
+
+        // Run stop on a separate thread — NOT subject to event loop delays
+        QThread::create([this]() {
+            std::this_thread::sleep_for(std::chrono::milliseconds(50)); // strict 50
+            stopBeep();
+            m_beeping.store(false);
+        })->start();
     }
 
     void stopBeep() {

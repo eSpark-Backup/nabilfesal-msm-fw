@@ -1124,7 +1124,7 @@ void MainWindow::startPingTimer()
 
         // Retry any individually disconnected clients even if overall status unchanged
         if (reachable) {
-            if (!adminMqttsHandler->isConnected)  adminMqttsHandler->reloadAwsMqttsSettings();
+            if (!adminMqttsHandler->isConnected)  {adminMqttsHandler->reloadAwsMqttsSettings(); qDebug() << "Admin MQTTs connection status:" << adminMqttsHandler->isConnected;}
             if (!adminMqttHandler->isConnected)   adminMqttHandler->reloadSettings();
             if (!adminSftpHandler->isConnected)   adminSftpHandler->reloadSettings();
             if (!factoryMqttsHandler->isConnected) factoryMqttsHandler->reloadAwsMqttsSettings();
@@ -1151,8 +1151,8 @@ void MainWindow::startPingTimer()
                 qDebug() << "Ping failed. Consecutive failures:" << *consecutiveFailures;
                 handlePingResult(false);
 
-                if (*consecutiveFailures >= 18) {
-                    qDebug() << "WARNING: 18 consecutive ping failures (~90s) - restarting GSM modem...";
+                if (*consecutiveFailures >= 6) {
+                    qDebug() << "WARNING: 6 consecutive ping failures (~90s) - restarting GSM modem...";
 
                     QProcess *gsmRestart = new QProcess(this);
                     connect(gsmRestart, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
@@ -1173,9 +1173,9 @@ void MainWindow::startPingTimer()
             pingProcess->deleteLater();
         });
 
-        pingProcess->start("ping", {"-c", "1", "-W", "1", "8.8.8.8"});
+        pingProcess->start("ping", {"-c", "1", "-W", "1", "www.google.com"});
     });
-    timer->start(5000);
+    timer->start(15000);
 }
 
 

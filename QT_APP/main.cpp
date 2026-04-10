@@ -6,7 +6,7 @@
 #include <QInputMethod>
 #include "buttonSound.h"
 #include "buildinfo.h"
-#define BUILD_VERSION "3.0.2s"
+#define BUILD_VERSION "3.0.3s"
 
 
 int main(int argc, char *argv[])
