@@ -1103,7 +1103,7 @@ void MainWindow::startPingTimer()
                 adminSftpHandler->reloadSettings();
                 adminMqttHandler->reloadSettings();
                 adminMqttsHandler->reloadAwsMqttsSettings();
-                // refreshInfo(true);
+                refreshInfo(true);
             } else {
                 qDebug() << timestamp << "Internet Disconnected";
                 factorySftpHandler->isConnected = false;
@@ -1118,7 +1118,7 @@ void MainWindow::startPingTimer()
                 adminSftpHandler->disconnectClient();
                 adminMqttHandler->disconnectClient();
                 adminMqttsHandler->disconnectAwsClient();
-                // refreshInfo(false);
+                refreshInfo(false);
             }
         }
 
@@ -1146,12 +1146,12 @@ void MainWindow::startPingTimer()
                 *consecutiveFailures = 0;
                 qDebug() << "Ping successful";
                 isOnline = true;
-                refreshInfo(true);
+                // refreshInfo(true);
                 handlePingResult(true);
             } else {
                 (*consecutiveFailures)++;
                 isOnline = false;
-                refreshInfo(false);
+                // refreshInfo(false);
                 qDebug() << "Ping failed. Consecutive failures:" << *consecutiveFailures;
                 handlePingResult(false);
 
@@ -1209,13 +1209,13 @@ void MainWindow::refreshInfo(bool isOnline)
         prvDevInfo = curDevInfo;
     }
 
-    // curProtState_A.mqttStatus = Utils::getMqttStatus(Mode::Admin);
-    // curProtState_A.sftpStatus = Utils::getSftpStatus(Mode::Admin);
-    // curProtState_A.mqttsStatus = Utils::getMqttsStatus(Mode::Admin);
+    curProtState_A.mqttStatus = Utils::getMqttStatus(Mode::Admin);
+    curProtState_A.sftpStatus = Utils::getSftpStatus(Mode::Admin);
+    curProtState_A.mqttsStatus = Utils::getMqttsStatus(Mode::Admin);
 
-    curProtState_A.mqttStatus = isOnline ? Utils::getMqttStatus(Mode::Admin) : "Disconnected";
-    curProtState_A.sftpStatus = isOnline ? Utils::getMqttStatus(Mode::Admin) : "Disconnected";
-    curProtState_A.mqttsStatus = isOnline ? Utils::getMqttStatus(Mode::Admin) : "Disconnected";
+    // curProtState_A.mqttStatus = isOnline ? Utils::getMqttStatus(Mode::Admin) : "Disconnected";
+    // curProtState_A.sftpStatus = isOnline ? Utils::getMqttStatus(Mode::Admin) : "Disconnected";
+    // curProtState_A.mqttsStatus = isOnline ? Utils::getMqttStatus(Mode::Admin) : "Disconnected";
     if (sendBothSignal || isConnectionDifferent(curProtState_A, prvProtState_A))
     {        
         curDevInfo.conn = curProtState_A;
