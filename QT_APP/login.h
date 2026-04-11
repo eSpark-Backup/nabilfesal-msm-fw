@@ -24,7 +24,7 @@ signals:
     void loadDiagnotics();
     
 private slots:
-    void on_loginButton_clicked();
+    void on_loginButton_pressed();
     void on_pushButton_clicked();
 
 protected:

@@ -170,7 +170,8 @@ private:
     QStringList bootFiles;
     int bootFileIndex = 0;
 
-    QTimer *refreshTimer = nullptr;    
+    QTimer *refreshTimer = nullptr;   
+    bool isOnline = false; 
 };
 
 #endif // MAINWINDOW_H

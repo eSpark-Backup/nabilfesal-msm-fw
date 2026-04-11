@@ -39,7 +39,7 @@ DeviceSettings::DeviceSettings(QWidget *parent)
         QString time = QTime::currentTime().toString("HH:mm:ss");
         ui->time_input->setText(time);
     });
-    timer->start();
+    timer->start(1 * 1000);
 
     ui->stackedWidget->setCurrentIndex(0);
     QLabel* label = new QLabel("server 1", ui->server1);

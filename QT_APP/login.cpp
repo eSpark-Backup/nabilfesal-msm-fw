@@ -114,7 +114,7 @@ bool LoginWidget::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
-void LoginWidget::on_loginButton_clicked()
+void LoginWidget::on_loginButton_pressed()
 {
     QFile file(PROJECT_JSON_PATH);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {

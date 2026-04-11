@@ -38,7 +38,6 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
     if(clientMode == Mode::Factory){
         tag = TAG_FACTORY;
         aws_path = "config/aws_mqtts_settings.json";
-        configPath = aws_path;
     }else{
         tag = TAG_ADMIN;
         caPath        = CERT_DIR_PATH + "admin/claim_certs/AmazonRootCA1.pem";
@@ -58,7 +57,7 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
         // logWarn << "No valid config found. Skipping AWS MQTTS connection.";
     }
 
-    reconnectTimer->setInterval(5 * 1000);  // 5 seconds
+    reconnectTimer->setInterval(60 * 1000);  // 60 seconds
     reconnectTimer->setSingleShot(false);    // repeat until success
 
     connect(reconnectTimer, &QTimer::timeout, this, [this]() {
@@ -87,22 +86,22 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
     });
 
     connect(awsMqttsClient, &QMqttClient::connected, this, [this]() {
-    isConnected  = true;
-    isConnecting = false;
-    logDebug << "[MQTTS] Connected to AWS IoT Core!";
-    reconnectTimer->stop();
+        isConnected  = true;
+        isConnecting = false;
+        logDebug << "[MQTTS] Connected to AWS IoT Core!";
+        reconnectTimer->stop();
 
-    if (intervalSec > 0) {
-        Utils::startAlignedTimer( this,
-            publishTimer, intervalSec,
-            [this]() {if (isConnected) publishTelemetry();});
-    }
+        if (intervalSec > 0) {
+            Utils::startAlignedTimer( this,
+                publishTimer, intervalSec,
+                [this]() { if (isConnected) publishTelemetry(); });
+        }
 
-    awsTopicsInit();
-    subscribeToTopic();
-    if(isFirstTime) {
-        isFirstTime = false;
-        emit updateAwsData();
+        awsTopicsInit();
+        subscribeToTopic();
+        if (isFirstTime) {
+            isFirstTime = false;
+            emit updateAwsData();
         }
     });
 
@@ -124,22 +123,21 @@ AwsMqttManager::AwsMqttManager(Mode mode, QObject *parent) : clientMode(mode), Q
 
 bool AwsMqttManager::loadAwsConfig(const QString &filePath)
 {
-    // configPath = filePath;
-    // filePath = this->configPath;
-    logDebug <<"Loading AWS MQTTS config from:" << configPath;
-    QFile file(configPath);
+    configPath = filePath;
+    QFile file(filePath);
     if (!file.exists()) {
-        logWarn << "Config file not found:" << configPath;
+        logWarn << "Config file not found:" << filePath;
         return false;
     }
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         logWarn << "Failed to open MQTTS config file";
         return false;
     }
+    file.close();
 
-    EncryptionHelper::check_and_encrypt_files(configPath, "MQTTS", false, nullptr);
+    EncryptionHelper::check_and_encrypt_files(filePath, "MQTTS", false, nullptr);
 
-    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(configPath, Utils::getEncryptionKey());
+    QByteArray decryptedData = EncryptionHelper::readAndDecryptFile(filePath, Utils::getEncryptionKey());
     if (decryptedData.isEmpty()) {
         logWarn << "Failed to decrypt MQTTS settings (wrong password or corrupted file)";
         return false;
@@ -174,10 +172,6 @@ bool AwsMqttManager::loadAwsConfig(const QString &filePath)
 void AwsMqttManager::reloadAwsMqttsSettings()
 {
     configPath = AWS_MQTTS_PATH;
-    // if(isConnecting) {
-    //     return;
-    // }
-    // disconnectAwsClient();
     if (!loadAwsConfig(configPath)) {
         logWarn << "No valid config found. Skipping AWS MQTTS connection.";
         return;
@@ -208,31 +202,48 @@ bool AwsMqttManager::loadCertificates()
     EncryptionHelper::check_and_encrypt_files(provCertPath, "Load Device Cert", true, nullptr);
     EncryptionHelper::check_and_encrypt_files(provKeyPath, "Load Device Key", true, nullptr);
 
-    QFile caFile(caPath), certFile(provCertPath), keyFile(provKeyPath);
-    if (!caFile.open(QIODevice::ReadOnly) ||
-        !certFile.open(QIODevice::ReadOnly) ||
-        !keyFile.open(QIODevice::ReadOnly)) {
-        logWarn << "[AWS TLS] Failed to open cert/key files";
+    // Validate CA file is accessible
+    QFile caFile(caPath);
+    if (!caFile.open(QIODevice::ReadOnly)) {
+        logWarn << "[AWS TLS] Failed to open CA cert file:" << caPath;
         return false;
     }
+    QByteArray caData = caFile.readAll();
+    caFile.close();
 
+    // Validate cert and key files are accessible before decryption
+    QFile certFile(provCertPath);
+    if (!certFile.open(QIODevice::ReadOnly)) {
+        logWarn << "[AWS TLS] Failed to open device cert file:" << provCertPath;
+        return false;
+    }
+    certFile.close();
+
+    QFile keyFile(provKeyPath);
+    if (!keyFile.open(QIODevice::ReadOnly)) {
+        logWarn << "[AWS TLS] Failed to open device key file:" << provKeyPath;
+        return false;
+    }
+    keyFile.close();
+
+    // Decrypt device cert and key
     QByteArray certDecryptedData = EncryptionHelper::readAndDecryptFile(provCertPath, Utils::getEncryptionKey());
     if (certDecryptedData.isEmpty()) {
         logWarn << "Failed to decrypt Device Cert File settings (wrong password or corrupted file)";
         return false;
     }
 
-    QByteArray KeyDecryptedData = EncryptionHelper::readAndDecryptFile(provKeyPath, Utils::getEncryptionKey());
-    if (KeyDecryptedData.isEmpty()) {
+    QByteArray keyDecryptedData = EncryptionHelper::readAndDecryptFile(provKeyPath, Utils::getEncryptionKey());
+    if (keyDecryptedData.isEmpty()) {
         logWarn << "Failed to decrypt Device Key File settings (wrong password or corrupted file)";
         return false;
     }
 
     QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
     conf.setProtocol(QSsl::TlsV1_2OrLater);
-    conf.setCaCertificates(QSslCertificate::fromData(caFile.readAll(), QSsl::Pem));
+    conf.setCaCertificates(QSslCertificate::fromData(caData, QSsl::Pem));
     conf.setLocalCertificate(QSslCertificate(certDecryptedData, QSsl::Pem));
-    conf.setPrivateKey(QSslKey(KeyDecryptedData, QSsl::Rsa, QSsl::Pem));
+    conf.setPrivateKey(QSslKey(keyDecryptedData, QSsl::Rsa, QSsl::Pem));
 
     if (conf.localCertificate().isNull() || conf.privateKey().isNull() || conf.caCertificates().isEmpty()) {
         logWarn << "[AWS TLS] Invalid certificate/key/CA chain";
@@ -276,12 +287,17 @@ void AwsMqttManager::connectToBroker()
 
     isConnecting = true;
 
-    if (!sslSocket) {
-        if (!loadCertificates()) {
-            logWarn << "[AWS MQTTS] TLS setup failed";
-            isConnecting = false;
-            return;
-        }
+    // Always tear down and recreate the socket on each connect attempt
+    if (sslSocket) {
+        sslSocket->abort();
+        sslSocket->deleteLater();
+        sslSocket = nullptr;
+    }
+
+    if (!loadCertificates()) {
+        logWarn << "[AWS MQTTS] TLS setup failed";
+        isConnecting = false;
+        return;
     }
 
     awsMqttsClient->setClientId(clientId);
@@ -305,15 +321,17 @@ void AwsMqttManager::disconnectFromBroker()
 
     AWS_LOG("[MQTTS] Disconnecting...");
 
+    // Reset flags first so any triggered signals don't cause re-entry
+    isConnected  = false;
+    isConnecting = false;
+
     publishTimer->stop();
-   
+
     if (awsMqttsClient->state() != QMqttClient::Disconnected)
         awsMqttsClient->disconnectFromHost();
 
     if (sslSocket) {
-        sslSocket->abort();
-        sslSocket->disconnectFromHost();
-        sslSocket->close();
+        sslSocket->abort();  // abort() immediately closes — no need for disconnectFromHost()/close()
     }
 }
 
@@ -352,52 +370,52 @@ void AwsMqttManager::subscribeToTopic()
             continue;
         }
 
-    connect(sub, &QMqttSubscription::messageReceived, this,
-        [this](const QMqttMessage &msg) {
-            const QString topic = msg.topic().name();
-            QByteArray rawPayload = msg.payload();
-            QJsonDocument doc = QJsonDocument::fromJson(rawPayload);
-            QJsonObject obj;
-            if (!doc.isNull() && doc.isObject()) {
-                QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz");
-                obj = doc.object();
-                logDebug << "\n[" << timestamp << "] [AWS] Topic:" << topic
-                         << "Message received: Parsed JSON:\n"
-                         << QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Indented));
-            }
-            emit settingsChanged();
+        connect(sub, &QMqttSubscription::messageReceived, this,
+            [this](const QMqttMessage &msg) {
+                const QString topic = msg.topic().name();
+                QByteArray rawPayload = msg.payload();
+                QJsonDocument doc = QJsonDocument::fromJson(rawPayload);
+                QJsonObject obj;
+                if (!doc.isNull() && doc.isObject()) {
+                    QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz");
+                    obj = doc.object();
+                    logDebug << "\n[" << timestamp << "] [AWS] Topic:" << topic
+                             << "Message received: Parsed JSON:\n"
+                             << QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Indented));
+                }
+                emit settingsChanged();
 
-            if (topic == topic_sub_reboot) {
-                emit rebootRequested();
-            } else if (topic == topic_sub_ntp) {
-                emit ntpConfigReceived(obj);
-            } else if (topic == topic_sub_mqtt) {
-                emit mqttConfigReceived(obj);
-            } else if (topic == topic_sub_mqtts) {
-                emit mqttsConfigReceived(obj);
-            } else if (topic == topic_sub_sftp) {
-                emit sftpConfigReceived(obj);
-            } else if (topic == topic_sub_ctRatio) {
-                emit ctRatioReceived(obj);
-            } else if (topic == topic_sub_vOffset) {
-                emit vOffsetReceived(obj);
-            } else if (topic == topic_sub_iOffset) {
-                emit iOffsetReceived(obj);
-            } else if (topic == topic_sub_ota) {
-                otaSend(obj);
-            } else {
-                logWarn << "[MQTT] Unknown topic:" << topic;
-            }
-        });
+                if (topic == topic_sub_reboot) {
+                    emit rebootRequested();
+                } else if (topic == topic_sub_ntp) {
+                    emit ntpConfigReceived(obj);
+                } else if (topic == topic_sub_mqtt) {
+                    emit mqttConfigReceived(obj);
+                } else if (topic == topic_sub_mqtts) {
+                    emit mqttsConfigReceived(obj);
+                } else if (topic == topic_sub_sftp) {
+                    emit sftpConfigReceived(obj);
+                } else if (topic == topic_sub_ctRatio) {
+                    emit ctRatioReceived(obj);
+                } else if (topic == topic_sub_vOffset) {
+                    emit vOffsetReceived(obj);
+                } else if (topic == topic_sub_iOffset) {
+                    emit iOffsetReceived(obj);
+                } else if (topic == topic_sub_ota) {
+                    otaSend(obj);
+                } else {
+                    logWarn << "[MQTT] Unknown topic:" << topic;
+                }
+            });
     }
 }
 
 
 void AwsMqttManager::awsTopicsInit()
 {
-    QString base_pub_topic = "msm/" + clientId + "/pub"; //clientId to be replaced
+    QString base_pub_topic = "msm/" + clientId + "/pub";
     QString base_sub_topic = "msm/" + clientId + "/sub";
-    
+
     topic_pub_telemetry   = base_pub_topic + "/telemetry";
     topic_pub_device_info = base_pub_topic + "/device_info";
     topic_pub_reboot      = base_pub_topic + "/reboot";
@@ -445,7 +463,8 @@ QByteArray AwsMqttManager::buildAwsTelemetryJson(int startIndex, int endIndex) c
         }
     }
     locker.unlock();
-    if (channelsArray.isEmpty())    return {};
+
+    if (channelsArray.isEmpty()) return {};
     root["channels"] = channelsArray;
 
     QJsonDocument doc(root);
@@ -481,31 +500,31 @@ void AwsMqttManager::processAwsTelemetry(int channel, const QJsonObject &payload
             phaseObj.remove("avg_energy");
             phaseObj.remove("thd");
 
-             // Get energy object
+            // Get energy object
             QJsonObject energyObj = phaseObj["energy"].toObject();
-            QJsonObject active   = energyObj["active"].toObject();
-            QJsonObject reactive = energyObj["reactive"].toObject();
+            QJsonObject active    = energyObj["active"].toObject();
+            QJsonObject reactive  = energyObj["reactive"].toObject();
 
-            if(channel >= 1 && channel <= 12)
+            if (channel >= 1 && channel <= 12)
             {
                 QMutexLocker locker(&mqttsMutex);
                 // Accumulate into class variables
-                awsEnergy[channel].posActEnergy[phaseNum] += active["positive"].toDouble();
-                awsEnergy[channel].negActEnergy[phaseNum] += active["negative"].toDouble();
+                awsEnergy[channel].posActEnergy[phaseNum]  += active["positive"].toDouble();
+                awsEnergy[channel].negActEnergy[phaseNum]  += active["negative"].toDouble();
                 awsEnergy[channel].posReacEnergy[phaseNum] += reactive["positive"].toDouble();
                 awsEnergy[channel].negReacEnergy[phaseNum] += reactive["negative"].toDouble();
 
                 // Update JSON with accumulated totals
-                active["positive"] = awsEnergy[channel].posActEnergy[phaseNum];
-                active["negative"] = awsEnergy[channel].negActEnergy[phaseNum];
+                active["positive"]   = awsEnergy[channel].posActEnergy[phaseNum];
+                active["negative"]   = awsEnergy[channel].negActEnergy[phaseNum];
                 reactive["positive"] = awsEnergy[channel].posReacEnergy[phaseNum];
                 reactive["negative"] = awsEnergy[channel].negReacEnergy[phaseNum];
 
-                energyObj["active"] = active;
+                energyObj["active"]   = active;
                 energyObj["reactive"] = reactive;
-                phaseObj["energy"] = energyObj;
+                phaseObj["energy"]    = energyObj;
             }
-            
+
             dataObj[phase] = phaseObj;
         }
     }
@@ -519,25 +538,24 @@ void AwsMqttManager::processAwsTelemetry(int channel, const QJsonObject &payload
 
 void AwsMqttManager::processDeviceInfo(const DeviceInfo &info)
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
 
     QJsonObject deviceInfoData;
-    deviceInfoData["device_ip"] = info.ip;
-    deviceInfoData["device_pass"] = info.pass;
-    deviceInfoData["device_imei"] = info.imei;
-    deviceInfoData["mqtt_status"] = info.conn.mqttStatus == "Connected" ? true : false;
-    deviceInfoData["sftp_status"] = info.conn.sftpStatus == "Connected" ? true : false;
-    deviceInfoData["ntp_status"] = info.ntpStatus;
-    deviceInfoData["gsm_status"] = info.gsmStatus;
+    deviceInfoData["device_ip"]        = info.ip;
+    deviceInfoData["device_pass"]      = info.pass;
+    deviceInfoData["device_imei"]      = info.imei;
+    deviceInfoData["mqtt_status"]      = info.conn.mqttStatus == "Connected" ? true : false;
+    deviceInfoData["sftp_status"]      = info.conn.sftpStatus == "Connected" ? true : false;
+    deviceInfoData["ntp_status"]       = info.ntpStatus;
+    deviceInfoData["gsm_status"]       = info.gsmStatus;
     deviceInfoData["Firmware Version"] = Utils::getFirmwareVersion();
     deviceInfoData["Hardware Version"] = Utils::getHardwareVersion();
-
 
     QJsonArray dataArray;
     dataArray.append(deviceInfoData);
 
     QJsonObject deviceInfoPayload;
-    deviceInfoPayload["data"] = dataArray;
+    deviceInfoPayload["data"]        = dataArray;
     deviceInfoPayload["device_uuid"] = clientId;
 
     QJsonDocument doc(deviceInfoPayload);
@@ -548,7 +566,7 @@ void AwsMqttManager::processDeviceInfo(const DeviceInfo &info)
 
 void AwsMqttManager::processMqttSettings(const QJsonObject &mqttSetting)
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
 
     QJsonObject brokerData;
     brokerData["broker_ip"]     = mqttSetting.value("ip").toString();
@@ -563,7 +581,7 @@ void AwsMqttManager::processMqttSettings(const QJsonObject &mqttSetting)
 
     QJsonObject payload;
     payload["device_uuid"] = clientId;
-    payload["data"] = dataArray;
+    payload["data"]        = dataArray;
 
     QJsonDocument doc(payload);
     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
@@ -573,13 +591,13 @@ void AwsMqttManager::processMqttSettings(const QJsonObject &mqttSetting)
 
 void AwsMqttManager::processSftpSettings(const QJsonObject &sftpSetting)
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
 
     QJsonObject serverData;
     serverData["server_ip"]     = sftpSetting.value("ip").toString();
     serverData["server_port"]   = sftpSetting.value("port").toString().toInt();
-    serverData["username"]   = sftpSetting.value("username").toString();
-    serverData["password"]   = sftpSetting.value("password").toString();
+    serverData["username"]      = sftpSetting.value("username").toString();
+    serverData["password"]      = sftpSetting.value("password").toString();
     serverData["data_interval"] = sftpSetting.value("interval").toString().toInt();
 
     QJsonArray dataArray;
@@ -587,7 +605,7 @@ void AwsMqttManager::processSftpSettings(const QJsonObject &sftpSetting)
 
     QJsonObject payload;
     payload["device_uuid"] = clientId;
-    payload["data"] = dataArray;
+    payload["data"]        = dataArray;
 
     QJsonDocument doc(payload);
     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
@@ -597,7 +615,7 @@ void AwsMqttManager::processSftpSettings(const QJsonObject &sftpSetting)
 
 void AwsMqttManager::processNtpSettings(const NtpSettings &ntpSettings)
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
 
     QJsonObject ntpData;
     ntpData["server_1"] = ntpSettings.servers.size() > 0 ? ntpSettings.servers.at(0) : "";
@@ -609,7 +627,7 @@ void AwsMqttManager::processNtpSettings(const NtpSettings &ntpSettings)
 
     QJsonObject payload;
     payload["device_uuid"] = clientId;
-    payload["data"] = dataArray;
+    payload["data"]        = dataArray;
 
     QJsonDocument doc(payload);
     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
@@ -619,7 +637,7 @@ void AwsMqttManager::processNtpSettings(const NtpSettings &ntpSettings)
 
 void AwsMqttManager::processMqttsSettings(const QJsonObject &mqttsSetting)
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
 
     QJsonObject credentials;
     credentials["root_ca"]    = fileExists(caPath);
@@ -637,7 +655,7 @@ void AwsMqttManager::processMqttsSettings(const QJsonObject &mqttsSetting)
 
     QJsonObject payload;
     payload["device_uuid"] = clientId;
-    payload["data"] = dataArray;
+    payload["data"]        = dataArray;
 
     QJsonDocument doc(payload);
     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
@@ -653,17 +671,17 @@ bool AwsMqttManager::fileExists(const QString &path)
 
 void AwsMqttManager::processReboot()
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
 
     QJsonObject rebootData;
     rebootData["command"] = true;
-    
+
     QJsonArray dataArray;
     dataArray.append(rebootData);
 
     QJsonObject payload;
     payload["device_uuid"] = clientId;
-    payload["data"] = dataArray;
+    payload["data"]        = dataArray;
 
     QJsonDocument doc(payload);
     QString jsonString = QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
@@ -673,7 +691,7 @@ void AwsMqttManager::processReboot()
 
 void AwsMqttManager::processCtRatio(const QJsonObject &ctRatio)
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
 
     QJsonObject payload;
     payload["device_uuid"] = clientId;
@@ -688,8 +706,8 @@ void AwsMqttManager::processCtRatio(const QJsonObject &ctRatio)
 
 void AwsMqttManager::processVOffset(const QJsonObject &vOffset)
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
-    
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
+
     QJsonObject payload;
     payload["device_uuid"] = clientId;
     QJsonArray dataArray;
@@ -703,7 +721,7 @@ void AwsMqttManager::processVOffset(const QJsonObject &vOffset)
 
 void AwsMqttManager::processIOffset(const QJsonObject &iOffset)
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
 
     QJsonObject payload;
     payload["device_uuid"] = clientId;
@@ -718,7 +736,7 @@ void AwsMqttManager::processIOffset(const QJsonObject &iOffset)
 
 void AwsMqttManager::processOTA(const QJsonObject &otaData)
 {
-    if (awsMqttsClient->state() == QMqttClient::Disconnected) return;
+    if (awsMqttsClient->state() != QMqttClient::Connected) return;
 
     QJsonObject payload;
     payload["device_uuid"] = clientId;
@@ -746,11 +764,11 @@ void AwsMqttManager::otaSend(const QJsonObject &obj)
 
 void AwsMqttManager::resetAccumulatedEnergy()
 {
-    for(int ch = 1; ch <= 12; ++ch) {
-        for(int ph = 0; ph < 3; ph++)
+    for (int ch = 1; ch <= 12; ++ch) {
+        for (int ph = 0; ph < 3; ph++)
         {
-            awsEnergy[ch].posActEnergy[ph] = 0.0;
-            awsEnergy[ch].negActEnergy[ph] = 0.0;
+            awsEnergy[ch].posActEnergy[ph]  = 0.0;
+            awsEnergy[ch].negActEnergy[ph]  = 0.0;
             awsEnergy[ch].posReacEnergy[ph] = 0.0;
             awsEnergy[ch].negReacEnergy[ph] = 0.0;
         }
